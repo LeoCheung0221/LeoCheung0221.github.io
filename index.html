@@ -74,7 +74,7 @@
 
 
 
-  <link rel="alternate" href="/atom.xml" title="Leo's home" type="application/atom+xml" />
+  <link rel="alternate" href="/atom.xml" title="OnePiece-leo" type="application/atom+xml" />
 
 
 
@@ -88,12 +88,12 @@
 
 <meta name="description" content="做人如果没有梦想,那和咸鱼有什么分别">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Leo's home">
+<meta property="og:title" content="OnePiece-leo">
 <meta property="og:url" content="http://tufusi.com/index.html">
-<meta property="og:site_name" content="Leo's home">
+<meta property="og:site_name" content="OnePiece-leo">
 <meta property="og:description" content="做人如果没有梦想,那和咸鱼有什么分别">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Leo's home">
+<meta name="twitter:title" content="OnePiece-leo">
 <meta name="twitter:description" content="做人如果没有梦想,那和咸鱼有什么分别">
 
 
@@ -112,7 +112,7 @@
   };
 </script>
 
-  <title> Leo's home - 做人如果没有梦想,那和咸鱼有什么分别 </title>
+  <title> OnePiece-leo - 做人如果没有梦想,那和咸鱼有什么分别 </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -145,11 +145,11 @@
   <div class="custom-logo-site-title">
     <a href="/"  class="brand" rel="start">
       <span class="logo-line-before"><i></i></span>
-      <span class="site-title">Leo's home</span>
+      <span class="site-title">OnePiece-leo</span>
       <span class="logo-line-after"><i></i></span>
     </a>
   </div>
-  <p class="site-subtitle">Some of life, you have to go to the great challanges. -By Kobe Bryant</p>
+  <p class="site-subtitle">Some of life, you have to go to the great challanges. - By Kobe Bryant</p>
 </div>
 
 <div class="site-nav-toggle">
@@ -356,7 +356,7 @@
               
                 
                 <a class="post-title-link" href="/2016/06/07/AndroidStudio之Gradle/" itemprop="url">
-                  Android Studio 之 Gradle
+                  AndroidStudio之Gradle
                 </a>
               
             
@@ -406,121 +406,38 @@
       
         
           
-            <p>Gradle是可以用于Android开发的新一代的 Build System， 也是 Android Studio默认的build工具。</p>
-<p>Gradle脚本是基于一种JVM语言 – Groovy，再加上DSL（领域特定语言）组成的。</p>
-<p>因为Groovy是JVM语言，所以可以使用大部分的Java语言库。所谓DSL就是专门针对Android开发的插件，比如标准Gradle之外的一些新的方法（Method）、闭包（Closure）等。</p>
-<p>由于Gradle的语法足够简洁，而且可以使用大部分的java包，当之无愧地成为新一代 Build System。</p>
-<p>使用Android Studio新建一个工程后，默认会生成两个build.gralde文件，一个位于工程根目录，一个位于app目录下。还有另外一个文件 –settings.gradle。</p>
-<p>根目录下的脚本文件是针对module的全局配置，它的作用阈所包含的所有 module 是通过settings.gradle来配置。</p>
-<p>app文件夹就是一个module，如果在当前工程中添加了一个新的module – lib，就需要在settings.gralde文件中包含这个新的module。</p>
-<p>gradle脚本的基本结构</p>
-<p>用我现在的工程举例来说，根目录的build.gradle的内容如下所示：<br>?<br>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br>22<br>23</p>
-<p>// Top-level build file where you can add configuration options common to all sub-projects/modules.</p>
-<p>buildscript {<br>    repositories {<br>        jcenter()<br>    }<br>    dependencies {<br>        classpath ‘com.android.tools.build:gradle:1.0.0-rc4’</p>
-<pre><code>    // NOTE: Do not place your application dependencies here; they belong
-    // in the individual module build.gradle files
-}
-</code></pre><p>}</p>
-<p>allprojects {<br>    repositories {<br>        jcenter()</p>
-<pre><code>    maven {
-        url &apos;http://mvnrepo.xxx.com/mvn/repository&apos;
-    }
-}
-</code></pre><p>}</p>
-<p>classpath ‘com.android.tools.build:gradle:1.0.0-rc4’就是Android特有的插件，maven仓库位于通过方法jCenter() 获取，这也是默认的maven仓库。当然也可以添加额外的maven仓库地址，例如以上文件中的<br>?<br>1<br>2<br>3</p>
-<p>maven {<br>    url ‘<a href="http://mvnrepo.xxx.com/mvn/repository" target="_blank" rel="external">http://mvnrepo.xxx.com/mvn/repository</a>‘<br>}</p>
-<p>然后是 settings.gradle 文件：<br>?<br>1</p>
-<p>include ‘:app’</p>
-<p>app就是项目包含的一个module，如果有多个module，可以在为 include 方法添加多个参数。</p>
-<p>最后是app/build.gradle<br>?<br>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br>22<br>23<br>24<br>25<br>26<br>27<br>28<br>29<br>30<br>31<br>32<br>33<br>34<br>35<br>36<br>37<br>38<br>39<br>40<br>41<br>42<br>43<br>44<br>45<br>46<br>47<br>48<br>49<br>50<br>51<br>52<br>53<br>54<br>55<br>56<br>57<br>58<br>59<br>60<br>61<br>62<br>63<br>64<br>65<br>66<br>67<br>68<br>69<br>70</p>
-<p>apply plugin: ‘com.android.application’</p>
-<p>android {<br>    compileSdkVersion 21<br>    buildToolsVersion “21.1.1”</p>
-<pre><code>compileOptions {
-    sourceCompatibility JavaVersion.VERSION_1_7
-    targetCompatibility JavaVersion.VERSION_1_7
-}
-
-
-defaultConfig {
-    applicationId &quot;your.application.id&quot;
-    minSdkVersion 14
-    targetSdkVersion 21
-    versionCode 2
-    versionName &quot;2.0.0&quot;
-}
-
-signingConfigs {
-    release {
-        storeFile file(&apos;release.keystore&apos;)
-        storePassword &quot;yourstorepassword&quot;
-        keyAlias &quot;yourkeyalias&quot;
-        keyPassword &quot;yourkeypassword&quot;
-    }
-    debug {
-        storeFile file(&apos;debug.keystore&apos;)
-    }
-}
-
-buildTypes {
-    release {
-        minifyEnabled true
-        proguardFiles getDefaultProguardFile(&apos;proguard-android.txt&apos;), &apos;proguard-rules.pro&apos;
-        signingConfig signingConfigs.release
-    }
-    debug {
-        signingConfig signingConfigs.debug
-    }
-}
-
-productFlavors {
-    inner {
-        applicationId &quot;your.application.inner.id&quot;
-        versionName &quot;2.0.0&quot;
-    }
-
-    market {
-
-    }
-}
-</code></pre><p>}</p>
-<p>repositories {<br>    flatDir {<br>        dirs ‘libs’<br>    }<br>}</p>
-<p>dependencies {</p>
-<pre><code>// 通用
-compile name: &apos;volley&apos;, ext: &apos;aar&apos;
-compile &apos;com.nostra13.universalimageloader:universal-image-loader:1.9.3&apos;
-compile &apos;com.alibaba:fastjson:latest.integration&apos;
-
-// 项目相关（已删除）
-</code></pre><p>}</p>
-<p>Groovy 的基本语法<br>方法调用<br>?<br>1</p>
-<p>apply plugin: ‘com.android.application’</p>
+            <h3 id="Gradle："><a href="#Gradle：" class="headerlink" title="Gradle："></a>Gradle：</h3><blockquote>
+<p> 是可以用于Android开发的新一代的构建系统， 也是Android Studio默认的构建工具。其脚本是基于JVM语言 – <a href="https://en.wikipedia.org/wiki/Groovy_(programming_language" target="_blank" rel="external">Groovy</a>) 编写而成，再加上<a href="https://en.wikipedia.org/wiki/Domain-specific_language" target="_blank" rel="external">DSL（领域特定语言）</a>组成的。因为Groovy是JVM语言，所以可以使用大部分的Java语言库。所谓DSL就是专门针对Android开发的插件，比如标准Gradle之外的一些新的方法（Method）、闭包（Closure）等。</p>
+<h4 id="Apply-in-AS"><a href="#Apply-in-AS" class="headerlink" title="Apply in AS"></a>Apply in AS</h4><p>Android Studio新建一个工程后，默认生成两个build.gralde文件，一个位于project根目录下，一个位于app目录下。除此还有一个文件settings.gradle。</p>
+</blockquote>
+<p>根目录下的脚本文件是针对module的全局配置，它的作用域内包含的所有 module 是通过settings.gradle来配置。app文件夹就是一个module，如果在当前project中新增Module – library，就要在settings.gralde文件中包含这个新的module。</p>
+<p>当然很多朋友我相信在新建项目以及库的时候更多是通过右键建立的，这样更加方便，但要知晓其中的原理，对于熟悉gradle构建系统来说是不可或缺的。</p>
+<h4 id="gradle脚本的基本结构"><a href="#gradle脚本的基本结构" class="headerlink" title="gradle脚本的基本结构"></a>gradle脚本的基本结构</h4><p>用新建工程为例，根目录的build.gradle的内容如下所示：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">// Top-level build file <span class="built_in">where</span> you can add configuration options common to all // sub-projects/modules.</span><br><span class="line"> </span><br><span class="line">buildscript &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        jcenter()</span><br><span class="line">    &#125;</span><br><span class="line">    dependencies &#123;</span><br><span class="line">        classpath <span class="string">'com.android.tools.build:gradle:2.1.0'</span></span><br><span class="line"> </span><br><span class="line">        // NOTE: Do not place your application dependencies here; they belong</span><br><span class="line">        // <span class="keyword">in</span> the individual module build.gradle files</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">allprojects &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        jcenter(）</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">task clean(<span class="built_in">type</span>: Delete) &#123;</span><br><span class="line">    delete rootProject.buildDir</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后是 settings.gradle 文件：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">include <span class="string">':app'</span></span><br></pre></td></tr></table></figure></p>
+<p>app就是应用程序的一个module，如果有多个module，可以在为 include 方法添加多个参数，并以逗号隔开。</p>
+<p>最后是app/build.gradle</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">	</span><br><span class="line">apply plugin: <span class="string">'com.android.application'</span></span><br><span class="line"> </span><br><span class="line">android &#123;</span><br><span class="line">    compileSdkVersion 23</span><br><span class="line">    buildToolsVersion <span class="string">"23.0.3"</span></span><br><span class="line"> </span><br><span class="line">    compileOptions &#123;</span><br><span class="line">        <span class="built_in">source</span>Compatibility JavaVersion.VERSION_1_7</span><br><span class="line">        targetCompatibility JavaVersion.VERSION_1_7</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    defaultConfig &#123;</span><br><span class="line">        applicationId <span class="string">"app full name"</span></span><br><span class="line">        minSdkVersion 14</span><br><span class="line">        targetSdkVersion 23</span><br><span class="line">        versionCode 1</span><br><span class="line">        versionName <span class="string">"1.0.0"</span></span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    signingConfigs &#123;</span><br><span class="line">        release &#123;</span><br><span class="line">            storeFile file(<span class="string">'release.keystore'</span>)</span><br><span class="line">            storePassword <span class="string">"yourstorepassword"</span></span><br><span class="line">            keyAlias <span class="string">"yourkeyalias"</span></span><br><span class="line">            keyPassword <span class="string">"yourkeypassword"</span></span><br><span class="line">        &#125;</span><br><span class="line">        debug &#123;</span><br><span class="line">            storeFile file(<span class="string">'debug.keystore'</span>)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    buildTypes &#123;</span><br><span class="line">        release &#123;</span><br><span class="line">            minifyEnabled <span class="literal">true</span></span><br><span class="line">            proguardFiles getDefaultProguardFile(<span class="string">'proguard-android.txt'</span>), <span class="string">'proguard-rules.pro'</span></span><br><span class="line">            signingConfig signingConfigs.release</span><br><span class="line">        &#125;</span><br><span class="line">        debug &#123;</span><br><span class="line">            signingConfig signingConfigs.debug</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    productFlavors &#123;</span><br><span class="line">        market &#123;</span><br><span class="line">            Wandoujia &#123;&#125;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">repositories &#123;</span><br><span class="line">    flatDir &#123;</span><br><span class="line">        <span class="built_in">dirs</span> <span class="string">'libs'</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">dependencies &#123;</span><br><span class="line">    compile fileTree(dir: <span class="string">'libs'</span>, include: [<span class="string">'*.jar'</span>])</span><br><span class="line">    <span class="built_in">test</span>Compile <span class="string">'junit:junit:4.12'</span></span><br><span class="line">    compile <span class="string">'com.android.support:appcompat-v7:23.4.0'</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Groovy 的基本语法<br>方法调用<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apply plugin: <span class="string">'com.android.application'</span></span><br></pre></td></tr></table></figure></p>
 <p>以上语句中的apply是一个方法，给它传递了一个参数plugin，plugin 的值是’com.android.application’。</p>
-<p>如果有多个参数，则以逗号隔开，例如<br>?<br>1</p>
-<p><code>compile name: ‘volley’, ext: ‘aar’</code></p>
+<p>如果有多个参数，则以逗号隔开，例如<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">compile name: <span class="string">'supertoasts'</span>, ext: <span class="string">'aar'</span></span><br></pre></td></tr></table></figure></p>
 <p>闭包</p>
-<p>Groovy中花括号包含的部分成为一个闭包（Closure）。例如下面的代码<br>?<br>1<br>2<br>3<br>4</p>
-<p>compileOptions {<br>    sourceCompatibility JavaVersion.VERSION_1_7<br>    targetCompatibility JavaVersion.VERSION_1_7<br>}</p>
-<p>compileOptions 是一个 Method， 它的参数是一个闭包，这个闭包内依次执行了两个方法 – sourceCompatibility 和targetCompatibility， 参数都是JavaVersion.VERSION17。</p>
-<p>闭包也可以嵌套包含<br>?<br>1<br>2<br>3<br>4<br>5</p>
-<p>repositories {<br>    flatDir {<br>        dirs ‘libs’<br>    }<br>}</p>
-<p>常见使用方法<br>包依赖（aar）</p>
-<p>使用aar时可以分为两种情况<br>① aar位于本地目录</p>
-<p>首先在 android 的参数闭包中添加调用方法 repositories<br>1 repositories {<br>2         flatDir {<br>3        dirs ‘libs’<br>4     }<br>5 }   </p>
-<p>然后在 dependencies 的参数闭包中添加<br>1 compile name: ‘volley’, ext: ‘aar’</p>
+<p>Groovy中花括号包含的部分成为一个闭包（Closure）。例如下面的代码<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">compileOptions &#123;</span><br><span class="line">    <span class="built_in">source</span>Compatibility JavaVersion.VERSION_1_7</span><br><span class="line">    targetCompatibility JavaVersion.VERSION_1_7</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>compileOptions 是一个 Method， 它的参数是一个闭包， 这个闭包内依次执行了两个方法 – sourceCompatibility 和targetCompatibility， 参数都是JavaVersion.VERSION_1_7,即是你jdk配置环境所使用的版本。</p>
+<p>闭包也可以嵌套包含<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">repositories &#123;</span><br><span class="line">    flatDir &#123;</span><br><span class="line">        <span class="built_in">dirs</span> <span class="string">'libs'</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="常见使用方法"><a href="#常见使用方法" class="headerlink" title="常见使用方法"></a>常见使用方法</h3><h5 id="包依赖（aar）"><a href="#包依赖（aar）" class="headerlink" title="包依赖（aar）"></a>包依赖（aar）</h5><p>使用aar时可以分为两种情况<br>① aar位于本地目录</p>
+<p>首先在 Build.gradle(Module:app) 中 android 的参数闭包中添加调用方法 repositories<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">repositories &#123;</span><br><span class="line">    flatDir &#123;</span><br><span class="line">	    <span class="built_in">dirs</span> <span class="string">'libs'</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后在 dependencies 的参数闭包中添加<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">compile name: <span class="string">'supertoasts'</span>, ext: <span class="string">'aar'</span></span><br></pre></td></tr></table></figure></p>
 <p>② aar位于远程仓库</p>
-<p>这里以maven为例，当然也可以使用其他类型的仓库，例如 Ivy。</p>
-<p>只需要在jar包引用方式后面添加一个@aar就可以了<br>1 compile ‘com.alibaba:fastjson:latest.integration@aar’</p>
-<p>包依赖（jar）<br>1 compile group: ‘com.alibaba’, module: ‘fastjson’, version: ‘latest.integration’</p>
-<p>可以简写成<br>1 compile ‘com.alibaba:fastjson:latest.integration’</p>
-<p>latest.integration可以替换成具体的版本号，这里是获取服务器上的最新版本。<br>去掉重复依赖</p>
-<p>1 compile ‘com.alibaba.fastjson.latest.integration’ {<br>2     exclude module: ‘annotations’, group: ‘com.google.android’<br>3 }</p>
-<p>使用 Java7</p>
-<p>1 compileOptions {<br>2      sourceCompatibility JavaVersion.VERSION_1_7<br>3      targetCompatibility JavaVersion.VERSION_1_7<br>4 }</p>
-<p>productFlavors</p>
-<p>针对不同的APP分发渠道，我们可以定义不同的 product flavor。也可以定义内部版本和外部版本，内部版本中包含了一些调试代码，这些代码在发布时并不会被编译进最后的APP中。而且可以分别为内部版本和外部版本指定不同的ApplicationId，这样在同一个设备上可以同时安装两个版本以方便调试。<br>命令行执行Gradle脚本</p>
-<p>在Android工程根目录下会自动生成一个shell脚本 - gradlew，执行之前记得加上x属性 - chomod +x gradlew</p>
-<p>gradle脚本中包含了很多 task，可以通过task名来指定需要执行的task。<br>./gradlew build./gradlew assemble./gradlew assembleInnderDebug<br>总结</p>
-<p>不得不说，Gradle实在太好用了！虽然 Gradle 可以与 Ant 或 maven 配合使用，但是其简洁和功能性远远超过其他两个。我现在开发的项目普遍使用的是 maven，不知道什么原因，使用Gradle时经常会遇到一些无法获取远程依赖包的问题，最简单的解决办法就是把依赖包下载的本地。</p>
+<p>这里以maven为例，当然也可以使用其他类型的仓库，例如 Ivy、Bintray。</p>
+<p>只需要在jar包引用方式后面添加一个@aar就可以了<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">compile <span class="string">'com.github.johnpersano:supertoasts:1.3.4@aar'</span></span><br></pre></td></tr></table></figure></p>
+<p>包依赖（jar）<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">compile group:<span class="string">'com.github.johnpersano'</span>,module: <span class="string">'supertoasts'</span>,version: <span class="string">'1.3.4'</span></span><br></pre></td></tr></table></figure></p>
+<p>可以简写成<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">compile <span class="string">'com.github.johnpersano:supertoasts:1.3.4'</span></span><br></pre></td></tr></table></figure></p>
+<p>去掉重复依赖<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">compile <span class="string">'com.github.johnpersano:supertoasts:1.3.4'</span> &#123;</span><br><span class="line">    exclude module: <span class="string">'annotations'</span>, group: <span class="string">'com.google.android'</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>使用 Java7 或者 Java8<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">compileOptions &#123;</span><br><span class="line">  <span class="built_in">source</span>Compatibility JavaVersion.VERSION_1_7</span><br><span class="line">  targetCompatibility JavaVersion.VERSION_1_7</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>针对JDK1.8, 等公司项目上线我会专门看一些这方面的资料进行博客整理，主要对RetroLambda结合RxJava的一些功能展示及Sourcecode理解</p>
+<h5 id="productFlavors（渠道打包）"><a href="#productFlavors（渠道打包）" class="headerlink" title="productFlavors（渠道打包）"></a>productFlavors（渠道打包）</h5><p>该部分在项目完成上线之前，会将所看资料整合另开一篇文章说明。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>其实在使用Gradle构建时，如果项目引用的依赖过于多而杂，而又需要考虑到这些依赖版本的更新问题，参考过<a href="http://blog.zhaiyifan.cn/2016/03/14/android-new-project-from-0-p2/" target="_blank" rel="external">MarkZhai</a>的博客,本人也偏向于新建全局gradle，专门用于管理版本的迭代问题，不用一处改处处改，效果在试过之后会能明显feel到。</p>
+<p>刚来新公司，一个人负责项目从零起步到最后打包上线，不得不说，这是一个挑战，但这又何尝不是一个机会，目前还处于app开发阶段。在抛弃前公司一直沿用的Volley Network Framework之后，我一直在尝试着使用更多以前未接触过的技术，RxJava，Dagger，OkHttp+Retrofit，Stetho+GsonFormat and so on，包括这次的关于Gradle的博客书写，发现Gradle其实也蛮好（zhuang）用(bi)的！当然用这些新技术需要花不少的时间成本，但“ 总有人要赢的，那个人为什么不是我 ”， 爱豆科比的经典名言啊。<br>努力 奋斗 致每一位正在努力的小婊砸</p>
           
         
       
@@ -1004,8 +921,8 @@ compile &apos;com.alibaba:fastjson:latest.integration&apos;
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="http://img.wdjimg.com/mms/icon/v1/9/9c/de366a247aeddb5809193003fa9c99c9_256_256.png"
-               alt="Leo Cheung" />
-          <p class="site-author-name" itemprop="name">Leo Cheung</p>
+               alt="LeoCheung" />
+          <p class="site-author-name" itemprop="name">LeoCheung</p>
           <p class="site-description motion-element" itemprop="description">做人如果没有梦想,那和咸鱼有什么分别</p>
         </div>
         <nav class="site-state motion-element">
@@ -1076,7 +993,7 @@ compile &apos;com.alibaba:fastjson:latest.integration&apos;
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">Leo Cheung</span>
+  <span class="author" itemprop="copyrightHolder">LeoCheung</span>
 </div>
 
 <div class="powered-by">
