@@ -255,6 +255,320 @@
             
               
                 
+                <a class="post-title-link" href="/2016/06/14/AndroidStudio之Plugins/" itemprop="url">
+                  AndroidStudio之Plugins
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-06-14T21:10:00+08:00" content="2016-06-14">
+              2016-06-14
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/06/14/AndroidStudio之Plugins/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/06/14/AndroidStudio之Plugins/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/06/07/AndroidStudio之Gradle/" itemprop="url">
+                  Android Studio 之 Gradle
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-06-07T19:31:22+08:00" content="2016-06-07">
+              2016-06-07
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/06/07/AndroidStudio之Gradle/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/06/07/AndroidStudio之Gradle/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>Gradle是可以用于Android开发的新一代的 Build System， 也是 Android Studio默认的build工具。</p>
+<p>Gradle脚本是基于一种JVM语言 – Groovy，再加上DSL（领域特定语言）组成的。</p>
+<p>因为Groovy是JVM语言，所以可以使用大部分的Java语言库。所谓DSL就是专门针对Android开发的插件，比如标准Gradle之外的一些新的方法（Method）、闭包（Closure）等。</p>
+<p>由于Gradle的语法足够简洁，而且可以使用大部分的java包，当之无愧地成为新一代 Build System。</p>
+<p>使用Android Studio新建一个工程后，默认会生成两个build.gralde文件，一个位于工程根目录，一个位于app目录下。还有另外一个文件 –settings.gradle。</p>
+<p>根目录下的脚本文件是针对module的全局配置，它的作用阈所包含的所有 module 是通过settings.gradle来配置。</p>
+<p>app文件夹就是一个module，如果在当前工程中添加了一个新的module – lib，就需要在settings.gralde文件中包含这个新的module。</p>
+<p>gradle脚本的基本结构</p>
+<p>用我现在的工程举例来说，根目录的build.gradle的内容如下所示：<br>?<br>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br>22<br>23</p>
+<p>// Top-level build file where you can add configuration options common to all sub-projects/modules.</p>
+<p>buildscript {<br>    repositories {<br>        jcenter()<br>    }<br>    dependencies {<br>        classpath ‘com.android.tools.build:gradle:1.0.0-rc4’</p>
+<pre><code>    // NOTE: Do not place your application dependencies here; they belong
+    // in the individual module build.gradle files
+}
+</code></pre><p>}</p>
+<p>allprojects {<br>    repositories {<br>        jcenter()</p>
+<pre><code>    maven {
+        url &apos;http://mvnrepo.xxx.com/mvn/repository&apos;
+    }
+}
+</code></pre><p>}</p>
+<p>classpath ‘com.android.tools.build:gradle:1.0.0-rc4’就是Android特有的插件，maven仓库位于通过方法jCenter() 获取，这也是默认的maven仓库。当然也可以添加额外的maven仓库地址，例如以上文件中的<br>?<br>1<br>2<br>3</p>
+<p>maven {<br>    url ‘<a href="http://mvnrepo.xxx.com/mvn/repository" target="_blank" rel="external">http://mvnrepo.xxx.com/mvn/repository</a>‘<br>}</p>
+<p>然后是 settings.gradle 文件：<br>?<br>1</p>
+<p>include ‘:app’</p>
+<p>app就是项目包含的一个module，如果有多个module，可以在为 include 方法添加多个参数。</p>
+<p>最后是app/build.gradle<br>?<br>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br>22<br>23<br>24<br>25<br>26<br>27<br>28<br>29<br>30<br>31<br>32<br>33<br>34<br>35<br>36<br>37<br>38<br>39<br>40<br>41<br>42<br>43<br>44<br>45<br>46<br>47<br>48<br>49<br>50<br>51<br>52<br>53<br>54<br>55<br>56<br>57<br>58<br>59<br>60<br>61<br>62<br>63<br>64<br>65<br>66<br>67<br>68<br>69<br>70</p>
+<p>apply plugin: ‘com.android.application’</p>
+<p>android {<br>    compileSdkVersion 21<br>    buildToolsVersion “21.1.1”</p>
+<pre><code>compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_7
+    targetCompatibility JavaVersion.VERSION_1_7
+}
+
+
+defaultConfig {
+    applicationId &quot;your.application.id&quot;
+    minSdkVersion 14
+    targetSdkVersion 21
+    versionCode 2
+    versionName &quot;2.0.0&quot;
+}
+
+signingConfigs {
+    release {
+        storeFile file(&apos;release.keystore&apos;)
+        storePassword &quot;yourstorepassword&quot;
+        keyAlias &quot;yourkeyalias&quot;
+        keyPassword &quot;yourkeypassword&quot;
+    }
+    debug {
+        storeFile file(&apos;debug.keystore&apos;)
+    }
+}
+
+buildTypes {
+    release {
+        minifyEnabled true
+        proguardFiles getDefaultProguardFile(&apos;proguard-android.txt&apos;), &apos;proguard-rules.pro&apos;
+        signingConfig signingConfigs.release
+    }
+    debug {
+        signingConfig signingConfigs.debug
+    }
+}
+
+productFlavors {
+    inner {
+        applicationId &quot;your.application.inner.id&quot;
+        versionName &quot;2.0.0&quot;
+    }
+
+    market {
+
+    }
+}
+</code></pre><p>}</p>
+<p>repositories {<br>    flatDir {<br>        dirs ‘libs’<br>    }<br>}</p>
+<p>dependencies {</p>
+<pre><code>// 通用
+compile name: &apos;volley&apos;, ext: &apos;aar&apos;
+compile &apos;com.nostra13.universalimageloader:universal-image-loader:1.9.3&apos;
+compile &apos;com.alibaba:fastjson:latest.integration&apos;
+
+// 项目相关（已删除）
+</code></pre><p>}</p>
+<p>Groovy 的基本语法<br>方法调用<br>?<br>1</p>
+<p>apply plugin: ‘com.android.application’</p>
+<p>以上语句中的apply是一个方法，给它传递了一个参数plugin，plugin 的值是’com.android.application’。</p>
+<p>如果有多个参数，则以逗号隔开，例如<br>?<br>1</p>
+<p><code>compile name: ‘volley’, ext: ‘aar’</code></p>
+<p>闭包</p>
+<p>Groovy中花括号包含的部分成为一个闭包（Closure）。例如下面的代码<br>?<br>1<br>2<br>3<br>4</p>
+<p>compileOptions {<br>    sourceCompatibility JavaVersion.VERSION_1_7<br>    targetCompatibility JavaVersion.VERSION_1_7<br>}</p>
+<p>compileOptions 是一个 Method， 它的参数是一个闭包，这个闭包内依次执行了两个方法 – sourceCompatibility 和targetCompatibility， 参数都是JavaVersion.VERSION17。</p>
+<p>闭包也可以嵌套包含<br>?<br>1<br>2<br>3<br>4<br>5</p>
+<p>repositories {<br>    flatDir {<br>        dirs ‘libs’<br>    }<br>}</p>
+<p>常见使用方法<br>包依赖（aar）</p>
+<p>使用aar时可以分为两种情况<br>① aar位于本地目录</p>
+<p>首先在 android 的参数闭包中添加调用方法 repositories<br>1 repositories {<br>2         flatDir {<br>3        dirs ‘libs’<br>4     }<br>5 }   </p>
+<p>然后在 dependencies 的参数闭包中添加<br>1 compile name: ‘volley’, ext: ‘aar’</p>
+<p>② aar位于远程仓库</p>
+<p>这里以maven为例，当然也可以使用其他类型的仓库，例如 Ivy。</p>
+<p>只需要在jar包引用方式后面添加一个@aar就可以了<br>1 compile ‘com.alibaba:fastjson:latest.integration@aar’</p>
+<p>包依赖（jar）<br>1 compile group: ‘com.alibaba’, module: ‘fastjson’, version: ‘latest.integration’</p>
+<p>可以简写成<br>1 compile ‘com.alibaba:fastjson:latest.integration’</p>
+<p>latest.integration可以替换成具体的版本号，这里是获取服务器上的最新版本。<br>去掉重复依赖</p>
+<p>1 compile ‘com.alibaba.fastjson.latest.integration’ {<br>2     exclude module: ‘annotations’, group: ‘com.google.android’<br>3 }</p>
+<p>使用 Java7</p>
+<p>1 compileOptions {<br>2      sourceCompatibility JavaVersion.VERSION_1_7<br>3      targetCompatibility JavaVersion.VERSION_1_7<br>4 }</p>
+<p>productFlavors</p>
+<p>针对不同的APP分发渠道，我们可以定义不同的 product flavor。也可以定义内部版本和外部版本，内部版本中包含了一些调试代码，这些代码在发布时并不会被编译进最后的APP中。而且可以分别为内部版本和外部版本指定不同的ApplicationId，这样在同一个设备上可以同时安装两个版本以方便调试。<br>命令行执行Gradle脚本</p>
+<p>在Android工程根目录下会自动生成一个shell脚本 - gradlew，执行之前记得加上x属性 - chomod +x gradlew</p>
+<p>gradle脚本中包含了很多 task，可以通过task名来指定需要执行的task。<br>./gradlew build./gradlew assemble./gradlew assembleInnderDebug<br>总结</p>
+<p>不得不说，Gradle实在太好用了！虽然 Gradle 可以与 Ant 或 maven 配合使用，但是其简洁和功能性远远超过其他两个。我现在开发的项目普遍使用的是 maven，不知道什么原因，使用Gradle时经常会遇到一些无法获取远程依赖包的问题，最简单的解决办法就是把依赖包下载的本地。</p>
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2016/06/07/Android部落格之RxJava框架/" itemprop="url">
                   Android部落格之RxJava框架
                 </a>
@@ -697,7 +1011,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">4</span>
+              <span class="site-state-item-count">6</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -714,7 +1028,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-count">4</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
