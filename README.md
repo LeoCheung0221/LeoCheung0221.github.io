@@ -22,11 +22,17 @@ author: leocheung
 
 ##### 优秀依赖库、SDK
 
->* Fresco - An excellent Framework for loading image
+>* Fresco - An excellent Framework for loading image -- from fb
+>* Glide - DITTO -- from goolge
 
 ##### Android源码分析
 
 >* 《Android开发艺术探索》
+
+##### 每周一译
+
+>* [ANDROID WEEKLY #211](http://androidweekly.net/#latest-issue)
+>* [ANDROID WEEKLY #212](http://androidweekly.net/#latest-issue)
 
 ```sh
 为什么遇到如此强大的敌人你也不愿逃跑？ —— 那是因为身后，有至爱之人。 
