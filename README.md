@@ -20,6 +20,8 @@ author: leocheung
 
 >* [LuffyNavigation] - A custom view for navigating menu
 
+>* [UsoppRecyclerView] -A custom view for recyclering data
+
 ##### 优秀依赖库、SDK
 
 >* Fresco - An excellent Framework for loading image -- from fb
@@ -27,7 +29,22 @@ author: leocheung
 
 ##### Android源码分析
 
+
+##### 进阶书籍笔记
+
 >* 《Android开发艺术探索》
+
+>* 《图解HTTP》
+
+>* 《深入理解JVM》
+
+##### Android架构那些事
+
+>* balalalala
+
+>* 一步一个坑之项目重构
+
+>* 开发之必用的第三方SDK
 
 ##### 每周一译
 
@@ -43,3 +60,4 @@ author: leocheung
 [NamiAvatar]: <https://github.com/LeoCheung0221/NamiAvatar>
 [ZoroBanner]: <https://github.com/LeoCheung0221/ZoroBanner> 
 [LuffyNavigation]: <https://github.com/LeoCheung0221/LuffyNavigation>
+[UsoppRecyclerView]: <https://github.com/LeoCheung0221/UsoppRecyclerView>
