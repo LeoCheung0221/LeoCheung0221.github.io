@@ -86,16 +86,19 @@
 
 
 
-<meta name="description" content="做人如果没有梦想,那和咸鱼有什么分别">
+<meta name="description" content="RxJava基本概念a library for composing asynchronous and event-based programs using observable sequences for the Java VM
+一个在Java VM上使用可观测的序列来组成异步的、基于事件的程序的库">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Android部落格之RxJava框架">
 <meta property="og:url" content="http://tufusi.com/2016/06/07/Android部落格之RxJava框架/index.html">
 <meta property="og:site_name" content="OnePiece">
-<meta property="og:description" content="做人如果没有梦想,那和咸鱼有什么分别">
-<meta property="og:updated_time" content="2016-06-07T01:14:57.750Z">
+<meta property="og:description" content="RxJava基本概念a library for composing asynchronous and event-based programs using observable sequences for the Java VM
+一个在Java VM上使用可观测的序列来组成异步的、基于事件的程序的库">
+<meta property="og:updated_time" content="2016-08-07T07:20:43.262Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android部落格之RxJava框架">
-<meta name="twitter:description" content="做人如果没有梦想,那和咸鱼有什么分别">
+<meta name="twitter:description" content="RxJava基本概念a library for composing asynchronous and event-based programs using observable sequences for the Java VM
+一个在Java VM上使用可观测的序列来组成异步的、基于事件的程序的库">
 
 
 
@@ -460,7 +463,247 @@
       
 
       
-        
+        <h1 id="RxJava"><a href="#RxJava" class="headerlink" title="RxJava"></a>RxJava</h1><h3 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h3><p>a library for composing asynchronous and event-based programs using observable sequences for the Java VM</p>
+<p>一个在Java VM上使用可观测的序列来组成异步的、基于事件的程序的库</p>
+<a id="more"></a>
+<ul>
+<li><h4 id="Observables-被观察者-事件源-———–-gt-发出事件"><a href="#Observables-被观察者-事件源-———–-gt-发出事件" class="headerlink" title="Observables(被观察者/事件源) ———–&gt;  发出事件"></a>Observables(被观察者/事件源) ———–&gt;  发出事件</h4></li>
+</ul>
+<ul>
+<li><h4 id="Subscribers-观察者-————————–-gt-订阅接收-进行处理"><a href="#Subscribers-观察者-————————–-gt-订阅接收-进行处理" class="headerlink" title="Subscribers(观察者) ————————–&gt; 订阅接收,进行处理"></a>Subscribers(观察者) ————————–&gt; 订阅接收,进行处理</h4></li>
+</ul>
+<p>类似观察者模式,不同之处在于： 如果没有Subscribers，Observables是不会发出任何事件。</p>
+<p>更接近于观察者模式 + 迭代器模式 , 这样的模式组合可以确保每一个事件都能发送到Subscribers上进行处理。</p>
+<p>不过与迭代器模式不同之处在于 ： 迭代器模式在事件处理上采用的是“同步/拉式”的方式，而Observable采用的是”异步/推式”的方式</p>
+<h2 id="基本实现"><a href="#基本实现" class="headerlink" title="基本实现"></a>基本实现</h2><h4 id="1-创建Observer"><a href="#1-创建Observer" class="headerlink" title="1)  创建Observer"></a>1)  创建Observer</h4><p>可以通过两种方式进行观察者对象的创建: Observer 和 Subscriber</p>
+<pre><code>Observer&lt;Strting&gt; observer = new Observer&lt;String&gt;(){
+    @override
+    public void onNext(String s){
+        //todo 
+    }
+
+    @override
+    public void onCompleted(){
+        //todo
+    }
+
+    @override
+    public void onError(Throwable e){
+        //todo
+    }
+}
+</code></pre><p>或</p>
+<pre><code>Subscriber&lt;String&gt; subscriber = new Subscriber&lt;String&gt;(){
+    @override
+    public void onNext(String s){
+        //todo
+    }
+
+    @override
+    public void onCompleted(){
+        //todo
+    }
+
+    @override
+    public void onError(){
+        //todo
+    }
+}
+</code></pre><p>区别: </p>
+<p>(1) onStart() 这是Subscriber增加的方法,会在事件未发送之前被调用,该方法是可选方法。需记住该方法所在的线程和subscribe      所发生的线程是一致的。</p>
+<p>(2) unsubscribe() 这是Subscriber所实现的另一个接口方法,用于取消订阅.该方法被调用后,Subscriber不再接收任何事件,一般    在此方法调用前,先进行isUnsubscribed()判断一下.这个方法的重要性在于能有效降低Observable持有Subscriber的引用而造    成的内存泄漏问题</p>
+<h4 id="2-创建Observable"><a href="#2-创建Observable" class="headerlink" title="2)  创建Observable"></a>2)  创建Observable</h4><pre><code>Observable observable = Observable.create(
+    new Observable.OnSubscribe&lt;String&gt;(){
+        @override
+        public void call(Subscriber&lt;? super String&gt; subscriber){
+            subscriber.onNext();
+            subscriber.onNext();
+            subscriber.onNext();
+            subscriber.onCompleted();
+        }
+    }
+);
+</code></pre><p>这里传入一个OnSubscribe对象作为参数,该对象会被存储在返回的Observable对象中.它的作用类似于一个计划表，当Observable被订阅时，OnSubscribe的call()方法会自动被调用，事件序列会依照设定顺序依次触发。这样，由被观察者调用了观察者的回调方法，就实现了由被观察者向观察者的事件传递，即观察者模式。</p>
+<p>这里create()方法是RxJava最基本的创造事件序列的方法.当然也还有其他快捷创建事件序列方式，如下：</p>
+<h5 id="just-T…-将传入的参数依次发送出来"><a href="#just-T…-将传入的参数依次发送出来" class="headerlink" title="just(T…)  将传入的参数依次发送出来"></a>just(T…)  将传入的参数依次发送出来</h5><pre><code>Observable observable = Observable.just(&quot;AA&quot;,&quot;BB&quot;,&quot;CC&quot;);
+// 将会依次调用:
+// onNext(&quot;AA&quot;);
+// onNext(&quot;BB&quot;);
+// onNext(&quot;CC&quot;);
+// onCompleted();
+</code></pre><h5 id="from-T-from-Iterable-lt-extends-T-gt-将传入的数组或Iterable拆分成具体的对象后-依次发送出来"><a href="#from-T-from-Iterable-lt-extends-T-gt-将传入的数组或Iterable拆分成具体的对象后-依次发送出来" class="headerlink" title="from(T[]) / from(Iterable&lt;? extends T&gt;)  将传入的数组或Iterable拆分成具体的对象后,依次发送出来"></a>from(T[]) / from(Iterable&lt;? extends T&gt;)  将传入的数组或Iterable拆分成具体的对象后,依次发送出来</h5><pre><code>String[] words = {&quot;AA&quot;,&quot;BB&quot;,&quot;CC&quot;};
+Observable observable = Observable.from(words);
+// 将会依次调用:
+// onNext(&quot;AA&quot;);
+// onNext(&quot;BB&quot;);
+// onNext(&quot;CC&quot;);
+// onCompleted();
+</code></pre><p>以上两种方式都和create()方式是等价的</p>
+<h4 id="3-订阅Subscribe"><a href="#3-订阅Subscribe" class="headerlink" title="3)  订阅Subscribe"></a>3)  订阅Subscribe</h4><p>创建了Observable 和 Observer对象之后，用subscribe()方法将其联结, 整条链子就能执行工作。代码如下：</p>
+<pre><code>observable.subscribe(observer);
+// 或者
+observable.subscribe(subscriber);
+</code></pre><p>内部代码实现</p>
+<pre><code>public Subscription subscribe(Subscriber subscriber){
+    subscriber.onStart();
+    onSubscribe.call(subscriber);
+    return subscriber;
+}
+</code></pre><p>subscriber()主要负责三件事:</p>
+<p>1) 调用Subscriber.onStart()</p>
+<p>————— 这个方法之前描述过,是一个可选方法</p>
+<p>2) 调用Observable的OnSubscribe.call(Subscriber)</p>
+<p>————— 这里事件的发送逻辑开始执行，从这里看出，在RxJava中，Observable并不是在创建的时候就立即开始发送事件，而是在被订阅时，即当subscribe()方法执行的时候发送。</p>
+<p>3）将传入的Subscriber作为Subscription返回</p>
+<p>————— 这是为方便unsubscribe()。</p>
+<p>除了subscribe(Observable) 和 subscribe(Subscriber) , subscribe() 还支持不完整定义的回调,RxJava会自动根据定义创建出Subscriber。形式如下：</p>
+<pre><code>Action1&lt;String&gt; onNextAction = new Action1&lt;String&gt;(){
+
+    // onNext()
+    @override
+    public void call(String s){
+        //todo
+    }
+};
+
+Action1&lt;Throwable&gt; onErrorAction = new Action1&lt;Throwable&gt;(){
+
+    //onError
+    @override
+    public void call(Throwable e){
+        //todo error handling
+    }
+};
+
+Action0 onCompletedAction = new Action0(){
+
+    //onCompleted()
+    @override
+    public void call(){
+        //todo
+    }
+}
+
+// 自动创建 Subscriber, 并使用 onNextAction 来定义 onNext()
+observable.subscribe(onNextAction);
+
+// 自动创建 Subscriber, 并使用 onNextAction 和 onErrorAction 来定义 onNext() 和 onError()
+observable.subscribe(onNextAction, onErrorAction);
+
+// 自动创建 Subscriber, 并使用 onNextAction 、 onErrorAction 和 onCompletedAction 来定义 onNext() 、 onError() 和 onCompleted()
+observable.subscribe(onNextAction, onErrorAction, onCompletedAction);
+</code></pre><h3 id="注"><a href="#注" class="headerlink" title="注:"></a>注:</h3><p>Action0 是RxJava的一个接口，它只有一个call()，这个方法是无参无返回值的；</p>
+<p>onCompleted()方法也是无参无返回值，因此Action0 可以被当成是一个包装对象;</p>
+<p>Action1 也是一个接口,也只有一个call(T param), 这个方法也没有返回值, 但有参数；</p>
+<p>onNext(obj)方法 和 onError(error) 方法 均可以被当成是一个包装对象</p>
+<h2 id="线程控制-Scheduler"><a href="#线程控制-Scheduler" class="headerlink" title="线程控制 - Scheduler"></a>线程控制 - Scheduler</h2><p>在不指定线程的情况下, RxJava遵循的是线程不变的原则, 即: </p>
+<p>在哪个线程调用subscribe()，就在哪个线程生产事件；在哪个线程生产事件，就在哪个线程消费事件。如需切换线程，就需要Scheduler(调度器)</p>
+<h4 id="1）-Scheduler-API"><a href="#1）-Scheduler-API" class="headerlink" title="1） Scheduler API"></a>1） Scheduler API</h4><p>Scheduler － 调度器，相当于线程控制器，RxJava通过它来指定每一段代码应该运行在哪一个线程中。RxJava内置了一些Scheduler，适用场景如下：</p>
+<ul>
+<li><p>Schedulers.immediate(): 直接在当前线程中运行，默认的Scheduler</p>
+</li>
+<li><p>Schedulers.newThread(): 总是启用新线程,并在新线程中执行操作</p>
+</li>
+<li><p>Schedulers.io: I/O操作(读写文件、读写数据库、网络信息交互等)所使用的Scheduler；类似于newThread()，区别在io()的内部实现是使用一个无数量上限的线程池，可以重用空闲的线程，因此多数情况下io()比newThread()更有效率。记住：不要把计算放在io()中，可以避免创建不必要的线程。</p>
+</li>
+<li><p>Schedulers.computation(): 计算Scheduler。这个计算指CPU密集型计算，即不会被I/O等操作限制性能的操作，比如图形的计算。该Scheduler使用固定的线程池，大小为CPU核数。切记，不要把I/O操作放在computation()中,否则I/O操作的等待时间会浪费CPU。</p>
+</li>
+<li><p>另外Android还有一个专用的AndroidSchedulers.mainThread()，它指定的操作将在Android主线程中运行。</p>
+</li>
+</ul>
+<p>有了上述Scheduler，就可以使用subscribeOn() 和 observerOn() 来控制线程。</p>
+<pre><code>subscribeOn(): 指定subscribe()所发生的线程，即Observable.OnSubscribe 被激活时所在的线程/事件产生的线程。
+
+observeOn(): 指定Subscriber所运行的线程/事件消费的线程。
+</code></pre><h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><pre><code>Observable.just(1,2,3,4)
+    .subscribeOn(Schedulers.io()) // 指定 subscribe()发生在 IO 线程
+    .observeOn(AndroidSchedulers.mainThread()) // 指定Scheduler 的回调发生在主线程中
+    .subscribe(new Action1&lt;Integer&gt;(){
+        @override
+        public void call(Integer number){
+            //todo
+        }
+    });
+</code></pre><p>这种在subscribe()之前写上线程控制的多适用于 『后台线程取数据，主线程显示』的程序策略。</p>
+<h4 id="2-Scheduler-原理"><a href="#2-Scheduler-原理" class="headerlink" title="2) Scheduler 原理"></a>2) Scheduler 原理</h4><h1 id="TBD"><a href="#TBD" class="headerlink" title="TBD"></a>TBD</h1><h2 id="变换"><a href="#变换" class="headerlink" title="变换"></a>变换</h2><p>RxJava提供了对事件序列进行变换的支持</p>
+<p>所谓变换，就是将事件序列中的对象或整个序列进行加工处理，转换成不同的事件或事件序列。</p>
+<h4 id="（1）API"><a href="#（1）API" class="headerlink" title="（1）API"></a>（1）API</h4><p>首先看map()示例:</p>
+<pre><code>Observable.just(&quot;image/ic_launcher.png&quot;) // 输入类型 String
+    .map(new Func1&lt;String, Bitmap&gt;(){
+        @override
+        public Bitmap call(String filePath){ // 参数类型 Strting
+            return getBitmapFromPath(filePath); // 返回类型
+        }
+    })
+    .subscribe(new Action1&lt;Bitmap&gt;(){
+        @override
+        public void call(Bitmap bitmap){ // 参数类型 Bitmap
+            showBitmap(bitmap);
+        }
+    });
+</code></pre><h3 id="注-1"><a href="#注-1" class="headerlink" title="注"></a>注</h3><p>类Func1，也是RxJava的一个接口，用于包装含有一个参数的方法。</p>
+<p>FuncX 和 ActionX 区别，FuncX包装的是有返回值的方法</p>
+<h3 id="常用变换"><a href="#常用变换" class="headerlink" title="#常用变换"></a>#常用变换</h3><ul>
+<li><p>map() —————– 事件对象的直接变换，是RxJava最为常用的变换</p>
+</li>
+<li><p>flatMap()————– 事件对象的扁平变换，是map()的升级版</p>
+</li>
+</ul>
+<p>解释: </p>
+<pre><code>将Observable发射的数据变换为Observables集合,然后将Observab发射的数据 『铺平化』放进一个单独的Observable中。 可以理解为将嵌套的数据结构展开的过程。
+</code></pre><p>map() 和 flatMap() 区别:</p>
+<pre><code>相同: 均可以把传入的参数转化之后返回另一个对象
+
+不同: flatMap()中返回的是Observable对象，并且这个Observable对象并不是被直接发送到Subscriber的回调方法中。
+</code></pre><p>flatMap() 原理</p>
+<pre><code>1、 利用传入的事件对象创建一个Observable对象
+
+2、 不发送这个Observable对象，而是将其激活，再开始发送事件
+
+3、 每一个创建出来的Observable发送的事件，都被汇总到同一个Observable，再由这个汇总Observable对象负责将这些事件统一交给Subscriber的回调方法
+</code></pre><p>这三个步骤,其实是将事件拆成了两级,通过一组新创建Observable将初始的对象『铺平』之后，通过统一的路径分发下去。</p>
+<ul>
+<li>throttleFirst() ——– 在每次事件触发之后的一定时间间隔内丢弃新的事件。</li>
+</ul>
+<p>常用作去抖动过滤，例如按钮的点击监听器：</p>
+<pre><code>RxView.clickEvents(button) 
+    .throttleFirst(500, TimeUnitMILLISECONDS)  //设置防抖间隔 500ms
+    .subscribe(subscriber);
+</code></pre><p>这样就可以解决手抖出现点开两个重复的界面问题</p>
+<h4 id="（2）变换的原理-lift"><a href="#（2）变换的原理-lift" class="headerlink" title="（2）变换的原理: lift()"></a>（2）变换的原理: lift()</h4><p>变换的实质： 针对事件序列的处理和再发送</p>
+<p>lift() 内部实现代码</p>
+<pre><code>public &lt;R&gt; Observable&lt;R&gt; lift(Operator&lt;? extends R, ? super T&gt; operator){
+    return Observable.create(new OnSubscribe&lt;R&gt;(){
+        @override
+        public void call(Subscriber subscriber){
+            Subscriber newSubscriber = operator.call(subscriber);
+            newSubscriber.onStart();
+            onSubscribe.call(newSubscriber);
+        }
+    });
+}
+</code></pre><p>分析：</p>
+<p>生成一个新的Observable并返回，且新创建的Observable所用的参数OnSubscribe的回调方法call()中的onSubscribe.call(subscribe)中的onSubscribe所指代的对象不同。</p>
+<ul>
+<li><p>subscribe()中onSubscribe指的是Observable中的onSubscribe对象,但是lift()之后对象就不一样;</p>
+</li>
+<li><p>当含有lift()时：</p>
+<pre><code>1. lift()创建了一个Observable后，加上原Observable对象，就有两个Observable；
+2. 新Observable里的新OnSubscribe加上原Observable中的OnSubscribe，也就有两个OnSubscribe;
+3. 当用户调用经过lift()后的Observable的subscribe()时候,使用的是lift()所返回的新的Observable,
+   于是它所触发的onSubscribe.call(subscribe)，也是用的新Observable中的OnSubscribe，即在lift()中生成的那个Observable;
+4. 而这个新OnSubscribe的call()方法中的onSubscribe，就是指的原始Observable中的原始OnSubscribe，
+   在这个call()方法里，新OnSubscribe利用operator.call(subscribe)生成一个新的Subscriber
+   (operator就是在这里，通过自己的call()方法将新Subscribe和原始Subscriber进行关联，并插入自己的『变换』代码来实现变换)，
+   接着利用这个新Subscriber向原始Observable进行订阅。
+</code></pre></li>
+</ul>
+<p>这样就实现lift()过程，比较像代理机制，通过事件拦截和处理实现事件序列的变换。</p>
+<p>换种方式理解： </p>
+<pre><code>在Observable执行了lift(Operator)方法之后，会返回一个新的Observable，
+这个新的Observable会向代理一样， 负责接收原始的Observable发出的事件，并在处理之后发送给Subscriber。
+</code></pre><p>##未完待续。。。</p>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width="330" height="86" src="http://music.163.com/outchain/player?type=2&id=94639&auto=1&height=66"></iframe>
       
     </div>
 
@@ -619,7 +862,7 @@
               
             
             
-              <p class="post-toc-empty">此文章未包含目录</p>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#RxJava"><span class="nav-number">1.</span> <span class="nav-text">RxJava</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本概念"><span class="nav-number">1.0.1.</span> <span class="nav-text">基本概念</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Observables-被观察者-事件源-———–-gt-发出事件"><span class="nav-number">1.0.1.1.</span> <span class="nav-text">Observables(被观察者/事件源) ———–>  发出事件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Subscribers-观察者-————————–-gt-订阅接收-进行处理"><span class="nav-number">1.0.1.2.</span> <span class="nav-text">Subscribers(观察者) ————————–> 订阅接收,进行处理</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基本实现"><span class="nav-number">1.1.</span> <span class="nav-text">基本实现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-创建Observer"><span class="nav-number">1.1.0.1.</span> <span class="nav-text">1)  创建Observer</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-创建Observable"><span class="nav-number">1.1.0.2.</span> <span class="nav-text">2)  创建Observable</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#just-T…-将传入的参数依次发送出来"><span class="nav-number">1.1.0.2.1.</span> <span class="nav-text">just(T…)  将传入的参数依次发送出来</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#from-T-from-Iterable-lt-extends-T-gt-将传入的数组或Iterable拆分成具体的对象后-依次发送出来"><span class="nav-number">1.1.0.2.2.</span> <span class="nav-text">from(T[]) / from(Iterable<? extends T>)  将传入的数组或Iterable拆分成具体的对象后,依次发送出来</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-订阅Subscribe"><span class="nav-number">1.1.0.3.</span> <span class="nav-text">3)  订阅Subscribe</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#注"><span class="nav-number">1.1.1.</span> <span class="nav-text">注:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程控制-Scheduler"><span class="nav-number">1.2.</span> <span class="nav-text">线程控制 - Scheduler</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1）-Scheduler-API"><span class="nav-number">1.2.0.1.</span> <span class="nav-text">1） Scheduler API</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#示例"><span class="nav-number">1.2.1.</span> <span class="nav-text">示例</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Scheduler-原理"><span class="nav-number">1.2.1.1.</span> <span class="nav-text">2) Scheduler 原理</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TBD"><span class="nav-number">2.</span> <span class="nav-text">TBD</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#变换"><span class="nav-number">2.1.</span> <span class="nav-text">变换</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#（1）API"><span class="nav-number">2.1.0.1.</span> <span class="nav-text">（1）API</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#注-1"><span class="nav-number">2.1.1.</span> <span class="nav-text">注</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常用变换"><span class="nav-number">2.1.2.</span> <span class="nav-text">#常用变换</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#（2）变换的原理-lift"><span class="nav-number">2.1.2.1.</span> <span class="nav-text">（2）变换的原理: lift()</span></a></li></ol></li></ol></li></ol></li></ol></div>
             
           </div>
         </section>
