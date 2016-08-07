@@ -168,19 +168,200 @@
     <link href="http://tufusi.com/2016/06/01/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BOkHttp%E6%A1%86%E6%9E%B6/"/>
     <id>http://tufusi.com/2016/06/01/Android部落格之OkHttp框架/</id>
     <published>2016-06-01T02:20:47.000Z</published>
-    <updated>2016-07-10T03:25:44.240Z</updated>
+    <updated>2016-08-07T06:53:11.060Z</updated>
     
     <content type="html">&lt;p&gt;OkHttp&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;官网概述：Android和Java应用程序的HTTP&amp;amp;HTTP/2的客户端&lt;/p&gt;
-&lt;iframe frameborder=&quot;no&quot; border=&quot;0&quot; marginwidth=&quot;0&quot; marginheight=&quot;0&quot; width=&quot;330&quot; height=&quot;86&quot; src=&quot;http://music.163.com/outchain/player?type=2&amp;id=28188171&amp;auto=1&amp;height=66&quot;&gt;&lt;/iframe&gt;&lt;/blockquote&gt;</content>
+&lt;/blockquote&gt;
+&lt;h2 id=&quot;OkHttp的轮子&quot;&gt;&lt;a href=&quot;#OkHttp的轮子&quot; class=&quot;headerlink&quot; title=&quot;OkHttp的轮子&quot;&gt;&lt;/a&gt;OkHttp的轮子&lt;/h2&gt;&lt;p&gt;来自&lt;a href=&quot;http://square.github.io/okhttp/#examples&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;OkHttp官方网站&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;http://blog.piasy.com/img/201607/okhttp_full_process.png&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;整体流程图&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;简单使用&quot;&gt;&lt;a href=&quot;#简单使用&quot; class=&quot;headerlink&quot; title=&quot;简单使用&quot;&gt;&lt;/a&gt;简单使用&lt;/h3&gt;&lt;h4 id=&quot;1、创建OkHttpClint对象&quot;&gt;&lt;a href=&quot;#1、创建OkHttpClint对象&quot; class=&quot;headerlink&quot; title=&quot;1、创建OkHttpClint对象&quot;&gt;&lt;/a&gt;1、创建OkHttpClint对象&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;OkHttpClient client = new OkHttpClient();
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;当然也可以通过Build构造自定义的Http客户端&lt;/p&gt;
+&lt;h4 id=&quot;2、发起HTTP请求&quot;&gt;&lt;a href=&quot;#2、发起HTTP请求&quot; class=&quot;headerlink&quot; title=&quot;2、发起HTTP请求&quot;&gt;&lt;/a&gt;2、发起HTTP请求&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;String run() throws IOException{
+    Request request = new Request.Builder()
+      .url(url)
+       .build(); 
+
+    Response response = client.newCall(request).execute();
+    return response.body().string();
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;OkHttpClient实现了Call.Factory, 它是负责创建HTTP请求,负责根据请求创建新的Call,代码如下:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;/**
+ * Prepares the {@code request} to be executed at some point in the future.
+ */
+@override
+public Call newCall(Request request){
+    return new RealCall(this,request);
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;下面针对RealCall,分情况研究:&lt;/p&gt;
+&lt;h5 id=&quot;2-1-同步网络请求&quot;&gt;&lt;a href=&quot;#2-1-同步网络请求&quot; class=&quot;headerlink&quot; title=&quot;2.1 同步网络请求&quot;&gt;&lt;/a&gt;2.1 同步网络请求&lt;/h5&gt;&lt;pre&gt;&lt;code&gt;@override
+public Response execute() throws IOException{
+    synchronized(this){
+        if(executed) -------------------------------------------------------------(1)
+            throws new IllegalStateException(&amp;quot;Already Exceuted&amp;quot;); 
+        executed = true;
+    }
+    try{
+        client.dispatcher().exedcuted(this); -------------------------------------(2)
+        Response result = getResponseWithInterceptorChain(); ---------------------(3)
+        if(result == null)
+            throws new IOException(&amp;quot;Canceled&amp;quot;);
+        return result;
+    }finally{
+        client.dispatcher().finished(this); --------------------------------------(4)
+    }
+} 
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;步骤分解:&lt;/p&gt;
+&lt;p&gt;(1): 检查这个call是否已经执行过，每个call只能被执行一次&lt;/p&gt;
+&lt;p&gt;(2): 利用client.dispatcher().executed(this)来实际执行请求&lt;/p&gt;
+&lt;p&gt;(3): 调用函数获取HTTP响应结果,在这个过程中还会进行一个拦截链操作&lt;/p&gt;
+&lt;p&gt;(4): 通知dispatcher执行完毕&lt;/p&gt;
+&lt;p&gt;而真正发出网络请求,解析返回结果的,还是getResponseWithInterceptorChain:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;private Response getResponseWithInterceptorChain() throws IOException{
+    //Build a full stack of interceptors
+    List&amp;lt;Interceptor&amp;gt; interceptors = new ArrayList&amp;lt;&amp;gt;();
+    interceptors.addAll(client.interceptors());
+    interceptors.add(retryAndFollowUpInterceptor);
+    interceptors.add(new BridgeInterceptor(client.cookieJar()));
+    interceptors.add(new CacheInterceptor(client.internalCache()));
+    interceptors.add(new ConnectInterceptor(client));
+    if(!retryAndFollowUpInterceptor.isForWebSocket()){
+        interceptors.addAll(client.networkInterceptors());
+    }
+
+    interceptors.add(
+        new CallServerInterceptor(
+            retryAndFollowUpInterceptor.isForWebSocket()));
+    Interceptor.Chain chain = new RealInterceptorChain(
+        interceptors,null,null,null,0,originalRequest);
+
+    return chain.proceed(originalRequest);
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Interceptor其实是最核心的一个东西,并非简简单单的拦截器,它把实际的网络请求、缓存等等功能全部统一起来，每个功能都只是一个Interceptor,再连接成一个Interceptor.Chain,最终完成一次圆满的网络请求.&lt;/p&gt;
+&lt;p&gt;依照上面代码块,Interceptor.Chain的分布:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;blog.piasy.com/img/201607/okhttp_interceptors.png&quot;&gt;结构图&lt;/a&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;1.在配置OkHttpClient时设置的interceptors;
+
+2.负责失败重试以及重定向的RetryAndFollowUpInterceptor;
+
+3.负责把用户构造的请求转换为发送到服务器的请求、把服务器返回的响应转换为用户友好的响应的BridgeInterceptor;
+
+4.负责人读取缓存直接返回、更新缓存的CacheInterceptor;
+
+5.负责和服务器建立连接的ConnectInterceptor;
+
+6.配置OkHttpClient时设置的networkInterceptors;
+
+7.负责向服务器发送请求数据、从服务器读取响应数据的CallServerInterceptor.
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这里位置决定功能，最后一个Interceptor一定是负责和服务器实现通信的，而重定向、缓存等一定是在通信之前完成。&lt;/p&gt;
+&lt;h6 id=&quot;2-1-1-建立连接-ConnectInterceptor&quot;&gt;&lt;a href=&quot;#2-1-1-建立连接-ConnectInterceptor&quot; class=&quot;headerlink&quot; title=&quot;2.1.1 建立连接:ConnectInterceptor&quot;&gt;&lt;/a&gt;2.1.1 建立连接:ConnectInterceptor&lt;/h6&gt;&lt;pre&gt;&lt;code&gt;@override
+public Response intercept(Chain chain) throws IOException{
+    RealInterceptorChain realChain = (RealInterceptorChain)chain;
+    Request request  = realChain.request();
+    StreamAllocation streamAllocation = realChain.streamAllocation();
+
+    // We need the network to satisfy this request. Possibly for validating a conditional GET.
+    boolean doExtensiveHealthChecks = !request.method().equals(&amp;quot;GET&amp;quot;);
+    HttpCodec httpCodec = streamAllocation.newStream(client, doExtensiveHealthChecks);
+    RealConnection connection = streamAllocation.connection();
+
+    return realChain.proceed(request, streamAllocation, httpCodec, connection);
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;建立连接其实就是创建HttpCodec对象,HttpCodec是对HTTP协议操作的抽象,在HttpCodec中,它利用Okio对socket的读写操作进行封装.&lt;/p&gt;
+&lt;h6 id=&quot;2-1-2-发送和接收数据-CallServerInterceptor&quot;&gt;&lt;a href=&quot;#2-1-2-发送和接收数据-CallServerInterceptor&quot; class=&quot;headerlink&quot; title=&quot;2.1.2 发送和接收数据:CallServerInterceptor&quot;&gt;&lt;/a&gt;2.1.2 发送和接收数据:CallServerInterceptor&lt;/h6&gt;&lt;pre&gt;&lt;code&gt;@override
+public Response intercept(Chain chain) throws IOException{
+    HttpCodec httpCodex = ((RealInterceptorChain)chain).httpStream();
+    StreamAllocation streamAllocation = ((RealInterceptorChain)chain).streamAllocation();
+    Request request = chain.request();
+
+    long sentRequestMillis = System.currentTimeMillis();
+    httpCodec.writeRequestHeaders(request); ----------------------------------------------------------(1)
+
+    if(HttpMethod.permitsRequestBody(request.method()) &amp;amp;&amp;amp; request.body()!=null){ ---------------------(2)
+        Sink requestBodyOut = httpCodec.createRequestBody(request, request.body().contentLength());
+        BufferedSink bufferedRequestBody = Okio.buffer(requestBodyOut);
+        request.body().writeTo(bufferedRequestBody);
+        bufferedRequestBody.close();
+    }
+
+    httpCodec.finishRequest();
+
+    Response response = httpCodec.readResponseHeaders() ----------------------------------------------(3)
+          .request(request)
+          .handshake(streamAllocation.connection().handshake())
+         .sentRequestAtMillis(sentRequestMillis)
+         .receivedResponseAtMillis(System.currentTimeMillis())
+         .build();
+
+    if (!forWebSocket || response.code() != 101) {
+        response = response.newBuilder() -------------------------------------------------------------(4)
+            .body(httpCodec.openResponseBody(response))
+            .build();
+    }
+
+    if (&amp;quot;close&amp;quot;.equalsIgnoreCase(response.request().header(&amp;quot;Connection&amp;quot;))
+          || &amp;quot;close&amp;quot;.equalsIgnoreCase(response.header(&amp;quot;Connection&amp;quot;))) {
+        streamAllocation.noNewStreams();
+    }
+
+    // 省略部分检查代码
+
+    return response;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;主要部分:&lt;/p&gt;
+&lt;p&gt;1.向服务器发送request header;&lt;/p&gt;
+&lt;p&gt;2.如果有request body，就向服务器发送;&lt;/p&gt;
+&lt;p&gt;3.读取response header，先构造一个Response对象;&lt;/p&gt;
+&lt;p&gt;4.如果有response body,就在3的基础上加上body构造一个新的Response对象&lt;/p&gt;
+&lt;h5 id=&quot;2-2-异步网络请求-详见Dispatcher-java&quot;&gt;&lt;a href=&quot;#2-2-异步网络请求-详见Dispatcher-java&quot; class=&quot;headerlink&quot; title=&quot;2.2 异步网络请求 - 详见Dispatcher.java&quot;&gt;&lt;/a&gt;2.2 异步网络请求 - 详见Dispatcher.java&lt;/h5&gt;&lt;pre&gt;&lt;code&gt;client.newCall(request).enqueue(new Callback(){
+    @override
+    public void onFailure(Call call, IOException e){
+    }
+
+    @override
+    public void onResponse(Call call, Response response) throws IOException{
+        System.out.println(response.body().string());
+    }
+});
+
+//RealCall#enqueue
+@override
+public void enqueue(Callback responseCallback){
+    synchronized(this){
+        if(executed) throws new IllegalStateException(&amp;quot;Already Executed&amp;quot;);
+        executed = true;
+    }
+    client.dispatcher().enqueue(new AsyncCall(responseCallback));
+}
+
+//Dispatcher#enqueue
+synchronized void enqueue(AsyncCall call){
+    if(runningAsyncCalls.size()&amp;lt;maxRequests &amp;amp;&amp;amp;　runningCallForHost(call)&amp;lt;maxRequestsPerHost){
+        runningAsyncCalls.add(call);
+        executorService().execute(call);
+    }else{
+        readyAsyncCalls.add(call);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;此处可以看到dispatcher在异步执行请求过程中的作用.如果当前还能执行一个并发请求,那就立即执行,否则就加入readyAsyncCalls队列,而正在执行的请求执行完毕之后,会调用promoteCalls()函数,来迭代readyAsyncCalls队列,next()出AsyncCall,并将AsyncCall加入到runningAsyncCalls队列中,开始执行.&lt;/p&gt;
+&lt;p&gt;AsyncCall是RealCall的一个innerClass,继承NamedRunnable抽象类,该抽象类实现了Runnable接口,功能是设置线程名称.所以AsyncCall其实就是被OkHttp命名规范的一个异步请求类,它可以被提交到ExecutorService上执行,在执行时会调用getResponseWithInterceptorChain()函数,并将结果通过responseCallback回调传递给上层使用.&lt;/p&gt;
+&lt;p&gt;如此,同步和异步其实原理是一样的,都是在getResponseWithInterceptorChain()函数中通过Interceptor链来实现网络请求逻辑,而异步则是通过ExecutorService来实现的.&lt;/p&gt;
+&lt;h4 id=&quot;3、获取响应数据&quot;&gt;&lt;a href=&quot;#3、获取响应数据&quot; class=&quot;headerlink&quot; title=&quot;3、获取响应数据&quot;&gt;&lt;/a&gt;3、获取响应数据&lt;/h4&gt;&lt;p&gt;在同步(Call#execute()执行之后)或者异步(Callback#onResponse()回调中)请求完成之后,可以从Respouse对象中华获取到响应数据,包括HTTP status code, status message, response header, response body等等.这里的body需通过数据流方式来进行访问。&lt;/p&gt;
+&lt;p&gt;响应body被封装到 ResponseBody类中,需注意亮点:&lt;/p&gt;
+&lt;p&gt;1) 每个body只能被消费一次,多次消费会抛出异常;&lt;/p&gt;
+&lt;p&gt;2) body必须被关闭,否则会发生资源泄漏&lt;/p&gt;
+&lt;h4 id=&quot;4、HTTP缓存&quot;&gt;&lt;a href=&quot;#4、HTTP缓存&quot; class=&quot;headerlink&quot; title=&quot;4、HTTP缓存&quot;&gt;&lt;/a&gt;4、HTTP缓存&lt;/h4&gt;&lt;p&gt;在建立连接、和服务器通信之前，就是CacheInterceptor,在建立连接之前,我们检查响应是否已经被缓存、缓存是否可用，如果是则直接返回缓存的数据，否则就进行后面的流程，并在返回之前，把网络的数据写入缓存中。&lt;/p&gt;
+&lt;p&gt;CacheInterceptor类里主要逻辑都在覆写的intercept方法里,通过缓存策略获取networkRequest和cacheResponse进行检查判断,也可以通过实现InternalCache接口,在构造OkHttpClient时进行设置,这样就可以自定义缓存策略了。&lt;/p&gt;
+&lt;h3 id=&quot;Summary&quot;&gt;&lt;a href=&quot;#Summary&quot; class=&quot;headerlink&quot; title=&quot;Summary&quot;&gt;&lt;/a&gt;Summary&lt;/h3&gt;&lt;iframe frameborder=&quot;no&quot; border=&quot;0&quot; marginwidth=&quot;0&quot; marginheight=&quot;0&quot; width=&quot;330&quot; height=&quot;86&quot; src=&quot;http://music.163.com/outchain/player?type=2&amp;id=28188171&amp;auto=1&amp;height=66&quot;&gt;&lt;/iframe&gt;</content>
     
     <summary type="html">
     
       &lt;p&gt;OkHttp&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;官网概述：Android和Java应用程序的HTTP&amp;amp;HTTP/2的客户端&lt;/p&gt;
-&lt;iframe frameborder=&quot;no&quot; border=&quot;0&quot; marginwidth=&quot;0&quot; marginheight
+&lt;/blockquote&gt;
+&lt;h2 id=&quot;OkHttp的轮子&quot;&gt;&lt;a href=&quot;#OkHttp的轮子&quot; class=&quot;hea
     
     </summary>
     
