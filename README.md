@@ -6,15 +6,20 @@ author: leocheung
 
 ###自己建的博客 哭着也要写下去
 ####每周一篇笔记  
-#####2016
-> ######May30th~Jun.05th  [浅析OkHttp框架](http://tufusi.com/2016/06/01/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BOkHttp%E6%A1%86%E6%9E%B6/)
-> ######Jun.06th~Jun.12th  [浅析Retrofit框架](http://tufusi.com/2016/06/02/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BRetrofit%E6%A1%86%E6%9E%B6/)
-> ######Jun.13th~Jun.19th  [浅析RxJava框架](http://tufusi.com/2016/06/07/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BRxJava%E6%A1%86%E6%9E%B6/)
-> ######Jun.20th~Jun.26th  [浅析Dagger2框架]()
+#####2016 ANALYSIS
+> ######May30th ~ Jun.05th  [浅析OkHttp框架](http://tufusi.com/2016/06/01/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BOkHttp%E6%A1%86%E6%9E%B6/)
+> ######Jun.06th ~ Jun.12th  [浅析Retrofit框架](http://tufusi.com/2016/06/02/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BRetrofit%E6%A1%86%E6%9E%B6/)
+> ######Jun.13th ~ Jun.19th  [浅析RxJava框架](http://tufusi.com/2016/06/07/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BRxJava%E6%A1%86%E6%9E%B6/)
+> ######Jun.20th ~ Jun.26th  [浅析Dagger2框架](http://tufusi.com/2016/06/07/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BRxJava%E6%A1%86%E6%9E%B6/)
+> ######July.18th ~ July.24th [浅析热补丁技术](http://tufusi.com/2016/06/07/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BRxJava%E6%A1%86%E6%9E%B6/)
+> ######July.27th ~ July.31th  [浅析插件化技术](http://tufusi.com/2016/06/07/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BRxJava%E6%A1%86%E6%9E%B6/)
 
-> ######Jul.18th~Jul.24th  [浅析热补丁技术]()
-
-> ######Jul.27th~Jul.31th  [浅析插件化技术]()
+#####2016 ADVANCED
+> ######Aug.01th ~ Aug.07th   [进阶-设计模式](http://tufusi.com/2016/06/07/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BRxJava%E6%A1%86%E6%9E%B6/)
+> ######Aug.08th ~ Aug.14th   [进阶-MVP架构](http://tufusi.com/2016/06/07/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BRxJava%E6%A1%86%E6%9E%B6/)
+> ######Aug.15th ~ Aug.21th   [进阶-图片缓存](http://tufusi.com/2016/06/07/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BRxJava%E6%A1%86%E6%9E%B6/)
+> ######Aug.22th ~ Aug.28th   [进阶-总结](http://tufusi.com/2016/06/07/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BRxJava%E6%A1%86%E6%9E%B6/)
+> ######Aug.29th ~ Sept.03th   [进阶-求职路漫漫](http://tufusi.com/2016/06/07/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BRxJava%E6%A1%86%E6%9E%B6/)
 
 ##### 自定义控件
 
@@ -29,12 +34,16 @@ author: leocheung
 >* [FrankyDragView] - A custom view for dragging 
 
 ##### 优秀依赖库、SDK
+
 ###### 图片类
 >* Fresco - An excellent Framework for loading image -- from fb
+
 >* Glide - DITTO -- from goolge
+
 >* Picasso -DITTO -- from square
 
 ##### Android源码分析
+
 >* Handler
 
 >* 事件传递
@@ -48,6 +57,8 @@ author: leocheung
 >* 《深入理解JVM》
 
 >* 《Effective Java》
+
+>* 《重构-改善既有代码的设计》
 
 ##### Android架构那些事
 
@@ -71,6 +82,7 @@ author: leocheung
 
 >* [ANDROID WEEKLY #211](http://androidweekly.net/#latest-issue)
 >* [ANDROID WEEKLY #212](http://androidweekly.net/#latest-issue)
+>* [ANDROID WEEKLY #213](http://androidweekly.net/#latest-issue)
 
 
 ```sh
