@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://tufusi.com/"/>
-  <updated>2016-08-13T10:42:29.686Z</updated>
+  <updated>2016-08-13T13:30:54.414Z</updated>
   <id>http://tufusi.com/</id>
   
   <author>
@@ -16,14 +16,13 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>进阶系列之APP重构</title>
+    <title></title>
     <link href="http://tufusi.com/2016/08/13/%E8%BF%9B%E9%98%B6%E7%B3%BB%E5%88%97%E4%B9%8BAPP%E9%87%8D%E6%9E%84/"/>
     <id>http://tufusi.com/2016/08/13/进阶系列之APP重构/</id>
-    <published>2016-08-13T10:41:33.000Z</published>
-    <updated>2016-08-13T10:42:29.686Z</updated>
+    <published>2016-08-13T10:41:33.330Z</published>
+    <updated>2016-08-13T13:30:54.414Z</updated>
     
     <content type="html">&lt;h1 id=&quot;关于App重构&quot;&gt;&lt;a href=&quot;#关于App重构&quot; class=&quot;headerlink&quot; title=&quot;关于App重构&quot;&gt;&lt;/a&gt;关于App重构&lt;/h1&gt;&lt;p&gt;对于架构的设计理念，一定随着项目经验的累积而逐渐清晰，我始终坚信，没有哪一个架构完美，如果有，那一定是。。。骗人的！&lt;/p&gt;
-&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;p&gt;而我能做的，就是这个架构设计Bigger than bigger(比逼格更有逼格)，曾经有位同事告诉我，你所认为别人的牛逼，只是你不懂，等你进了这个门，不过就这样。说这些不是为了说明别人所做的事情多么多么简单，而是一定要专注。工作了两年，见到过特别优秀的人有很多，每个人所散发出的气质多少都有不同，但唯一不变的，就是专注的眼神，你专注的干一件事，一年，两年，许多年，相信我，一定会成功。&lt;/p&gt;
 &lt;p&gt;感（zhuang）慨（bi）结束，开搞！！！&lt;/p&gt;
 &lt;h3 id=&quot;什么情况下需要重构&quot;&gt;&lt;a href=&quot;#什么情况下需要重构&quot; class=&quot;headerlink&quot; title=&quot;什么情况下需要重构&quot;&gt;&lt;/a&gt;什么情况下需要重构&lt;/h3&gt;&lt;h4 id=&quot;1、结构混乱&quot;&gt;&lt;a href=&quot;#1、结构混乱&quot; class=&quot;headerlink&quot; title=&quot;1、结构混乱&quot;&gt;&lt;/a&gt;1、结构混乱&lt;/h4&gt;&lt;ul&gt;
@@ -45,9 +44,8 @@
 &lt;li&gt;新功能加入，更是找不到接入点，只能另起炉灶&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&quot;重构目标&quot;&gt;&lt;a href=&quot;#重构目标&quot; class=&quot;headerlink&quot; title=&quot;重构目标&quot;&gt;&lt;/a&gt;重构目标&lt;/h3&gt;&lt;p&gt;重构 = 代码质量 &lt;em&gt; 代码质量 &lt;/em&gt; 代码质量 …..&lt;/p&gt;
-&lt;p&gt;#请接招&lt;/p&gt;
-&lt;p&gt;####1、可读性&lt;/p&gt;
-&lt;h5 id=&quot;越简单越要做好-－-凭你的智慧，我很难跟你解释&quot;&gt;&lt;a href=&quot;#越简单越要做好-－-凭你的智慧，我很难跟你解释&quot; class=&quot;headerlink&quot; title=&quot;越简单越要做好 －　凭你的智慧，我很难跟你解释&quot;&gt;&lt;/a&gt;越简单越要做好 －　凭你的智慧，我很难跟你解释&lt;/h5&gt;&lt;ul&gt;
+&lt;p&gt;请接招&lt;/p&gt;
+&lt;h4 id=&quot;1、可读性&quot;&gt;&lt;a href=&quot;#1、可读性&quot; class=&quot;headerlink&quot; title=&quot;1、可读性&quot;&gt;&lt;/a&gt;1、可读性&lt;/h4&gt;&lt;h5 id=&quot;越简单越要做好-－-凭你的智慧，我很难跟你解释&quot;&gt;&lt;a href=&quot;#越简单越要做好-－-凭你的智慧，我很难跟你解释&quot; class=&quot;headerlink&quot; title=&quot;越简单越要做好 －　凭你的智慧，我很难跟你解释&quot;&gt;&lt;/a&gt;越简单越要做好 －　凭你的智慧，我很难跟你解释&lt;/h5&gt;&lt;ul&gt;
 &lt;li&gt;有规矩成方圆 - 统一规范的命名 简洁有效的注释 有问题待解决用TODO&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h5 id=&quot;国有国法行有行规-－-你以为躲起来就找不到你了吗？没有用的！像你这样出色的男人，无论在什么地方，都像漆黑中的萤火虫一样，那样的鲜明，那样的出众。你那忧郁的眼神，唏嘘的胡渣子，神乎其神的刀法，和那杯Dry-Martine，都深深地迷住了我。不过，虽然你是这样的出色，但是行有行规，无论怎样你要付清昨晚的过夜费呀，叫女人就不用给钱么？&quot;&gt;&lt;a href=&quot;#国有国法行有行规-－-你以为躲起来就找不到你了吗？没有用的！像你这样出色的男人，无论在什么地方，都像漆黑中的萤火虫一样，那样的鲜明，那样的出众。你那忧郁的眼神，唏嘘的胡渣子，神乎其神的刀法，和那杯Dry-Martine，都深深地迷住了我。不过，虽然你是这样的出色，但是行有行规，无论怎样你要付清昨晚的过夜费呀，叫女人就不用给钱么？&quot; class=&quot;headerlink&quot; title=&quot;国有国法行有行规 －　你以为躲起来就找不到你了吗？没有用的！像你这样出色的男人，无论在什么地方，都像漆黑中的萤火虫一样，那样的鲜明，那样的出众。你那忧郁的眼神，唏嘘的胡渣子，神乎其神的刀法，和那杯Dry Martine，都深深地迷住了我。不过，虽然你是这样的出色，但是行有行规，无论怎样你要付清昨晚的过夜费呀，叫女人就不用给钱么？&quot;&gt;&lt;/a&gt;国有国法行有行规 －　你以为躲起来就找不到你了吗？没有用的！像你这样出色的男人，无论在什么地方，都像漆黑中的萤火虫一样，那样的鲜明，那样的出众。你那忧郁的眼神，唏嘘的胡渣子，神乎其神的刀法，和那杯Dry Martine，都深深地迷住了我。不过，虽然你是这样的出色，但是行有行规，无论怎样你要付清昨晚的过夜费呀，叫女人就不用给钱么？&lt;/h5&gt;&lt;ul&gt;
@@ -59,8 +57,7 @@
 &lt;h5 id=&quot;模式虽好不要贪杯-－-唉，那个金刚圈尺寸太差，前重后轻左宽右窄，他戴上之后很不舒服，整晚失眠，会连累我嘛！他虽然是个猴子，可是你也不能这样对他，官府知道了会说我虐待动物的！说起那个金刚圈，去年我在陈家村认识了一位铁匠，他手工精美、价钱又公道、童叟无欺，干脆我介绍你再定做一个吧！&quot;&gt;&lt;a href=&quot;#模式虽好不要贪杯-－-唉，那个金刚圈尺寸太差，前重后轻左宽右窄，他戴上之后很不舒服，整晚失眠，会连累我嘛！他虽然是个猴子，可是你也不能这样对他，官府知道了会说我虐待动物的！说起那个金刚圈，去年我在陈家村认识了一位铁匠，他手工精美、价钱又公道、童叟无欺，干脆我介绍你再定做一个吧！&quot; class=&quot;headerlink&quot; title=&quot;模式虽好不要贪杯 － 唉，那个金刚圈尺寸太差，前重后轻左宽右窄，他戴上之后很不舒服，整晚失眠，会连累我嘛！他虽然是个猴子，可是你也不能这样对他，官府知道了会说我虐待动物的！说起那个金刚圈，去年我在陈家村认识了一位铁匠，他手工精美、价钱又公道、童叟无欺，干脆我介绍你再定做一个吧！&quot;&gt;&lt;/a&gt;模式虽好不要贪杯 － 唉，那个金刚圈尺寸太差，前重后轻左宽右窄，他戴上之后很不舒服，整晚失眠，会连累我嘛！他虽然是个猴子，可是你也不能这样对他，官府知道了会说我虐待动物的！说起那个金刚圈，去年我在陈家村认识了一位铁匠，他手工精美、价钱又公道、童叟无欺，干脆我介绍你再定做一个吧！&lt;/h5&gt;&lt;ul&gt;
 &lt;li&gt;设计模式 - 用好但不滥用&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;####2、可维护性&lt;/p&gt;
-&lt;ul&gt;
+&lt;h4 id=&quot;2、可维护性&quot;&gt;&lt;a href=&quot;#2、可维护性&quot; class=&quot;headerlink&quot; title=&quot;2、可维护性&quot;&gt;&lt;/a&gt;2、可维护性&lt;/h4&gt;&lt;ul&gt;
 &lt;li&gt;&lt;p&gt;杜绝魔鬼数字、字符串、尺寸值、颜色值等。&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;&lt;p&gt;代码复用，以便维护。&lt;/p&gt;
@@ -68,21 +65,20 @@
 &lt;li&gt;&lt;p&gt;不写死，预测可能的变化(但不要提前设计)。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;####3、可扩展性&lt;/p&gt;
-&lt;ul&gt;
+&lt;h4 id=&quot;3、可扩展性&quot;&gt;&lt;a href=&quot;#3、可扩展性&quot; class=&quot;headerlink&quot; title=&quot;3、可扩展性&quot;&gt;&lt;/a&gt;3、可扩展性&lt;/h4&gt;&lt;ul&gt;
 &lt;li&gt;&lt;p&gt;良好的分层结构，MVx模式运用。&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;&lt;p&gt;通过一些设计模式的使用来提高可扩展性。&lt;/p&gt;
 &lt;p&gt;  法则：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;S(单一职责) －　Single Responsibility Principle ***************************************************** SRP
+&lt;pre&gt;&lt;code&gt;S(单一职责) －　Single Responsibility Principle ******************************* SRP
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;＝＞　每个方法或类应当有且仅有一个改变的理由。这明确指出每个方法或类就应该只负责一件事，或者一项职责。&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;O(开放/封闭)－　Open/Close Principle **************************************************************** OCP
+&lt;pre&gt;&lt;code&gt;O(开放/封闭)－　Open/Close Principle ****************************************** OCP
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;＝＞　软件(方法、类)应当对扩展开放，对修改关闭。&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;L(里氏替换) －　Liskov Substitution Principle ******************************************************* LSP
+&lt;pre&gt;&lt;code&gt;L(里氏替换) －　Liskov Substitution Principle ********************************* LSP
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;＝＞　用超类代替应用程序中使用的对象时，应当不会破坏应用程序。&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;I(接口分离) －　Interface Segregation Principle ***************************************************** ISP
+&lt;pre&gt;&lt;code&gt;I(接口分离) －　Interface Segregation Principle ******************************* ISP
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;＝＞　不应当强制客户端依赖于其不使用的接口。&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;D(依赖倒置) －　Dependency Inversion Principle ****************************************************** DIP 
+&lt;pre&gt;&lt;code&gt;D(依赖倒置) －　Dependency Inversion Principle ******************************** DIP 
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;＝＞　代码应当取决于抽象概念，而不是具体实现；这些抽象不应当依赖于细节；而细节应当依赖于抽象。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
@@ -90,9 +86,7 @@
          快速迭代和RAD颠覆&amp;quot;全知全能&amp;quot;的神话,用近乎刀劈斧砍(crack)的方式解决问题。
 此为refactoring
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;作为一个进行已久的Android工程，该如何重构?&lt;/p&gt;
-&lt;p&gt;#我接 以下参考大神blog&lt;/p&gt;
-&lt;p&gt;####1、架构选择，结构调整&lt;/p&gt;
-&lt;ul&gt;
+&lt;h1 id=&quot;我接-以下参考大神blog&quot;&gt;&lt;a href=&quot;#我接-以下参考大神blog&quot; class=&quot;headerlink&quot; title=&quot;我接 以下参考大神blog&quot;&gt;&lt;/a&gt;我接 以下参考大神blog&lt;/h1&gt;&lt;h4 id=&quot;1、架构选择，结构调整&quot;&gt;&lt;a href=&quot;#1、架构选择，结构调整&quot; class=&quot;headerlink&quot; title=&quot;1、架构选择，结构调整&quot;&gt;&lt;/a&gt;1、架构选择，结构调整&lt;/h4&gt;&lt;ul&gt;
 &lt;li&gt;&lt;p&gt;根据Project业务场景(展示型、交互型、后台工具型…)选择合适的架构。&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;1. 并不是说一定要选用一个架构，比如说后台工具型的App，可能界面不多，与服务器的交互也少，基本都是由Service组成，
    这样直接用Android原生结构就OK。
@@ -102,8 +96,7 @@
 &lt;li&gt;&lt;p&gt;根据选用的架构以及业务模块分包&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;####2、技术/开源库选定&lt;/p&gt;
-&lt;ul&gt;
+&lt;h4 id=&quot;2、技术-开源库选定&quot;&gt;&lt;a href=&quot;#2、技术-开源库选定&quot; class=&quot;headerlink&quot; title=&quot;2、技术/开源库选定&quot;&gt;&lt;/a&gt;2、技术/开源库选定&lt;/h4&gt;&lt;ul&gt;
 &lt;li&gt;&lt;p&gt;ListView/RecyclerView的选择，Fragment/Activity的选择等。&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;&lt;p&gt;根据业务特点和选择的架构，选用相关技术/开源库支持或对当前使用的进行整理。&lt;/p&gt;
@@ -111,23 +104,20 @@
 &lt;li&gt;&lt;p&gt;例如HTTP请求库，缓存库，图片加载库等等。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;####3、确定规范&lt;/p&gt;
-&lt;ul&gt;
+&lt;h4 id=&quot;3、确定规范&quot;&gt;&lt;a href=&quot;#3、确定规范&quot; class=&quot;headerlink&quot; title=&quot;3、确定规范&quot;&gt;&lt;/a&gt;3、确定规范&lt;/h4&gt;&lt;ul&gt;
 &lt;li&gt;&lt;p&gt;指定编码习惯，可以根据Google推荐的Java编码规范，适当定制。&lt;/p&gt;
 &lt;p&gt;  正所谓高冷的英雄从不看身后的火焰！客人你的&lt;a href=&quot;&quot;&gt;蛋（代）炒（码）饭（规范）&lt;/a&gt;来了。&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;&lt;p&gt;制定代码提交规范，git flow 管理流程规范等等。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;####4、自底而上，由小至大&lt;/p&gt;
-&lt;ul&gt;
+&lt;h4 id=&quot;4、自底而上，由小至大&quot;&gt;&lt;a href=&quot;#4、自底而上，由小至大&quot; class=&quot;headerlink&quot; title=&quot;4、自底而上，由小至大&quot;&gt;&lt;/a&gt;4、自底而上，由小至大&lt;/h4&gt;&lt;ul&gt;
 &lt;li&gt;&lt;p&gt;从底部开始，也就是常说的Model层，数据层开始，因为这部分相对独立，可以通过接口与UI层隔离。&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;&lt;p&gt;不要一下就大面积重构，需要逐个击破，确保当前的每一次改动都能正常运行。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;####5、持续重构，伴随测试&lt;/p&gt;
-&lt;ul&gt;
+&lt;h4 id=&quot;5、持续重构，伴随测试&quot;&gt;&lt;a href=&quot;#5、持续重构，伴随测试&quot; class=&quot;headerlink&quot; title=&quot;5、持续重构，伴随测试&quot;&gt;&lt;/a&gt;5、持续重构，伴随测试&lt;/h4&gt;&lt;ul&gt;
 &lt;li&gt;&lt;p&gt;持续进行小范围重构，每次重构都要伴随测试进行，保证重构质量&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;ul&gt;
@@ -142,14 +132,13 @@
 &lt;li&gt;&lt;p&gt;最好有单元测试支持&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;####6、重构而非重写&lt;/p&gt;
-&lt;p&gt;看书看书看书 再做总结　－－　《重构-改善既有代码的设计》&lt;/p&gt;
+&lt;h4 id=&quot;6、重构而非重写&quot;&gt;&lt;a href=&quot;#6、重构而非重写&quot; class=&quot;headerlink&quot; title=&quot;6、重构而非重写&quot;&gt;&lt;/a&gt;6、重构而非重写&lt;/h4&gt;&lt;p&gt;看书看书看书 再做总结　－－　《重构-改善既有代码的设计》&lt;/p&gt;
 &lt;h1 id=&quot;以下是附文-－-关于架构重构的规则&quot;&gt;&lt;a href=&quot;#以下是附文-－-关于架构重构的规则&quot; class=&quot;headerlink&quot; title=&quot;以下是附文 － 关于架构重构的规则&quot;&gt;&lt;/a&gt;以下是附文 － 关于架构重构的规则&lt;/h1&gt;&lt;p&gt;Uber技术主管在OSAC上谈及的关于架构重构的12条规则，不一起学习未免可惜：&lt;/p&gt;
 &lt;p&gt;&lt;img src=&quot;http://upload-images.jianshu.io/upload_images/851999-f480d4bd95083409.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240&quot; alt=&quot;REFRATORING&quot;&gt;&lt;/p&gt;</content>
     
     <summary type="html">
     
-      &lt;h1 id=&quot;关于App重构&quot;&gt;&lt;a href=&quot;#关于App重构&quot; class=&quot;headerlink&quot; title=&quot;关于App重构&quot;&gt;&lt;/a&gt;关于App重构&lt;/h1&gt;&lt;p&gt;对于架构的设计理念，一定随着项目经验的累积而逐渐清晰，我始终坚信，没有哪一个架构完美，如果有，那一定是。。。骗人的！&lt;/p&gt;
+      &lt;h1 id=&quot;关于App重构&quot;&gt;&lt;a href=&quot;#关于App重构&quot; class=&quot;headerlink&quot; title=&quot;关于App重构&quot;&gt;&lt;/a&gt;关于App重构&lt;/h1&gt;&lt;p&gt;对于架构的设计理念，一定随着项目经验的累积而逐渐清晰，我始终坚信，没有哪一个架构完美，如果有，那一定
     
     </summary>
     
