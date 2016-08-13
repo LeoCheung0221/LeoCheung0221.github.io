@@ -93,7 +93,7 @@
 <meta property="og:site_name" content="OnePiece">
 <meta property="og:description" content="关于App重构对于架构的设计理念，一定随着项目经验的累积而逐渐清晰，我始终坚信，没有哪一个架构完美，如果有，那一定是。。。骗人的！">
 <meta property="og:image" content="https://raw.githubusercontent.com/LeoCheung0221/LeoCheung0221.github.io/master/image/refratoring.png">
-<meta property="og:updated_time" content="2016-08-13T14:17:31.300Z">
+<meta property="og:updated_time" content="2016-08-13T14:22:18.748Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="进阶系列APP重构">
 <meta name="twitter:description" content="关于App重构对于架构的设计理念，一定随着项目经验的累积而逐渐清晰，我始终坚信，没有哪一个架构完美，如果有，那一定是。。。骗人的！">
@@ -476,39 +476,39 @@
 <a id="more"></a>
 <p>而我能做的，就是这个架构设计Bigger than bigger(比逼格更有逼格)，曾经有位同事告诉我，你所认为别人的牛逼，只是你不懂，等你进了这个门，不过就这样。说这些不是为了说明别人所做的事情多么多么简单，而是一定要专注。工作了两年，见到过特别优秀的人有很多，每个人所散发出的气质多少都有不同，但唯一不变的，就是专注的眼神，你专注的干一件事，一年，两年，许多年，相信我，一定会成功。</p>
 <p>感（zhuang）慨（bi）结束，开搞！！！</p>
-<h3 id="什么情况下需要重构"><a href="#什么情况下需要重构" class="headerlink" title="什么情况下需要重构"></a>什么情况下需要重构</h3><h4 id="1、结构混乱"><a href="#1、结构混乱" class="headerlink" title="1、结构混乱"></a>1、结构混乱</h4><ul>
+<h2 id="什么情况下需要重构"><a href="#什么情况下需要重构" class="headerlink" title="什么情况下需要重构"></a>什么情况下需要重构</h2><h3 id="1、结构混乱"><a href="#1、结构混乱" class="headerlink" title="1、结构混乱"></a>1、结构混乱</h3><ul>
 <li>代码的层次感觉差，无奈业务线傻傻分不清</li>
 <li>业务模块间层次交替，主次不分，藕断丝连</li>
 <li>架构多样，你喜欢她，她喜欢他，他喜欢他</li>
 <li>编码风格各成一派，天下武林本一家，何必</li>
 </ul>
-<h4 id="2、可读性差"><a href="#2、可读性差" class="headerlink" title="2、可读性差"></a>2、可读性差</h4><ul>
+<h3 id="2、可读性差"><a href="#2、可读性差" class="headerlink" title="2、可读性差"></a>2、可读性差</h3><ul>
 <li>能一个类写下的，坚决不写第二个类 – 啊喂 new个class又不要钱</li>
 <li>编码格式，我型我秀，自立门派 – 西八 写代码我们是专业的好不</li>
 <li>多余，无用代码满屏飞 – 求得麻碟 这还不足以激起你的强迫症吗</li>
 <li>注释、注释、注释 – 斯国一 能装一波的地方还浪费掉那就可惜了</li>
 <li>继承、接口拼命用 – 他母亲的 可算是找到你大爷的大爷的大爷了</li>
 </ul>
-<h4 id="3、无法弹性适应产品发展"><a href="#3、无法弹性适应产品发展" class="headerlink" title="3、无法弹性适应产品发展"></a>3、无法弹性适应产品发展</h4><ul>
+<h3 id="3、无法弹性适应产品发展"><a href="#3、无法弹性适应产品发展" class="headerlink" title="3、无法弹性适应产品发展"></a>3、无法弹性适应产品发展</h3><ul>
 <li>维护困难，牵一发而动全身</li>
 <li>业务线转变，代码就会改的面目全非</li>
 <li>新功能加入，更是找不到接入点，只能另起炉灶</li>
 </ul>
-<h3 id="重构目标"><a href="#重构目标" class="headerlink" title="重构目标"></a>重构目标</h3><p>重构 = 代码质量 <em> 代码质量 </em> 代码质量 …..</p>
+<h2 id="重构目标"><a href="#重构目标" class="headerlink" title="重构目标"></a>重构目标</h2><p>重构 = 代码质量 <em> 代码质量 </em> 代码质量 …..</p>
 <p>请接招</p>
-<h4 id="1、可读性"><a href="#1、可读性" class="headerlink" title="1、可读性"></a>1、可读性</h4><h5 id="越简单越要做好-－-凭你的智慧，我很难跟你解释"><a href="#越简单越要做好-－-凭你的智慧，我很难跟你解释" class="headerlink" title="越简单越要做好 －　凭你的智慧，我很难跟你解释"></a>越简单越要做好 －　凭你的智慧，我很难跟你解释</h5><ul>
+<h3 id="1、可读性"><a href="#1、可读性" class="headerlink" title="1、可读性"></a>1、可读性</h3><h5 id="越简单越要做好-－-凭你的智慧，我很难跟你解释"><a href="#越简单越要做好-－-凭你的智慧，我很难跟你解释" class="headerlink" title="越简单越要做好　－　凭你的智慧，我很难跟你解释"></a>越简单越要做好　－　凭你的智慧，我很难跟你解释</h5><ul>
 <li>有规矩成方圆 - 统一规范的命名 简洁有效的注释 有问题待解决用TODO</li>
 </ul>
-<h5 id="国有国法行有行规-－-你以为躲起来就找不到你了吗？没有用的！像你这样出色的男人，无论在什么地方，都像漆黑中的萤火虫一样，那样的鲜明，那样的出众。你那忧郁的眼神，唏嘘的胡渣子，神乎其神的刀法，和那杯Dry-Martine，都深深地迷住了我。不过，虽然你是这样的出色，但是行有行规，无论怎样你要付清昨晚的过夜费呀，叫女人就不用给钱么？"><a href="#国有国法行有行规-－-你以为躲起来就找不到你了吗？没有用的！像你这样出色的男人，无论在什么地方，都像漆黑中的萤火虫一样，那样的鲜明，那样的出众。你那忧郁的眼神，唏嘘的胡渣子，神乎其神的刀法，和那杯Dry-Martine，都深深地迷住了我。不过，虽然你是这样的出色，但是行有行规，无论怎样你要付清昨晚的过夜费呀，叫女人就不用给钱么？" class="headerlink" title="国有国法行有行规 －　你以为躲起来就找不到你了吗？没有用的！像你这样出色的男人，无论在什么地方，都像漆黑中的萤火虫一样，那样的鲜明，那样的出众。你那忧郁的眼神，唏嘘的胡渣子，神乎其神的刀法，和那杯Dry Martine，都深深地迷住了我。不过，虽然你是这样的出色，但是行有行规，无论怎样你要付清昨晚的过夜费呀，叫女人就不用给钱么？"></a>国有国法行有行规 －　你以为躲起来就找不到你了吗？没有用的！像你这样出色的男人，无论在什么地方，都像漆黑中的萤火虫一样，那样的鲜明，那样的出众。你那忧郁的眼神，唏嘘的胡渣子，神乎其神的刀法，和那杯Dry Martine，都深深地迷住了我。不过，虽然你是这样的出色，但是行有行规，无论怎样你要付清昨晚的过夜费呀，叫女人就不用给钱么？</h5><ul>
+<h5 id="国有国法行有行规-－-你以为躲起来就找不到你了吗？没有用的！像你这样出色的男人，无论在什么地方，都像漆黑中的萤火虫一样，那样的鲜明，那样的出众。你那忧郁的眼神，唏嘘的胡渣子，神乎其神的刀法，和那杯Dry-Martine，都深深地迷住了我。不过，虽然你是这样的出色，但是行有行规，无论怎样你要付清昨晚的过夜费呀，叫女人就不用给钱么？"><a href="#国有国法行有行规-－-你以为躲起来就找不到你了吗？没有用的！像你这样出色的男人，无论在什么地方，都像漆黑中的萤火虫一样，那样的鲜明，那样的出众。你那忧郁的眼神，唏嘘的胡渣子，神乎其神的刀法，和那杯Dry-Martine，都深深地迷住了我。不过，虽然你是这样的出色，但是行有行规，无论怎样你要付清昨晚的过夜费呀，叫女人就不用给钱么？" class="headerlink" title="国有国法行有行规　－　你以为躲起来就找不到你了吗？没有用的！像你这样出色的男人，无论在什么地方，都像漆黑中的萤火虫一样，那样的鲜明，那样的出众。你那忧郁的眼神，唏嘘的胡渣子，神乎其神的刀法，和那杯Dry Martine，都深深地迷住了我。不过，虽然你是这样的出色，但是行有行规，无论怎样你要付清昨晚的过夜费呀，叫女人就不用给钱么？"></a>国有国法行有行规　－　你以为躲起来就找不到你了吗？没有用的！像你这样出色的男人，无论在什么地方，都像漆黑中的萤火虫一样，那样的鲜明，那样的出众。你那忧郁的眼神，唏嘘的胡渣子，神乎其神的刀法，和那杯Dry Martine，都深深地迷住了我。不过，虽然你是这样的出色，但是行有行规，无论怎样你要付清昨晚的过夜费呀，叫女人就不用给钱么？</h5><ul>
 <li>结构清层次明 - 能解耦就解，想办法抽离出变化</li>
 </ul>
-<h5 id="简约而不简单-－-你想要啊？悟空，你要是想要的话你就说话嘛，你不说我怎么知道你想要呢，虽然你很有诚意地看着我，可是你还是要跟我说你想要的。你真的想要吗？那你就拿去吧！你不是真的想要吧？难道你真的想要吗？-悟空你也太调皮了，我跟你说过叫你不要乱扔东西，你怎么又…你看我还没说完你又把棍子给扔掉了！月光宝盒是宝物，你把他扔掉会污染环境，要是砸到小朋友怎么办？就算砸不到小朋友砸到那些花花草草也是不对的！"><a href="#简约而不简单-－-你想要啊？悟空，你要是想要的话你就说话嘛，你不说我怎么知道你想要呢，虽然你很有诚意地看着我，可是你还是要跟我说你想要的。你真的想要吗？那你就拿去吧！你不是真的想要吧？难道你真的想要吗？-悟空你也太调皮了，我跟你说过叫你不要乱扔东西，你怎么又…你看我还没说完你又把棍子给扔掉了！月光宝盒是宝物，你把他扔掉会污染环境，要是砸到小朋友怎么办？就算砸不到小朋友砸到那些花花草草也是不对的！" class="headerlink" title="简约而不简单 － 你想要啊？悟空，你要是想要的话你就说话嘛，你不说我怎么知道你想要呢，虽然你很有诚意地看着我，可是你还是要跟我说你想要的。你真的想要吗？那你就拿去吧！你不是真的想要吧？难道你真的想要吗？ 悟空你也太调皮了，我跟你说过叫你不要乱扔东西，你怎么又…你看我还没说完你又把棍子给扔掉了！月光宝盒是宝物，你把他扔掉会污染环境，要是砸到小朋友怎么办？就算砸不到小朋友砸到那些花花草草也是不对的！"></a>简约而不简单 － 你想要啊？悟空，你要是想要的话你就说话嘛，你不说我怎么知道你想要呢，虽然你很有诚意地看着我，可是你还是要跟我说你想要的。你真的想要吗？那你就拿去吧！你不是真的想要吧？难道你真的想要吗？ 悟空你也太调皮了，我跟你说过叫你不要乱扔东西，你怎么又…你看我还没说完你又把棍子给扔掉了！月光宝盒是宝物，你把他扔掉会污染环境，要是砸到小朋友怎么办？就算砸不到小朋友砸到那些花花草草也是不对的！</h5><ul>
+<h5 id="简约而不简单-－-你想要啊？悟空，你要是想要的话你就说话嘛，你不说我怎么知道你想要呢，虽然你很有诚意地看着我，可是你还是要跟我说你想要的。你真的想要吗？那你就拿去吧！你不是真的想要吧？难道你真的想要吗？-悟空你也太调皮了，我跟你说过叫你不要乱扔东西，你怎么又…你看我还没说完你又把棍子给扔掉了！月光宝盒是宝物，你把他扔掉会污染环境，要是砸到小朋友怎么办？就算砸不到小朋友砸到那些花花草草也是不对的！"><a href="#简约而不简单-－-你想要啊？悟空，你要是想要的话你就说话嘛，你不说我怎么知道你想要呢，虽然你很有诚意地看着我，可是你还是要跟我说你想要的。你真的想要吗？那你就拿去吧！你不是真的想要吧？难道你真的想要吗？-悟空你也太调皮了，我跟你说过叫你不要乱扔东西，你怎么又…你看我还没说完你又把棍子给扔掉了！月光宝盒是宝物，你把他扔掉会污染环境，要是砸到小朋友怎么办？就算砸不到小朋友砸到那些花花草草也是不对的！" class="headerlink" title="简约而不简单　－　你想要啊？悟空，你要是想要的话你就说话嘛，你不说我怎么知道你想要呢，虽然你很有诚意地看着我，可是你还是要跟我说你想要的。你真的想要吗？那你就拿去吧！你不是真的想要吧？难道你真的想要吗？ 悟空你也太调皮了，我跟你说过叫你不要乱扔东西，你怎么又…你看我还没说完你又把棍子给扔掉了！月光宝盒是宝物，你把他扔掉会污染环境，要是砸到小朋友怎么办？就算砸不到小朋友砸到那些花花草草也是不对的！"></a>简约而不简单　－　你想要啊？悟空，你要是想要的话你就说话嘛，你不说我怎么知道你想要呢，虽然你很有诚意地看着我，可是你还是要跟我说你想要的。你真的想要吗？那你就拿去吧！你不是真的想要吧？难道你真的想要吗？ 悟空你也太调皮了，我跟你说过叫你不要乱扔东西，你怎么又…你看我还没说完你又把棍子给扔掉了！月光宝盒是宝物，你把他扔掉会污染环境，要是砸到小朋友怎么办？就算砸不到小朋友砸到那些花花草草也是不对的！</h5><ul>
 <li>逻辑简约 - 拒绝一类含千行</li>
 </ul>
-<h5 id="模式虽好不要贪杯-－-唉，那个金刚圈尺寸太差，前重后轻左宽右窄，他戴上之后很不舒服，整晚失眠，会连累我嘛！他虽然是个猴子，可是你也不能这样对他，官府知道了会说我虐待动物的！说起那个金刚圈，去年我在陈家村认识了一位铁匠，他手工精美、价钱又公道、童叟无欺，干脆我介绍你再定做一个吧！"><a href="#模式虽好不要贪杯-－-唉，那个金刚圈尺寸太差，前重后轻左宽右窄，他戴上之后很不舒服，整晚失眠，会连累我嘛！他虽然是个猴子，可是你也不能这样对他，官府知道了会说我虐待动物的！说起那个金刚圈，去年我在陈家村认识了一位铁匠，他手工精美、价钱又公道、童叟无欺，干脆我介绍你再定做一个吧！" class="headerlink" title="模式虽好不要贪杯 － 唉，那个金刚圈尺寸太差，前重后轻左宽右窄，他戴上之后很不舒服，整晚失眠，会连累我嘛！他虽然是个猴子，可是你也不能这样对他，官府知道了会说我虐待动物的！说起那个金刚圈，去年我在陈家村认识了一位铁匠，他手工精美、价钱又公道、童叟无欺，干脆我介绍你再定做一个吧！"></a>模式虽好不要贪杯 － 唉，那个金刚圈尺寸太差，前重后轻左宽右窄，他戴上之后很不舒服，整晚失眠，会连累我嘛！他虽然是个猴子，可是你也不能这样对他，官府知道了会说我虐待动物的！说起那个金刚圈，去年我在陈家村认识了一位铁匠，他手工精美、价钱又公道、童叟无欺，干脆我介绍你再定做一个吧！</h5><ul>
+<h5 id="模式虽好不要贪杯-－-唉，那个金刚圈尺寸太差，前重后轻左宽右窄，他戴上之后很不舒服，整晚失眠，会连累我嘛！他虽然是个猴子，可是你也不能这样对他，官府知道了会说我虐待动物的！说起那个金刚圈，去年我在陈家村认识了一位铁匠，他手工精美、价钱又公道、童叟无欺，干脆我介绍你再定做一个吧！"><a href="#模式虽好不要贪杯-－-唉，那个金刚圈尺寸太差，前重后轻左宽右窄，他戴上之后很不舒服，整晚失眠，会连累我嘛！他虽然是个猴子，可是你也不能这样对他，官府知道了会说我虐待动物的！说起那个金刚圈，去年我在陈家村认识了一位铁匠，他手工精美、价钱又公道、童叟无欺，干脆我介绍你再定做一个吧！" class="headerlink" title="模式虽好不要贪杯　－　唉，那个金刚圈尺寸太差，前重后轻左宽右窄，他戴上之后很不舒服，整晚失眠，会连累我嘛！他虽然是个猴子，可是你也不能这样对他，官府知道了会说我虐待动物的！说起那个金刚圈，去年我在陈家村认识了一位铁匠，他手工精美、价钱又公道、童叟无欺，干脆我介绍你再定做一个吧！"></a>模式虽好不要贪杯　－　唉，那个金刚圈尺寸太差，前重后轻左宽右窄，他戴上之后很不舒服，整晚失眠，会连累我嘛！他虽然是个猴子，可是你也不能这样对他，官府知道了会说我虐待动物的！说起那个金刚圈，去年我在陈家村认识了一位铁匠，他手工精美、价钱又公道、童叟无欺，干脆我介绍你再定做一个吧！</h5><ul>
 <li>设计模式 - 用好但不滥用</li>
 </ul>
-<h4 id="2、可维护性"><a href="#2、可维护性" class="headerlink" title="2、可维护性"></a>2、可维护性</h4><ul>
+<h3 id="2、可维护性"><a href="#2、可维护性" class="headerlink" title="2、可维护性"></a>2、可维护性</h3><ul>
 <li><p>杜绝魔鬼数字、字符串、尺寸值、颜色值等。</p>
 </li>
 <li><p>代码复用，以便维护。</p>
@@ -516,7 +516,7 @@
 <li><p>不写死，预测可能的变化(但不要提前设计)。</p>
 </li>
 </ul>
-<h4 id="3、可扩展性"><a href="#3、可扩展性" class="headerlink" title="3、可扩展性"></a>3、可扩展性</h4><ul>
+<h3 id="3、可扩展性"><a href="#3、可扩展性" class="headerlink" title="3、可扩展性"></a>3、可扩展性</h3><ul>
 <li><p>良好的分层结构，MVx模式运用。</p>
 </li>
 <li><p>通过一些设计模式的使用来提高可扩展性。</p>
@@ -533,11 +533,11 @@
 </code></pre><p>＝＞　代码应当取决于抽象概念，而不是具体实现；这些抽象不应当依赖于细节；而细节应当依赖于抽象。</p>
 </li>
 </ul>
-<h3 id="如何重构"><a href="#如何重构" class="headerlink" title="如何重构"></a>如何重构</h3><pre><code>何为重构: 软件工程希望建立完美的需求与设计，按照既有的规范编写标准划一的代码。
+<h2 id="如何重构"><a href="#如何重构" class="headerlink" title="如何重构"></a>如何重构</h2><pre><code>何为重构: 软件工程希望建立完美的需求与设计，按照既有的规范编写标准划一的代码。
          快速迭代和RAD颠覆&quot;全知全能&quot;的神话,用近乎刀劈斧砍(crack)的方式解决问题。
 此为refactoring
 </code></pre><p>作为进行已久的Android工程，该如何重构?<br>以下参考大神blog</p>
-<h4 id="1、架构选择，结构调整"><a href="#1、架构选择，结构调整" class="headerlink" title="1、架构选择，结构调整"></a>1、架构选择，结构调整</h4><ul>
+<h3 id="1、架构选择，结构调整"><a href="#1、架构选择，结构调整" class="headerlink" title="1、架构选择，结构调整"></a>1、架构选择，结构调整</h3><ul>
 <li><p>根据Project业务场景(展示型、交互型、后台工具型…)选择合适的架构。</p>
 <pre><code>1. 并不是说一定要选用一个架构，比如说后台工具型的App，可能界面不多，与服务器的交互也少，基本都是由Service组成，这样直接用Android原生结构就OK。
 
@@ -546,7 +546,7 @@
 <li><p>根据选用的架构以及业务模块分包</p>
 </li>
 </ul>
-<h4 id="2、技术-开源库选定"><a href="#2、技术-开源库选定" class="headerlink" title="2、技术/开源库选定"></a>2、技术/开源库选定</h4><ul>
+<h3 id="2、技术-开源库选定"><a href="#2、技术-开源库选定" class="headerlink" title="2、技术/开源库选定"></a>2、技术/开源库选定</h3><ul>
 <li><p>ListView/RecyclerView的选择，Fragment/Activity的选择等。</p>
 </li>
 <li><p>根据业务特点和选择的架构，选用相关技术/开源库支持或对当前使用的进行整理。</p>
@@ -554,20 +554,20 @@
 <li><p>例如HTTP请求库，缓存库，图片加载库等等。</p>
 </li>
 </ul>
-<h4 id="3、确定规范"><a href="#3、确定规范" class="headerlink" title="3、确定规范"></a>3、确定规范</h4><ul>
+<h3 id="3、确定规范"><a href="#3、确定规范" class="headerlink" title="3、确定规范"></a>3、确定规范</h3><ul>
 <li><p>指定编码习惯，可以根据Google推荐的Java编码规范，适当定制。</p>
 <p>  正所谓高冷的英雄从不看身后的火焰！客人你的<a href="http://tufusi.com/2016/08/13/%E8%BF%9B%E9%98%B6%E7%B3%BB%E5%88%97%E4%B9%8B%E4%BB%A3%E7%A0%81%E5%BC%80%E5%8F%91%E8%A7%84%E8%8C%83/">蛋（代）炒（码）饭（规范）</a>来了。</p>
 </li>
 <li><p>制定代码提交规范，git flow 管理流程规范等等。</p>
 </li>
 </ul>
-<h4 id="4、自底而上，由小至大"><a href="#4、自底而上，由小至大" class="headerlink" title="4、自底而上，由小至大"></a>4、自底而上，由小至大</h4><ul>
+<h3 id="4、自底而上，由小至大"><a href="#4、自底而上，由小至大" class="headerlink" title="4、自底而上，由小至大"></a>4、自底而上，由小至大</h3><ul>
 <li><p>从底部开始，也就是常说的Model层，数据层开始，因为这部分相对独立，可以通过接口与UI层隔离。</p>
 </li>
 <li><p>不要一下就大面积重构，需要逐个击破，确保当前的每一次改动都能正常运行。</p>
 </li>
 </ul>
-<h4 id="5、持续重构，伴随测试"><a href="#5、持续重构，伴随测试" class="headerlink" title="5、持续重构，伴随测试"></a>5、持续重构，伴随测试</h4><ul>
+<h3 id="5、持续重构，伴随测试"><a href="#5、持续重构，伴随测试" class="headerlink" title="5、持续重构，伴随测试"></a>5、持续重构，伴随测试</h3><ul>
 <li><p>持续进行小范围重构，每次重构都要伴随测试进行，保证重构质量</p>
 <blockquote>
 <ul>
@@ -582,11 +582,10 @@
 <li><p>最好有单元测试支持</p>
 </li>
 </ul>
-<h4 id="6、重构而非重写"><a href="#6、重构而非重写" class="headerlink" title="6、重构而非重写"></a>6、重构而非重写</h4><ul>
+<h3 id="6、重构而非重写"><a href="#6、重构而非重写" class="headerlink" title="6、重构而非重写"></a>6、重构而非重写</h3><ul>
 <li>看书看书看书 再做总结　－－　《重构-改善既有代码的设计》</li>
 </ul>
-<p>以下是附文 － 关于架构重构的规则</p>
-<p>Uber技术主管在OSAC上谈及的关于架构重构的12条规则，不一起学习未免可惜：</p>
+<h2 id="附文-－-关于架构重构的规则"><a href="#附文-－-关于架构重构的规则" class="headerlink" title="附文 － 关于架构重构的规则"></a>附文 － 关于架构重构的规则</h2><p>Uber技术主管在OSAC上谈及的关于架构重构的12条规则，不一起学习未免可惜：</p>
 <p><img src="https://raw.githubusercontent.com/LeoCheung0221/LeoCheung0221.github.io/master/image/refratoring.png" alt="REFRATORING"></p>
       
     </div>
@@ -742,7 +741,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#关于App重构"><span class="nav-number">1.</span> <span class="nav-text">关于App重构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么情况下需要重构"><span class="nav-number">1.0.1.</span> <span class="nav-text">什么情况下需要重构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1、结构混乱"><span class="nav-number">1.0.1.1.</span> <span class="nav-text">1、结构混乱</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2、可读性差"><span class="nav-number">1.0.1.2.</span> <span class="nav-text">2、可读性差</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3、无法弹性适应产品发展"><span class="nav-number">1.0.1.3.</span> <span class="nav-text">3、无法弹性适应产品发展</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#重构目标"><span class="nav-number">1.0.2.</span> <span class="nav-text">重构目标</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1、可读性"><span class="nav-number">1.0.2.1.</span> <span class="nav-text">1、可读性</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#越简单越要做好-－-凭你的智慧，我很难跟你解释"><span class="nav-number">1.0.2.1.1.</span> <span class="nav-text">越简单越要做好 －　凭你的智慧，我很难跟你解释</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#国有国法行有行规-－-你以为躲起来就找不到你了吗？没有用的！像你这样出色的男人，无论在什么地方，都像漆黑中的萤火虫一样，那样的鲜明，那样的出众。你那忧郁的眼神，唏嘘的胡渣子，神乎其神的刀法，和那杯Dry-Martine，都深深地迷住了我。不过，虽然你是这样的出色，但是行有行规，无论怎样你要付清昨晚的过夜费呀，叫女人就不用给钱么？"><span class="nav-number">1.0.2.1.2.</span> <span class="nav-text">国有国法行有行规 －　你以为躲起来就找不到你了吗？没有用的！像你这样出色的男人，无论在什么地方，都像漆黑中的萤火虫一样，那样的鲜明，那样的出众。你那忧郁的眼神，唏嘘的胡渣子，神乎其神的刀法，和那杯Dry Martine，都深深地迷住了我。不过，虽然你是这样的出色，但是行有行规，无论怎样你要付清昨晚的过夜费呀，叫女人就不用给钱么？</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#简约而不简单-－-你想要啊？悟空，你要是想要的话你就说话嘛，你不说我怎么知道你想要呢，虽然你很有诚意地看着我，可是你还是要跟我说你想要的。你真的想要吗？那你就拿去吧！你不是真的想要吧？难道你真的想要吗？-悟空你也太调皮了，我跟你说过叫你不要乱扔东西，你怎么又…你看我还没说完你又把棍子给扔掉了！月光宝盒是宝物，你把他扔掉会污染环境，要是砸到小朋友怎么办？就算砸不到小朋友砸到那些花花草草也是不对的！"><span class="nav-number">1.0.2.1.3.</span> <span class="nav-text">简约而不简单 － 你想要啊？悟空，你要是想要的话你就说话嘛，你不说我怎么知道你想要呢，虽然你很有诚意地看着我，可是你还是要跟我说你想要的。你真的想要吗？那你就拿去吧！你不是真的想要吧？难道你真的想要吗？ 悟空你也太调皮了，我跟你说过叫你不要乱扔东西，你怎么又…你看我还没说完你又把棍子给扔掉了！月光宝盒是宝物，你把他扔掉会污染环境，要是砸到小朋友怎么办？就算砸不到小朋友砸到那些花花草草也是不对的！</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#模式虽好不要贪杯-－-唉，那个金刚圈尺寸太差，前重后轻左宽右窄，他戴上之后很不舒服，整晚失眠，会连累我嘛！他虽然是个猴子，可是你也不能这样对他，官府知道了会说我虐待动物的！说起那个金刚圈，去年我在陈家村认识了一位铁匠，他手工精美、价钱又公道、童叟无欺，干脆我介绍你再定做一个吧！"><span class="nav-number">1.0.2.1.4.</span> <span class="nav-text">模式虽好不要贪杯 － 唉，那个金刚圈尺寸太差，前重后轻左宽右窄，他戴上之后很不舒服，整晚失眠，会连累我嘛！他虽然是个猴子，可是你也不能这样对他，官府知道了会说我虐待动物的！说起那个金刚圈，去年我在陈家村认识了一位铁匠，他手工精美、价钱又公道、童叟无欺，干脆我介绍你再定做一个吧！</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2、可维护性"><span class="nav-number">1.0.2.2.</span> <span class="nav-text">2、可维护性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3、可扩展性"><span class="nav-number">1.0.2.3.</span> <span class="nav-text">3、可扩展性</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何重构"><span class="nav-number">1.0.3.</span> <span class="nav-text">如何重构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1、架构选择，结构调整"><span class="nav-number">1.0.3.1.</span> <span class="nav-text">1、架构选择，结构调整</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2、技术-开源库选定"><span class="nav-number">1.0.3.2.</span> <span class="nav-text">2、技术/开源库选定</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3、确定规范"><span class="nav-number">1.0.3.3.</span> <span class="nav-text">3、确定规范</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4、自底而上，由小至大"><span class="nav-number">1.0.3.4.</span> <span class="nav-text">4、自底而上，由小至大</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5、持续重构，伴随测试"><span class="nav-number">1.0.3.5.</span> <span class="nav-text">5、持续重构，伴随测试</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6、重构而非重写"><span class="nav-number">1.0.3.6.</span> <span class="nav-text">6、重构而非重写</span></a></li></ol></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#关于App重构"><span class="nav-number">1.</span> <span class="nav-text">关于App重构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么情况下需要重构"><span class="nav-number">1.1.</span> <span class="nav-text">什么情况下需要重构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1、结构混乱"><span class="nav-number">1.1.1.</span> <span class="nav-text">1、结构混乱</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2、可读性差"><span class="nav-number">1.1.2.</span> <span class="nav-text">2、可读性差</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3、无法弹性适应产品发展"><span class="nav-number">1.1.3.</span> <span class="nav-text">3、无法弹性适应产品发展</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#重构目标"><span class="nav-number">1.2.</span> <span class="nav-text">重构目标</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1、可读性"><span class="nav-number">1.2.1.</span> <span class="nav-text">1、可读性</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#越简单越要做好-－-凭你的智慧，我很难跟你解释"><span class="nav-number">1.2.1.0.1.</span> <span class="nav-text">越简单越要做好　－　凭你的智慧，我很难跟你解释</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#国有国法行有行规-－-你以为躲起来就找不到你了吗？没有用的！像你这样出色的男人，无论在什么地方，都像漆黑中的萤火虫一样，那样的鲜明，那样的出众。你那忧郁的眼神，唏嘘的胡渣子，神乎其神的刀法，和那杯Dry-Martine，都深深地迷住了我。不过，虽然你是这样的出色，但是行有行规，无论怎样你要付清昨晚的过夜费呀，叫女人就不用给钱么？"><span class="nav-number">1.2.1.0.2.</span> <span class="nav-text">国有国法行有行规　－　你以为躲起来就找不到你了吗？没有用的！像你这样出色的男人，无论在什么地方，都像漆黑中的萤火虫一样，那样的鲜明，那样的出众。你那忧郁的眼神，唏嘘的胡渣子，神乎其神的刀法，和那杯Dry Martine，都深深地迷住了我。不过，虽然你是这样的出色，但是行有行规，无论怎样你要付清昨晚的过夜费呀，叫女人就不用给钱么？</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#简约而不简单-－-你想要啊？悟空，你要是想要的话你就说话嘛，你不说我怎么知道你想要呢，虽然你很有诚意地看着我，可是你还是要跟我说你想要的。你真的想要吗？那你就拿去吧！你不是真的想要吧？难道你真的想要吗？-悟空你也太调皮了，我跟你说过叫你不要乱扔东西，你怎么又…你看我还没说完你又把棍子给扔掉了！月光宝盒是宝物，你把他扔掉会污染环境，要是砸到小朋友怎么办？就算砸不到小朋友砸到那些花花草草也是不对的！"><span class="nav-number">1.2.1.0.3.</span> <span class="nav-text">简约而不简单　－　你想要啊？悟空，你要是想要的话你就说话嘛，你不说我怎么知道你想要呢，虽然你很有诚意地看着我，可是你还是要跟我说你想要的。你真的想要吗？那你就拿去吧！你不是真的想要吧？难道你真的想要吗？ 悟空你也太调皮了，我跟你说过叫你不要乱扔东西，你怎么又…你看我还没说完你又把棍子给扔掉了！月光宝盒是宝物，你把他扔掉会污染环境，要是砸到小朋友怎么办？就算砸不到小朋友砸到那些花花草草也是不对的！</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#模式虽好不要贪杯-－-唉，那个金刚圈尺寸太差，前重后轻左宽右窄，他戴上之后很不舒服，整晚失眠，会连累我嘛！他虽然是个猴子，可是你也不能这样对他，官府知道了会说我虐待动物的！说起那个金刚圈，去年我在陈家村认识了一位铁匠，他手工精美、价钱又公道、童叟无欺，干脆我介绍你再定做一个吧！"><span class="nav-number">1.2.1.0.4.</span> <span class="nav-text">模式虽好不要贪杯　－　唉，那个金刚圈尺寸太差，前重后轻左宽右窄，他戴上之后很不舒服，整晚失眠，会连累我嘛！他虽然是个猴子，可是你也不能这样对他，官府知道了会说我虐待动物的！说起那个金刚圈，去年我在陈家村认识了一位铁匠，他手工精美、价钱又公道、童叟无欺，干脆我介绍你再定做一个吧！</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2、可维护性"><span class="nav-number">1.2.2.</span> <span class="nav-text">2、可维护性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3、可扩展性"><span class="nav-number">1.2.3.</span> <span class="nav-text">3、可扩展性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何重构"><span class="nav-number">1.3.</span> <span class="nav-text">如何重构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1、架构选择，结构调整"><span class="nav-number">1.3.1.</span> <span class="nav-text">1、架构选择，结构调整</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2、技术-开源库选定"><span class="nav-number">1.3.2.</span> <span class="nav-text">2、技术/开源库选定</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3、确定规范"><span class="nav-number">1.3.3.</span> <span class="nav-text">3、确定规范</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4、自底而上，由小至大"><span class="nav-number">1.3.4.</span> <span class="nav-text">4、自底而上，由小至大</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5、持续重构，伴随测试"><span class="nav-number">1.3.5.</span> <span class="nav-text">5、持续重构，伴随测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6、重构而非重写"><span class="nav-number">1.3.6.</span> <span class="nav-text">6、重构而非重写</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附文-－-关于架构重构的规则"><span class="nav-number">1.4.</span> <span class="nav-text">附文 － 关于架构重构的规则</span></a></li></ol></li></ol></div>
             
           </div>
         </section>
