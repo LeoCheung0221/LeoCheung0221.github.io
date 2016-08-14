@@ -622,9 +622,9 @@ Layout            lt
     <link href="http://tufusi.com/2016/08/13/%E8%BF%9B%E9%98%B6%E7%B3%BB%E5%88%97%E4%B9%8B%E4%B8%80%E5%B9%B4%E4%B8%80%E6%80%BB%E7%BB%93/"/>
     <id>http://tufusi.com/2016/08/13/进阶系列之一年一总结/</id>
     <published>2016-08-13T08:27:12.000Z</published>
-    <updated>2016-08-14T07:12:17.218Z</updated>
+    <updated>2016-08-14T07:14:21.887Z</updated>
     
-    <content type="html">&lt;h1 id=&quot;学习Android，突破自己，一年一总结，我是要当CTO的男人。&quot;&gt;&lt;a href=&quot;#学习Android，突破自己，一年一总结，我是要当CTO的男人。&quot; class=&quot;headerlink&quot; title=&quot;学习Android，突破自己，一年一总结，我是要当CTO的男人。&quot;&gt;&lt;/a&gt;学习Android，突破自己，一年一总结，我是要当CTO的男人。&lt;/h1&gt;&lt;h1 id=&quot;无论怎样-这可能是我人生中搭建的最搓的一次架构&quot;&gt;&lt;a href=&quot;#无论怎样-这可能是我人生中搭建的最搓的一次架构&quot; class=&quot;headerlink&quot; title=&quot;无论怎样 这可能是我人生中搭建的最搓的一次架构&quot;&gt;&lt;/a&gt;无论怎样 这可能是我人生中搭建的最搓的一次架构&lt;/h1&gt;&lt;p&gt;煎熬了一个月，项目总算吭哧吭哧的完成，从最初的技术选型，到框架搭建，再到着手开发app，是一次尝试，也让自己越来越坚定的想在Android之路走下去，像这么有意思的事，不做个纪念写点东西是不行的。&lt;/p&gt;
+    <content type="html">&lt;h1 id=&quot;无论怎样-这可能是我人生中搭建的最搓的一次架构&quot;&gt;&lt;a href=&quot;#无论怎样-这可能是我人生中搭建的最搓的一次架构&quot; class=&quot;headerlink&quot; title=&quot;无论怎样 这可能是我人生中搭建的最搓的一次架构&quot;&gt;&lt;/a&gt;无论怎样 这可能是我人生中搭建的最搓的一次架构&lt;/h1&gt;&lt;p&gt;煎熬了一个月，项目总算吭哧吭哧的完成，从最初的技术选型，到框架搭建，再到着手开发app，是一次尝试，也让自己越来越坚定的想在Android之路走下去，像这么有意思的事，不做个纪念写点东西是不行的。&lt;/p&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;p&gt;开发前就已做好面对各种坑的准备，只是没想到，坑一个个来的都那么的理所当然，甚至理直气壮，关于这些必须针对模块一一列举，本系列文章目前按如下顺序写，这也是我项目开发从零到一的一个思路，可能在以后随着经验值增长，会做的更细致一些。那就开始吧，首先&lt;/p&gt;
 &lt;h3 id=&quot;技术选型&quot;&gt;&lt;a href=&quot;#技术选型&quot; class=&quot;headerlink&quot; title=&quot;技术选型&quot;&gt;&lt;/a&gt;技术选型&lt;/h3&gt;&lt;p&gt;之所以把这列为第一项，很大程度上源于我对之前公司开发框架囿于桎梏所做出的一些改变吧，我很难想象再去开发一个app依旧停留在过去的思维之上，所以这次开发之前，就立过决心，这里罗列出当时的想法，一些还没付诸。&lt;br&gt;RxJava/RxAndroid + OkHttp + Retrofit ( + Dagger2 )&lt;br&gt;Dagger2还没有加入项目中，在下一版迭代前加入&lt;br&gt;后来开发中发现MVP模式开发很能解决Activity业务代码繁重的问题，解耦相当好，反正记住一个真理就行：所有牛逼的框架，那一定是解耦和相当出色的。要不然怎么可能你能用他也能用，当然性能也是衡量一个框架的好坏。反正Square公司出品，必属精品。有Github的朋友，快去star&lt;/p&gt;
@@ -696,11 +696,11 @@ Layout            lt
 &lt;p&gt;4、开启Activity，调用onCreate方法&lt;/p&gt;
 &lt;h3 id=&quot;7-Activity-Fragment-Service生命周期&quot;&gt;&lt;a href=&quot;#7-Activity-Fragment-Service生命周期&quot; class=&quot;headerlink&quot; title=&quot;7.Activity,Fragment,Service生命周期&quot;&gt;&lt;/a&gt;7.Activity,Fragment,Service生命周期&lt;/h3&gt;&lt;p&gt;常见的例子：程序正运行着来电话了，这个程序咋办呢？中止了呗，如果中止的时候新出的一个Activity是全屏的onPause-&amp;gt;onStop，恢复的时候onStart-&amp;gt;onResume,如果打断这个应用程序的是一个Theme为Translucent或者Dialog的Activity那么只是onPause,恢复的时候onResume。&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;onPause:恢复的时候onResume&lt;/li&gt;
-&lt;li&gt;onCreate:在这里创建界面，做一些数据的初始化工作&lt;/li&gt;
-&lt;li&gt;onStart:到这一步变成用户可见不可交互的&lt;/li&gt;
-&lt;li&gt;onPause:到这一步是可见但不可交互的，系统会停止动画等消耗CPU的事情，应该在这里保存你的一些 数据，因为这个时候你的程序的优先级降低，有可能被 系统回收。在这里保存的数据，应该在onResume里读出来。注意：这个方法里做的事情时间要短，因为下一个Activity不会等到这个方法完成才启动。&lt;/li&gt;
-&lt;li&gt;onStop:变得不可见，被下一个Activity覆盖了(onPause和onStop的区别是否可见)&lt;/li&gt;
+&lt;li&gt;onPause:  恢复的时候onResume&lt;/li&gt;
+&lt;li&gt;onCreate: 在这里创建界面，做一些数据的初始化工作&lt;/li&gt;
+&lt;li&gt;onStart:  到这一步变成用户可见不可交互的&lt;/li&gt;
+&lt;li&gt;onPause:  到这一步是可见但不可交互的，系统会停止动画等消耗CPU的事情，应该在这里保存你的一些 数据，因为这个时候你的程序的优先级降低，有可能被 系统回收。在这里保存的数据，应该在onResume里读出来。注意：这个方法里做的事情时间要短，因为下一个Activity不会等到这个方法完成才启动。&lt;/li&gt;
+&lt;li&gt;onStop:   变得不可见，被下一个Activity覆盖了(onPause和onStop的区别是否可见)&lt;/li&gt;
 &lt;li&gt;onDestroy:这是Activity被干掉前最后一个被调用方法了，可能是外面类调用finish方法或者是系统为了节省空间将它暂时性的干掉，可以用isFinishing()来判断它，如果你有一个ProgressDialog在线程中转动，请在onDestroy里把它cancel掉，不然等线程结束的时候，调用Dialog的cancel会抛出异常的。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;onPause,onstop,onDestroy，三种状态下，Activity都有可能被系统干掉。&lt;/p&gt;
@@ -979,11 +979,11 @@ function search()
     else 
         return again;
 }
-&lt;/code&gt;&lt;/pre&gt;&lt;h1 id=&quot;努力没有失败&quot;&gt;&lt;a href=&quot;#努力没有失败&quot; class=&quot;headerlink&quot; title=&quot;努力没有失败&quot;&gt;&lt;/a&gt;努力没有失败&lt;/h1&gt;</content>
+&lt;/code&gt;&lt;/pre&gt;&lt;h1 id=&quot;努力没有失败&quot;&gt;&lt;a href=&quot;#努力没有失败&quot; class=&quot;headerlink&quot; title=&quot;努力没有失败&quot;&gt;&lt;/a&gt;努力没有失败&lt;/h1&gt;&lt;h1 id=&quot;学习Android，突破自己，一年一总结，我是要当CTO的男人。&quot;&gt;&lt;a href=&quot;#学习Android，突破自己，一年一总结，我是要当CTO的男人。&quot; class=&quot;headerlink&quot; title=&quot;学习Android，突破自己，一年一总结，我是要当CTO的男人。&quot;&gt;&lt;/a&gt;学习Android，突破自己，一年一总结，我是要当CTO的男人。&lt;/h1&gt;</content>
     
     <summary type="html">
     
-      &lt;h1 id=&quot;学习Android，突破自己，一年一总结，我是要当CTO的男人。&quot;&gt;&lt;a href=&quot;#学习Android，突破自己，一年一总结，我是要当CTO的男人。&quot; class=&quot;headerlink&quot; title=&quot;学习Android，突破自己，一年一总结，我是要当CTO的男人。&quot;&gt;&lt;/a&gt;学习Android，突破自己，一年一总结，我是要当CTO的男人。&lt;/h1&gt;&lt;h1 id=&quot;无论怎样-这可能是我人生中搭建的最搓的一次架构&quot;&gt;&lt;a href=&quot;#无论怎样-这可能是我人生中搭建的最搓的一次架构&quot; class=&quot;headerlink&quot; title=&quot;无论怎样 这可能是我人生中搭建的最搓的一次架构&quot;&gt;&lt;/a&gt;无论怎样 这可能是我人生中搭建的最搓的一次架构&lt;/h1&gt;&lt;p&gt;煎熬了一个月，项目总算吭哧吭哧的完成，从最初的技术选型，到框架搭建，再到着手开发app，是一次尝试，也让自己越来越坚定的想在Android之路走下去，像这么有意思的事，不做个纪念写点东西是不行的。&lt;/p&gt;
+      &lt;h1 id=&quot;无论怎样-这可能是我人生中搭建的最搓的一次架构&quot;&gt;&lt;a href=&quot;#无论怎样-这可能是我人生中搭建的最搓的一次架构&quot; class=&quot;headerlink&quot; title=&quot;无论怎样 这可能是我人生中搭建的最搓的一次架构&quot;&gt;&lt;/a&gt;无论怎样 这可能是我人生中搭建的最搓的一次架构&lt;/h1&gt;&lt;p&gt;煎熬了一个月，项目总算吭哧吭哧的完成，从最初的技术选型，到框架搭建，再到着手开发app，是一次尝试，也让自己越来越坚定的想在Android之路走下去，像这么有意思的事，不做个纪念写点东西是不行的。&lt;/p&gt;
     
     </summary>
     
