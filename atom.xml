@@ -995,10 +995,9 @@ function search()
     <link href="http://tufusi.com/2016/08/13/%E8%BF%9B%E9%98%B6%E7%B3%BB%E5%88%97%E4%B9%8B%E5%9B%BE%E7%89%87%E7%BC%93%E5%AD%98%E6%8A%80%E6%9C%AF/"/>
     <id>http://tufusi.com/2016/08/13/进阶系列之图片缓存技术/</id>
     <published>2016-08-13T08:26:30.000Z</published>
-    <updated>2016-08-14T05:59:10.269Z</updated>
+    <updated>2016-08-14T06:09:45.006Z</updated>
     
-    <content type="html">&lt;p&gt;#Android 三大图片缓存原理、特性对比&lt;/p&gt;
-&lt;p&gt;从总体设计和原理上对几个图片缓存进行对比，简单了解他们在某些特性上的实现。&lt;/p&gt;
+    <content type="html">&lt;h1 id=&quot;Android-三大图片缓存原理、特性对比&quot;&gt;&lt;a href=&quot;#Android-三大图片缓存原理、特性对比&quot; class=&quot;headerlink&quot; title=&quot;Android 三大图片缓存原理、特性对比&quot;&gt;&lt;/a&gt;Android 三大图片缓存原理、特性对比&lt;/h1&gt;&lt;p&gt;从总体设计和原理上对几个图片缓存进行对比，简单了解他们在某些特性上的实现。&lt;/p&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;h2 id=&quot;一-四大图片缓存基本信息&quot;&gt;&lt;a href=&quot;#一-四大图片缓存基本信息&quot; class=&quot;headerlink&quot; title=&quot;一. 四大图片缓存基本信息&quot;&gt;&lt;/a&gt;一. 四大图片缓存基本信息&lt;/h2&gt;&lt;h3 id=&quot;Universal-ImageLoader&quot;&gt;&lt;a href=&quot;#Universal-ImageLoader&quot; class=&quot;headerlink&quot; title=&quot;Universal ImageLoader&quot;&gt;&lt;/a&gt;Universal ImageLoader&lt;/h3&gt;&lt;p&gt;是很早开源的图片缓存，在早期被很多应用使用。&lt;/p&gt;
 &lt;h3 id=&quot;Picasso&quot;&gt;&lt;a href=&quot;#Picasso&quot; class=&quot;headerlink&quot; title=&quot;Picasso&quot;&gt;&lt;/a&gt;Picasso&lt;/h3&gt;&lt;p&gt;是 Square 开源的项目，且他的主导者是 JakeWharton，所以广为人知。&lt;/p&gt;
@@ -1036,7 +1035,8 @@ function search()
 &lt;p&gt;简单的讲就是 ImageLoader 收到加载及显示图片的任务，并将它交给 ImageLoaderEngine，ImageLoaderEngine 分发任务到具体线程池去执行，任务通过 Cache 及 ImageDownloader 获取图片，中间可能经过 BitmapProcessor 和 ImageDecoder 处理，最终转换为Bitmap 交给 BitmapDisplayer 在 ImageAware 中显示。&lt;/p&gt;
 &lt;h3 id=&quot;2-ImageLoader-优点&quot;&gt;&lt;a href=&quot;#2-ImageLoader-优点&quot; class=&quot;headerlink&quot; title=&quot;2. ImageLoader 优点&quot;&gt;&lt;/a&gt;2. ImageLoader 优点&lt;/h3&gt;&lt;h5 id=&quot;1-支持下载进度监听&quot;&gt;&lt;a href=&quot;#1-支持下载进度监听&quot; class=&quot;headerlink&quot; title=&quot;(1) 支持下载进度监听&quot;&gt;&lt;/a&gt;(1) 支持下载进度监听&lt;/h5&gt;&lt;h5 id=&quot;2-可以在-View-滚动中暂停图片加载&quot;&gt;&lt;a href=&quot;#2-可以在-View-滚动中暂停图片加载&quot; class=&quot;headerlink&quot; title=&quot;(2) 可以在 View 滚动中暂停图片加载&quot;&gt;&lt;/a&gt;(2) 可以在 View 滚动中暂停图片加载&lt;/h5&gt;&lt;p&gt;通过 PauseOnScrollListener 接口可以在 View 滚动中暂停图片加载。&lt;/p&gt;
 &lt;h5 id=&quot;3-默认实现多种内存缓存算法&quot;&gt;&lt;a href=&quot;#3-默认实现多种内存缓存算法&quot; class=&quot;headerlink&quot; title=&quot;(3) 默认实现多种内存缓存算法&quot;&gt;&lt;/a&gt;(3) 默认实现多种内存缓存算法&lt;/h5&gt;&lt;p&gt;这几个图片缓存都可以配置缓存算法，不过 ImageLoader 默认实现了较多缓存算法，如 Size 最大先删除、使用最少先删除、最近最少使用、先进先删除、时间最长先删除等。&lt;/p&gt;
-&lt;h5 id=&quot;4-支持本地缓存文件名规则定义&quot;&gt;&lt;a href=&quot;#4-支持本地缓存文件名规则定义&quot; class=&quot;headerlink&quot; title=&quot;(4) 支持本地缓存文件名规则定义&quot;&gt;&lt;/a&gt;(4) 支持本地缓存文件名规则定义&lt;/h5&gt;&lt;h2 id=&quot;五、Picasso-设计及优点&quot;&gt;&lt;a href=&quot;#五、Picasso-设计及优点&quot; class=&quot;headerlink&quot; title=&quot;五、Picasso 设计及优点&quot;&gt;&lt;/a&gt;五、Picasso 设计及优点&lt;/h2&gt;&lt;h3 id=&quot;1-总体设计及流程-1&quot;&gt;&lt;a href=&quot;#1-总体设计及流程-1&quot; class=&quot;headerlink&quot; title=&quot;1. 总体设计及流程&quot;&gt;&lt;/a&gt;1. 总体设计及流程&lt;/h3&gt;&lt;p&gt;上面是 Picasso 的总体设计图。整个库分为 Dispatcher，RequestHandler 及 Downloader，PicassoDrawable 等模块。&lt;/p&gt;
+&lt;h5 id=&quot;4-支持本地缓存文件名规则定义&quot;&gt;&lt;a href=&quot;#4-支持本地缓存文件名规则定义&quot; class=&quot;headerlink&quot; title=&quot;(4) 支持本地缓存文件名规则定义&quot;&gt;&lt;/a&gt;(4) 支持本地缓存文件名规则定义&lt;/h5&gt;&lt;p&gt;本地缓存文件名称支持自定义&lt;/p&gt;
+&lt;h2 id=&quot;五、Picasso-设计及优点&quot;&gt;&lt;a href=&quot;#五、Picasso-设计及优点&quot; class=&quot;headerlink&quot; title=&quot;五、Picasso 设计及优点&quot;&gt;&lt;/a&gt;五、Picasso 设计及优点&lt;/h2&gt;&lt;h3 id=&quot;1-总体设计及流程-1&quot;&gt;&lt;a href=&quot;#1-总体设计及流程-1&quot; class=&quot;headerlink&quot; title=&quot;1. 总体设计及流程&quot;&gt;&lt;/a&gt;1. 总体设计及流程&lt;/h3&gt;&lt;p&gt;上面是 Picasso 的总体设计图。整个库分为 Dispatcher，RequestHandler 及 Downloader，PicassoDrawable 等模块。&lt;/p&gt;
 &lt;p&gt;Dispatcher 负责分发和处理 Action，包括提交、暂停、继续、取消、网络状态变化、重试等等。&lt;/p&gt;
 &lt;p&gt;简单的讲就是 Picasso 收到加载及显示图片的任务，创建 Request 并将它交给 Dispatcher，Dispatcher 分发任务到具体 RequestHandler，任务通过 MemoryCache 及 Handler(数据获取接口) 获取图片，图片获取成功后通过 PicassoDrawable 显示到 Target 中。&lt;/p&gt;
 &lt;p&gt;需要注意的是上面 Data 的 File system 部分，Picasso 没有自定义本地缓存的接口，默认使用 http 的本地缓存，API 9 以上使用 okhttp，以下使用 Urlconnection，所以如果需要自定义本地缓存就需要重定义 Downloader。&lt;/p&gt;
@@ -1062,8 +1062,7 @@ function search()
     
     <summary type="html">
     
-      &lt;p&gt;#Android 三大图片缓存原理、特性对比&lt;/p&gt;
-&lt;p&gt;从总体设计和原理上对几个图片缓存进行对比，简单了解他们在某些特性上的实现。&lt;/p&gt;
+      &lt;h1 id=&quot;Android-三大图片缓存原理、特性对比&quot;&gt;&lt;a href=&quot;#Android-三大图片缓存原理、特性对比&quot; class=&quot;headerlink&quot; title=&quot;Android 三大图片缓存原理、特性对比&quot;&gt;&lt;/a&gt;Android 三大图片缓存原理、特性对比&lt;/h1&gt;&lt;p&gt;从总体设计和原理上对几个图片缓存进行对比，简单了解他们在某些特性上的实现。&lt;/p&gt;
     
     </summary>
     
