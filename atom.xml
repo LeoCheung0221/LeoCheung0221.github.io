@@ -995,7 +995,7 @@ function search()
     <link href="http://tufusi.com/2016/08/13/%E8%BF%9B%E9%98%B6%E7%B3%BB%E5%88%97%E4%B9%8B%E5%9B%BE%E7%89%87%E7%BC%93%E5%AD%98%E6%8A%80%E6%9C%AF/"/>
     <id>http://tufusi.com/2016/08/13/进阶系列之图片缓存技术/</id>
     <published>2016-08-13T08:26:30.000Z</published>
-    <updated>2016-08-14T06:51:20.222Z</updated>
+    <updated>2016-08-14T07:02:19.792Z</updated>
     
     <content type="html">&lt;h1 id=&quot;Android-三大图片缓存原理、特性对比&quot;&gt;&lt;a href=&quot;#Android-三大图片缓存原理、特性对比&quot; class=&quot;headerlink&quot; title=&quot;Android 三大图片缓存原理、特性对比&quot;&gt;&lt;/a&gt;Android 三大图片缓存原理、特性对比&lt;/h1&gt;&lt;p&gt;从总体设计和原理上对几个图片缓存进行对比，简单了解他们在某些特性上的实现。&lt;/p&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
@@ -1049,37 +1049,21 @@ function search()
 &lt;p&gt;Dispatcher 负责分发和处理 Action，包括提交、暂停、继续、取消、网络状态变化、重试等等。&lt;/p&gt;
 &lt;p&gt;简单的讲就是 Picasso 收到加载及显示图片的任务，创建 Request 并将它交给 Dispatcher，Dispatcher 分发任务到具体 RequestHandler，任务通过 MemoryCache 及 Handler(数据获取接口) 获取图片，图片获取成功后通过 PicassoDrawable 显示到 Target 中。&lt;/p&gt;
 &lt;p&gt;需要注意的是上面 Data 的 File system 部分，Picasso 没有自定义本地缓存的接口，默认使用 http 的本地缓存，API 9 以上使用 okhttp，以下使用 Urlconnection，所以如果需要自定义本地缓存就需要重定义 Downloader。&lt;/p&gt;
-&lt;h3 id=&quot;Picasso-优点&quot;&gt;&lt;a href=&quot;#Picasso-优点&quot; class=&quot;headerlink&quot; title=&quot;Picasso 优点&quot;&gt;&lt;/a&gt;Picasso 优点&lt;/h3&gt;&lt;h5 id=&quot;1-自带统计监控功能&quot;&gt;&lt;a href=&quot;#1-自带统计监控功能&quot; class=&quot;headerlink&quot; title=&quot;(1) 自带统计监控功能&quot;&gt;&lt;/a&gt;(1) 自带统计监控功能&lt;/h5&gt;&lt;p&gt;支持图片缓存使用的监控，包括缓存命中率、已使用内存大小、节省的流量等。&lt;/p&gt;
-&lt;h5 id=&quot;2-支持优先级处理&quot;&gt;&lt;a href=&quot;#2-支持优先级处理&quot; class=&quot;headerlink&quot; title=&quot;(2) 支持优先级处理&quot;&gt;&lt;/a&gt;(2) 支持优先级处理&lt;/h5&gt;&lt;p&gt;每次任务调度前会选择优先级高的任务，比如 App 页面中 Banner 的优先级高于 Icon 时就很适用。&lt;/p&gt;
-&lt;h5 id=&quot;3-支持延迟到图片尺寸计算完成加载&quot;&gt;&lt;a href=&quot;#3-支持延迟到图片尺寸计算完成加载&quot; class=&quot;headerlink&quot; title=&quot;(3) 支持延迟到图片尺寸计算完成加载&quot;&gt;&lt;/a&gt;(3) 支持延迟到图片尺寸计算完成加载&lt;/h5&gt;&lt;h5 id=&quot;4-支持飞行模式、并发线程数根据网络类型而变&quot;&gt;&lt;a href=&quot;#4-支持飞行模式、并发线程数根据网络类型而变&quot; class=&quot;headerlink&quot; title=&quot;(4) 支持飞行模式、并发线程数根据网络类型而变&quot;&gt;&lt;/a&gt;(4) 支持飞行模式、并发线程数根据网络类型而变&lt;/h5&gt;&lt;p&gt;手机切换到飞行模式或网络类型变换时会自动调整线程池最大并发数，比如 wifi 最大并发为 4， 4g 为 3，3g 为 2。&lt;br&gt;这里 Picasso 根据网络类型来决定最大并发数，而不是 CPU 核数。&lt;/p&gt;
-&lt;h5 id=&quot;5-“无”本地缓存&quot;&gt;&lt;a href=&quot;#5-“无”本地缓存&quot; class=&quot;headerlink&quot; title=&quot;(5) “无”本地缓存&quot;&gt;&lt;/a&gt;(5) “无”本地缓存&lt;/h5&gt;&lt;p&gt;无”本地缓存，不是说没有本地缓存，而是 Picasso 自己没有实现，交给了 Square 的另外一个网络库 okhttp 去实现，这样的好处是可以通过请求 Response Header 中的 Cache-Control 及 Expired 控制图片的过期时间。&lt;/p&gt;
+&lt;h3 id=&quot;Picasso-优点&quot;&gt;&lt;a href=&quot;#Picasso-优点&quot; class=&quot;headerlink&quot; title=&quot;Picasso 优点&quot;&gt;&lt;/a&gt;Picasso 优点&lt;/h3&gt;&lt;h4 id=&quot;1-自带统计监控功能&quot;&gt;&lt;a href=&quot;#1-自带统计监控功能&quot; class=&quot;headerlink&quot; title=&quot;(1) 自带统计监控功能&quot;&gt;&lt;/a&gt;(1) 自带统计监控功能&lt;/h4&gt;&lt;p&gt;支持图片缓存使用的监控，包括缓存命中率、已使用内存大小、节省的流量等。&lt;/p&gt;
+&lt;h4 id=&quot;2-支持优先级处理&quot;&gt;&lt;a href=&quot;#2-支持优先级处理&quot; class=&quot;headerlink&quot; title=&quot;(2) 支持优先级处理&quot;&gt;&lt;/a&gt;(2) 支持优先级处理&lt;/h4&gt;&lt;p&gt;每次任务调度前会选择优先级高的任务，比如 App 页面中 Banner 的优先级高于 Icon 时就很适用。&lt;/p&gt;
+&lt;h4 id=&quot;3-支持延迟到图片尺寸计算完成加载&quot;&gt;&lt;a href=&quot;#3-支持延迟到图片尺寸计算完成加载&quot; class=&quot;headerlink&quot; title=&quot;(3) 支持延迟到图片尺寸计算完成加载&quot;&gt;&lt;/a&gt;(3) 支持延迟到图片尺寸计算完成加载&lt;/h4&gt;&lt;h4 id=&quot;4-支持飞行模式、并发线程数根据网络类型而变&quot;&gt;&lt;a href=&quot;#4-支持飞行模式、并发线程数根据网络类型而变&quot; class=&quot;headerlink&quot; title=&quot;(4) 支持飞行模式、并发线程数根据网络类型而变&quot;&gt;&lt;/a&gt;(4) 支持飞行模式、并发线程数根据网络类型而变&lt;/h4&gt;&lt;p&gt;手机切换到飞行模式或网络类型变换时会自动调整线程池最大并发数，比如 wifi 最大并发为 4， 4g 为 3，3g 为 2。&lt;br&gt;这里 Picasso 根据网络类型来决定最大并发数，而不是 CPU 核数。&lt;/p&gt;
+&lt;h4 id=&quot;5-“无”本地缓存&quot;&gt;&lt;a href=&quot;#5-“无”本地缓存&quot; class=&quot;headerlink&quot; title=&quot;(5) “无”本地缓存&quot;&gt;&lt;/a&gt;(5) “无”本地缓存&lt;/h4&gt;&lt;p&gt;无”本地缓存，不是说没有本地缓存，而是 Picasso 自己没有实现，交给了 Square 的另外一个网络库 okhttp 去实现，这样的好处是可以通过请求 Response Header 中的 Cache-Control 及 Expired 控制图片的过期时间。&lt;/p&gt;
 &lt;h2 id=&quot;六、Glide-设计及优点&quot;&gt;&lt;a href=&quot;#六、Glide-设计及优点&quot; class=&quot;headerlink&quot; title=&quot;六、Glide 设计及优点&quot;&gt;&lt;/a&gt;六、Glide 设计及优点&lt;/h2&gt;&lt;h3 id=&quot;总体设计及流程-1&quot;&gt;&lt;a href=&quot;#总体设计及流程-1&quot; class=&quot;headerlink&quot; title=&quot;总体设计及流程&quot;&gt;&lt;/a&gt;总体设计及流程&lt;/h3&gt;&lt;p&gt;上面是 Glide 的总体设计图。整个库分为 RequestManager(请求管理器)，Engine(数据获取引擎)、 Fetcher(数据获取器)、MemoryCache(内存缓存)、DiskLRUCache、Transformation(图片处理)、Encoder(本地缓存存储)、Registry(图片类型及解析器配置)、Target(目标) 等模块。&lt;/p&gt;
 &lt;p&gt;简单的讲就是 Glide 收到加载及显示资源的任务，创建 Request 并将它交给RequestManager，Request 启动 Engine 去数据源获取资源(通过 Fetcher )，获取到后 Transformation 处理后交给 Target。&lt;/p&gt;
 &lt;p&gt;Glide 依赖于 DiskLRUCache、GifDecoder 等开源库去完成本地缓存和 Gif 图片解码工作。&lt;/p&gt;
-&lt;h3 id=&quot;Glide-优点&quot;&gt;&lt;a href=&quot;#Glide-优点&quot; class=&quot;headerlink&quot; title=&quot;Glide 优点&quot;&gt;&lt;/a&gt;Glide 优点&lt;/h3&gt;&lt;pre&gt;&lt;code&gt;(1) 图片缓存-&amp;gt;媒体缓存
-    Glide 不仅是一个图片缓存，它支持 Gif、WebP、缩略图。甚至是 Video，所以更该当做一个媒体缓存。
-
-(2) 支持优先级处理
-
-(3) 与 Activity/Fragment 生命周期一致，支持 trimMemory
-    Glide 对每个 context 都保持一个 RequestManager，通过 FragmentTransaction 保持与 Activity/Fragment 生命周期一致，并且有对应的 trimMemory 接口实现可供调用。
-
-(4) 支持 okhttp、Volley
-    Glide 默认通过 UrlConnection 获取数据，可以配合 okhttp 或是 Volley 使用。实际 ImageLoader、Picasso 也都支持 okhttp、Volley。
-
-(5) 内存友好
-
-    ① Glide 的内存缓存有个 active 的设计
-      从内存缓存中取数据时，不像一般的实现用 get，而是用 remove，再将这个缓存数据放到一个 value 为软引用的 activeResources map 中，并计数引用数，在图片加载完成后进行判断，如果引用计数为空则回收掉。
-
-    ② 内存缓存更小图片
-      Glide 以 url、view_width、view_height、屏幕的分辨率等做为联合 key，将处理后的图片缓存在内存缓存中，而不是原始图片以节省大小
-
-    ③ 与 Activity/Fragment 生命周期一致，支持 trimMemory
-
-    ④ 图片默认使用默认 RGB_565 而不是 ARGB_888
-      虽然清晰度差些，但图片更小，也可配置到 ARGB_888。
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;其他：Glide 可以通过 signature 或不使用本地缓存支持 url 过期&lt;/p&gt;
+&lt;h3 id=&quot;Glide-优点&quot;&gt;&lt;a href=&quot;#Glide-优点&quot; class=&quot;headerlink&quot; title=&quot;Glide 优点&quot;&gt;&lt;/a&gt;Glide 优点&lt;/h3&gt;&lt;h4 id=&quot;1-图片缓存-gt-媒体缓存&quot;&gt;&lt;a href=&quot;#1-图片缓存-gt-媒体缓存&quot; class=&quot;headerlink&quot; title=&quot;(1) 图片缓存-&amp;gt;媒体缓存&quot;&gt;&lt;/a&gt;(1) 图片缓存-&amp;gt;媒体缓存&lt;/h4&gt;&lt;p&gt;Glide 不仅是一个图片缓存，它支持 Gif、WebP、缩略图。甚至是 Video，所以更该当做一个媒体缓存。&lt;/p&gt;
+&lt;h4 id=&quot;2-支持优先级处理-1&quot;&gt;&lt;a href=&quot;#2-支持优先级处理-1&quot; class=&quot;headerlink&quot; title=&quot;(2) 支持优先级处理&quot;&gt;&lt;/a&gt;(2) 支持优先级处理&lt;/h4&gt;&lt;h4 id=&quot;3-与-Activity-Fragment-生命周期一致，支持-trimMemory&quot;&gt;&lt;a href=&quot;#3-与-Activity-Fragment-生命周期一致，支持-trimMemory&quot; class=&quot;headerlink&quot; title=&quot;(3) 与 Activity/Fragment 生命周期一致，支持 trimMemory&quot;&gt;&lt;/a&gt;(3) 与 Activity/Fragment 生命周期一致，支持 trimMemory&lt;/h4&gt;&lt;p&gt;Glide 对每个 context 都保持一个 RequestManager，通过 FragmentTransaction 保持与 Activity/Fragment 生命周期一致，并且有对应的 trimMemory 接口实现可供调用。&lt;/p&gt;
+&lt;h4 id=&quot;4-支持-okhttp、Volley&quot;&gt;&lt;a href=&quot;#4-支持-okhttp、Volley&quot; class=&quot;headerlink&quot; title=&quot;(4) 支持 okhttp、Volley&quot;&gt;&lt;/a&gt;(4) 支持 okhttp、Volley&lt;/h4&gt;&lt;p&gt;Glide 默认通过 UrlConnection 获取数据，可以配合 okhttp 或是 Volley 使用。实际 ImageLoader、Picasso 也都支持 okhttp、Volley。&lt;/p&gt;
+&lt;h4 id=&quot;5-内存友好&quot;&gt;&lt;a href=&quot;#5-内存友好&quot; class=&quot;headerlink&quot; title=&quot;(5) 内存友好&quot;&gt;&lt;/a&gt;(5) 内存友好&lt;/h4&gt;&lt;p&gt;① Glide 的内存缓存有个 active 的设计&lt;br&gt;从内存缓存中取数据时，不像一般的实现用 get，而是用 remove，再将这个缓存数据放到一个 value 为软引用的 activeResources map 中，并计数引用数，在图片加载完成后进行判断，如果引用计数为空则回收掉。&lt;/p&gt;
+&lt;p&gt;② 内存缓存更小图片&lt;br&gt;Glide 以 url、view_width、view_height、屏幕的分辨率等做为联合 key，将处理后的图片缓存在内存缓存中，而不是原始图片以节省大小&lt;/p&gt;
+&lt;p&gt;③ 与 Activity/Fragment 生命周期一致，支持 trimMemory&lt;/p&gt;
+&lt;p&gt;④ 图片默认使用默认 RGB_565 而不是 ARGB_888&lt;br&gt;虽然清晰度差些，但图片更小，也可配置到 ARGB_888。&lt;/p&gt;
+&lt;p&gt;其他：Glide 可以通过 signature 或不使用本地缓存支持 url 过期&lt;/p&gt;
 &lt;h2 id=&quot;七、汇总&quot;&gt;&lt;a href=&quot;#七、汇总&quot; class=&quot;headerlink&quot; title=&quot;七、汇总&quot;&gt;&lt;/a&gt;七、汇总&lt;/h2&gt;&lt;p&gt;三者总体上来说，ImageLoader 的功能以及代理容易理解长度都一般。&lt;/p&gt;
 &lt;p&gt;Picasso 代码虽然只在一个包下，没有严格的包区分，但代码简单、逻辑清晰，一两个小时就能叫深入的了解完。&lt;/p&gt;
 &lt;p&gt;Glide 功能强大，但代码量大、流转复杂。在较深掌握的情况下才推荐使用，免得出了问题难以下手解决。&lt;/p&gt;
