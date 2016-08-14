@@ -92,7 +92,7 @@
 <meta property="og:url" content="http://tufusi.com/2016/08/13/进阶系列之图片缓存技术/index.html">
 <meta property="og:site_name" content="OnePiece">
 <meta property="og:description" content="Android 三大图片缓存原理、特性对比从总体设计和原理上对几个图片缓存进行对比，简单了解他们在某些特性上的实现。">
-<meta property="og:updated_time" content="2016-08-14T06:12:20.751Z">
+<meta property="og:updated_time" content="2016-08-14T06:20:14.993Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="进阶系列之图片缓存技术">
 <meta name="twitter:description" content="Android 三大图片缓存原理、特性对比从总体设计和原理上对几个图片缓存进行对比，简单了解他们在某些特性上的实现。">
@@ -508,7 +508,8 @@
 <p>简单的讲就是 ImageLoader 收到加载及显示图片的任务，并将它交给 ImageLoaderEngine，ImageLoaderEngine 分发任务到具体线程池去执行，任务通过 Cache 及 ImageDownloader 获取图片，中间可能经过 BitmapProcessor 和 ImageDecoder 处理，最终转换为Bitmap 交给 BitmapDisplayer 在 ImageAware 中显示。</p>
 <h3 id="2-ImageLoader-优点"><a href="#2-ImageLoader-优点" class="headerlink" title="2. ImageLoader 优点"></a>2. ImageLoader 优点</h3><h5 id="1-支持下载进度监听"><a href="#1-支持下载进度监听" class="headerlink" title="(1) 支持下载进度监听"></a>(1) 支持下载进度监听</h5><h5 id="2-可以在-View-滚动中暂停图片加载"><a href="#2-可以在-View-滚动中暂停图片加载" class="headerlink" title="(2) 可以在 View 滚动中暂停图片加载"></a>(2) 可以在 View 滚动中暂停图片加载</h5><p>通过 PauseOnScrollListener 接口可以在 View 滚动中暂停图片加载。</p>
 <h5 id="3-默认实现多种内存缓存算法"><a href="#3-默认实现多种内存缓存算法" class="headerlink" title="(3) 默认实现多种内存缓存算法"></a>(3) 默认实现多种内存缓存算法</h5><p>这几个图片缓存都可以配置缓存算法，不过 ImageLoader 默认实现了较多缓存算法，如 Size 最大先删除、使用最少先删除、最近最少使用、先进先删除、时间最长先删除等。</p>
-<h5 id="4-支持本地缓存文件名规则定义"><a href="#4-支持本地缓存文件名规则定义" class="headerlink" title="(4) 支持本地缓存文件名规则定义"></a>(4) 支持本地缓存文件名规则定义</h5><h2 id="五、Picasso-设计及优点"><a href="#五、Picasso-设计及优点" class="headerlink" title="五、Picasso 设计及优点"></a>五、Picasso 设计及优点</h2><h3 id="1-总体设计及流程-1"><a href="#1-总体设计及流程-1" class="headerlink" title="1. 总体设计及流程"></a>1. 总体设计及流程</h3><p>上面是 Picasso 的总体设计图。整个库分为 Dispatcher，RequestHandler 及 Downloader，PicassoDrawable 等模块。</p>
+<h5 id="4-支持本地缓存文件名规则定义"><a href="#4-支持本地缓存文件名规则定义" class="headerlink" title="(4) 支持本地缓存文件名规则定义"></a>(4) 支持本地缓存文件名规则定义</h5><p>这几个图片缓存都可以配置缓存算法</p>
+<h2 id="五、Picasso-设计及优点"><a href="#五、Picasso-设计及优点" class="headerlink" title="五、Picasso 设计及优点"></a>五、Picasso 设计及优点</h2><h3 id="1-总体设计及流程-1"><a href="#1-总体设计及流程-1" class="headerlink" title="1. 总体设计及流程"></a>1. 总体设计及流程</h3><p>上面是 Picasso 的总体设计图。整个库分为 Dispatcher，RequestHandler 及 Downloader，PicassoDrawable 等模块。</p>
 <p>Dispatcher 负责分发和处理 Action，包括提交、暂停、继续、取消、网络状态变化、重试等等。</p>
 <p>简单的讲就是 Picasso 收到加载及显示图片的任务，创建 Request 并将它交给 Dispatcher，Dispatcher 分发任务到具体 RequestHandler，任务通过 MemoryCache 及 Handler(数据获取接口) 获取图片，图片获取成功后通过 PicassoDrawable 显示到 Target 中。</p>
 <p>需要注意的是上面 Data 的 File system 部分，Picasso 没有自定义本地缓存的接口，默认使用 http 的本地缓存，API 9 以上使用 okhttp，以下使用 Urlconnection，所以如果需要自定义本地缓存就需要重定义 Downloader。</p>
