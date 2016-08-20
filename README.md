@@ -17,7 +17,7 @@ OnePiece [www.tufusi.com](http://www.tufusi.com)
 
 > ###### Jun.06th ~ Jun.12th    [浅析－Retrofit框架](http://tufusi.com/2016/06/02/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BRetrofit%E6%A1%86%E6%9E%B6/)
 
-> ###### Jun.13th ~ Jun.19th    [浅析－RxJava框架](http://tufusi.com/2016/06/07/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BRxJava%E6%A1%86%E6%9E%B6/) －－－－－－－－－－－－－－－ [RxJava操作符]()
+> ###### Jun.13th ~ Jun.19th    [浅析－RxJava框架](http://tufusi.com/2016/06/07/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BRxJava%E6%A1%86%E6%9E%B6/) / [RxJava操作符](http://tufusi.com/2016/08/20/RxJava%E7%B3%BB%E5%88%97-%E6%93%8D%E4%BD%9C%E7%AC%A6/#more)
 
 > ###### Jun.20th ~ Jun.26th    [浅析－Dagger2框架](http://tufusi.com/2016/06/07/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BRxJava%E6%A1%86%E6%9E%B6/)
 
