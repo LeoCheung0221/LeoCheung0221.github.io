@@ -94,7 +94,7 @@
 <meta property="og:site_name" content="OnePiece">
 <meta property="og:description" content="基本概念a library for composing asynchronous and event-based programs using observable sequences for the Java VM
 一个在Java VM上使用可观测的序列来组成异步的、基于事件的程序的库">
-<meta property="og:updated_time" content="2016-08-20T10:11:27.789Z">
+<meta property="og:updated_time" content="2016-08-20T10:31:29.954Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android部落格之RxJava框架">
 <meta name="twitter:description" content="基本概念a library for composing asynchronous and event-based programs using observable sequences for the Java VM
@@ -475,7 +475,7 @@
 <p>类似观察者模式,不同之处在于： 如果没有Subscribers，Observables是不会发出任何事件。</p>
 <p>更接近于观察者模式 + 迭代器模式 , 这样的模式组合可以确保每一个事件都能发送到Subscribers上进行处理。</p>
 <p>不过与迭代器模式不同之处在于 ： 迭代器模式在事件处理上采用的是“同步/拉式”的方式，而Observable采用的是”异步/推式”的方式</p>
-<h3 id="基本实现"><a href="#基本实现" class="headerlink" title="基本实现"></a>基本实现</h3><h4 id="1-创建Observer"><a href="#1-创建Observer" class="headerlink" title="1)  创建Observer"></a>1)  创建Observer</h4><p>可以通过两种方式进行观察者对象的创建: Observer 和 Subscriber</p>
+<h3 id="基本实现"><a href="#基本实现" class="headerlink" title="基本实现"></a>基本实现</h3><h4 id="创建Observer"><a href="#创建Observer" class="headerlink" title="创建Observer"></a>创建Observer</h4><p>可以通过两种方式进行观察者对象的创建: Observer 和 Subscriber</p>
 <pre><code>Observer&lt;Strting&gt; observer = new Observer&lt;String&gt;(){
     @override
     public void onNext(String s){
@@ -512,7 +512,7 @@
 </code></pre><p>区别: </p>
 <p>(1) onStart() 这是Subscriber增加的方法,会在事件未发送之前被调用,该方法是可选方法。需记住该方法所在的线程和subscribe      所发生的线程是一致的。</p>
 <p>(2) unsubscribe() 这是Subscriber所实现的另一个接口方法,用于取消订阅.该方法被调用后,Subscriber不再接收任何事件,一般    在此方法调用前,先进行isUnsubscribed()判断一下.这个方法的重要性在于能有效降低Observable持有Subscriber的引用而造    成的内存泄漏问题</p>
-<h4 id="2-创建Observable"><a href="#2-创建Observable" class="headerlink" title="2)  创建Observable"></a>2)  创建Observable</h4><pre><code>Observable observable = Observable.create(
+<h4 id="创建Observable"><a href="#创建Observable" class="headerlink" title="创建Observable"></a>创建Observable</h4><pre><code>Observable observable = Observable.create(
     new Observable.OnSubscribe&lt;String&gt;(){
         @override
         public void call(Subscriber&lt;? super String&gt; subscriber){
@@ -539,7 +539,7 @@ Observable observable = Observable.from(words);
 // onNext(&quot;CC&quot;);
 // onCompleted();
 </code></pre><p>以上两种方式都和create()方式是等价的</p>
-<h4 id="3-订阅Subscribe"><a href="#3-订阅Subscribe" class="headerlink" title="3)  订阅Subscribe"></a>3)  订阅Subscribe</h4><p>创建了Observable 和 Observer对象之后，用subscribe()方法将其联结, 整条链子就能执行工作。代码如下：</p>
+<h4 id="订阅Subscribe"><a href="#订阅Subscribe" class="headerlink" title="订阅Subscribe"></a>订阅Subscribe</h4><p>创建了Observable 和 Observer对象之后，用subscribe()方法将其联结, 整条链子就能执行工作。代码如下：</p>
 <pre><code>observable.subscribe(observer);
 // 或者
 observable.subscribe(subscriber);
@@ -554,7 +554,7 @@ observable.subscribe(subscriber);
 <p>————— 这个方法之前描述过,是一个可选方法</p>
 <p>2) 调用Observable的OnSubscribe.call(Subscriber)</p>
 <p>————— 这里事件的发送逻辑开始执行，从这里看出，在RxJava中，Observable并不是在创建的时候就立即开始发送事件，而是在被订阅时，即当subscribe()方法执行的时候发送。</p>
-<p>3）将传入的Subscriber作为Subscription返回</p>
+<p>3) 将传入的Subscriber作为Subscription返回</p>
 <p>————— 这是为方便unsubscribe()。</p>
 <p>除了subscribe(Observable) 和 subscribe(Subscriber) , subscribe() 还支持不完整定义的回调,RxJava会自动根据定义创建出Subscriber。形式如下：</p>
 <pre><code>Action1&lt;String&gt; onNextAction = new Action1&lt;String&gt;(){
@@ -592,13 +592,16 @@ observable.subscribe(onNextAction, onErrorAction);
 
 // 自动创建 Subscriber, 并使用 onNextAction 、 onErrorAction 和 onCompletedAction 来定义 onNext() 、 onError() 和 onCompleted()
 observable.subscribe(onNextAction, onErrorAction, onCompletedAction);
-</code></pre><h3 id="注"><a href="#注" class="headerlink" title="注:"></a>注:</h3><p>Action0 是RxJava的一个接口，它只有一个call()，这个方法是无参无返回值的；</p>
-<p>onCompleted()方法也是无参无返回值，因此Action0 可以被当成是一个包装对象;</p>
-<p>Action1 也是一个接口,也只有一个call(T param), 这个方法也没有返回值, 但有参数；</p>
-<p>onNext(obj)方法 和 onError(error) 方法 均可以被当成是一个包装对象</p>
-<h2 id="线程控制-Scheduler"><a href="#线程控制-Scheduler" class="headerlink" title="线程控制 - Scheduler"></a>线程控制 - Scheduler</h2><p>在不指定线程的情况下, RxJava遵循的是线程不变的原则, 即: </p>
+</code></pre><h3 id="注"><a href="#注" class="headerlink" title="注:"></a>注:</h3><pre><code>Action0 是RxJava的一个接口，它只有一个call()，这个方法是无参无返回值的；
+
+onCompleted()方法也是无参无返回值，因此Action0 可以被当成是一个包装对象;
+
+Action1 也是一个接口,也只有一个call(T param), 这个方法也没有返回值, 但有参数；
+
+onNext(obj)方法 和 onError(error) 方法 均可以被当成是一个包装对象
+</code></pre><h3 id="线程控制-Scheduler"><a href="#线程控制-Scheduler" class="headerlink" title="线程控制 - Scheduler"></a>线程控制 - Scheduler</h3><p>在不指定线程的情况下, RxJava遵循的是线程不变的原则, 即: </p>
 <p>在哪个线程调用subscribe()，就在哪个线程生产事件；在哪个线程生产事件，就在哪个线程消费事件。如需切换线程，就需要Scheduler(调度器)</p>
-<h4 id="1）-Scheduler-API"><a href="#1）-Scheduler-API" class="headerlink" title="1） Scheduler API"></a>1） Scheduler API</h4><p>Scheduler － 调度器，相当于线程控制器，RxJava通过它来指定每一段代码应该运行在哪一个线程中。RxJava内置了一些Scheduler，适用场景如下：</p>
+<h4 id="Scheduler-API"><a href="#Scheduler-API" class="headerlink" title="Scheduler API"></a>Scheduler API</h4><p>Scheduler － 调度器，相当于线程控制器，RxJava通过它来指定每一段代码应该运行在哪一个线程中。RxJava内置了一些Scheduler，适用场景如下：</p>
 <ul>
 <li><p>Schedulers.immediate(): 直接在当前线程中运行，默认的Scheduler</p>
 </li>
@@ -625,7 +628,7 @@ observeOn(): 指定Subscriber所运行的线程/事件消费的线程。
         }
     });
 </code></pre><p>这种在subscribe()之前写上线程控制的多适用于 『后台线程取数据，主线程显示』的程序策略。</p>
-<h4 id="2-Scheduler-原理"><a href="#2-Scheduler-原理" class="headerlink" title="2) Scheduler 原理"></a>2) Scheduler 原理</h4><h1 id="TBD"><a href="#TBD" class="headerlink" title="TBD"></a>TBD</h1><h2 id="变换"><a href="#变换" class="headerlink" title="变换"></a>变换</h2><p>RxJava提供了对事件序列进行变换的支持</p>
+<h4 id="Scheduler-原理"><a href="#Scheduler-原理" class="headerlink" title="Scheduler 原理"></a>Scheduler 原理</h4><h1 id="TBD"><a href="#TBD" class="headerlink" title="TBD"></a>TBD</h1><h3 id="变换"><a href="#变换" class="headerlink" title="变换"></a>变换</h3><p>RxJava提供了对事件序列进行变换的支持</p>
 <p>所谓变换，就是将事件序列中的对象或整个序列进行加工处理，转换成不同的事件或事件序列。</p>
 <h4 id="（1）API"><a href="#（1）API" class="headerlink" title="（1）API"></a>（1）API</h4><p>首先看map()示例:</p>
 <pre><code>Observable.just(&quot;image/ic_launcher.png&quot;) // 输入类型 String
@@ -862,7 +865,7 @@ observeOn(): 指定Subscriber所运行的线程/事件消费的线程。
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本概念"><span class="nav-number">1.</span> <span class="nav-text">基本概念</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Observables-被观察者-事件源-———–-gt-发出事件"><span class="nav-number">1.1.</span> <span class="nav-text">Observables(被观察者/事件源) ———–>  发出事件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Subscribers-观察者-————————–-gt-订阅接收-进行处理"><span class="nav-number">1.2.</span> <span class="nav-text">Subscribers(观察者) ————————–> 订阅接收,进行处理</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#基本实现"><span class="nav-number">2.</span> <span class="nav-text">基本实现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-创建Observer"><span class="nav-number">2.1.</span> <span class="nav-text">1)  创建Observer</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-创建Observable"><span class="nav-number">2.2.</span> <span class="nav-text">2)  创建Observable</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#just-T…-将传入的参数依次发送出来"><span class="nav-number">2.2.1.</span> <span class="nav-text">just(T…)  将传入的参数依次发送出来</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#from-T-from-Iterable-lt-extends-T-gt-将传入的数组或Iterable拆分成具体的对象后-依次发送出来"><span class="nav-number">2.2.2.</span> <span class="nav-text">from(T[]) / from(Iterable<? extends T>)  将传入的数组或Iterable拆分成具体的对象后,依次发送出来</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-订阅Subscribe"><span class="nav-number">2.3.</span> <span class="nav-text">3)  订阅Subscribe</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#注"><span class="nav-number">3.</span> <span class="nav-text">注:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程控制-Scheduler"><span class="nav-number"></span> <span class="nav-text">线程控制 - Scheduler</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1）-Scheduler-API"><span class="nav-number">0.1.</span> <span class="nav-text">1） Scheduler API</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#示例"><span class="nav-number">1.</span> <span class="nav-text">示例</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Scheduler-原理"><span class="nav-number">1.1.</span> <span class="nav-text">2) Scheduler 原理</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TBD"><span class="nav-number"></span> <span class="nav-text">TBD</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#变换"><span class="nav-number"></span> <span class="nav-text">变换</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#（1）API"><span class="nav-number">0.1.</span> <span class="nav-text">（1）API</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#注-1"><span class="nav-number">1.</span> <span class="nav-text">注</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常用变换"><span class="nav-number">2.</span> <span class="nav-text">#常用变换</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#（2）变换的原理-lift"><span class="nav-number">2.1.</span> <span class="nav-text">（2）变换的原理: lift()</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本概念"><span class="nav-number">1.</span> <span class="nav-text">基本概念</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Observables-被观察者-事件源-———–-gt-发出事件"><span class="nav-number">1.1.</span> <span class="nav-text">Observables(被观察者/事件源) ———–>  发出事件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Subscribers-观察者-————————–-gt-订阅接收-进行处理"><span class="nav-number">1.2.</span> <span class="nav-text">Subscribers(观察者) ————————–> 订阅接收,进行处理</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#基本实现"><span class="nav-number">2.</span> <span class="nav-text">基本实现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建Observer"><span class="nav-number">2.1.</span> <span class="nav-text">创建Observer</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建Observable"><span class="nav-number">2.2.</span> <span class="nav-text">创建Observable</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#just-T…-将传入的参数依次发送出来"><span class="nav-number">2.2.1.</span> <span class="nav-text">just(T…)  将传入的参数依次发送出来</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#from-T-from-Iterable-lt-extends-T-gt-将传入的数组或Iterable拆分成具体的对象后-依次发送出来"><span class="nav-number">2.2.2.</span> <span class="nav-text">from(T[]) / from(Iterable<? extends T>)  将传入的数组或Iterable拆分成具体的对象后,依次发送出来</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#订阅Subscribe"><span class="nav-number">2.3.</span> <span class="nav-text">订阅Subscribe</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#注"><span class="nav-number">3.</span> <span class="nav-text">注:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#线程控制-Scheduler"><span class="nav-number">4.</span> <span class="nav-text">线程控制 - Scheduler</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Scheduler-API"><span class="nav-number">4.1.</span> <span class="nav-text">Scheduler API</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#示例"><span class="nav-number">5.</span> <span class="nav-text">示例</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Scheduler-原理"><span class="nav-number">5.1.</span> <span class="nav-text">Scheduler 原理</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TBD"><span class="nav-number"></span> <span class="nav-text">TBD</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#变换"><span class="nav-number">1.</span> <span class="nav-text">变换</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#（1）API"><span class="nav-number">1.1.</span> <span class="nav-text">（1）API</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#注-1"><span class="nav-number">2.</span> <span class="nav-text">注</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常用变换"><span class="nav-number">3.</span> <span class="nav-text">#常用变换</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#（2）变换的原理-lift"><span class="nav-number">3.1.</span> <span class="nav-text">（2）变换的原理: lift()</span></a></li></ol></li></ol></div>
             
           </div>
         </section>
