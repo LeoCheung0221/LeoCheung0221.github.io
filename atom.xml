@@ -1375,7 +1375,7 @@ function search()
     <link href="http://tufusi.com/2016/06/07/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BRxJava%E6%A1%86%E6%9E%B6/"/>
     <id>http://tufusi.com/2016/06/07/Android部落格之RxJava框架/</id>
     <published>2016-06-07T01:14:57.000Z</published>
-    <updated>2016-08-20T10:36:14.723Z</updated>
+    <updated>2016-08-20T10:38:33.677Z</updated>
     
     <content type="html">&lt;h3 id=&quot;基本概念&quot;&gt;&lt;a href=&quot;#基本概念&quot; class=&quot;headerlink&quot; title=&quot;基本概念&quot;&gt;&lt;/a&gt;基本概念&lt;/h3&gt;&lt;p&gt;a library for composing asynchronous and event-based programs using observable sequences for the Java VM&lt;/p&gt;
 &lt;p&gt;一个在Java VM上使用可观测的序列来组成异步的、基于事件的程序的库&lt;/p&gt;
@@ -1564,7 +1564,7 @@ observeOn(): 指定Subscriber所运行的线程/事件消费的线程。
 &lt;pre&gt;&lt;code&gt;类Func1，也是RxJava的一个接口，用于包装含有一个参数的方法。
 
 FuncX 和 ActionX 区别，FuncX包装的是有返回值的方法
-&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&quot;常用变换&quot;&gt;&lt;a href=&quot;#常用变换&quot; class=&quot;headerlink&quot; title=&quot;常用变换&quot;&gt;&lt;/a&gt;常用变换&lt;/h4&gt;&lt;ul&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&quot;2-常用变换&quot;&gt;&lt;a href=&quot;#2-常用变换&quot; class=&quot;headerlink&quot; title=&quot;(2)常用变换&quot;&gt;&lt;/a&gt;(2)常用变换&lt;/h4&gt;&lt;ul&gt;
 &lt;li&gt;&lt;p&gt;map() —————– 事件对象的直接变换，是RxJava最为常用的变换&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;&lt;p&gt;flatMap()————– 事件对象的扁平变换，是map()的升级版&lt;/p&gt;
@@ -1591,7 +1591,7 @@ FuncX 和 ActionX 区别，FuncX包装的是有返回值的方法
     .throttleFirst(500, TimeUnitMILLISECONDS)  //设置防抖间隔 500ms
     .subscribe(subscriber);
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这样就可以解决手抖出现点开两个重复的界面问题&lt;/p&gt;
-&lt;h4 id=&quot;（2）变换的原理-lift&quot;&gt;&lt;a href=&quot;#（2）变换的原理-lift&quot; class=&quot;headerlink&quot; title=&quot;（2）变换的原理: lift()&quot;&gt;&lt;/a&gt;（2）变换的原理: lift()&lt;/h4&gt;&lt;p&gt;变换的实质： 针对事件序列的处理和再发送&lt;/p&gt;
+&lt;h4 id=&quot;（3）变换的原理-lift&quot;&gt;&lt;a href=&quot;#（3）变换的原理-lift&quot; class=&quot;headerlink&quot; title=&quot;（3）变换的原理: lift()&quot;&gt;&lt;/a&gt;（3）变换的原理: lift()&lt;/h4&gt;&lt;p&gt;变换的实质： 针对事件序列的处理和再发送&lt;/p&gt;
 &lt;p&gt;lift() 内部实现代码&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;public &amp;lt;R&amp;gt; Observable&amp;lt;R&amp;gt; lift(Operator&amp;lt;? extends R, ? super T&amp;gt; operator){
     return Observable.create(new OnSubscribe&amp;lt;R&amp;gt;(){
@@ -1623,8 +1623,7 @@ FuncX 和 ActionX 区别，FuncX包装的是有返回值的方法
 &lt;p&gt;换种方式理解： &lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;在Observable执行了lift(Operator)方法之后，会返回一个新的Observable，
 这个新的Observable会向代理一样， 负责接收原始的Observable发出的事件，并在处理之后发送给Subscriber。
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;##未完待续。。。&lt;/p&gt;
-&lt;iframe frameborder=&quot;no&quot; border=&quot;0&quot; marginwidth=&quot;0&quot; marginheight=&quot;0&quot; width=&quot;330&quot; height=&quot;86&quot; src=&quot;http://music.163.com/outchain/player?type=2&amp;id=94639&amp;auto=1&amp;height=66&quot;&gt;&lt;/iframe&gt;</content>
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;未完待续。。。&quot;&gt;&lt;a href=&quot;#未完待续。。。&quot; class=&quot;headerlink&quot; title=&quot;未完待续。。。&quot;&gt;&lt;/a&gt;未完待续。。。&lt;/h3&gt;&lt;iframe frameborder=&quot;no&quot; border=&quot;0&quot; marginwidth=&quot;0&quot; marginheight=&quot;0&quot; width=&quot;330&quot; height=&quot;86&quot; src=&quot;http://music.163.com/outchain/player?type=2&amp;id=94639&amp;auto=1&amp;height=66&quot;&gt;&lt;/iframe&gt;</content>
     
     <summary type="html">
     
