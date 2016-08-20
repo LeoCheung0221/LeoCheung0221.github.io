@@ -86,16 +86,16 @@
 
 
 
-<meta name="description" content="做人如果没有梦想,那和咸鱼有什么分别">
+<meta name="description" content="这篇关于Rx的操作符整理，是旨在不熟悉操作符情况下，便于查询以及参考理解之用。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="优秀第三方SDK分析-Fresco">
-<meta property="og:url" content="http://tufusi.com/2016/06/20/优秀第三方SDK分析-Fresco/index.html">
+<meta property="og:title" content="RxJava系列-操作符">
+<meta property="og:url" content="http://tufusi.com/2016/08/20/RxJava系列-操作符/index.html">
 <meta property="og:site_name" content="OnePiece">
-<meta property="og:description" content="做人如果没有梦想,那和咸鱼有什么分别">
-<meta property="og:updated_time" content="2016-06-20T15:09:23.648Z">
+<meta property="og:description" content="这篇关于Rx的操作符整理，是旨在不熟悉操作符情况下，便于查询以及参考理解之用。">
+<meta property="og:updated_time" content="2016-08-20T07:34:07.045Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="优秀第三方SDK分析-Fresco">
-<meta name="twitter:description" content="做人如果没有梦想,那和咸鱼有什么分别">
+<meta name="twitter:title" content="RxJava系列-操作符">
+<meta name="twitter:description" content="这篇关于Rx的操作符整理，是旨在不熟悉操作符情况下，便于查询以及参考理解之用。">
 
 
 
@@ -113,7 +113,7 @@
   };
 </script>
 
-  <title> 优秀第三方SDK分析-Fresco | OnePiece </title>
+  <title> RxJava系列-操作符 | OnePiece </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -423,7 +423,7 @@
             
             
               
-                优秀第三方SDK分析-Fresco
+                RxJava系列-操作符
               
             
           </h1>
@@ -435,8 +435,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-06-20T23:09:23+08:00" content="2016-06-20">
-              2016-06-20
+            <time itemprop="dateCreated" datetime="2016-08-20T15:30:46+08:00" content="2016-08-20">
+              2016-08-20
             </time>
           </span>
 
@@ -446,8 +446,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/06/20/优秀第三方SDK分析-Fresco/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/06/20/优秀第三方SDK分析-Fresco/" itemprop="commentsCount"></span>
+                <a href="/2016/08/20/RxJava系列-操作符/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/08/20/RxJava系列-操作符/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -470,7 +470,115 @@
       
 
       
-        
+        <p>这篇关于Rx的操作符整理，是旨在不熟悉操作符情况下，便于查询以及参考理解之用。</p>
+<a id="more"></a>
+<h3 id="用于创建Observable的操作符"><a href="#用于创建Observable的操作符" class="headerlink" title="用于创建Observable的操作符"></a>用于创建Observable的操作符</h3><ul>
+<li>Create — 通过调用观察者的方法从头创建一个Observable</li>
+<li>Defer — 在观察者订阅之前不创建这个Observable，为每一个观察者创建一个新的Observable</li>
+<li>Empty/Never/Throw — 创建行为受限的特殊Observable</li>
+<li>From — 将其它的对象或数据结构转换为Observable</li>
+<li>Interval — 创建一个定时发射整数序列的Observable</li>
+<li>Just — 将对象或者对象集合转换为一个会发射这些对象的Observable</li>
+<li>Range — 创建发射指定范围的整数序列的Observable</li>
+<li>Repeat — 创建重复发射特定的数据或数据序列的Observable</li>
+<li>Start — 创建发射一个函数的返回值的Observable</li>
+<li>Timer — 创建在一个指定的延迟之后发射单个数据的Observable</li>
+</ul>
+<h3 id="变换操作"><a href="#变换操作" class="headerlink" title="变换操作"></a>变换操作</h3><p>这些操作符可用于对Observable发射的数据进行变换，详细解释可以看每个操作符的文档</p>
+<ul>
+<li>Buffer — 缓存，可以简单的理解为缓存，它定期从Observable收集数据到一个集合，然后把这些数据集合打包发射，而不是一次发射一个</li>
+<li>FlatMap — 扁平映射，将Observable发射的数据变换为Observables集合，然后将这些Observable发射的数据平坦化的放进一个单独的Observable，可以认为是一个将嵌套的数据结构展开的过程。</li>
+<li>GroupBy — 分组，将原来的Observable分拆为Observable集合，将原始Observable发射的数据按Key分组，每一个Observable发射一组不同的数据</li>
+<li>Map — 映射，通过对序列的每一项都应用一个函数变换Observable发射的数据，实质是对序列中的每一项执行一个函数，函数的参数就是这个数据项</li>
+<li>Scan — 扫描，对Observable发射的每一项数据应用一个函数，然后按顺序依次发射这些值</li>
+<li>Window — 窗口，定期将来自Observable的数据分拆成一些Observable窗口，然后发射这些窗口，而不是每次发射一项。类似于Buffer，但Buffer发射的是数据，Window发射的是Observable，每一个Observable发射原始Observable的数据的一个子集</li>
+</ul>
+<h3 id="过滤操作"><a href="#过滤操作" class="headerlink" title="过滤操作"></a>过滤操作</h3><p>这些操作符用于从Observable发射的数据中进行选择</p>
+<ul>
+<li>Debounce — 只有在空闲了一段时间后才发射数据，通俗的说，就是如果一段时间没有操作，就执行一次操作</li>
+<li>Distinct — 去重，过滤掉重复数据项</li>
+<li>ElementAt — 取值，取特定位置的数据项</li>
+<li>Filter — 过滤，过滤掉没有通过谓词测试的数据项，只发射通过测试的</li>
+<li>First — 首项，只发射满足条件的第一条数据</li>
+<li>IgnoreElements — 忽略所有的数据，只保留终止通知(onError或onCompleted)</li>
+<li>Last — 末项，只发射最后一条数据</li>
+<li>Sample — 取样，定期发射最新的数据，等于是数据抽样，有的实现里叫ThrottleFirst</li>
+<li>Skip — 跳过前面的若干项数据</li>
+<li>SkipLast — 跳过后面的若干项数据</li>
+<li>Take — 只保留前面的若干项数据</li>
+<li>TakeLast — 只保留后面的若干项数据</li>
+</ul>
+<h3 id="组合操作"><a href="#组合操作" class="headerlink" title="组合操作"></a>组合操作</h3><p>组合操作符用于将多个Observable组合成一个单一的Observable</p>
+<ul>
+<li>And/Then/When — 通过模式(And条件)和计划(Then次序)组合两个或多个Observable发射的数据集</li>
+<li>CombineLatest — 当两个Observables中的任何一个发射了一个数据时，通过一个指定的函数组合每个Observable发射的最新数据（一共两个数据），然后发射这个函数的结果</li>
+<li>Join — 无论何时，如果一个Observable发射了一个数据项，只要在另一个Observable发射的数据项定义的时间窗口内，就将两个Observable发射的数据合并发射</li>
+<li>Merge — 将两个Observable发射的数据组合并成一个</li>
+<li>StartWith — 在发射原来的Observable的数据序列之前，先发射一个指定的数据序列或数据项</li>
+<li>Switch — 将一个发射Observable序列的Observable转换为这样一个Observable：它逐个发射那些Observable最近发射的数据</li>
+<li>Zip — 打包，使用一个指定的函数将多个Observable发射的数据组合在一起，然后将这个函数的结果作为单项数据发射</li>
+</ul>
+<h3 id="错误处理"><a href="#错误处理" class="headerlink" title="错误处理"></a>错误处理</h3><p>这些操作符用于从错误通知中恢复</p>
+<ul>
+<li>Catch — 捕获，继续序列操作，将错误替换为正常的数据，从onError通知中恢复</li>
+<li>Retry — 重试，如果Observable发射了一个错误通知，重新订阅它，期待它正常终止</li>
+</ul>
+<h3 id="辅助操作"><a href="#辅助操作" class="headerlink" title="辅助操作"></a>辅助操作</h3><p>一组用于处理Observable的操作符</p>
+<ul>
+<li>Delay — 延迟一段时间发射结果数据</li>
+<li>Do — 注册一个动作占用一些Observable的生命周期事件，相当于Mock某个操作</li>
+<li>Materialize/Dematerialize — 将发射的数据和通知都当做数据发射，或者反过来</li>
+<li>ObserveOn — 指定观察者观察Observable的调度程序（工作线程）</li>
+<li>Serialize — 强制Observable按次序发射数据并且功能是有效的</li>
+<li>Subscribe — 收到Observable发射的数据和通知后执行的操作</li>
+<li>SubscribeOn — 指定Observable应该在哪个调度程序上执行</li>
+<li>TimeInterval — 将一个Observable转换为发射两个数据之间所耗费时间的Observable</li>
+<li>Timeout — 添加超时机制，如果过了指定的一段时间没有发射数据，就发射一个错误通知</li>
+<li>Timestamp — 给Observable发射的每个数据项添加一个时间戳</li>
+<li>Using — 创建一个只在Observable的生命周期内存在的一次性资源</li>
+</ul>
+<h3 id="条件和布尔操作"><a href="#条件和布尔操作" class="headerlink" title="条件和布尔操作"></a>条件和布尔操作</h3><p>这些操作符可用于单个或多个数据项，也可用于Observable</p>
+<ul>
+<li>All — 判断Observable发射的所有的数据项是否都满足某个条件</li>
+<li>Amb — 给定多个Observable，只让第一个发射数据的Observable发射全部数据</li>
+<li>Contains — 判断Observable是否会发射一个指定的数据项</li>
+<li>DefaultIfEmpty — 发射来自原始Observable的数据，如果原始Observable没有发射数据，就发射一个默认数据</li>
+<li>SequenceEqual — 判断两个Observable是否按相同的数据序列</li>
+<li>SkipUntil — 丢弃原始Observable发射的数据，直到第二个Observable发射了一个数据，然后发射原始Observable的剩余数据</li>
+<li>SkipWhile — 丢弃原始Observable发射的数据，直到一个特定的条件为假，然后发射原始Observable剩余的数据</li>
+<li>TakeUntil — 发射来自原始Observable的数据，直到第二个Observable发射了一个数据或一个通知</li>
+<li>TakeWhile — 发射原始Observable的数据，直到一个特定的条件为真，然后跳过剩余的数据</li>
+</ul>
+<h3 id="算术和聚合操作"><a href="#算术和聚合操作" class="headerlink" title="算术和聚合操作"></a>算术和聚合操作</h3><p>这些操作符可用于整个数据序列</p>
+<ul>
+<li>Average — 计算Observable发射的数据序列的平均值，然后发射这个结果</li>
+<li>Concat — 不交错的连接多个Observable的数据</li>
+<li>Count — 计算Observable发射的数据个数，然后发射这个结果</li>
+<li>Max — 计算并发射数据序列的最大值</li>
+<li>Min — 计算并发射数据序列的最小值</li>
+<li>Reduce — 按顺序对数据序列的每一个应用某个函数，然后返回这个值</li>
+<li>Sum — 计算并发射数据序列的和</li>
+</ul>
+<h3 id="连接操作"><a href="#连接操作" class="headerlink" title="连接操作"></a>连接操作</h3><p>一些有精确可控的订阅行为的特殊Observable</p>
+<ul>
+<li>Connect — 指示一个可连接的Observable开始发射数据给订阅者</li>
+<li>Publish — 将一个普通的Observable转换为可连接的</li>
+<li>RefCount — 使一个可连接的Observable表现得像一个普通的Observable</li>
+<li>Replay — 确保所有的观察者收到同样的数据序列，即使他们在Observable开始发射数据之后才订阅</li>
+</ul>
+<h3 id="转换操作"><a href="#转换操作" class="headerlink" title="转换操作"></a>转换操作</h3><ul>
+<li>To — 将Observable转换为其它的对象或数据结构</li>
+<li>Blocking 阻塞Observable的操作符</li>
+</ul>
+<h3 id="操作符决策树"><a href="#操作符决策树" class="headerlink" title="操作符决策树"></a>操作符决策树</h3><p>几种主要的需求</p>
+<ul>
+<li>直接创建一个Observable（创建操作）</li>
+<li>组合多个Observable（组合操作）</li>
+<li>对Observable发射的数据执行变换操作（变换操作）</li>
+<li>从Observable发射的数据中取特定的值（过滤操作）</li>
+<li>转发Observable的部分值（条件/布尔/过滤操作）</li>
+<li>对Observable发射的数据序列求值（算术/聚合操作）</li>
+</ul>
       
     </div>
 
@@ -494,17 +602,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2016/06/20/Android优化交互-协调布局详解/" rel="next" title="Android优化交互-协调布局详解">
-                <i class="fa fa-chevron-left"></i> Android优化交互-协调布局详解
+              <a href="/2016/08/13/进阶系列之APP重构/" rel="next" title="进阶系列APP重构">
+                <i class="fa fa-chevron-left"></i> 进阶系列APP重构
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2016/08/13/进阶系列之设计模式/" rel="prev" title="进阶系列设计模式">
-                进阶系列设计模式 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -530,8 +634,8 @@
           
   <div class="comments" id="comments">
     
-      <div class="ds-thread" data-thread-key="2016/06/20/优秀第三方SDK分析-Fresco/"
-           data-title="优秀第三方SDK分析-Fresco" data-url="http://tufusi.com/2016/06/20/优秀第三方SDK分析-Fresco/">
+      <div class="ds-thread" data-thread-key="2016/08/20/RxJava系列-操作符/"
+           data-title="RxJava系列-操作符" data-url="http://tufusi.com/2016/08/20/RxJava系列-操作符/">
       </div>
     
   </div>
@@ -629,7 +733,7 @@
               
             
             
-              <p class="post-toc-empty">此文章未包含目录</p>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#用于创建Observable的操作符"><span class="nav-number">1.</span> <span class="nav-text">用于创建Observable的操作符</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#变换操作"><span class="nav-number">2.</span> <span class="nav-text">变换操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#过滤操作"><span class="nav-number">3.</span> <span class="nav-text">过滤操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#组合操作"><span class="nav-number">4.</span> <span class="nav-text">组合操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#错误处理"><span class="nav-number">5.</span> <span class="nav-text">错误处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#辅助操作"><span class="nav-number">6.</span> <span class="nav-text">辅助操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#条件和布尔操作"><span class="nav-number">7.</span> <span class="nav-text">条件和布尔操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#算术和聚合操作"><span class="nav-number">8.</span> <span class="nav-text">算术和聚合操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#连接操作"><span class="nav-number">9.</span> <span class="nav-text">连接操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#转换操作"><span class="nav-number">10.</span> <span class="nav-text">转换操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#操作符决策树"><span class="nav-number">11.</span> <span class="nav-text">操作符决策树</span></a></li></ol></div>
             
           </div>
         </section>

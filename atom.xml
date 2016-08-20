@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://tufusi.com/"/>
-  <updated>2016-08-13T14:29:11.749Z</updated>
+  <updated>2016-08-20T07:34:07.045Z</updated>
   <id>http://tufusi.com/</id>
   
   <author>
@@ -14,6 +14,132 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>RxJava系列-操作符</title>
+    <link href="http://tufusi.com/2016/08/20/RxJava%E7%B3%BB%E5%88%97-%E6%93%8D%E4%BD%9C%E7%AC%A6/"/>
+    <id>http://tufusi.com/2016/08/20/RxJava系列-操作符/</id>
+    <published>2016-08-20T07:30:46.000Z</published>
+    <updated>2016-08-20T07:34:07.045Z</updated>
+    
+    <content type="html">&lt;p&gt;这篇关于Rx的操作符整理，是旨在不熟悉操作符情况下，便于查询以及参考理解之用。&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;h3 id=&quot;用于创建Observable的操作符&quot;&gt;&lt;a href=&quot;#用于创建Observable的操作符&quot; class=&quot;headerlink&quot; title=&quot;用于创建Observable的操作符&quot;&gt;&lt;/a&gt;用于创建Observable的操作符&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;Create — 通过调用观察者的方法从头创建一个Observable&lt;/li&gt;
+&lt;li&gt;Defer — 在观察者订阅之前不创建这个Observable，为每一个观察者创建一个新的Observable&lt;/li&gt;
+&lt;li&gt;Empty/Never/Throw — 创建行为受限的特殊Observable&lt;/li&gt;
+&lt;li&gt;From — 将其它的对象或数据结构转换为Observable&lt;/li&gt;
+&lt;li&gt;Interval — 创建一个定时发射整数序列的Observable&lt;/li&gt;
+&lt;li&gt;Just — 将对象或者对象集合转换为一个会发射这些对象的Observable&lt;/li&gt;
+&lt;li&gt;Range — 创建发射指定范围的整数序列的Observable&lt;/li&gt;
+&lt;li&gt;Repeat — 创建重复发射特定的数据或数据序列的Observable&lt;/li&gt;
+&lt;li&gt;Start — 创建发射一个函数的返回值的Observable&lt;/li&gt;
+&lt;li&gt;Timer — 创建在一个指定的延迟之后发射单个数据的Observable&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;变换操作&quot;&gt;&lt;a href=&quot;#变换操作&quot; class=&quot;headerlink&quot; title=&quot;变换操作&quot;&gt;&lt;/a&gt;变换操作&lt;/h3&gt;&lt;p&gt;这些操作符可用于对Observable发射的数据进行变换，详细解释可以看每个操作符的文档&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Buffer — 缓存，可以简单的理解为缓存，它定期从Observable收集数据到一个集合，然后把这些数据集合打包发射，而不是一次发射一个&lt;/li&gt;
+&lt;li&gt;FlatMap — 扁平映射，将Observable发射的数据变换为Observables集合，然后将这些Observable发射的数据平坦化的放进一个单独的Observable，可以认为是一个将嵌套的数据结构展开的过程。&lt;/li&gt;
+&lt;li&gt;GroupBy — 分组，将原来的Observable分拆为Observable集合，将原始Observable发射的数据按Key分组，每一个Observable发射一组不同的数据&lt;/li&gt;
+&lt;li&gt;Map — 映射，通过对序列的每一项都应用一个函数变换Observable发射的数据，实质是对序列中的每一项执行一个函数，函数的参数就是这个数据项&lt;/li&gt;
+&lt;li&gt;Scan — 扫描，对Observable发射的每一项数据应用一个函数，然后按顺序依次发射这些值&lt;/li&gt;
+&lt;li&gt;Window — 窗口，定期将来自Observable的数据分拆成一些Observable窗口，然后发射这些窗口，而不是每次发射一项。类似于Buffer，但Buffer发射的是数据，Window发射的是Observable，每一个Observable发射原始Observable的数据的一个子集&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;过滤操作&quot;&gt;&lt;a href=&quot;#过滤操作&quot; class=&quot;headerlink&quot; title=&quot;过滤操作&quot;&gt;&lt;/a&gt;过滤操作&lt;/h3&gt;&lt;p&gt;这些操作符用于从Observable发射的数据中进行选择&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Debounce — 只有在空闲了一段时间后才发射数据，通俗的说，就是如果一段时间没有操作，就执行一次操作&lt;/li&gt;
+&lt;li&gt;Distinct — 去重，过滤掉重复数据项&lt;/li&gt;
+&lt;li&gt;ElementAt — 取值，取特定位置的数据项&lt;/li&gt;
+&lt;li&gt;Filter — 过滤，过滤掉没有通过谓词测试的数据项，只发射通过测试的&lt;/li&gt;
+&lt;li&gt;First — 首项，只发射满足条件的第一条数据&lt;/li&gt;
+&lt;li&gt;IgnoreElements — 忽略所有的数据，只保留终止通知(onError或onCompleted)&lt;/li&gt;
+&lt;li&gt;Last — 末项，只发射最后一条数据&lt;/li&gt;
+&lt;li&gt;Sample — 取样，定期发射最新的数据，等于是数据抽样，有的实现里叫ThrottleFirst&lt;/li&gt;
+&lt;li&gt;Skip — 跳过前面的若干项数据&lt;/li&gt;
+&lt;li&gt;SkipLast — 跳过后面的若干项数据&lt;/li&gt;
+&lt;li&gt;Take — 只保留前面的若干项数据&lt;/li&gt;
+&lt;li&gt;TakeLast — 只保留后面的若干项数据&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;组合操作&quot;&gt;&lt;a href=&quot;#组合操作&quot; class=&quot;headerlink&quot; title=&quot;组合操作&quot;&gt;&lt;/a&gt;组合操作&lt;/h3&gt;&lt;p&gt;组合操作符用于将多个Observable组合成一个单一的Observable&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;And/Then/When — 通过模式(And条件)和计划(Then次序)组合两个或多个Observable发射的数据集&lt;/li&gt;
+&lt;li&gt;CombineLatest — 当两个Observables中的任何一个发射了一个数据时，通过一个指定的函数组合每个Observable发射的最新数据（一共两个数据），然后发射这个函数的结果&lt;/li&gt;
+&lt;li&gt;Join — 无论何时，如果一个Observable发射了一个数据项，只要在另一个Observable发射的数据项定义的时间窗口内，就将两个Observable发射的数据合并发射&lt;/li&gt;
+&lt;li&gt;Merge — 将两个Observable发射的数据组合并成一个&lt;/li&gt;
+&lt;li&gt;StartWith — 在发射原来的Observable的数据序列之前，先发射一个指定的数据序列或数据项&lt;/li&gt;
+&lt;li&gt;Switch — 将一个发射Observable序列的Observable转换为这样一个Observable：它逐个发射那些Observable最近发射的数据&lt;/li&gt;
+&lt;li&gt;Zip — 打包，使用一个指定的函数将多个Observable发射的数据组合在一起，然后将这个函数的结果作为单项数据发射&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;错误处理&quot;&gt;&lt;a href=&quot;#错误处理&quot; class=&quot;headerlink&quot; title=&quot;错误处理&quot;&gt;&lt;/a&gt;错误处理&lt;/h3&gt;&lt;p&gt;这些操作符用于从错误通知中恢复&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Catch — 捕获，继续序列操作，将错误替换为正常的数据，从onError通知中恢复&lt;/li&gt;
+&lt;li&gt;Retry — 重试，如果Observable发射了一个错误通知，重新订阅它，期待它正常终止&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;辅助操作&quot;&gt;&lt;a href=&quot;#辅助操作&quot; class=&quot;headerlink&quot; title=&quot;辅助操作&quot;&gt;&lt;/a&gt;辅助操作&lt;/h3&gt;&lt;p&gt;一组用于处理Observable的操作符&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Delay — 延迟一段时间发射结果数据&lt;/li&gt;
+&lt;li&gt;Do — 注册一个动作占用一些Observable的生命周期事件，相当于Mock某个操作&lt;/li&gt;
+&lt;li&gt;Materialize/Dematerialize — 将发射的数据和通知都当做数据发射，或者反过来&lt;/li&gt;
+&lt;li&gt;ObserveOn — 指定观察者观察Observable的调度程序（工作线程）&lt;/li&gt;
+&lt;li&gt;Serialize — 强制Observable按次序发射数据并且功能是有效的&lt;/li&gt;
+&lt;li&gt;Subscribe — 收到Observable发射的数据和通知后执行的操作&lt;/li&gt;
+&lt;li&gt;SubscribeOn — 指定Observable应该在哪个调度程序上执行&lt;/li&gt;
+&lt;li&gt;TimeInterval — 将一个Observable转换为发射两个数据之间所耗费时间的Observable&lt;/li&gt;
+&lt;li&gt;Timeout — 添加超时机制，如果过了指定的一段时间没有发射数据，就发射一个错误通知&lt;/li&gt;
+&lt;li&gt;Timestamp — 给Observable发射的每个数据项添加一个时间戳&lt;/li&gt;
+&lt;li&gt;Using — 创建一个只在Observable的生命周期内存在的一次性资源&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;条件和布尔操作&quot;&gt;&lt;a href=&quot;#条件和布尔操作&quot; class=&quot;headerlink&quot; title=&quot;条件和布尔操作&quot;&gt;&lt;/a&gt;条件和布尔操作&lt;/h3&gt;&lt;p&gt;这些操作符可用于单个或多个数据项，也可用于Observable&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;All — 判断Observable发射的所有的数据项是否都满足某个条件&lt;/li&gt;
+&lt;li&gt;Amb — 给定多个Observable，只让第一个发射数据的Observable发射全部数据&lt;/li&gt;
+&lt;li&gt;Contains — 判断Observable是否会发射一个指定的数据项&lt;/li&gt;
+&lt;li&gt;DefaultIfEmpty — 发射来自原始Observable的数据，如果原始Observable没有发射数据，就发射一个默认数据&lt;/li&gt;
+&lt;li&gt;SequenceEqual — 判断两个Observable是否按相同的数据序列&lt;/li&gt;
+&lt;li&gt;SkipUntil — 丢弃原始Observable发射的数据，直到第二个Observable发射了一个数据，然后发射原始Observable的剩余数据&lt;/li&gt;
+&lt;li&gt;SkipWhile — 丢弃原始Observable发射的数据，直到一个特定的条件为假，然后发射原始Observable剩余的数据&lt;/li&gt;
+&lt;li&gt;TakeUntil — 发射来自原始Observable的数据，直到第二个Observable发射了一个数据或一个通知&lt;/li&gt;
+&lt;li&gt;TakeWhile — 发射原始Observable的数据，直到一个特定的条件为真，然后跳过剩余的数据&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;算术和聚合操作&quot;&gt;&lt;a href=&quot;#算术和聚合操作&quot; class=&quot;headerlink&quot; title=&quot;算术和聚合操作&quot;&gt;&lt;/a&gt;算术和聚合操作&lt;/h3&gt;&lt;p&gt;这些操作符可用于整个数据序列&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Average — 计算Observable发射的数据序列的平均值，然后发射这个结果&lt;/li&gt;
+&lt;li&gt;Concat — 不交错的连接多个Observable的数据&lt;/li&gt;
+&lt;li&gt;Count — 计算Observable发射的数据个数，然后发射这个结果&lt;/li&gt;
+&lt;li&gt;Max — 计算并发射数据序列的最大值&lt;/li&gt;
+&lt;li&gt;Min — 计算并发射数据序列的最小值&lt;/li&gt;
+&lt;li&gt;Reduce — 按顺序对数据序列的每一个应用某个函数，然后返回这个值&lt;/li&gt;
+&lt;li&gt;Sum — 计算并发射数据序列的和&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;连接操作&quot;&gt;&lt;a href=&quot;#连接操作&quot; class=&quot;headerlink&quot; title=&quot;连接操作&quot;&gt;&lt;/a&gt;连接操作&lt;/h3&gt;&lt;p&gt;一些有精确可控的订阅行为的特殊Observable&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Connect — 指示一个可连接的Observable开始发射数据给订阅者&lt;/li&gt;
+&lt;li&gt;Publish — 将一个普通的Observable转换为可连接的&lt;/li&gt;
+&lt;li&gt;RefCount — 使一个可连接的Observable表现得像一个普通的Observable&lt;/li&gt;
+&lt;li&gt;Replay — 确保所有的观察者收到同样的数据序列，即使他们在Observable开始发射数据之后才订阅&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;转换操作&quot;&gt;&lt;a href=&quot;#转换操作&quot; class=&quot;headerlink&quot; title=&quot;转换操作&quot;&gt;&lt;/a&gt;转换操作&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;To — 将Observable转换为其它的对象或数据结构&lt;/li&gt;
+&lt;li&gt;Blocking 阻塞Observable的操作符&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;操作符决策树&quot;&gt;&lt;a href=&quot;#操作符决策树&quot; class=&quot;headerlink&quot; title=&quot;操作符决策树&quot;&gt;&lt;/a&gt;操作符决策树&lt;/h3&gt;&lt;p&gt;几种主要的需求&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;直接创建一个Observable（创建操作）&lt;/li&gt;
+&lt;li&gt;组合多个Observable（组合操作）&lt;/li&gt;
+&lt;li&gt;对Observable发射的数据执行变换操作（变换操作）&lt;/li&gt;
+&lt;li&gt;从Observable发射的数据中取特定的值（过滤操作）&lt;/li&gt;
+&lt;li&gt;转发Observable的部分值（条件/布尔/过滤操作）&lt;/li&gt;
+&lt;li&gt;对Observable发射的数据序列求值（算术/聚合操作）&lt;/li&gt;
+&lt;/ul&gt;</content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;这篇关于Rx的操作符整理，是旨在不熟悉操作符情况下，便于查询以及参考理解之用。&lt;/p&gt;
+    
+    </summary>
+    
+    
+  </entry>
   
   <entry>
     <title>进阶系列APP重构</title>
