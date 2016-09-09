@@ -4,9 +4,7 @@ create: 2016-06-01
 author: leocheung
 ---
 # 工作
-
 ## 做人如果没有梦想，那和咸鱼有什么分别
-
 ### 自己建的博客 哭着也要写下去  
 
 OnePiece [www.tufusi.com](http://www.tufusi.com)
@@ -30,6 +28,8 @@ OnePiece [www.tufusi.com](http://www.tufusi.com)
 
 > ###### [进阶－MVP架构](http://tufusi.com/2016/08/13/%E8%BF%9B%E9%98%B6%E7%B3%BB%E5%88%97%E4%B9%8BMVP%E6%9E%B6%E6%9E%84/#more/)
 
+> ###### [进阶－DataBinding]()
+
 > ###### [进阶－图片缓存](http://tufusi.com/2016/08/13/%E8%BF%9B%E9%98%B6%E7%B3%BB%E5%88%97%E4%B9%8B%E5%9B%BE%E7%89%87%E7%BC%93%E5%AD%98%E6%8A%80%E6%9C%AF/#more/)
 
 > ###### [进阶－总结](http://tufusi.com/2016/08/13/%E8%BF%9B%E9%98%B6%E7%B3%BB%E5%88%97%E4%B9%8B%E4%B8%80%E5%B9%B4%E4%B8%80%E6%80%BB%E7%BB%93/#more/)
@@ -44,8 +44,6 @@ OnePiece [www.tufusi.com](http://www.tufusi.com)
 > ###### [深入系列 - 蓝牙技术]()
 
 ##### 2016 ALGORITHM系列
-> ###### [算法系列 - 九大排序]()
-
 > ###### [算法系列 - DTW(Dynamic Time Warping 动态时间归整)]()
 
 #### 自定义控件
@@ -68,16 +66,21 @@ OnePiece [www.tufusi.com](http://www.tufusi.com)
 
 >* [Picasso]() - DITTO -- from square
 
+##### 数据持久化技术
+>* [数据持久化框架]()
+
 ##### TBD
 
 #### Android源码分析
-
 >* [Handler]()
+
+>* [View绘制]()
 
 >* [事件传递]()
 
-#### 进阶书籍笔记
+>* [经验总结-参考](http://www.jianshu.com/p/be86e5678252)
 
+#### 进阶书籍笔记
 >* [《Android开发艺术探索》]()
 
 >* [《图解HTTP》]()
@@ -89,18 +92,18 @@ OnePiece [www.tufusi.com](http://www.tufusi.com)
 >* [《重构-改善既有代码的设计》]()
 
 #### Android架构那些事
-
 >* [技术选型]()
-
->* [数据持久化框架]()
 
 >* [一步一个坑之项目重构]()
 
 >* [开发之必用的第三方SDK]()
 
->* [Android性能优化篇]()
+>* [Android性能优化篇](https://github.com/LeoCheung0221/LeoCheung0221.github.io/blob/master/%E5%B9%B2%E8%B4%A7%E5%88%86%E4%BA%AB/Android%E5%BA%94%E7%94%A8%E6%80%A7%E8%83%BD%E6%A3%80%E6%B5%8B%E5%B7%A5%E5%85%B7%E5%88%97%E8%A1%A8.MD)
 
 #### Android开发  填坑记
+>* [开发之必会基础知识]()
+
+>* [Cookie持久化]()
 
 >* [第三方分享]()
 
@@ -108,24 +111,40 @@ OnePiece [www.tufusi.com](http://www.tufusi.com)
 #### Android开发  冷知识
 
 这些高冷知识点，会用就是装X利器，不会也得知道，缘分这东西谁说的清
-
 >* [音效]()
 
+>* [实时获取音量分贝]()
+
+#### 作品区
+>* [仿网易云音乐-致我最爱的音乐App]()
+
 # 个人
-
 ## 凭你的智慧，我唬的了你吗
-
 #### 我还是那么的喜欢English，然而实在太虐　－　凑合翻
 
 >* [翻译-前端框架 Express](https://github.com/LeoCheung0221/LeoCheung0221.github.io/blob/master/%E5%B9%B2%E8%B4%A7%E5%88%86%E4%BA%AB/TRANSLAT_EXPRESSE.MD)
 
-#### 喜欢一个人需要理由吗？需要吗？不需要吗？需要吗？　－　那喜欢一个网站呢
+#### 资料汇总
+[2015/01](https://segmentfault.com/bookmark/1230000004292712)
+[2015/02](http://blog.csdn.net/hollow12384/article/details/52318894)
 
+#### 优质博客
+[Trinea](http://www.trinea.cn/)
+[大帅](http://blog.zhaiyifan.cn/)
+[技术小黑屋](http://droidyue.com/)
+[代码家](http://blog.daimajia.com/)
+[秋百万](http://www.liaohuqiu.net/)
+[鸿洋大神](http://blog.csdn.net/lmj623565791/)
+[大头鬼Bruce](http://blog.csdn.net/lzyzsd)
+
+#### 喜欢一个人需要理由吗？需要吗？不需要吗？需要吗？　－　那喜欢一个网站呢
 >* [免费代码集中营 freecodecamp](https://www.freecodecamp.com/)
 
 >* [全球程序员怪才聚集地 livecoding](http://www.livecoding.tv/)
 
 >* [Android开发技术周报 androidweekly](http://androidweekly.cn/)
+
+>* [codeKK 开源项目源码分析 codeKK](http://a.codekk.com/)
 
 >* [Android巴士 androidbus](http://www.apkbus.com/)
 
@@ -136,6 +155,18 @@ OnePiece [www.tufusi.com](http://www.tufusi.com)
 >* [ReactNative VIP论坛 RN VIP](http://www.reactnative.vip/)
 
 >* [前端资源网 awesomes](https://www.awesomes.cn/) ／ [前端Top100](https://www.awesomes.cn/rank/)
+
+>* [计算机书籍控](http://bestcbooks.com/categories/wang-luo/)
+
+>* [Android Development](http://www.vogella.com/tutorials/android.html)
+
+>* [Android Arsenal Android兵工厂](http://android-arsenal.com/)
+
+>* [高质清净的网站系列一](https://github.com/android-cn/android-discuss/issues)
+
+>* [高质清净的网站系列二](https://developer.android.com/index.html)
+
+
 
 ```sh
 为什么遇到如此强大的敌人你也不愿逃跑？ —— 那是因为身后，有至爱之人。 
