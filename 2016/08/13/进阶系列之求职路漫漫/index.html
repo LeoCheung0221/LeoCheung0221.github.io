@@ -5,10 +5,10 @@
   
 
 
-<html class="theme-next mist use-motion">
+<html class="theme-next mist use-motion" lang="zh-Hans">
 <head>
   <meta charset="UTF-8"/>
-<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
 
 
@@ -29,7 +29,7 @@
 
   
   
-  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
 
 
 
@@ -63,9 +63,9 @@
 
 
 
-<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
 
-<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
 
 
   <meta name="keywords" content="Hexo, NexT" />
@@ -79,7 +79,7 @@
 
 
 
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
 
 
 
@@ -109,19 +109,35 @@ So just try it and try it!">
 
 
 
-<script type="text/javascript" id="hexo.configuration">
+<script type="text/javascript" id="hexo.configurations">
   var NexT = window.NexT || {};
   var CONFIG = {
+    root: '/',
     scheme: 'Mist',
     sidebar: {"position":"left","display":"always"},
     fancybox: true,
     motion: true,
     duoshuo: {
-      userId: 0,
+      userId: '0',
       author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
     }
   };
 </script>
+
+
+
+  <link rel="canonical" href="http://tufusi.com/2016/08/13/进阶系列之求职路漫漫/"/>
+
+
+
+
 
   <title> 进阶系列之求职路漫漫 | OnePiece </title>
 </head>
@@ -238,161 +254,165 @@ So just try it and try it!">
 
       
 
-	  <li> <a title="把这个链接拖到你的Chrome收藏夹工具栏中" href='javascript:(function() {
-    function c() {
-        var e = document.createElement("link");
-        e.setAttribute("type", "text/css");
-        e.setAttribute("rel", "stylesheet");
-        e.setAttribute("href", f);
-        e.setAttribute("class", l);
-        document.body.appendChild(e)
-    }
+      <li> <a title="把这个链接拖到你的Chrome收藏夹工具栏中" href='javascript:(function() {
+     	    function c() {
+     	        var e = document.createElement("link");
+     	        e.setAttribute("type", "text/css");
+     	        e.setAttribute("rel", "stylesheet");
+     	        e.setAttribute("href", f);
+     	        e.setAttribute("class", l);
+     	        document.body.appendChild(e)
+     	    }
 
-    function h() {
-        var e = document.getElementsByClassName(l);
-        for (var t = 0; t < e.length; t++) {
-            document.body.removeChild(e[t])
-        }
-    }
+     	    function h() {
+     	        var e = document.getElementsByClassName(l);
+     	        for (var t = 0; t < e.length; t++) {
+     	            document.body.removeChild(e[t])
+     	        }
+     	    }
 
-    function p() {
-        var e = document.createElement("div");
-        e.setAttribute("class", a);
-        document.body.appendChild(e);
-        setTimeout(function() {
-            document.body.removeChild(e)
-        }, 100)
-    }
+     	    function p() {
+     	        var e = document.createElement("div");
+     	        e.setAttribute("class", a);
+     	        document.body.appendChild(e);
+     	        setTimeout(function() {
+     	            document.body.removeChild(e)
+     	        }, 100)
+     	    }
 
-    function d(e) {
-        return {
-            height : e.offsetHeight,
-            width : e.offsetWidth
-        }
-    }
+     	    function d(e) {
+     	        return {
+     	            height : e.offsetHeight,
+     	            width : e.offsetWidth
+     	        }
+     	    }
 
-    function v(i) {
-        var s = d(i);
-        return s.height > e && s.height < n && s.width > t && s.width < r
-    }
+     	    function v(i) {
+     	        var s = d(i);
+     	        return s.height > e && s.height < n && s.width > t && s.width < r
+     	    }
 
-    function m(e) {
-        var t = e;
-        var n = 0;
-        while (!!t) {
-            n += t.offsetTop;
-            t = t.offsetParent
-        }
-        return n
-    }
+     	    function m(e) {
+     	        var t = e;
+     	        var n = 0;
+     	        while (!!t) {
+     	            n += t.offsetTop;
+     	            t = t.offsetParent
+     	        }
+     	        return n
+     	    }
 
-    function g() {
-        var e = document.documentElement;
-        if (!!window.innerWidth) {
-            return window.innerHeight
-        } else if (e && !isNaN(e.clientHeight)) {
-            return e.clientHeight
-        }
-        return 0
-    }
+     	    function g() {
+     	        var e = document.documentElement;
+     	        if (!!window.innerWidth) {
+     	            return window.innerHeight
+     	        } else if (e && !isNaN(e.clientHeight)) {
+     	            return e.clientHeight
+     	        }
+     	        return 0
+     	    }
 
-    function y() {
-        if (window.pageYOffset) {
-            return window.pageYOffset
-        }
-        return Math.max(document.documentElement.scrollTop, document.body.scrollTop)
-    }
+     	    function y() {
+     	        if (window.pageYOffset) {
+     	            return window.pageYOffset
+     	        }
+     	        return Math.max(document.documentElement.scrollTop, document.body.scrollTop)
+     	    }
 
-    function E(e) {
-        var t = m(e);
-        return t >= w && t <= b + w
-    }
+     	    function E(e) {
+     	        var t = m(e);
+     	        return t >= w && t <= b + w
+     	    }
 
-    function S() {
-        var e = document.createElement("audio");
-        e.setAttribute("class", l);
-        e.src = i;
-        e.loop = false;
-        e.addEventListener("canplay", function() {
-            setTimeout(function() {
-                x(k)
-            }, 500);
-            setTimeout(function() {
-                N();
-                p();
-                for (var e = 0; e < O.length; e++) {
-                    T(O[e])
-                }
-            }, 15500)
-        }, true);
-        e.addEventListener("ended", function() {
-            N();
-            h()
-        }, true);
-        e.innerHTML = " <p>If you are reading this, it is because your browser does not support the audio element. We recommend that you get a new browser.</p> <p>";
-        document.body.appendChild(e);
-        e.play()
-    }
+     	    function S() {
+     	        var e = document.createElement("audio");
+     	        e.setAttribute("class", l);
+     	        e.src = i;
+     	        e.loop = false;
+     	        e.addEventListener("canplay", function() {
+     	            setTimeout(function() {
+     	                x(k)
+     	            }, 500);
+     	            setTimeout(function() {
+     	                N();
+     	                p();
+     	                for (var e = 0; e < O.length; e++) {
+     	                    T(O[e])
+     	                }
+     	            }, 15500)
+     	        }, true);
+     	        e.addEventListener("ended", function() {
+     	            N();
+     	            h()
+     	        }, true);
+     	        e.innerHTML = " <p>If you are reading this, it is because your browser does not support the audio element. We recommend that you get a new browser.</p> <p>";
+     	        document.body.appendChild(e);
+     	        e.play()
+     	    }
 
-    function x(e) {
-        e.className += " " + s + " " + o
-    }
+     	    function x(e) {
+     	        e.className += " " + s + " " + o
+     	    }
 
-    function T(e) {
-        e.className += " " + s + " " + u[Math.floor(Math.random() * u.length)]
-    }
+     	    function T(e) {
+     	        e.className += " " + s + " " + u[Math.floor(Math.random() * u.length)]
+     	    }
 
-    function N() {
-        var e = document.getElementsByClassName(s);
-        var t = new RegExp("\\b" + s + "\\b");
-        for (var n = 0; n < e.length; ) {
-            e[n].className = e[n].className.replace(t, "")
-        }
-    }
+     	    function N() {
+     	        var e = document.getElementsByClassName(s);
+     	        var t = new RegExp("\\b" + s + "\\b");
+     	        for (var n = 0; n < e.length; ) {
+     	            e[n].className = e[n].className.replace(t, "")
+     	        }
+     	    }
 
-    var e = 30;
-    var t = 30;
-    var n = 350;
-    var r = 350;
-    var i = "//s3.amazonaws.com/moovweb-marketing/playground/harlem-shake.mp3";
-    var s = "mw-harlem_shake_me";
-    var o = "im_first";
-    var u = ["im_drunk", "im_baked", "im_trippin", "im_blown"];
-    var a = "mw-strobe_light";
-    var f = "//s3.amazonaws.com/moovweb-marketing/playground/harlem-shake-style.css";
-    var l = "mw_added_css";
-    var b = g();
-    var w = y();
-    var C = document.getElementsByTagName("*");
-    var k = null;
-    for (var L = 0; L < C.length; L++) {
-        var A = C[L];
-        if (v(A)) {
-            if (E(A)) {
-                k = A;
-                break
-            }
-        }
-    }
-    if (A === null) {
-        console.warn("Could not find a node of the right size. Please try a different page.");
-        return
-    }
-    c();
-    S();
-    var O = [];
-    for (var L = 0; L < C.length; L++) {
-        var A = C[L];
-        if (v(A)) {
-            O.push(A)
-        }
-    }
-    })()    '>High一下</a> </li>
+     	    var e = 30;
+     	    var t = 30;
+     	    var n = 350;
+     	    var r = 350;
+     	    var i = "//s3.amazonaws.com/moovweb-marketing/playground/harlem-shake.mp3";
+     	    var s = "mw-harlem_shake_me";
+     	    var o = "im_first";
+     	    var u = ["im_drunk", "im_baked", "im_trippin", "im_blown"];
+     	    var a = "mw-strobe_light";
+     	    var f = "//s3.amazonaws.com/moovweb-marketing/playground/harlem-shake-style.css";
+     	    var l = "mw_added_css";
+     	    var b = g();
+     	    var w = y();
+     	    var C = document.getElementsByTagName("*");
+     	    var k = null;
+     	    for (var L = 0; L < C.length; L++) {
+     	        var A = C[L];
+     	        if (v(A)) {
+     	            if (E(A)) {
+     	                k = A;
+     	                break
+     	            }
+     	        }
+     	    }
+     	    if (A === null) {
+     	        console.warn("Could not find a node of the right size. Please try a different page.");
+     	        return
+     	    }
+     	    c();
+     	    S();		
+     	    var O = [];
+     	    for (var L = 0; L < C.length; L++) {
+     	        var A = C[L];
+     	        if (v(A)) {
+     	            O.push(A)
+     	        }
+     	    }
+     	    })()    '>High一下</a> </li>
+
     </ul>
   
 
   
 </nav>
+
+
+
  </div>
     </header>
 
@@ -406,13 +426,26 @@ So just try it and try it!">
     
 
   
-  
 
   
   
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://tufusi.com/2016/08/13/进阶系列之求职路漫漫/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="LeoCheung">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="http://img.wdjimg.com/mms/icon/v1/9/9c/de366a247aeddb5809193003fa9c99c9_256_256.png">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="OnePiece">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="OnePiece" src="">
+    </span>
+  </span>
 
     
       <header class="post-header">
@@ -431,13 +464,19 @@ So just try it and try it!">
 
         <div class="post-meta">
           <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-08-13T16:28:17+08:00" content="2016-08-13">
-              2016-08-13
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-08-13T16:28:17+08:00">
+                2016-08-13
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -445,9 +484,9 @@ So just try it and try it!">
           
             
               <span class="post-comments-count">
-                &nbsp; | &nbsp;
+                <span class="post-meta-divider">|</span>
                 <a href="/2016/08/13/进阶系列之求职路漫漫/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/08/13/进阶系列之求职路漫漫/" itemprop="commentsCount"></span>
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/08/13/进阶系列之求职路漫漫/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -459,6 +498,9 @@ So just try it and try it!">
           
 
           
+
+          
+
         </div>
       </header>
     
@@ -839,6 +881,7 @@ public View getView(int position, ViewconvertView, ViewGroup parent)
     <div>
       
         
+
       
     </div>
 
@@ -848,6 +891,7 @@ public View getView(int position, ViewconvertView, ViewGroup parent)
 
       
     </div>
+
 
     <footer class="post-footer">
       
@@ -861,6 +905,8 @@ public View getView(int position, ViewconvertView, ViewGroup parent)
               </a>
             
           </div>
+
+          <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
             
@@ -927,7 +973,7 @@ public View getView(int position, ViewconvertView, ViewGroup parent)
         </ul>
       
 
-      <section class="site-overview sidebar-panel ">
+      <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="http://img.wdjimg.com/mms/icon/v1/9/9c/de366a247aeddb5809193003fa9c99c9_256_256.png"
@@ -982,19 +1028,27 @@ public View getView(int position, ViewconvertView, ViewGroup parent)
         
         
 
+        
+
+
       </section>
 
       
+      <!--noindex-->
         <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
           <div class="post-toc">
+
             
               
             
+
             
               <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#国内一线互联网公司内部面试题库"><span class="nav-number">1.</span> <span class="nav-text">国内一线互联网公司内部面试题库</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#一、java基础"><span class="nav-number">1.1.</span> <span class="nav-text">一、java基础</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-接口的意义-（百度）"><span class="nav-number">1.1.1.</span> <span class="nav-text">1.接口的意义**（百度）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-抽象类的意义-（乐视）"><span class="nav-number">1.1.2.</span> <span class="nav-text">2.抽象类的意义**（乐视）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-内部类的作用-百度，乐视"><span class="nav-number">1.1.3.</span> <span class="nav-text">3.内部类的作用**(百度，乐视)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-父类的静态方法能否被子类重写，为什么？-（猎豹）"><span class="nav-number">1.1.4.</span> <span class="nav-text">4.父类的静态方法能否被子类重写，为什么？**（猎豹）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-举1-2个排序算法，并使用java代码实现-（美团）"><span class="nav-number">1.1.5.</span> <span class="nav-text">5.举1-2个排序算法，并使用java代码实现**（美团）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-列举java的集合及其之间继承关系-（百度、美团）"><span class="nav-number">1.1.6.</span> <span class="nav-text">6.列举java的集合及其之间继承关系**（百度、美团）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-java虚拟机的特性-（百度、乐视）"><span class="nav-number">1.1.7.</span> <span class="nav-text">7.java虚拟机的特性**（百度、乐视）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-哪些情况下的对象会被垃圾回收机制处理掉-（乐视、美团、小米）"><span class="nav-number">1.1.8.</span> <span class="nav-text">8.哪些情况下的对象会被垃圾回收机制处理掉**（乐视、美团、小米）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-进程和线程的区别-（猎豹）"><span class="nav-number">1.1.9.</span> <span class="nav-text">9.进程和线程的区别**（猎豹）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-Java中-和equals的区别，equals和hashCode的区别-（乐视）"><span class="nav-number">1.1.10.</span> <span class="nav-text">10.Java中==和equals的区别，equals和hashCode的区别**（乐视）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-常见的排序算法时间复杂度-（小米）"><span class="nav-number">1.1.11.</span> <span class="nav-text">11.常见的排序算法时间复杂度**（小米）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12-HashMap的实现原理-（美团）"><span class="nav-number">1.1.12.</span> <span class="nav-text">12.HashMap的实现原理**（美团）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#13-java-状态机"><span class="nav-number">1.1.13.</span> <span class="nav-text">13.java 状态机**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-java中int-char-long各占多少字节数"><span class="nav-number">1.1.14.</span> <span class="nav-text">14.java中int char long各占多少字节数**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-java-int与integer的区别"><span class="nav-number">1.1.15.</span> <span class="nav-text">15.java int与integer的区别**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#16-string-stringbuffer-stringbuilder-区别-（小米、乐视、百度）"><span class="nav-number">1.1.16.</span> <span class="nav-text">16.string stringbuffer stringbuilder 区别**（小米、乐视、百度）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#17-Java多态-（乐视）"><span class="nav-number">1.1.17.</span> <span class="nav-text">17.Java多态**（乐视）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#18-什么导致线程阻塞-（58、美团）"><span class="nav-number">1.1.18.</span> <span class="nav-text">18.什么导致线程阻塞**（58、美团）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#19-抽象类接口区别-（360）"><span class="nav-number">1.1.19.</span> <span class="nav-text">19.抽象类接口区别**（360）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#20-容器类之间的区别-（乐视、美团）"><span class="nav-number">1.1.20.</span> <span class="nav-text">20.容器类之间的区别**（乐视、美团）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#21-java-内部类-（小米）"><span class="nav-number">1.1.21.</span> <span class="nav-text">21.java 内部类**（小米）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#22-Java中hashmap和hashtable的区别-（乐视、小米）"><span class="nav-number">1.1.22.</span> <span class="nav-text">22.Java中hashmap和hashtable的区别**（乐视、小米）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#23-ArrayMap-VS-HashMap"><span class="nav-number">1.1.23.</span> <span class="nav-text">23.ArrayMap VS HashMap**</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二、android基础"><span class="nav-number">1.2.</span> <span class="nav-text">二、android基础</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-数据库的操作类型有哪些，如何导入外部数据库？"><span class="nav-number">1.2.1.</span> <span class="nav-text">1.数据库的操作类型有哪些，如何导入外部数据库？**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-是否使用过本地广播，和全局广播有什么差别？"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.是否使用过本地广播，和全局广播有什么差别？**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-是否使用过intentService，作用是什么，AIDL解决了什么问题？-小米"><span class="nav-number">1.2.3.</span> <span class="nav-text">3.是否使用过intentService，作用是什么，AIDL解决了什么问题？**(小米)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-Activity、Window、View三者的差别，fragment的特点？-（360）"><span class="nav-number">1.2.4.</span> <span class="nav-text">4.Activity、Window、View三者的差别，fragment的特点？**（360）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-描述一次网络请求的流程-（新浪）"><span class="nav-number">1.2.5.</span> <span class="nav-text">5.描述一次网络请求的流程**（新浪）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-Handler、Thread和HandlerThread的差别-（小米）"><span class="nav-number">1.2.6.</span> <span class="nav-text">6.Handler、Thread和HandlerThread的差别**（小米）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-低版本SDK实现高版本api-（小米）"><span class="nav-number">1.2.7.</span> <span class="nav-text">7.低版本SDK实现高版本api**（小米）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-Ubuntu编译安卓系统-（百度）"><span class="nav-number">1.2.8.</span> <span class="nav-text">8.Ubuntu编译安卓系统**（百度）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-launch-mode应用场景-（百度、小米、乐视）"><span class="nav-number">1.2.9.</span> <span class="nav-text">9.launch mode应用场景**（百度、小米、乐视）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-touch-事件传递流程-（小米）"><span class="nav-number">1.2.10.</span> <span class="nav-text">10.touch 事件传递流程**（小米）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-view绘制流程-（百度）"><span class="nav-number">1.2.11.</span> <span class="nav-text">11.view绘制流程**（百度）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12-多线程-（360）"><span class="nav-number">1.2.12.</span> <span class="nav-text">12.多线程**（360）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-什么情况导致内存泄漏-（美团）"><span class="nav-number">1.2.13.</span> <span class="nav-text">14.什么情况导致内存泄漏**（美团）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-ANR定位和修正"><span class="nav-number">1.2.14.</span> <span class="nav-text">15.ANR定位和修正**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#16-什么情况导致oom-（乐视、美团）"><span class="nav-number">1.2.15.</span> <span class="nav-text">16.什么情况导致oom**（乐视、美团）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#17-Android-Service与Activity之间通信的几种方式"><span class="nav-number">1.2.16.</span> <span class="nav-text">17.Android Service与Activity之间通信的几种方式**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#18-Android各个版本API的区别"><span class="nav-number">1.2.17.</span> <span class="nav-text">18.Android各个版本API的区别**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#19-Android代码中实现WAP方式联网-（360）"><span class="nav-number">1.2.18.</span> <span class="nav-text">19. Android代码中实现WAP方式联网**（360）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#20-如何保证service在后台不被kill"><span class="nav-number">1.2.19.</span> <span class="nav-text">20.如何保证service在后台不被kill**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#21-Requestlayout，onlayout，onDraw，DrawChild区别与联系-（猎豹）"><span class="nav-number">1.2.20.</span> <span class="nav-text">21.Requestlayout，onlayout，onDraw，DrawChild区别与联系**（猎豹）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#22-invalidate-和postInvalidate-的区别及使用-（百度）"><span class="nav-number">1.2.21.</span> <span class="nav-text">22.invalidate()和postInvalidate() 的区别及使用**（百度）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#23-Android动画框架实现原理"><span class="nav-number">1.2.22.</span> <span class="nav-text">23.Android动画框架实现原理**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#24-Android为每个应用程序分配的内存大小是多少？-（美团）"><span class="nav-number">1.2.23.</span> <span class="nav-text">24.Android为每个应用程序分配的内存大小是多少？**（美团）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#25-Android-View刷新机制-（百度、美团）"><span class="nav-number">1.2.24.</span> <span class="nav-text">25.Android View刷新机制**（百度、美团）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#26-LinearLayout对比RelativeLayout-（百度）"><span class="nav-number">1.2.25.</span> <span class="nav-text">26.LinearLayout对比RelativeLayout**（百度）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#27-优化自定义view-（百度、乐视、小米）"><span class="nav-number">1.2.26.</span> <span class="nav-text">27.优化自定义view**（百度、乐视、小米）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#28-ContentProvider-（乐视）"><span class="nav-number">1.2.27.</span> <span class="nav-text">28.ContentProvider**（乐视）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#29-fragment生命周期"><span class="nav-number">1.2.28.</span> <span class="nav-text">29.fragment生命周期**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#30-volley解析-（美团、乐视）"><span class="nav-number">1.2.29.</span> <span class="nav-text">30.volley解析**（美团、乐视）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#31-Android-Glide源码解析"><span class="nav-number">1.2.30.</span> <span class="nav-text">31.Android Glide源码解析**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#32-Android-设计模式"><span class="nav-number">1.2.31.</span> <span class="nav-text">32.Android 设计模式**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#33-架构设计-（搜狐）"><span class="nav-number">1.2.32.</span> <span class="nav-text">33.架构设计**（搜狐）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#34-Android属性动画特性-（乐视、小米）"><span class="nav-number">1.2.33.</span> <span class="nav-text">34.Android属性动画特性**（乐视、小米）</span></a></li></ol></li></ol></li></ol></div>
             
+
           </div>
         </section>
+      <!--/noindex-->
       
 
     </div>
@@ -1017,8 +1071,9 @@ public View getView(int position, ViewconvertView, ViewGroup parent)
   <span class="author" itemprop="copyrightHolder">LeoCheung</span>
 </div>
 
+
 <div class="powered-by">
-  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
 </div>
 
 <div class="theme-info">
@@ -1027,6 +1082,7 @@ public View getView(int position, ViewconvertView, ViewGroup parent)
     NexT.Mist
   </a>
 </div>
+
 
         
 
@@ -1060,46 +1116,46 @@ public View getView(int position, ViewconvertView, ViewGroup parent)
 
 
   
-  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
 
   
-  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
 
   
-  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
 
   
-  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
 
   
-  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
 
   
-  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
-
-
-  
-
-
-  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
-
-  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
-
-
-
-  
-  
-
-  
-  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
-<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
-
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
 
 
   
 
 
-  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
 
 
 
@@ -1124,6 +1180,9 @@ public View getView(int position, ViewconvertView, ViewGroup parent)
 
   
     
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
   
 
 
@@ -1131,13 +1190,19 @@ public View getView(int position, ViewconvertView, ViewGroup parent)
 
 
 
-  
+
+
   
   
 
   
 
   
+
+  
+
+  
+
   
 </body>
 </html>
