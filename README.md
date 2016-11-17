@@ -9,6 +9,11 @@ author: leocheung
 
 OnePiece [www.tufusi.com](http://www.tufusi.com)
 
+#### NEW LIFE
+##### Android Auto [车载系统]()
+
+##### Android [特效整理]()
+
 #### 每周一篇笔记  
 ##### 2016 ANALYSIS系列
 > ###### May30th ~ Jun.05th     [浅析－OkHttp框架](http://tufusi.com/2016/06/01/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BOkHttp%E6%A1%86%E6%9E%B6/)
@@ -42,6 +47,8 @@ OnePiece [www.tufusi.com](http://www.tufusi.com)
 > ###### [深入系列 - 语音操作]()
 
 > ###### [深入系列 - 蓝牙技术]()
+
+> ###### [深入系列 - NFC]()
 
 ##### 2016 ALGORITHM系列
 > ###### [算法系列 - DTW(Dynamic Time Warping 动态时间归整)]()
@@ -166,7 +173,12 @@ OnePiece [www.tufusi.com](http://www.tufusi.com)
 
 >* [高质清净的网站系列二](https://developer.android.com/index.html)
 
+#### Within you I lose myself.
+>* [VR人](http://vr.chuang.pro/)
 
+>* [ARChina](http://www.arinchina.com/)
+
+>* [深度学习]()
 
 ```sh
 为什么遇到如此强大的敌人你也不愿逃跑？ —— 那是因为身后，有至爱之人。 
