@@ -1594,7 +1594,7 @@ function search()
     <link href="http://tufusi.com/2016/06/20/Android%E4%BC%98%E5%8C%96%E4%BA%A4%E4%BA%92-%E5%8D%8F%E8%B0%83%E5%B8%83%E5%B1%80%E8%AF%A6%E8%A7%A3/"/>
     <id>http://tufusi.com/2016/06/20/Android优化交互-协调布局详解/</id>
     <published>2016-06-20T14:59:11.000Z</published>
-    <updated>2016-12-08T09:10:43.606Z</updated>
+    <updated>2016-12-08T09:16:05.411Z</updated>
     
     <content type="html">&lt;p&gt;现如今移动开发对用户交互体验要求越来越高,各式自定义控件,动画层出不穷,不过今天所记录的不是这两块知识,而是基于Support Library库里的CoordinatorLayout-协调布局实现交互的行为。&lt;br&gt;&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;&lt;br&gt;摘录 Android Support Library &lt;a href=&quot;https://developer.android.com/reference/android/support/design/widget/CoordinatorLayout.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;原文链接&lt;/a&gt;&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;CoordinatorLayout is intended for two primary use cases:
@@ -1610,7 +1610,9 @@ function search()
 &lt;p&gt;行为因子(Behaviors)可用来实现各式各样的交互和布局变化,比如侧滑菜单栏、可滑动删除的UI元素,以及跟随其他UI元素移动的按钮等&lt;/p&gt;
 &lt;p&gt;协调布局(CoordinatorLayout)的子View可能有一个锚点(&lt;a href=&quot;https://developer.android.com/reference/android/support/design/widget/CoordinatorLayout.LayoutParams.html#setAnchorId(int&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;anchor&lt;/a&gt;)).这个子View的id一定对应这个协调布局的一个任意后代(意思是这个id一定被某个view以anchor属性锁定),但是它可能不是锁定的子view本身或者锁定的子view一个后代.这可以被用作放置悬浮视图关联其他任意内容窗格&lt;/p&gt;
 &lt;p&gt;子view可以指定边缘镶嵌(&lt;a href=&quot;https://duckduckgo.com/?q=insetEdge&amp;amp;t=ffsb&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;insetEdge&lt;/a&gt;:一个重力值)来描述如何将view嵌入协调布局(CoordinatorLayout)中.通过dodgeInsetEdges属性设置的任一子view是来避免相同的边缘镶嵌,这些被设置的子view将会被适当移动以免视图重叠&lt;/p&gt;
-&lt;figure class=&quot;highlight plain&quot;&gt;&lt;figcaption&gt;&lt;span&gt;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&lt;/span&gt;&lt;/figcaption&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 以下开搞 彻底搞懂 ~~~~~~&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;p&gt;以上是支持库中针对原文的一些理解 &lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;以下开搞 彻底搞懂 &lt;/p&gt;
 &lt;figure class=&quot;highlight ruby&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;number&quot;&gt;1&lt;/span&gt;、CoordinatorLayout对交互行为本身没有起到太多作用，实现主要依靠其内部类 - Behavior；&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;number&quot;&gt;2&lt;/span&gt;、CoordinatorLayout的**直接子View**绑定一个Behavior，这个Behavior会拦截发生在这个View上的Touch事件、嵌套滚动等等。&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;number&quot;&gt;3&lt;/span&gt;、Behavior还可以拦截对与它绑定的View的测量及布局&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
 &lt;p&gt;&lt;strong&gt;深入理解Behavior&lt;/strong&gt;&lt;/p&gt;
 &lt;blockquote&gt;

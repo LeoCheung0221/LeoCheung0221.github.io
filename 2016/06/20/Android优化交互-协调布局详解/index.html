@@ -92,7 +92,7 @@
 <meta property="og:url" content="http://tufusi.com/2016/06/20/Android优化交互-协调布局详解/index.html">
 <meta property="og:site_name" content="OnePiece">
 <meta property="og:description" content="现如今移动开发对用户交互体验要求越来越高,各式自定义控件,动画层出不穷,不过今天所记录的不是这两块知识,而是基于Support Library库里的CoordinatorLayout-协调布局实现交互的行为。">
-<meta property="og:updated_time" content="2016-12-08T09:10:43.606Z">
+<meta property="og:updated_time" content="2016-12-08T09:16:05.411Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android优化交互-协调布局详解">
 <meta name="twitter:description" content="现如今移动开发对用户交互体验要求越来越高,各式自定义控件,动画层出不穷,不过今天所记录的不是这两块知识,而是基于Support Library库里的CoordinatorLayout-协调布局实现交互的行为。">
@@ -516,7 +516,9 @@
 <p>行为因子(Behaviors)可用来实现各式各样的交互和布局变化,比如侧滑菜单栏、可滑动删除的UI元素,以及跟随其他UI元素移动的按钮等</p>
 <p>协调布局(CoordinatorLayout)的子View可能有一个锚点(<a href="https://developer.android.com/reference/android/support/design/widget/CoordinatorLayout.LayoutParams.html#setAnchorId(int" target="_blank" rel="external">anchor</a>)).这个子View的id一定对应这个协调布局的一个任意后代(意思是这个id一定被某个view以anchor属性锁定),但是它可能不是锁定的子view本身或者锁定的子view一个后代.这可以被用作放置悬浮视图关联其他任意内容窗格</p>
 <p>子view可以指定边缘镶嵌(<a href="https://duckduckgo.com/?q=insetEdge&amp;t=ffsb" target="_blank" rel="external">insetEdge</a>:一个重力值)来描述如何将view嵌入协调布局(CoordinatorLayout)中.通过dodgeInsetEdges属性设置的任一子view是来避免相同的边缘镶嵌,这些被设置的子view将会被适当移动以免视图重叠</p>
-<figure class="highlight plain"><figcaption><span>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 以下开搞 彻底搞懂 ~~~~~~</span><br></pre></td></tr></table></figure>
+<p>以上是支持库中针对原文的一些理解 </p>
+<hr>
+<p>以下开搞 彻底搞懂 </p>
 <figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>、CoordinatorLayout对交互行为本身没有起到太多作用，实现主要依靠其内部类 - Behavior；</span><br><span class="line"><span class="number">2</span>、CoordinatorLayout的**直接子View**绑定一个Behavior，这个Behavior会拦截发生在这个View上的Touch事件、嵌套滚动等等。</span><br><span class="line"><span class="number">3</span>、Behavior还可以拦截对与它绑定的View的测量及布局</span><br></pre></td></tr></table></figure>
 <p><strong>深入理解Behavior</strong></p>
 <blockquote>
