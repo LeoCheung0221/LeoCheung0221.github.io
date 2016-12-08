@@ -86,16 +86,16 @@
 
 
 
-<meta name="description" content="做人如果没有梦想,那和咸鱼有什么分别">
+<meta name="description" content="现如今移动开发对用户交互体验要求越来越高,各式自定义控件,动画层出不穷,不过今天所记录的不是这两块知识,而是基于Support Library库里的CoordinatorLayout-协调布局实现交互的行为。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Android优化交互-嵌套机制详解">
 <meta property="og:url" content="http://tufusi.com/2016/06/20/Android优化交互-嵌套机制详解/index.html">
 <meta property="og:site_name" content="OnePiece">
-<meta property="og:description" content="做人如果没有梦想,那和咸鱼有什么分别">
-<meta property="og:updated_time" content="2016-06-20T14:57:42.742Z">
+<meta property="og:description" content="现如今移动开发对用户交互体验要求越来越高,各式自定义控件,动画层出不穷,不过今天所记录的不是这两块知识,而是基于Support Library库里的CoordinatorLayout-协调布局实现交互的行为。">
+<meta property="og:updated_time" content="2016-12-08T09:03:11.542Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android优化交互-嵌套机制详解">
-<meta name="twitter:description" content="做人如果没有梦想,那和咸鱼有什么分别">
+<meta name="twitter:description" content="现如今移动开发对用户交互体验要求越来越高,各式自定义控件,动画层出不穷,不过今天所记录的不是这两块知识,而是基于Support Library库里的CoordinatorLayout-协调布局实现交互的行为。">
 
 
 
@@ -502,7 +502,52 @@
       
 
       
-        
+        <p>现如今移动开发对用户交互体验要求越来越高,各式自定义控件,动画层出不穷,不过今天所记录的不是这两块知识,而是基于Support Library库里的CoordinatorLayout-协调布局实现交互的行为。<br><a id="more"></a><br>摘录 Android Support Library <a href="https://developer.android.com/reference/android/support/design/widget/CoordinatorLayout.html" target="_blank" rel="external">原文链接</a></p>
+<pre><code>CoordinatorLayout is intended for two primary use cases:
+1. As a top-level application decor or chrome layout
+2. As a container for a specific interation with one or more child views
+</code></pre><p>首先解释协调布局最主要两个用途:<br>    1) 作为应用的顶层布局管理器<br>    2) 作为单个子view或者多个子view进行特定交互的容器</p>
+<p>在介绍用途之前,需先了解什么是<a href="https://developer.android.com/reference/android/support/design/widget/CoordinatorLayout.Behavior.html" target="_blank" rel="external">Behavior</a>: </p>
+<pre><code>1) Behavior是一个抽象类,是CoordinatorLayout的子view进行行为交互的插件;
+2) 行为对象(Behavior)实现了用户子view的一个或多个的交互功能,这些交互包括: 拖曳,侧滑,速滑,以及其他手势。
+</code></pre><p>简单介绍Behavior(基于这个对象是引起view之间交互动作的一个因素,以下称其为行为因子),再看:</p>
+<p>在单个父view和那些能相互交互的view之间,通过指定行为因子(Behaviors)就可以为协调布局(CoordinatorLayout)的子view提供很多不同的交互。</p>
+<p>当作为协调布局(CoordinatorLayout)的子view使用默认行为(DefaultBehavior)注解时,View类可以指定一个默认的行为因子(behavior)</p>
+<p>行为因子(Behaviors)可用来实现各式各样的交互和布局变化,比如侧滑菜单栏、可滑动删除的UI元素,以及跟随其他UI元素移动的按钮等</p>
+<p>协调布局(CoordinatorLayout)的子View可能有一个锚点(<a href="https://developer.android.com/reference/android/support/design/widget/CoordinatorLayout.LayoutParams.html#setAnchorId(int" target="_blank" rel="external">anchor</a>)).这个子View的id一定对应这个协调布局的一个任意后代(意思是这个id一定被某个view以anchor属性锁定),但是它可能不是锁定的子view本身或者锁定的子view一个后代.这可以被用作放置悬浮视图关联其他任意内容窗格</p>
+<p>子view可以指定边缘镶嵌(<a href="https://duckduckgo.com/?q=insetEdge&amp;t=ffsb" target="_blank" rel="external">insetEdge</a>:一个重力值)来描述如何将view嵌入协调布局(CoordinatorLayout)中.通过dodgeInsetEdges属性设置的任一子view是来避免相同的边缘镶嵌,这些被设置的子view将会被适当移动以免视图重叠</p>
+<figure class="highlight plain"><figcaption><span>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 以下开搞 彻底搞懂 ~~~~~~</span><br></pre></td></tr></table></figure>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>、CoordinatorLayout对交互行为本身没有起到太多作用，实现主要依靠其内部类 - Behavior；</span><br><span class="line"><span class="number">2</span>、CoordinatorLayout的**直接子View**绑定一个Behavior，这个Behavior会拦截发生在这个View上的Touch事件、嵌套滚动等等。</span><br><span class="line"><span class="number">3</span>、Behavior还可以拦截对与它绑定的View的测量及布局</span><br></pre></td></tr></table></figure>
+<p><strong>深入理解Behavior</strong></p>
+<blockquote>
+<p>拦截Touch事件</p>
+</blockquote>
+<p>CoordinatorLayout事实上重写了onInterceptTouchEvent()方法，如下<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onInterceptTouchEvent</span><span class="params">(MotionEvent ev)</span> </span>&#123;</span><br><span class="line">        MotionEvent cancelEvent = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> action = MotionEventCompat.getActionMasked(ev);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Make sure we reset in case we had missed a previous important event.</span></span><br><span class="line">        <span class="keyword">if</span> (action == MotionEvent.ACTION_DOWN) &#123;</span><br><span class="line">            resetTouchBehaviors();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">boolean</span> intercepted = performIntercept(ev, TYPE_ON_INTERCEPT);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (cancelEvent != <span class="keyword">null</span>) &#123;</span><br><span class="line">            cancelEvent.recycle();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) &#123;</span><br><span class="line">            resetTouchBehaviors();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> intercepted;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<p>可以看出，在按下的事件中有方法resetTouchBehaviors()，这样就为Behavior提供了先于View处理Touch事件的条件。<br>再考虑到CoordinatorLayout是应用的顶层布局管理器，所以它的拦截方法内部是会遍历所有直接子View的，对于绑定了Behavior属性的直接子View，它会调用Behavior的onInterceptTouchEvent()方法，如果返回true，那后续本该由View处理的Touch事件都会交由Behavior处理。<br>那么该由什么条件来判断是否返回true呢？就是通过下面这重写方法判断<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">layoutDependsOn</span><span class="params">(CoordinatorLayout parent, TextView child, View dependency)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">super</span>.layoutDependsOn(parent, child, dependency);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>判断是否有依赖对象(dependent view),默认返回的是false<br>如果有则返回true,这个依赖的view可以视为被观察者,一般通过操作符instanceof来进行dependency判断是否是某个特定类的实例</p>
+<p>而下面这个重写方法，是当dependent view(被观察者) 发生变化时child(观察者)做出响应的方法<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onDependentViewChanged</span><span class="params">(CoordinatorLayout parent, TextView child, View dependency)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">super</span>.onDependentViewChanged(parent, child, dependency);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>☆ layoutDependsOn()方法在界面布局时至少会被调用一次；<br>☆ layoutDependsOn()方法是用来确定dependent view 的；<br>☆ 页面渲染(初始化未经手势操作)时就会依次执行这两个方法，只要观察者child设置的Behavior在覆写layoutDependsOn()方法时返回true；<br>☆ 如果layoutDependsOn()方法返回false，onDependentViewChanged()方法是不会执行的。</p>
+<blockquote>
+<p>拦截测量及布局</p>
+</blockquote>
+<p>同样，在Behavior处理有没拦截Touch事件时，也一并重写了测量onMeasure()及布局onLayout()方法<br>onMeasure()方法如下:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onMeasure</span><span class="params">(<span class="keyword">int</span> widthMeasureSpec, <span class="keyword">int</span> heightMeasureSpec)</span> </span>&#123;</span><br><span class="line">    prepareChildren();</span><br><span class="line">    ensurePreDrawListener(); <span class="comment">//根据需要添加或者删除预绘制监听器</span></span><br><span class="line"></span><br><span class="line">    ... ... <span class="comment">//省略 主要是获取padding,ViewCompat属性,view宽高,等等</span></span><br><span class="line">   </span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> childCount = mDependencySortedChildren.size();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; childCount; i++) &#123;</span><br><span class="line">        <span class="keyword">final</span> View child = mDependencySortedChildren.get(i);</span><br><span class="line">        <span class="keyword">final</span> LayoutParams lp = (LayoutParams) child.getLayoutParams();</span><br><span class="line"></span><br><span class="line">        ... ... <span class="comment">//省略 主要是对子View的布局测量模式讨论及设值</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> Behavior b = lp.getBehavior();</span><br><span class="line">        <span class="keyword">if</span> (b == <span class="keyword">null</span> || !b.onMeasureChild(<span class="keyword">this</span>, child, childWidthMeasureSpec, keylineWidthUsed,</span><br><span class="line">                childHeightMeasureSpec, <span class="number">0</span>)) &#123;</span><br><span class="line">            onMeasureChild(child, childWidthMeasureSpec, keylineWidthUsed,</span><br><span class="line">                    childHeightMeasureSpec, <span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        ... ... <span class="comment">//处理计算得出子View的widthUsed, heightUsed及childState</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ... ... <span class="comment">//重新计算宽高</span></span><br><span class="line">    setMeasuredDimension(width, height);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>1、prepareChildren()方法会先遍历所有直接子View</li>
+<li>2、若该子View绑定了Behavior，就会调用相应的onMeasureChild()方法<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onMeasureChild</span><span class="params">(CoordinatorLayout parent, V child,</span><br><span class="line">        <span class="keyword">int</span> parentWidthMeasureSpec, <span class="keyword">int</span> widthUsed,</span><br><span class="line">        <span class="keyword">int</span> parentHeightMeasureSpec, <span class="keyword">int</span> heightUsed)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>如果这个方法返回true,那么CoodinatorLayout就不会测量该View,从而由Behavior接管测量<br>同样布局也是如此！</p>
+<blockquote>
+<p>View依赖关系确定</p>
+</blockquote>
+<p>交互过程中两个View的主从关系确认<br>child - 做出响应的个体<br>dependent view - child依赖的View</p>
+<ul>
+<li><p>显式依赖: 为child绑定一个Behavior, 覆写layoutDependsOn()方法，即当传入的dependency为dependent view时返回true，以此建立child和dependent view的依赖关系。</p>
+</li>
+<li><p>隐式依赖: 通过anchor属性来确立。把child的layout_anchor属性设置为dependent view 的id，然后设置child的layout_anchorGravity属性，这个属性是用来当dependent view变化时做出怎样的响应的。</p>
+</li>
+</ul>
+<p>无论显式还是隐式，当dependent view发生变化时，Behavior类中onDependentViewChanged()方法都会被调用。</p>
       
     </div>
 
