@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://tufusi.com/"/>
-  <updated>2016-12-09T12:33:10.155Z</updated>
+  <updated>2016-12-09T14:06:04.672Z</updated>
   <id>http://tufusi.com/</id>
   
   <author>
@@ -14,6 +14,95 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Android部落格之Dagger 2框架</title>
+    <link href="http://tufusi.com/2016/12/09/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BDagger%202%E6%A1%86%E6%9E%B6/"/>
+    <id>http://tufusi.com/2016/12/09/Android部落格之Dagger 2框架/</id>
+    <published>2016-12-09T13:55:33.000Z</published>
+    <updated>2016-12-09T14:06:04.672Z</updated>
+    
+    <content type="html">&lt;p&gt;和Java一样, Android开发也有自己的依赖注入框架, 但是和Spring不同的是, Spring注入的原理是通过Java反射来实现的, 但Android却不能通过这个方式来实现, 对于惜内存如金的Android设备, 这种方式无异于将应用程序运行效率降低了一个档次。&lt;br&gt;基于此Dagger就应运而生了&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;h1 id=&quot;概述&quot;&gt;&lt;a href=&quot;#概述&quot; class=&quot;headerlink&quot; title=&quot;概述:&quot;&gt;&lt;/a&gt;概述:&lt;/h1&gt;&lt;p&gt;基于Java平台的依赖注入库，通过使用注解实现依赖注入&lt;br&gt;实现原理: &lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;利用APT(Annotation Process Tool)在编译时生成辅助类，这些类继承特定父类或实现特定接口，程序运行时依靠Dagger加载这些辅助类，调用相应接口完成依赖生成和注入。
+&lt;/code&gt;&lt;/pre&gt;&lt;h1 id=&quot;基本使用：&quot;&gt;&lt;a href=&quot;#基本使用：&quot; class=&quot;headerlink&quot; title=&quot;基本使用：&quot;&gt;&lt;/a&gt;基本使用：&lt;/h1&gt;&lt;p&gt;1）构造函数无参 - 对象生成通过@Inject&lt;/p&gt;
+&lt;p&gt;2) 构造函数有参 &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;参数也需注解&lt;/li&gt;
+&lt;li&gt;@Provides注解&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;常用注解方法&quot;&gt;&lt;a href=&quot;#常用注解方法&quot; class=&quot;headerlink&quot; title=&quot;常用注解方法:&quot;&gt;&lt;/a&gt;常用注解方法:&lt;/h2&gt;&lt;p&gt;@Inject - 类/字段&lt;br&gt;@Module - 管理方法&lt;br&gt;@Provide - 定义方法(参数!参数!参数)&lt;br&gt;@Component - 管理所有@Modules注入对象关联@Inject对象&lt;br&gt;@Scope - 限定注解作用域&lt;br&gt;@Qualifier - 注解依赖标示&lt;/p&gt;
+&lt;h2 id=&quot;区别&quot;&gt;&lt;a href=&quot;#区别&quot; class=&quot;headerlink&quot; title=&quot;区别&quot;&gt;&lt;/a&gt;区别&lt;/h2&gt;&lt;p&gt;1） @Inject 和 @Provides 两种依赖生成方式：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;a. @Inject 用于注入可实例化的类；
+   @Provides 用于注入所有类
+b. @Inject 用于修饰属性和构造函数，用于任何非Module类；
+   @Provides 只可用于修饰非构造类函数，且必须在Module内部
+c. @Inject 修饰的函数只能是构造函数；
+   @Provides 修饰的函数必须以provide开头
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;编译检查错误&quot;&gt;&lt;a href=&quot;#编译检查错误&quot; class=&quot;headerlink&quot; title=&quot;编译检查错误&quot;&gt;&lt;/a&gt;编译检查错误&lt;/h2&gt;&lt;p&gt;（1） 所有需要依赖注入的类，需要显式声明在相应的 Module 中&lt;br&gt;（2） 一个 Module 中所有 @Provides 函数的参数都必须在这个 Module 中提供相应的被 @Provides 修饰的函数，或者在 @Module 注解后添加 “complete = false” 注明这是一个不完整的 Module ，表示它依赖不属于这个 Module 的其他 Dependency 。&lt;br&gt;（3） 一个 Module 中所有的 @Provides 函数都要被它声明的注入对象所使用，或者在 @Module 注解后添加 “library = true”注明它含有对外的 Dependency，可能被其他 Module 依赖。&lt;/p&gt;
+&lt;h1 id=&quot;工作原理&quot;&gt;&lt;a href=&quot;#工作原理&quot; class=&quot;headerlink&quot; title=&quot;工作原理&quot;&gt;&lt;/a&gt;工作原理&lt;/h1&gt;&lt;p&gt;（1） 编译时，通过APT查看所有的java文件，并根据注解生成一些新的java文件&lt;br&gt;（2）&lt;br&gt;（3）&lt;/p&gt;
+&lt;h1 id=&quot;KNOWLEADGE&quot;&gt;&lt;a href=&quot;#KNOWLEADGE&quot; class=&quot;headerlink&quot; title=&quot;KNOWLEADGE&quot;&gt;&lt;/a&gt;KNOWLEADGE&lt;/h1&gt;&lt;h2 id=&quot;Inject-无法注解抽象类&quot;&gt;&lt;a href=&quot;#Inject-无法注解抽象类&quot; class=&quot;headerlink&quot; title=&quot;@Inject - 无法注解抽象类&quot;&gt;&lt;/a&gt;@Inject - 无法注解抽象类&lt;/h2&gt;&lt;p&gt;一、Dagger 2中有3种提供依赖方式&lt;br&gt;1) 构造器注入&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;@Inject标注在构造器上，代表:
+① Dagger 2可以使用这个构造器构建对象
+② 注入构造器所需要的参数的依赖
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;构造器注入的局限: 如果有多个构造器，只能标注其一，无法标注多个。&lt;/p&gt;
+&lt;p&gt;2) 属性注入&lt;br&gt;被标注的属性不能使用private修饰，否则无法注入。&lt;/p&gt;
+&lt;p&gt;3) 方法注入&lt;br&gt;标注在public方法上，Dagger 2会在构造器执行之后立即调用被注解方法。&lt;/p&gt;
+&lt;p&gt;二、方法注入 &amp;amp; 属性注入&lt;br&gt;如果依赖需要this对象，使用方法注入可以提供安全的this对象&lt;/p&gt;
+&lt;h2 id=&quot;Component&quot;&gt;&lt;a href=&quot;#Component&quot; class=&quot;headerlink&quot; title=&quot;@Component&quot;&gt;&lt;/a&gt;@Component&lt;/h2&gt;&lt;p&gt;这个注解本身并没有意义，它需要依赖注入框架才有意义。用来标记需要被注入框架的注入方法、属性、构造。&lt;br&gt;一、Component中一般使用两种方式定义方法&lt;br&gt;1) void inject(目标类 obj);&lt;br&gt;Dagger 2会从目标类开始查找@Inject注解，自动生成依赖注入的代码，调用inject可完成依赖的注入。&lt;/p&gt;
+&lt;p&gt;2) Object getObj();&lt;br&gt;Dagger 2会到Object类中找被@Inject注解标注的构造器，自动生成提供Object依赖的代码，这种方式一般为其他Component提供依赖。&lt;/p&gt;
+&lt;p&gt;此处介绍Component中方法的第三种定义:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;@Component
+class AComponent{
+    XxxComponent plus(Module... modules) // XxxComponent是该AComponent的依赖，被@Subcomponent标注
+                                         // modules则是XxxComponent指定的Module
+}
+
+@Subcomponent(modules = xxxx)
+class XxxComponent{
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;二、流程说明&lt;br&gt;1）Dagger 2框架以Component中定义的方法作为入口，到目标类中寻找JSR-330定义的@Inject标注，生成一系列提供依赖的Factory类和注入依赖的Injector类；&lt;br&gt;2）Component联系Factory和Injector，最终完成依赖的注入。&lt;/p&gt;
+&lt;h2 id=&quot;Module-和-Provides&quot;&gt;&lt;a href=&quot;#Module-和-Provides&quot; class=&quot;headerlink&quot; title=&quot;@Module 和 @Provides&quot;&gt;&lt;/a&gt;@Module 和 @Provides&lt;/h2&gt;&lt;p&gt;一、如何使用&lt;br&gt;1) @Module标记在类上&lt;br&gt;2) @Provides标记在方法上&lt;br&gt;3) @Component中指定Module&lt;/p&gt;
+&lt;p&gt;二、流程说明&lt;br&gt;1) @Module 需要和 @Provides 同时使用才具有作用，并且@Component也需要指定Module；&lt;br&gt;2) @Module 是告诉Component,可以从这里获取依赖对象。Component会去找被@Provides标注的方法&lt;/p&gt;
+&lt;p&gt;注:&lt;br&gt;① @Component 可以指定多个 @Module&lt;br&gt;② @Component 可以依赖其他 Component &lt;/p&gt;
+&lt;h2 id=&quot;Qualifier-和-Named&quot;&gt;&lt;a href=&quot;#Qualifier-和-Named&quot; class=&quot;headerlink&quot; title=&quot;@Qualifier 和 @Named&quot;&gt;&lt;/a&gt;@Qualifier 和 @Named&lt;/h2&gt;&lt;p&gt;@Qualifier 限定符&lt;br&gt;@Named 基于String的限定符&lt;/p&gt;
+&lt;p&gt;比较:&lt;br&gt;1) @Qualifier作用和 @Named几乎一样，推荐使用前者，因为 @Named需要手写字符串&lt;br&gt;2）@Qualifier不是直接注解在属性上，而是用来自定义注解的&lt;/p&gt;
+&lt;h2 id=&quot;Component的dependence-和-Subcomponent&quot;&gt;&lt;a href=&quot;#Component的dependence-和-Subcomponent&quot; class=&quot;headerlink&quot; title=&quot;@Component的dependence 和 @Subcomponent&quot;&gt;&lt;/a&gt;@Component的dependence 和 @Subcomponent&lt;/h2&gt;&lt;p&gt;一、比较适合使用Subcomponent场景&lt;br&gt;1) 很多工具类需要使用到Application的Context对象，此时可以用一个Component负责提供，可以命名为AppComponent；&lt;br&gt;2) 需要用到context对象的SharePreferenceComponent、ToastComponent就可以作为Subcomponent；&lt;br&gt;3) 在AppComponent，可以很清晰的知道哪些子Component，XxxComponent plus(Module… modules)&lt;/p&gt;
+&lt;p&gt;Component dependences 和 Subcomponent 区别:&lt;br&gt;1) dependences能单独使用，Subcomponent必须由Component调用方法获取；&lt;br&gt;2) dependences可以清楚得知依赖哪个Component，Subcomponent不知道被谁引用；&lt;br&gt;3）使用区别&lt;br&gt;Subcomponent -&amp;gt; DaggerAppComponent.plus(new SharePreferenceModule());&lt;br&gt;dependences -&amp;gt; DaggerAppComponent.sharePreferenceComponent(SharePreferenceCompont.create())&lt;/p&gt;
+&lt;p&gt;二、总结&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Component dependences:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;1. 想保留独立的某个组件
+2. 要明确的显示该组件所使用的其他依赖
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Subcomponent&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;1. 两个组件间关系紧密
+2. 只关心Component，而Subcomponent只作为Component拓展，可以通过Component.xxx调用
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;Scope-和-Singleton&quot;&gt;&lt;a href=&quot;#Scope-和-Singleton&quot; class=&quot;headerlink&quot; title=&quot;@Scope 和 @Singleton&quot;&gt;&lt;/a&gt;@Scope 和 @Singleton&lt;/h2&gt;&lt;p&gt;一、介绍&lt;br&gt;@Scope 用来管理依赖的生命周期 和@Qualifier一样用来自定义注解的&lt;br&gt;@Singleton 是@Scope的默认实现 注解单例&lt;/p&gt;
+&lt;p&gt;二、注意&lt;br&gt;1）@Scope是需要成对存在的，在Module中的Provide方法使用@Scope，那么对应的Component中也必须使用@Scope注解，当两边的@Scope名字一样是（比如同为@Singleton），那么该Provide方法提供的依赖将会在Component中保持“局部单例”；而在Component中标注@Scope，provide方法没有标注，那么这个Scope是不会起作用的，而Component上的Scope作用也只是为了能顺利通过编译。&lt;br&gt;2）@Singleton是自定义的@Scope，作用如上所述。由于是框架默认定义，因此比自定义Scope多了一个编译检测功能，用以防止不规范的使用Scope注解。&lt;br&gt;3）如何做到全局单例？做到&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;（1）依赖在Component中是单例的。（供该依赖的provide方法和对应的Component类使用同一个Scope注解）
+（2）对应的Component在App中只初始化一次，每次注入依赖都使用这个Component对象。（在Application中创建该Component）
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;三、总结&lt;br&gt;1）Scope是用来给开发者管理依赖的生命周期，它可以让某个依赖在Component中保持“局部单例”，如果将Component保存在Application中复用，则可以让该依赖在app中保持单例。&lt;br&gt;2）通过自定义不同的Scope注解来标记这个依赖的生命周期，因此命名规范很重要&lt;br&gt;@Singleton       依赖是单例的&lt;br&gt;@ActivityScope   依赖的生命周期和Activity一样&lt;br&gt;@FragmentScope   依赖的生命周期和Fragment一样&lt;br&gt;… …&lt;/p&gt;
+&lt;h2 id=&quot;MapKey-和-Lazy&quot;&gt;&lt;a href=&quot;#MapKey-和-Lazy&quot; class=&quot;headerlink&quot; title=&quot;@MapKey 和 Lazy&quot;&gt;&lt;/a&gt;@MapKey 和 Lazy&lt;/h2&gt;&lt;p&gt;一、介绍&lt;br&gt;@MapKey&lt;br&gt;用来定义依赖集合（Maps 和 Sets）&lt;br&gt;目前只提供两种类型 - String 和 Enum&lt;/p&gt;
+&lt;p&gt;Lazy&lt;br&gt;Dagger2支持Lazy模式，通过Lazy模拟提供的实例，在@Inject的时候并不初始化，而是使用时，主动调用其get方法获取实例。&lt;/p&gt;</content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;和Java一样, Android开发也有自己的依赖注入框架, 但是和Spring不同的是, Spring注入的原理是通过Java反射来实现的, 但Android却不能通过这个方式来实现, 对于惜内存如金的Android设备, 这种方式无异于将应用程序运行效率降低了一个档次。&lt;br&gt;基于此Dagger就应运而生了&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="开源框架" scheme="http://tufusi.com/categories/%E5%BC%80%E6%BA%90%E6%A1%86%E6%9E%B6/"/>
+    
+    
+      <category term="依赖注入" scheme="http://tufusi.com/tags/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5/"/>
+    
+      <category term="Square" scheme="http://tufusi.com/tags/Square/"/>
+    
+  </entry>
   
   <entry>
     <title>项目开发</title>
@@ -339,6 +428,299 @@
   </entry>
   
   <entry>
+    <title>【译】Must Have Libraries</title>
+    <link href="http://tufusi.com/2016/11/16/%E3%80%90%E8%AF%91%E3%80%91Must%20Have%20Libraries/"/>
+    <id>http://tufusi.com/2016/11/16/【译】Must Have Libraries/</id>
+    <published>2016-11-16T07:48:00.000Z</published>
+    <updated>2016-12-09T13:45:38.050Z</updated>
+    
+    <content type="html">&lt;h1 id=&quot;概述&quot;&gt;&lt;a href=&quot;#概述&quot; class=&quot;headerlink&quot; title=&quot;概述&quot;&gt;&lt;/a&gt;概述&lt;/h1&gt;&lt;p&gt;Android开发有很多第三方库，但其实它们大多数都是相当流行的“必须具备”的库并且经常被用在几乎所有的Android项目中。每个库都有其用途，但是它们所有的库都是为了使开发者的开发生活更加愉快。&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;p&gt;下面列出了几个分类里主要的库。&lt;/p&gt;
+&lt;h1 id=&quot;标准包装&quot;&gt;&lt;a href=&quot;#标准包装&quot; class=&quot;headerlink&quot; title=&quot;标准包装&quot;&gt;&lt;/a&gt;标准包装&lt;/h1&gt;&lt;p&gt;这个”标准包”下面列出的库是非常主流，应用广泛的，并且可能需要被安装在大多数Android App项目里:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;名称&lt;/th&gt;
+&lt;th&gt;描述&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;http://guides.codepath.com/android/Consuming-APIs-with-Retrofit&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Retrofit&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;一个类型安全的使用注解的方式智能映射API到客户端接口Android REST客户端&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;guides.codepath.com/android/Displaying-Images-with-the-Glide-Library&quot;&gt;Glide&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;一个强大的Android图片下载和缓存库&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;guides.codepath.com/android/Displaying-Images-with-the-Glide-Library&quot;&gt;ButerKnife&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;使用Java注解方式，让Android开发可以更好的简化常用任务&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;http://guides.codepath.com/android/Using-Parceler&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Parceler&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;可以很方便的通过代码生成Android Parcelable接口&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;https://github.com/frankiesardo/icepick&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;IcePick&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;简化Android对象实例状态框架，用于简化保存和恢复实例状态的生命周期              &lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;https://github.com/square/leakcanary&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;LeakCanary&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;捕获内存溢出框架&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;http://guides.codepath.com/android/UI-Testing-with-Espresso&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Espresso&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;UI 自动化测试框架&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;http://guides.codepath.com/android/Unit-Testing-with-Robolectric&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Robolectric&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;高效的Android单元测试框架&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h1 id=&quot;进阶包装&quot;&gt;&lt;a href=&quot;#进阶包装&quot; class=&quot;headerlink&quot; title=&quot;进阶包装&quot;&gt;&lt;/a&gt;进阶包装&lt;/h1&gt;&lt;p&gt;  这个”进阶包”下面列出的是附加的库，它们使用起来更高级，但是却在一些优秀的Android团队中很流行。请注意这些库可能不适合你的处女App。这些高级的库包括：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;名称&lt;/th&gt;
+&lt;th&gt;描述&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;http://guides.codepath.com/android/Dependency-Injection-with-Dagger-2&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Dagger 2&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;一个快速管理对象的的依赖注入器框架&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;http://guides.codepath.com/android/RxJava&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;RxJava&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Anroid开发全响应式的组件框架&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;http://guides.codepath.com/android/Communicating-with-an-Event-Bus&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;EventBus&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;为简单组件通信的Android事件总线框架&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;https://github.com/excilys/androidannotations&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;AndroidAnnotations&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;强大的注解用来减少样板代码&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;http://guides.codepath.com/android/Lambda-Expressions&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Retrolambda&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;支持Android操作λ块&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;请记住这些库的组合可能并不能很好的相互处理。接下部分突出了其中的一些问题。&lt;/p&gt;
+&lt;h2 id=&quot;Parceler-和-IcePick&quot;&gt;&lt;a href=&quot;#Parceler-和-IcePick&quot; class=&quot;headerlink&quot; title=&quot;Parceler 和 IcePick&quot;&gt;&lt;/a&gt;Parceler 和 IcePick&lt;/h2&gt;&lt;p&gt;请记住你不能使用IcePick保存Parceler对象的当前状态。关于更多的情境之为何它们不适合请看这个&lt;a href=&quot;https://github.com/frankiesardo/icepick/pull/20&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;GitHub话题&lt;/a&gt;。你将需要使用IcePick显示地包裹化对象。你可以考虑替换Parceler为AutoParceler，这并不影响使用IcePick。&lt;/p&gt;
+&lt;h2 id=&quot;ButterKnife-和-Parceler&quot;&gt;&lt;a href=&quot;#ButterKnife-和-Parceler&quot; class=&quot;headerlink&quot; title=&quot;ButterKnife 和 Parceler&quot;&gt;&lt;/a&gt;ButterKnife 和 Parceler&lt;/h2&gt;&lt;p&gt;和Parceler库一起使用ButterKnife库会造成多个javax.annotation.processing.Processor声明。在这种情况下，你不得不在你的app/build.gradle文件里排除这种冲突:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;packagingOptions{
+   exclude &amp;apos;META-INF/services/javax.annotation.processing.Processor&amp;apos; //butterknife
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;ButterKnife-和-自定义View&quot;&gt;&lt;a href=&quot;#ButterKnife-和-自定义View&quot; class=&quot;headerlink&quot; title=&quot;ButterKnife 和 自定义View&quot;&gt;&lt;/a&gt;ButterKnife 和 自定义View&lt;/h2&gt;&lt;p&gt;通常你可能会发现在你的构造器中声明ButterKnife或者Dagger注入器的使用会阻止Android Studio去预览你的自定义视图布局。你可能会看到一个关于需要 isEditMode() 的错误。本质上这个方法是用来执行一段代码前使你的代码发生短路，那样就可能被用于运行时但是不能再预览窗口中执行。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;public ContentEditorView(Context context, AttributeSet attrs) {
+       super(context, attrs);
+       LayoutInflater inflater = (LayoutInflater) context
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+       inflater.inflate(R.layout.view_custom, this, true);
+
+       // short circuit here inside the layout editor
+       if(isInEditMode()) {
+           return;
+       }
+       ButterKnife.bind(this);
+  }
+&lt;/code&gt;&lt;/pre&gt;&lt;h1 id=&quot;便利性&quot;&gt;&lt;a href=&quot;#便利性&quot; class=&quot;headerlink&quot; title=&quot;便利性&quot;&gt;&lt;/a&gt;便利性&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;square.github.io/dagger/&quot;&gt;Dagger&lt;/a&gt; - 一个快速的Android和Java依赖注入器&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://sporklibrary.github.io/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Spork&lt;/a&gt; - Spork是一个基于注解进程的库，用来加速项目开发。它允许你编写更少的样板代码来使代码可读性更强，并且更易于维护。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/frankiesardo/auto-parcel&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;AutoParcel&lt;/a&gt; - Google AutoValue Android端Parcelable代产品&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/JakeWharton/hugo&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Hugo&lt;/a&gt; - 在app里记录日志更为简单&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/orhanobut/logger&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Logger&lt;/a&gt; - 更为简洁的日志追踪消息&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/square/leakcanary&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;LeakCanary&lt;/a&gt; - 发生内存泄露时捕获更为简单&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/androidannotations/androidannotations&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;AndroidAnnotation&lt;/a&gt; - 加快Android开发的框架。它负责管道，从而让你专注到真正重要的事情上来。通过简化代码，它很便于维护&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/chrisjenx/Calligraphy&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Calligraphy&lt;/a&gt; - 自定义字体更为简单&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/vsvankhede/easyfonts&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;EasyFonts&lt;/a&gt; - 在应用程序里加载自定义字体更为简单&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/daimajia/AndroidViewAnimations&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;AndroidViewAnimations&lt;/a&gt; - 使常见属性动画使用更为简单&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/mikepenz/AboutLibraries&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;AboutLibraries&lt;/a&gt; - 使用库会自动生成一个 关于这个app 的列表部分。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/JakeWharton/sdk-manager-plugin&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;SDK Manager Plugin&lt;/a&gt; - 如果你缺失了一个SDK版本、还没有下载一个API版本，或者你的支持库已经更新，这会是很有用的插件特别是小组项目。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/nisrulz/easydeviceinfo&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;EasyDeviceInfo&lt;/a&gt; - 以超级简单的方式获取设备信息&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/nisrulz/sensey&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Sensey&lt;/a&gt; - 立马即可检测手势&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&quot;拓展&quot;&gt;&lt;a href=&quot;#拓展&quot; class=&quot;headerlink&quot; title=&quot;拓展&quot;&gt;&lt;/a&gt;拓展&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/ReactiveX/RxJava&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;RxJava&lt;/a&gt; - JVM响应式扩展&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/greenrobot/EventBus&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;EventBus&lt;/a&gt; - Android最佳化事件总线，简化组件间通信&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://square.github.io/tape/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Tape&lt;/a&gt; - Tape是Android和Java的一个队列相关的集合类&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/yigit/android-priority-jobqueue&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Priority&lt;/a&gt; - 简单的后台任务&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&quot;网络通信&quot;&gt;&lt;a href=&quot;#网络通信&quot; class=&quot;headerlink&quot; title=&quot;网络通信&quot;&gt;&lt;/a&gt;网络通信&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;square.github.io/retrofit/&quot;&gt;Retrofit&lt;/a&gt; - 一个Android和Java基于注解方式的智能映射API为客户端接口类型安全的REST客户端&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://square.github.io/picasso/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Picasso&lt;/a&gt; - 一个强大的图片下载和缓存的Android库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/koush/ion&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Ion&lt;/a&gt; - 强大的异步网络通信库。点击这里&lt;a href=&quot;https://github.com/koush/ion#get-ion&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;下载&lt;/a&gt;jar包&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://loopj.com/android-async-http/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Android Async HTTP&lt;/a&gt; - 加载远程JSON等内容的异步网络通信客户端&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://developer.android.com/training/volley/index.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Volley&lt;/a&gt; - Google的HTTP库，让Android网络通信变得更简单并且最重要的是更快&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://guides.codepath.com/android/Using-OkHttp&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;OkHttp&lt;/a&gt; - Square的底层网络通信库，支持异步请求&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://guides.codepath.com/android/Displaying-Images-with-the-Glide-Library&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Glide&lt;/a&gt; - Picasso是Google的支持的可供选择的图片加载框架&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/nostra13/Android-Universal-Image-Loader&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Android Universal Image Loader&lt;/a&gt; - 可供选择的主流图像加载框架，可以被用来替换Picasso和Glide&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;frescolib.org&quot;&gt;Fresco&lt;/a&gt; - fb的一个图片管理库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/amitshekhariitbhu/Fast-Android-Networking&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Fast Android Networking&lt;/a&gt; - 一个在OkHttp网络层之上Android应用中做任何类型的网络通信的强大库&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&quot;列表（ListView）&quot;&gt;&lt;a href=&quot;#列表（ListView）&quot; class=&quot;headerlink&quot; title=&quot;列表（ListView）&quot;&gt;&lt;/a&gt;列表（ListView）&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/birajpatel/EasyListViewAdapters&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;EasyListViewAdapters&lt;/a&gt; - 用于构建更加简洁容易的多行类型列表&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/birajpatel/GridListViewAdapters&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;GridListViewAdapters&lt;/a&gt; - 轻松构建无限制王哥卡片式列表就像play市场。（ListView的工作就如无限制的网格列表）&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/emilsjolander/StickyListHeaders&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;StickyListHeaders&lt;/a&gt; - 一个节标头停滞在列表头部的Android库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/beworker/pinned-section-listview&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;PinnedListView&lt;/a&gt; - 有固定部分的列表&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/nhaarman/ListViewAnimations&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;ListViewAnimations&lt;/a&gt; - 可以简单实现列表子项动画方式&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/gabrielemariotti/cardslib&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Cardslib&lt;/a&gt; - 列表或者网格的卡牌式UI&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/erikwt/PullToRefresh-ListView&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;PullToRefresh-ListView&lt;/a&gt; - 列表使用pull-to-refresh功能更为简单。&lt;a href=&quot;https://github.com/erikwt/PullToRefresh-ListView/archive/master.zip&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;下载&lt;/a&gt;和作为一个&lt;a href=&quot;http://imgur.com/a/N8baF&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;库项目&lt;/a&gt;安装&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/lawloretienne/QuickReturn&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;QuickReturn&lt;/a&gt; - 显示或者隐藏列表列表滚动方向的头部或者底部&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/ojinxy/AndroidComponents&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Paginated Table&lt;/a&gt; - 这是一个允许任何对象的列表动态分页的表格。图标可以被添加到列中和自定义项，例如复选框以及按钮一样&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&quot;列表（RecyclerView）&quot;&gt;&lt;a href=&quot;#列表（RecyclerView）&quot; class=&quot;headerlink&quot; title=&quot;列表（RecyclerView）&quot;&gt;&lt;/a&gt;列表（RecyclerView）&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/cymcsg/UltimateRecyclerView&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;UltimateRecyclerView&lt;/a&gt; - 加强版RecyclerView，含有刷新，加载更多，动画以及许多其他功能。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/h6ah4i/android-advancedrecyclerview&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;AdvRecyclerView&lt;/a&gt; - 被扩展的RecyclerView，含有滑动删除，以及拖动和展开项功能&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/kanytu/android-parallax-recyclerview&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;android-parallax-recyclerview&lt;/a&gt; - 一个可以用来实现视差效果的RecyclerView的适配器&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/timehop/sticky-headers-recyclerview&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;sticky-headers-recyclerview&lt;/a&gt; -  RecycelrView可以实现粘滞头部装饰器&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/mikepenz/FastAdapter&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;FastAdapter&lt;/a&gt; - 简化加速RecyclerView填充数据速度的适配器&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/mikepenz/ItemAnimators&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;ItemAnimatiors&lt;/a&gt; - RecyclerView动画器为了实现子项增/删/移动画&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/500px/greedo-layout-for-android&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;GreedoLayout&lt;/a&gt; - RecyclerView拥有完整的长宽比网格布局管理器&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/nisrulz/recyclerviewhelper&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;RecyclerViewHelper&lt;/a&gt; - 为RecyclerView提供最常用的功能，比如滑动删除，拖放，UI分隔线，子项被选择与否时的事件，以及点击子项设置监听器等等&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/Ericliu001/async-expandable-list&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;async-expandable-list&lt;/a&gt; - 简单api提供方法来展示header-sub-items结构，以及异步加载sub-list到一个可扩展的列表。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&quot;简单页面导航&quot;&gt;&lt;a href=&quot;#简单页面导航&quot; class=&quot;headerlink&quot; title=&quot;简单页面导航&quot;&gt;&lt;/a&gt;简单页面导航&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/jfeinstein10/JazzyViewPager&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;JazzyViewPager&lt;/a&gt; - 拥有很多动画的页面&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/prolificinteractive/ParallaxPager&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;ParallaxPager&lt;/a&gt; - 拥有滑动视差效果的ViewPager&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/kmshack/Android-ParallaxHeaderViewPager&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;ParallaxHeaderViewPager&lt;/a&gt; - 另一种有滑动视差效果的ViewPager&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/jfeinstein10/SlidingMenu&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;SlidingMenu&lt;/a&gt; - 允许开发者简单创建侧滑菜单应用的库，比如在那些Google+，YouTube，以及Facebook app里就非常流行&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/siyamed/android-satellite-menu/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Android Satellite Menu&lt;/a&gt; - 可配置的”路径”菜单风格的圆形菜单&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/daCapricorn/ArcMenu&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;ArcMenu&lt;/a&gt; - 仿照”路径”菜单风格的提供选择的圆形菜单&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/umano/AndroidSlidingUpPanel&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;AndroidSlidingUpPanel&lt;/a&gt; - 上滑面板&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/pedrovgs/DraggablePanel&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;DraggablePannel&lt;/a&gt; - 可拖放的面板&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/mikepenz/MaterialDrawer/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;MaterialDrawer&lt;/a&gt; - 轻松添加Material风格抽屉式导航以及账户切换功能&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&quot;UI-组件&quot;&gt;&lt;a href=&quot;#UI-组件&quot; class=&quot;headerlink&quot; title=&quot;UI 组件&quot;&gt;&lt;/a&gt;UI 组件&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/varunest/SparkButton&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;SparkButton&lt;/a&gt; - 创建像Twitter的带有动画的爱心喜欢按钮的库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/keyboardsurfer/Crouton&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Crouton&lt;/a&gt; - 上下文相关的，可配置的提示通知比土司弹出更为优雅。下载jar包&lt;a href=&quot;http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22de.keyboardsurfer.android.widget%22&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;在这里&lt;/a&gt;，更多代码示例&lt;a href=&quot;https://github.com/codepath/android-crouton-sample&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;看这里&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/code-troopers/android-betterpickers&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;BetterPickers&lt;/a&gt; - BetterPikers方便输入选择&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/siyamed/android-shape-imageview&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;android-shape-imageview&lt;/a&gt; - 自定义形状的Android ImageView控件，包括气泡型，星型，爱心型，钻石型。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/vinc3m1/RoundedImageView&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;RoundedImageView&lt;/a&gt; - 这个流行库非常方便地塑成圆角或者创建椭圆图形&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/kikoso/android-stackblur&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Android StackBlur&lt;/a&gt; - 动态模糊图像&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/Bearded-Hen/Android-Bootstrap&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Android Bootstrap&lt;/a&gt; - Bootstrap UI控件&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/chrisbanes/PhotoView&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;PhotoView&lt;/a&gt; - 支持触摸手势的ImgeView&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/amlcurran/ShowcaseView&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;ShowcaseView&lt;/a&gt; - 突出你应用最好的部分&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/ManuelPeinado/FadingActionBar&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;FadingActionBar&lt;/a&gt; - 很酷的actionbar渐变特效&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/Todd-Davies/ProgressWheel&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;ProgressWheel&lt;/a&gt; - 较好的进度条库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/castorflex/SmoothProgressBar&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;SmoothProgressBar&lt;/a&gt; - 水平不确定进度条&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/lopspower/CircularFillableLoaders&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;CircularFillableLoaders&lt;/a&gt; - 漂亮的带有动画的填充式加载器&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://facebook.github.io/rebound/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Rebound&lt;/a&gt; - 简单弹簧动力学反弹库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/daimajia/AndroidImageSlider&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;AndroidImageSSlider&lt;/a&gt; - 图像平移转变动画库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/makovkastar/FloatingActionButton&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;FloatingActionButton&lt;/a&gt; - Material design风格悬浮按钮&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/anton46/Foursquare-CollectionPicker&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Foursquare-CollectionPicker&lt;/a&gt; - 如方形兴趣品味选择器一样的项选择器&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/dkharrat/NexusDialog&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;NexusDialog&lt;/a&gt; - 轻松创建表格对话框&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/orhanobut/dialogplus&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;dialogplus&lt;/a&gt; - 简单简洁的对话框库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/JoanZapata/android-iconify&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Iconify&lt;/a&gt; - 轻松嵌入图标至应用中&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/anton46/Android-StepsView&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Android StepsView&lt;/a&gt; - Android创建步骤视图的库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/mikepenz/Android-Iconics&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Android-Iconics&lt;/a&gt; - 添加可伸缩多样化的图标至应用中&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/lyft/scissors&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Scissors&lt;/a&gt; - 一个简单的图片裁剪库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/MiguelCatalan/MaterialSearchView&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Material-SearchView&lt;/a&gt; - 漂亮的Material类型的简单搜索视图&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/arimorty/floatingsearchview&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;PersistentSearchBar&lt;/a&gt; - 实现持久化搜索导航条&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/TangoAgency/material-intro-screen/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Android Material Intro Screen&lt;/a&gt; - 轻松添加App介绍页的库&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&quot;绘图&quot;&gt;&lt;a href=&quot;#绘图&quot; class=&quot;headerlink&quot; title=&quot;绘图&quot;&gt;&lt;/a&gt;绘图&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/PhilJay/MPAndroidChart&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;MPAndroidChart&lt;/a&gt; - 一个强大的Android图表/曲线库。支持线型-柱型-饼状-雷达状-气泡状-蜡烛线图表以及缩放、拖放、和其他动画。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/Androguide/HoloGraphLibrary&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;HoloGraphLibrary&lt;/a&gt; - 新的图形图表库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/blackfizz/EazeGraph&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;EazeGraph&lt;/a&gt; - 另一个新的有潜力的图表库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/HackPlan/AndroidCharts&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;AndroidCharts&lt;/a&gt; - 轻松使用图表的一个库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;android-graphview.org&quot;&gt;AndroidGraphView&lt;/a&gt; - 创建灵活好看的图表库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://androidplot.com/docs/quickstart/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;AndroidPlot&lt;/a&gt; - Android测绘库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/diogobernardino/WilliamChart&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;WilliamChart&lt;/a&gt; - 灵活有用的运动功能图表库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/lecho/hellocharts-android&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;HelloCharts&lt;/a&gt; - 支持缩放,滚动及动画的Android图表/图形库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/plattysoft/Leonids&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Leonids&lt;/a&gt; - 简单易懂的粒子特效(&lt;a href=&quot;http://www.plattysoft.com/2014/05/30/leonids-particle-system-lib/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;参见教程&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/jinatonic/confetti&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Confetti&lt;/a&gt; - 新的粒子特效库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;jaxenter.com/effort-free-graphs-on-android-with-achartengine-46199.html&quot;&gt;AChartEngine&lt;/a&gt; - 一个Android应用程序图表软件库&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&quot;图像处理&quot;&gt;&lt;a href=&quot;#图像处理&quot; class=&quot;headerlink&quot; title=&quot;图像处理&quot;&gt;&lt;/a&gt;图像处理&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/zomato/androidphotofilters&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;AndroidPhotoFilters&lt;/a&gt; - 在你选择的任何图片上创建感兴趣效果的库。带有预览样本的效果。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/CyberAgent/android-gpuimage&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;android-gpuimage&lt;/a&gt; - 主流的GPU图像处理库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/ragnraok/android-image-filter&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;android-image-filter&lt;/a&gt; - 旧版图像滤光库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/wasabeef/picasso-transformations&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;picasso-transformations&lt;/a&gt; - Picasso图像处理库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/wasabeef/glide-transformations&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;glide-transformations&lt;/a&gt; - Glide图像处理库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/mnafian/ImageEffectFilter&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;ImageEffectFilter&lt;/a&gt; - 简单代码实现图像处理库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/krazykira/VidEffects&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;VidEffects&lt;/a&gt; - 操纵效应引入视频库&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&quot;扫描&quot;&gt;&lt;a href=&quot;#扫描&quot; class=&quot;headerlink&quot; title=&quot;扫描&quot;&gt;&lt;/a&gt;扫描&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/zxing/zxing&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;ZXing&lt;/a&gt; - 条形码或者QR扫描库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/journeyapps/zxing-android-embedded&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;ZXing Android Embedded&lt;/a&gt; - 和zxing可交替使用的扫描库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/dm77/barcodescanner&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;barcodescanner&lt;/a&gt; - 新的扫描库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/LivotovLabs/CamView&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;CamView&lt;/a&gt; - 和ZXing一样可供选择的库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://code.google.com/p/android-quick-response-code/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;android-quick-response-code&lt;/a&gt; - 另一种可供选择的扫描库&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&quot;持久化&quot;&gt;&lt;a href=&quot;#持久化&quot; class=&quot;headerlink&quot; title=&quot;持久化&quot;&gt;&lt;/a&gt;持久化&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;http://guides.codepath.com/android/ActiveAndroid-Guide&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;ActiveAndroid&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://guides.codepath.com/android/DBFlow-Guide&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;DBFlow&lt;/a&gt; - 一款强大、健壮并且非常简单的基于注解处理的ORM android数据库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/greenrobot/greenDAO&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;greenDAO&lt;/a&gt; &lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://satyan.github.io/sugar/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;SugerORM&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/VictorAlbertos/RxCache&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;RxCache&lt;/a&gt; - Android响应式缓存库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/gfx/Android-Orma&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Android-Orma&lt;/a&gt; - Android SQLite数据库封装成的类型安全的ORM&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://ormlite.com/sqlite_java_android_orm.shtml&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;ORMLite&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/square/sqlbrite&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;SQLBrite&lt;/a&gt; - SQLiteOpenHelper的轻量级封装库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://guides.codepath.com/android/Easier-SQL-with-Cupboard&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Cupboard&lt;/a&gt; - 主流的SQL封装库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/pushtorefresh/storio&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;StorIO&lt;/a&gt; - 新生代轻量级的SQL封装库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/realm/realm-java&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Realm&lt;/a&gt; &lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/dkharrat/NexusData&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;NexusData&lt;/a&gt; &lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/orhanobut/hawk&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Hawk&lt;/a&gt; - 持久安全的键值存储库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/elastique/poetry&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Poetry&lt;/a&gt; - 持久化JSON直入SQLite&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://softwaretree.com/v1/products/jdxa/jdxa.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;JDXA&lt;/a&gt; - Android符合KISS原则（Keep It Simple and Straightforward）的ORM - 简单，非侵入式，灵活&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;#数据绑定&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/radzio/android-data-binding-recyclerview&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;RecyclerViewBinding&lt;/a&gt; - RecyclerView轻松添加数据绑定的库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/radzio/android-data-binding-command&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;CommandDataBinding&lt;/a&gt; - 更好处理点击动作的库&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&quot;兼容性&quot;&gt;&lt;a href=&quot;#兼容性&quot; class=&quot;headerlink&quot; title=&quot;兼容性&quot;&gt;&lt;/a&gt;兼容性&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;http://nineoldandroids.com/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;NineOldAndroids&lt;/a&gt; - 完全兼容性动画库，在Android所有版本中都能工作，被广泛使用。&lt;a href=&quot;https://github.com/JakeWharton/NineOldAndroids/zipball/master&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;下载&lt;/a&gt;和作为&lt;a href=&quot;http://imgur.com/a/N8baF&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;库项目&lt;/a&gt;安装。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/Prototik/HoloEverywhere&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;HoloEverywhere&lt;/a&gt; - Android Holo主题4.2到2.1+补丁库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/biokys/cropimage&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;CropImage&lt;/a&gt; - 裁剪图片意图简单兼容库&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&quot;滚动和视差&quot;&gt;&lt;a href=&quot;#滚动和视差&quot; class=&quot;headerlink&quot; title=&quot;滚动和视差&quot;&gt;&lt;/a&gt;滚动和视差&lt;/h1&gt;&lt;p&gt;这是一个主流的滚动和视差库列表&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/lawloretienne/QuickReturn&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;QuickReturn&lt;/a&gt; - 显示或隐藏列表滚动方向上的页眉或页脚&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/xgc1986/ParallaxPagerTransformer&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;ParallaxPagerTransformer&lt;/a&gt; - Android页面变换视差效果&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/kmshack/Android-ParallaxHeaderViewPager&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;ParallaxHeaderViewPager&lt;/a&gt; - 另一种ViewPager视差滑动特效&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/ksoichiro/Android-ObservableScrollView&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Android-ObservableScrollView&lt;/a&gt; - 可滚动视图中观察滚动事件的Android库&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/noties/Scrollable&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Scrollable&lt;/a&gt; - 实现滚动选项卡时自动滚动逻辑&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/prolificinteractive/ParallaxPager&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;ParallaxPager&lt;/a&gt; - 滚动视差效果ViewPager&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/kanytu/android-parallax-recyclerview&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;android-parallax-recyclerview&lt;/a&gt; - 可实现视差效果的RecyclerView适配器&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&quot;调试&quot;&gt;&lt;a href=&quot;#调试&quot; class=&quot;headerlink&quot; title=&quot;调试&quot;&gt;&lt;/a&gt;调试&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;http://facebook.github.io/stetho/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Stetho&lt;/a&gt; - Android应用程序调试桥，可以多种用途并不局限于网络监测，数据库监测以及Javascript控制台&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/bugfender/BugfenderSDK-android-sample&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Bugfender&lt;/a&gt; - app日志云存储，追踪用户行为从而找到应用程序中的问题&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&quot;资源&quot;&gt;&lt;a href=&quot;#资源&quot; class=&quot;headerlink&quot; title=&quot;资源&quot;&gt;&lt;/a&gt;资源&lt;/h1&gt;&lt;p&gt;参阅以下资源寻找库:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;http://android-arsenal.com&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://android-arsenal.com&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/wasabeef/awesome-android-libraries&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Wasabeef Core Libraries&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/wasabeef/awesome-android-ui&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Wasabeef UI Libraries&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://snowdream.github.io/awesome-android/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Snowdream Android Library Repository&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;android-libs.com&quot;&gt;Android-Libs.com&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;androidlibs.org&quot;&gt;http://androidlibs.org/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://appdevwiki.com/wiki/show/HomePage&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://appdevwiki.com/wiki/show/HomePage&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://www.libtastic.com/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://www.libtastic.com&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content>
+    
+    <summary type="html">
+    
+      &lt;h1 id=&quot;概述&quot;&gt;&lt;a href=&quot;#概述&quot; class=&quot;headerlink&quot; title=&quot;概述&quot;&gt;&lt;/a&gt;概述&lt;/h1&gt;&lt;p&gt;Android开发有很多第三方库，但其实它们大多数都是相当流行的“必须具备”的库并且经常被用在几乎所有的Android项目中。每个库都有其用途，但是它们所有的库都是为了使开发者的开发生活更加愉快。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="翻译" scheme="http://tufusi.com/categories/%E7%BF%BB%E8%AF%91/"/>
+    
+    
+      <category term="第三方" scheme="http://tufusi.com/tags/%E7%AC%AC%E4%B8%89%E6%96%B9/"/>
+    
+  </entry>
+  
+  <entry>
     <title>RxJava系列-操作符</title>
     <link href="http://tufusi.com/2016/08/20/RxJava%E7%B3%BB%E5%88%97-%E6%93%8D%E4%BD%9C%E7%AC%A6/"/>
     <id>http://tufusi.com/2016/08/20/RxJava系列-操作符/</id>
@@ -475,7 +857,7 @@
     <link href="http://tufusi.com/2016/08/13/%E8%BF%9B%E9%98%B6%E7%B3%BB%E5%88%97%E4%B9%8BAPP%E9%87%8D%E6%9E%84/"/>
     <id>http://tufusi.com/2016/08/13/进阶系列之APP重构/</id>
     <published>2016-08-13T08:30:12.000Z</published>
-    <updated>2016-12-09T12:24:13.774Z</updated>
+    <updated>2016-12-09T13:34:13.338Z</updated>
     
     <content type="html">&lt;h1 id=&quot;关于App重构&quot;&gt;&lt;a href=&quot;#关于App重构&quot; class=&quot;headerlink&quot; title=&quot;关于App重构&quot;&gt;&lt;/a&gt;关于App重构&lt;/h1&gt;&lt;p&gt;对于架构的设计理念，一定随着项目经验的累积而逐渐清晰，我始终坚信，没有哪一个架构完美，如果有，那一定是。。。骗人的！&lt;/p&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
@@ -599,7 +981,7 @@
     
     </summary>
     
-      <category term="框架架构" scheme="http://tufusi.com/categories/%E6%A1%86%E6%9E%B6%E6%9E%B6%E6%9E%84/"/>
+      <category term="架构" scheme="http://tufusi.com/categories/%E6%9E%B6%E6%9E%84/"/>
     
     
       <category term="重构" scheme="http://tufusi.com/tags/%E9%87%8D%E6%9E%84/"/>
@@ -1089,7 +1471,7 @@ Layout            lt
     <link href="http://tufusi.com/2016/08/13/%E8%BF%9B%E9%98%B6%E7%B3%BB%E5%88%97%E4%B9%8B%E4%B8%80%E5%B9%B4%E4%B8%80%E6%80%BB%E7%BB%93/"/>
     <id>http://tufusi.com/2016/08/13/进阶系列之一年一总结/</id>
     <published>2016-08-13T08:27:12.000Z</published>
-    <updated>2016-12-09T12:29:18.456Z</updated>
+    <updated>2016-12-09T14:30:28.269Z</updated>
     
     <content type="html">&lt;h1 id=&quot;无论怎样-这可能是我人生中搭建的最搓的一次架构&quot;&gt;&lt;a href=&quot;#无论怎样-这可能是我人生中搭建的最搓的一次架构&quot; class=&quot;headerlink&quot; title=&quot;无论怎样 这可能是我人生中搭建的最搓的一次架构&quot;&gt;&lt;/a&gt;无论怎样 这可能是我人生中搭建的最搓的一次架构&lt;/h1&gt;&lt;p&gt;煎熬了一个月，项目总算吭哧吭哧的完成，从最初的技术选型，到框架搭建，再到着手开发app，是一次尝试，也让自己越来越坚定的想在Android之路走下去，像这么有意思的事，不做个纪念写点东西是不行的。&lt;/p&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
@@ -1457,8 +1839,6 @@ function search()
       <category term="个人" scheme="http://tufusi.com/categories/%E4%B8%AA%E4%BA%BA/"/>
     
     
-      <category term="技术" scheme="http://tufusi.com/tags/%E6%8A%80%E6%9C%AF/"/>
-    
       <category term="总结" scheme="http://tufusi.com/tags/%E6%80%BB%E7%BB%93/"/>
     
       <category term="生活" scheme="http://tufusi.com/tags/%E7%94%9F%E6%B4%BB/"/>
@@ -1564,7 +1944,7 @@ function search()
     <link href="http://tufusi.com/2016/08/13/%E8%BF%9B%E9%98%B6%E7%B3%BB%E5%88%97%E4%B9%8BMVP%E6%9E%B6%E6%9E%84/"/>
     <id>http://tufusi.com/2016/08/13/进阶系列之MVP架构/</id>
     <published>2016-08-13T08:25:51.000Z</published>
-    <updated>2016-12-09T12:24:31.403Z</updated>
+    <updated>2016-12-09T13:34:15.151Z</updated>
     
     <content type="html">&lt;h3 id=&quot;MVP-Model-View-Presenter&quot;&gt;&lt;a href=&quot;#MVP-Model-View-Presenter&quot; class=&quot;headerlink&quot; title=&quot;MVP(Model-View-Presenter)&quot;&gt;&lt;/a&gt;MVP(Model-View-Presenter)&lt;/h3&gt;&lt;p&gt;该软件设计架构在Android开发过程中能够分离出项目的业务逻辑代码和视图展现代码，达到解耦模块化的效果。&lt;/p&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
@@ -1581,7 +1961,7 @@ function search()
     
     </summary>
     
-      <category term="框架架构" scheme="http://tufusi.com/categories/%E6%A1%86%E6%9E%B6%E6%9E%B6%E6%9E%84/"/>
+      <category term="架构" scheme="http://tufusi.com/categories/%E6%9E%B6%E6%9E%84/"/>
     
     
       <category term="MVP" scheme="http://tufusi.com/tags/MVP/"/>
@@ -1593,7 +1973,7 @@ function search()
     <link href="http://tufusi.com/2016/08/13/%E8%BF%9B%E9%98%B6%E7%B3%BB%E5%88%97%E4%B9%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"/>
     <id>http://tufusi.com/2016/08/13/进阶系列之设计模式/</id>
     <published>2016-08-13T08:24:43.000Z</published>
-    <updated>2016-12-09T12:27:55.067Z</updated>
+    <updated>2016-12-09T13:34:16.371Z</updated>
     
     <content type="html">&lt;p&gt;笔记源于阅读《HeadFirst设计模式》一书&lt;/p&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
@@ -1610,7 +1990,7 @@ function search()
     
     </summary>
     
-      <category term="框架架构" scheme="http://tufusi.com/categories/%E6%A1%86%E6%9E%B6%E6%9E%B6%E6%9E%84/"/>
+      <category term="架构" scheme="http://tufusi.com/categories/%E6%9E%B6%E6%9E%84/"/>
     
     
       <category term="Design Pattern" scheme="http://tufusi.com/tags/Design-Pattern/"/>
@@ -1622,7 +2002,7 @@ function search()
     <link href="http://tufusi.com/2016/06/20/%E4%BC%98%E7%A7%80%E7%AC%AC%E4%B8%89%E6%96%B9SDK%E5%88%86%E6%9E%90-Fresco/"/>
     <id>http://tufusi.com/2016/06/20/优秀第三方SDK分析-Fresco/</id>
     <published>2016-06-20T15:09:23.000Z</published>
-    <updated>2016-12-09T12:31:14.568Z</updated>
+    <updated>2016-12-09T14:30:41.554Z</updated>
     
     <content type="html"></content>
     
@@ -1632,8 +2012,6 @@ function search()
     
       <category term="开源框架" scheme="http://tufusi.com/categories/%E5%BC%80%E6%BA%90%E6%A1%86%E6%9E%B6/"/>
     
-    
-      <category term="技术" scheme="http://tufusi.com/tags/%E6%8A%80%E6%9C%AF/"/>
     
       <category term="SDK" scheme="http://tufusi.com/tags/SDK/"/>
     
@@ -2342,9 +2720,9 @@ synchronized void enqueue(AsyncCall call){
       <category term="开源框架" scheme="http://tufusi.com/categories/%E5%BC%80%E6%BA%90%E6%A1%86%E6%9E%B6/"/>
     
     
-      <category term="网络通信" scheme="http://tufusi.com/tags/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/"/>
-    
       <category term="Square" scheme="http://tufusi.com/tags/Square/"/>
+    
+      <category term="网络通信" scheme="http://tufusi.com/tags/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/"/>
     
   </entry>
   

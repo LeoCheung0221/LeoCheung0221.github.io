@@ -1,0 +1,923 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="依赖注入,Square," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="OnePiece" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="和Java一样, Android开发也有自己的依赖注入框架, 但是和Spring不同的是, Spring注入的原理是通过Java反射来实现的, 但Android却不能通过这个方式来实现, 对于惜内存如金的Android设备, 这种方式无异于将应用程序运行效率降低了一个档次。基于此Dagger就应运而生了">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android部落格之Dagger 2框架">
+<meta property="og:url" content="http://tufusi.com/2016/12/09/Android部落格之Dagger 2框架/index.html">
+<meta property="og:site_name" content="OnePiece">
+<meta property="og:description" content="和Java一样, Android开发也有自己的依赖注入框架, 但是和Spring不同的是, Spring注入的原理是通过Java反射来实现的, 但Android却不能通过这个方式来实现, 对于惜内存如金的Android设备, 这种方式无异于将应用程序运行效率降低了一个档次。基于此Dagger就应运而生了">
+<meta property="og:updated_time" content="2016-12-09T14:06:04.672Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android部落格之Dagger 2框架">
+<meta name="twitter:description" content="和Java一样, Android开发也有自己的依赖注入框架, 但是和Spring不同的是, Spring注入的原理是通过Java反射来实现的, 但Android却不能通过这个方式来实现, 对于惜内存如金的Android设备, 这种方式无异于将应用程序运行效率降低了一个档次。基于此Dagger就应运而生了">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://tufusi.com/2016/12/09/Android部落格之Dagger 2框架/"/>
+
+
+
+
+
+  <title> Android部落格之Dagger 2框架 | OnePiece </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">OnePiece</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Some of life, you have to go to the great challanges. - By Kobe Bryant</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-guestbook">
+          <a href="/guestbook" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            留言
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+
+      <li> <a title="把这个链接拖到你的Chrome收藏夹工具栏中" href='javascript:(function() {
+     	    function c() {
+     	        var e = document.createElement("link");
+     	        e.setAttribute("type", "text/css");
+     	        e.setAttribute("rel", "stylesheet");
+     	        e.setAttribute("href", f);
+     	        e.setAttribute("class", l);
+     	        document.body.appendChild(e)
+     	    }
+
+     	    function h() {
+     	        var e = document.getElementsByClassName(l);
+     	        for (var t = 0; t < e.length; t++) {
+     	            document.body.removeChild(e[t])
+     	        }
+     	    }
+
+     	    function p() {
+     	        var e = document.createElement("div");
+     	        e.setAttribute("class", a);
+     	        document.body.appendChild(e);
+     	        setTimeout(function() {
+     	            document.body.removeChild(e)
+     	        }, 100)
+     	    }
+
+     	    function d(e) {
+     	        return {
+     	            height : e.offsetHeight,
+     	            width : e.offsetWidth
+     	        }
+     	    }
+
+     	    function v(i) {
+     	        var s = d(i);
+     	        return s.height > e && s.height < n && s.width > t && s.width < r
+     	    }
+
+     	    function m(e) {
+     	        var t = e;
+     	        var n = 0;
+     	        while (!!t) {
+     	            n += t.offsetTop;
+     	            t = t.offsetParent
+     	        }
+     	        return n
+     	    }
+
+     	    function g() {
+     	        var e = document.documentElement;
+     	        if (!!window.innerWidth) {
+     	            return window.innerHeight
+     	        } else if (e && !isNaN(e.clientHeight)) {
+     	            return e.clientHeight
+     	        }
+     	        return 0
+     	    }
+
+     	    function y() {
+     	        if (window.pageYOffset) {
+     	            return window.pageYOffset
+     	        }
+     	        return Math.max(document.documentElement.scrollTop, document.body.scrollTop)
+     	    }
+
+     	    function E(e) {
+     	        var t = m(e);
+     	        return t >= w && t <= b + w
+     	    }
+
+     	    function S() {
+     	        var e = document.createElement("audio");
+     	        e.setAttribute("class", l);
+     	        e.src = i;
+     	        e.loop = false;
+     	        e.addEventListener("canplay", function() {
+     	            setTimeout(function() {
+     	                x(k)
+     	            }, 500);
+     	            setTimeout(function() {
+     	                N();
+     	                p();
+     	                for (var e = 0; e < O.length; e++) {
+     	                    T(O[e])
+     	                }
+     	            }, 15500)
+     	        }, true);
+     	        e.addEventListener("ended", function() {
+     	            N();
+     	            h()
+     	        }, true);
+     	        e.innerHTML = " <p>If you are reading this, it is because your browser does not support the audio element. We recommend that you get a new browser.</p> <p>";
+     	        document.body.appendChild(e);
+     	        e.play()
+     	    }
+
+     	    function x(e) {
+     	        e.className += " " + s + " " + o
+     	    }
+
+     	    function T(e) {
+     	        e.className += " " + s + " " + u[Math.floor(Math.random() * u.length)]
+     	    }
+
+     	    function N() {
+     	        var e = document.getElementsByClassName(s);
+     	        var t = new RegExp("\\b" + s + "\\b");
+     	        for (var n = 0; n < e.length; ) {
+     	            e[n].className = e[n].className.replace(t, "")
+     	        }
+     	    }
+
+     	    var e = 30;
+     	    var t = 30;
+     	    var n = 350;
+     	    var r = 350;
+     	    var i = "//s3.amazonaws.com/moovweb-marketing/playground/harlem-shake.mp3";
+     	    var s = "mw-harlem_shake_me";
+     	    var o = "im_first";
+     	    var u = ["im_drunk", "im_baked", "im_trippin", "im_blown"];
+     	    var a = "mw-strobe_light";
+     	    var f = "//s3.amazonaws.com/moovweb-marketing/playground/harlem-shake-style.css";
+     	    var l = "mw_added_css";
+     	    var b = g();
+     	    var w = y();
+     	    var C = document.getElementsByTagName("*");
+     	    var k = null;
+     	    for (var L = 0; L < C.length; L++) {
+     	        var A = C[L];
+     	        if (v(A)) {
+     	            if (E(A)) {
+     	                k = A;
+     	                break
+     	            }
+     	        }
+     	    }
+     	    if (A === null) {
+     	        console.warn("Could not find a node of the right size. Please try a different page.");
+     	        return
+     	    }
+     	    c();
+     	    S();		
+     	    var O = [];
+     	    for (var L = 0; L < C.length; L++) {
+     	        var A = C[L];
+     	        if (v(A)) {
+     	            O.push(A)
+     	        }
+     	    }
+     	    })()    '>High一下</a> </li>
+
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://tufusi.com/2016/12/09/Android部落格之Dagger 2框架/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="LeoCheung">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="http://img.wdjimg.com/mms/icon/v1/9/9c/de366a247aeddb5809193003fa9c99c9_256_256.png">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="OnePiece">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="OnePiece" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Android部落格之Dagger 2框架
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-12-09T21:55:33+08:00">
+                2016-12-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/开源框架/" itemprop="url" rel="index">
+                    <span itemprop="name">开源框架</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2016/12/09/Android部落格之Dagger 2框架/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/12/09/Android部落格之Dagger 2框架/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>和Java一样, Android开发也有自己的依赖注入框架, 但是和Spring不同的是, Spring注入的原理是通过Java反射来实现的, 但Android却不能通过这个方式来实现, 对于惜内存如金的Android设备, 这种方式无异于将应用程序运行效率降低了一个档次。<br>基于此Dagger就应运而生了</p>
+<a id="more"></a>
+<h1 id="概述"><a href="#概述" class="headerlink" title="概述:"></a>概述:</h1><p>基于Java平台的依赖注入库，通过使用注解实现依赖注入<br>实现原理: </p>
+<pre><code>利用APT(Annotation Process Tool)在编译时生成辅助类，这些类继承特定父类或实现特定接口，程序运行时依靠Dagger加载这些辅助类，调用相应接口完成依赖生成和注入。
+</code></pre><h1 id="基本使用："><a href="#基本使用：" class="headerlink" title="基本使用："></a>基本使用：</h1><p>1）构造函数无参 - 对象生成通过@Inject</p>
+<p>2) 构造函数有参 </p>
+<ul>
+<li>参数也需注解</li>
+<li>@Provides注解</li>
+</ul>
+<h2 id="常用注解方法"><a href="#常用注解方法" class="headerlink" title="常用注解方法:"></a>常用注解方法:</h2><p>@Inject - 类/字段<br>@Module - 管理方法<br>@Provide - 定义方法(参数!参数!参数)<br>@Component - 管理所有@Modules注入对象关联@Inject对象<br>@Scope - 限定注解作用域<br>@Qualifier - 注解依赖标示</p>
+<h2 id="区别"><a href="#区别" class="headerlink" title="区别"></a>区别</h2><p>1） @Inject 和 @Provides 两种依赖生成方式：</p>
+<pre><code>a. @Inject 用于注入可实例化的类；
+   @Provides 用于注入所有类
+b. @Inject 用于修饰属性和构造函数，用于任何非Module类；
+   @Provides 只可用于修饰非构造类函数，且必须在Module内部
+c. @Inject 修饰的函数只能是构造函数；
+   @Provides 修饰的函数必须以provide开头
+</code></pre><h2 id="编译检查错误"><a href="#编译检查错误" class="headerlink" title="编译检查错误"></a>编译检查错误</h2><p>（1） 所有需要依赖注入的类，需要显式声明在相应的 Module 中<br>（2） 一个 Module 中所有 @Provides 函数的参数都必须在这个 Module 中提供相应的被 @Provides 修饰的函数，或者在 @Module 注解后添加 “complete = false” 注明这是一个不完整的 Module ，表示它依赖不属于这个 Module 的其他 Dependency 。<br>（3） 一个 Module 中所有的 @Provides 函数都要被它声明的注入对象所使用，或者在 @Module 注解后添加 “library = true”注明它含有对外的 Dependency，可能被其他 Module 依赖。</p>
+<h1 id="工作原理"><a href="#工作原理" class="headerlink" title="工作原理"></a>工作原理</h1><p>（1） 编译时，通过APT查看所有的java文件，并根据注解生成一些新的java文件<br>（2）<br>（3）</p>
+<h1 id="KNOWLEADGE"><a href="#KNOWLEADGE" class="headerlink" title="KNOWLEADGE"></a>KNOWLEADGE</h1><h2 id="Inject-无法注解抽象类"><a href="#Inject-无法注解抽象类" class="headerlink" title="@Inject - 无法注解抽象类"></a>@Inject - 无法注解抽象类</h2><p>一、Dagger 2中有3种提供依赖方式<br>1) 构造器注入</p>
+<pre><code>@Inject标注在构造器上，代表:
+① Dagger 2可以使用这个构造器构建对象
+② 注入构造器所需要的参数的依赖
+</code></pre><p>构造器注入的局限: 如果有多个构造器，只能标注其一，无法标注多个。</p>
+<p>2) 属性注入<br>被标注的属性不能使用private修饰，否则无法注入。</p>
+<p>3) 方法注入<br>标注在public方法上，Dagger 2会在构造器执行之后立即调用被注解方法。</p>
+<p>二、方法注入 &amp; 属性注入<br>如果依赖需要this对象，使用方法注入可以提供安全的this对象</p>
+<h2 id="Component"><a href="#Component" class="headerlink" title="@Component"></a>@Component</h2><p>这个注解本身并没有意义，它需要依赖注入框架才有意义。用来标记需要被注入框架的注入方法、属性、构造。<br>一、Component中一般使用两种方式定义方法<br>1) void inject(目标类 obj);<br>Dagger 2会从目标类开始查找@Inject注解，自动生成依赖注入的代码，调用inject可完成依赖的注入。</p>
+<p>2) Object getObj();<br>Dagger 2会到Object类中找被@Inject注解标注的构造器，自动生成提供Object依赖的代码，这种方式一般为其他Component提供依赖。</p>
+<p>此处介绍Component中方法的第三种定义:</p>
+<pre><code>@Component
+class AComponent{
+    XxxComponent plus(Module... modules) // XxxComponent是该AComponent的依赖，被@Subcomponent标注
+                                         // modules则是XxxComponent指定的Module
+}
+
+@Subcomponent(modules = xxxx)
+class XxxComponent{
+}
+</code></pre><p>二、流程说明<br>1）Dagger 2框架以Component中定义的方法作为入口，到目标类中寻找JSR-330定义的@Inject标注，生成一系列提供依赖的Factory类和注入依赖的Injector类；<br>2）Component联系Factory和Injector，最终完成依赖的注入。</p>
+<h2 id="Module-和-Provides"><a href="#Module-和-Provides" class="headerlink" title="@Module 和 @Provides"></a>@Module 和 @Provides</h2><p>一、如何使用<br>1) @Module标记在类上<br>2) @Provides标记在方法上<br>3) @Component中指定Module</p>
+<p>二、流程说明<br>1) @Module 需要和 @Provides 同时使用才具有作用，并且@Component也需要指定Module；<br>2) @Module 是告诉Component,可以从这里获取依赖对象。Component会去找被@Provides标注的方法</p>
+<p>注:<br>① @Component 可以指定多个 @Module<br>② @Component 可以依赖其他 Component </p>
+<h2 id="Qualifier-和-Named"><a href="#Qualifier-和-Named" class="headerlink" title="@Qualifier 和 @Named"></a>@Qualifier 和 @Named</h2><p>@Qualifier 限定符<br>@Named 基于String的限定符</p>
+<p>比较:<br>1) @Qualifier作用和 @Named几乎一样，推荐使用前者，因为 @Named需要手写字符串<br>2）@Qualifier不是直接注解在属性上，而是用来自定义注解的</p>
+<h2 id="Component的dependence-和-Subcomponent"><a href="#Component的dependence-和-Subcomponent" class="headerlink" title="@Component的dependence 和 @Subcomponent"></a>@Component的dependence 和 @Subcomponent</h2><p>一、比较适合使用Subcomponent场景<br>1) 很多工具类需要使用到Application的Context对象，此时可以用一个Component负责提供，可以命名为AppComponent；<br>2) 需要用到context对象的SharePreferenceComponent、ToastComponent就可以作为Subcomponent；<br>3) 在AppComponent，可以很清晰的知道哪些子Component，XxxComponent plus(Module… modules)</p>
+<p>Component dependences 和 Subcomponent 区别:<br>1) dependences能单独使用，Subcomponent必须由Component调用方法获取；<br>2) dependences可以清楚得知依赖哪个Component，Subcomponent不知道被谁引用；<br>3）使用区别<br>Subcomponent -&gt; DaggerAppComponent.plus(new SharePreferenceModule());<br>dependences -&gt; DaggerAppComponent.sharePreferenceComponent(SharePreferenceCompont.create())</p>
+<p>二、总结</p>
+<ul>
+<li><p>Component dependences:</p>
+<pre><code>1. 想保留独立的某个组件
+2. 要明确的显示该组件所使用的其他依赖
+</code></pre></li>
+<li><p>Subcomponent</p>
+<pre><code>1. 两个组件间关系紧密
+2. 只关心Component，而Subcomponent只作为Component拓展，可以通过Component.xxx调用
+</code></pre></li>
+</ul>
+<h2 id="Scope-和-Singleton"><a href="#Scope-和-Singleton" class="headerlink" title="@Scope 和 @Singleton"></a>@Scope 和 @Singleton</h2><p>一、介绍<br>@Scope 用来管理依赖的生命周期 和@Qualifier一样用来自定义注解的<br>@Singleton 是@Scope的默认实现 注解单例</p>
+<p>二、注意<br>1）@Scope是需要成对存在的，在Module中的Provide方法使用@Scope，那么对应的Component中也必须使用@Scope注解，当两边的@Scope名字一样是（比如同为@Singleton），那么该Provide方法提供的依赖将会在Component中保持“局部单例”；而在Component中标注@Scope，provide方法没有标注，那么这个Scope是不会起作用的，而Component上的Scope作用也只是为了能顺利通过编译。<br>2）@Singleton是自定义的@Scope，作用如上所述。由于是框架默认定义，因此比自定义Scope多了一个编译检测功能，用以防止不规范的使用Scope注解。<br>3）如何做到全局单例？做到</p>
+<pre><code>（1）依赖在Component中是单例的。（供该依赖的provide方法和对应的Component类使用同一个Scope注解）
+（2）对应的Component在App中只初始化一次，每次注入依赖都使用这个Component对象。（在Application中创建该Component）
+</code></pre><p>三、总结<br>1）Scope是用来给开发者管理依赖的生命周期，它可以让某个依赖在Component中保持“局部单例”，如果将Component保存在Application中复用，则可以让该依赖在app中保持单例。<br>2）通过自定义不同的Scope注解来标记这个依赖的生命周期，因此命名规范很重要<br>@Singleton       依赖是单例的<br>@ActivityScope   依赖的生命周期和Activity一样<br>@FragmentScope   依赖的生命周期和Fragment一样<br>… …</p>
+<h2 id="MapKey-和-Lazy"><a href="#MapKey-和-Lazy" class="headerlink" title="@MapKey 和 Lazy"></a>@MapKey 和 Lazy</h2><p>一、介绍<br>@MapKey<br>用来定义依赖集合（Maps 和 Sets）<br>目前只提供两种类型 - String 和 Enum</p>
+<p>Lazy<br>Dagger2支持Lazy模式，通过Lazy模拟提供的实例，在@Inject的时候并不初始化，而是使用时，主动调用其get方法获取实例。</p>
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/依赖注入/" rel="tag"># 依赖注入</a>
+          
+            <a href="/tags/Square/" rel="tag"># Square</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/11/27/想不出标题JUST4LIFE/" rel="next" title="项目开发">
+                <i class="fa fa-chevron-left"></i> 项目开发
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/12/09/Android部落格之Dagger 2框架/"
+           data-title="Android部落格之Dagger 2框架" data-url="http://tufusi.com/2016/12/09/Android部落格之Dagger 2框架/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://img.wdjimg.com/mms/icon/v1/9/9c/de366a247aeddb5809193003fa9c99c9_256_256.png"
+               alt="LeoCheung" />
+          <p class="site-author-name" itemprop="name">LeoCheung</p>
+          <p class="site-description motion-element" itemprop="description">做人如果没有梦想,那和咸鱼有什么分别</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">20</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">9</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#概述"><span class="nav-number">1.</span> <span class="nav-text">概述:</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#基本使用："><span class="nav-number">2.</span> <span class="nav-text">基本使用：</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#常用注解方法"><span class="nav-number">2.1.</span> <span class="nav-text">常用注解方法:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#区别"><span class="nav-number">2.2.</span> <span class="nav-text">区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#编译检查错误"><span class="nav-number">2.3.</span> <span class="nav-text">编译检查错误</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#工作原理"><span class="nav-number">3.</span> <span class="nav-text">工作原理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#KNOWLEADGE"><span class="nav-number">4.</span> <span class="nav-text">KNOWLEADGE</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Inject-无法注解抽象类"><span class="nav-number">4.1.</span> <span class="nav-text">@Inject - 无法注解抽象类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Component"><span class="nav-number">4.2.</span> <span class="nav-text">@Component</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Module-和-Provides"><span class="nav-number">4.3.</span> <span class="nav-text">@Module 和 @Provides</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Qualifier-和-Named"><span class="nav-number">4.4.</span> <span class="nav-text">@Qualifier 和 @Named</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Component的dependence-和-Subcomponent"><span class="nav-number">4.5.</span> <span class="nav-text">@Component的dependence 和 @Subcomponent</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Scope-和-Singleton"><span class="nav-number">4.6.</span> <span class="nav-text">@Scope 和 @Singleton</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MapKey-和-Lazy"><span class="nav-number">4.7.</span> <span class="nav-text">@MapKey 和 Lazy</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">LeoCheung</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"LeoCheung"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</body>
+</html>
