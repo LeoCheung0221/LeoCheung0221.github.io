@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://tufusi.com/"/>
-  <updated>2016-12-09T14:06:04.672Z</updated>
+  <updated>2016-12-10T07:15:57.000Z</updated>
   <id>http://tufusi.com/</id>
   
   <author>
@@ -20,13 +20,14 @@
     <link href="http://tufusi.com/2016/12/09/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BDagger%202%E6%A1%86%E6%9E%B6/"/>
     <id>http://tufusi.com/2016/12/09/Android部落格之Dagger 2框架/</id>
     <published>2016-12-09T13:55:33.000Z</published>
-    <updated>2016-12-09T14:06:04.672Z</updated>
+    <updated>2016-12-10T07:15:57.000Z</updated>
     
     <content type="html">&lt;p&gt;和Java一样, Android开发也有自己的依赖注入框架, 但是和Spring不同的是, Spring注入的原理是通过Java反射来实现的, 但Android却不能通过这个方式来实现, 对于惜内存如金的Android设备, 这种方式无异于将应用程序运行效率降低了一个档次。&lt;br&gt;基于此Dagger就应运而生了&lt;/p&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
-&lt;h1 id=&quot;概述&quot;&gt;&lt;a href=&quot;#概述&quot; class=&quot;headerlink&quot; title=&quot;概述:&quot;&gt;&lt;/a&gt;概述:&lt;/h1&gt;&lt;p&gt;基于Java平台的依赖注入库，通过使用注解实现依赖注入&lt;br&gt;实现原理: &lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;利用APT(Annotation Process Tool)在编译时生成辅助类，这些类继承特定父类或实现特定接口，程序运行时依靠Dagger加载这些辅助类，调用相应接口完成依赖生成和注入。
-&lt;/code&gt;&lt;/pre&gt;&lt;h1 id=&quot;基本使用：&quot;&gt;&lt;a href=&quot;#基本使用：&quot; class=&quot;headerlink&quot; title=&quot;基本使用：&quot;&gt;&lt;/a&gt;基本使用：&lt;/h1&gt;&lt;p&gt;1）构造函数无参 - 对象生成通过@Inject&lt;/p&gt;
+&lt;h1 id=&quot;概述&quot;&gt;&lt;a href=&quot;#概述&quot; class=&quot;headerlink&quot; title=&quot;概述:&quot;&gt;&lt;/a&gt;概述:&lt;/h1&gt;&lt;p&gt;基于Java平台的依赖注入库，通过使用注解实现依赖注入&lt;/p&gt;
+&lt;p&gt;实现原理: &lt;/p&gt;
+&lt;p&gt;&lt;strong&gt; 利用APT(Annotation Process Tool)在编译时生成辅助类，这些类继承特定父类或实现特定接口，程序运行时依靠Dagger加载这些辅助类，调用相应接口完成依赖生成和注入。&lt;/strong&gt;&lt;/p&gt;
+&lt;h1 id=&quot;基本使用：&quot;&gt;&lt;a href=&quot;#基本使用：&quot; class=&quot;headerlink&quot; title=&quot;基本使用：&quot;&gt;&lt;/a&gt;基本使用：&lt;/h1&gt;&lt;p&gt;1）构造函数无参 - 对象生成通过@Inject&lt;/p&gt;
 &lt;p&gt;2) 构造函数有参 &lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;参数也需注解&lt;/li&gt;
@@ -87,7 +88,9 @@ class XxxComponent{
 （2）对应的Component在App中只初始化一次，每次注入依赖都使用这个Component对象。（在Application中创建该Component）
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;三、总结&lt;br&gt;1）Scope是用来给开发者管理依赖的生命周期，它可以让某个依赖在Component中保持“局部单例”，如果将Component保存在Application中复用，则可以让该依赖在app中保持单例。&lt;br&gt;2）通过自定义不同的Scope注解来标记这个依赖的生命周期，因此命名规范很重要&lt;br&gt;@Singleton       依赖是单例的&lt;br&gt;@ActivityScope   依赖的生命周期和Activity一样&lt;br&gt;@FragmentScope   依赖的生命周期和Fragment一样&lt;br&gt;… …&lt;/p&gt;
 &lt;h2 id=&quot;MapKey-和-Lazy&quot;&gt;&lt;a href=&quot;#MapKey-和-Lazy&quot; class=&quot;headerlink&quot; title=&quot;@MapKey 和 Lazy&quot;&gt;&lt;/a&gt;@MapKey 和 Lazy&lt;/h2&gt;&lt;p&gt;一、介绍&lt;br&gt;@MapKey&lt;br&gt;用来定义依赖集合（Maps 和 Sets）&lt;br&gt;目前只提供两种类型 - String 和 Enum&lt;/p&gt;
-&lt;p&gt;Lazy&lt;br&gt;Dagger2支持Lazy模式，通过Lazy模拟提供的实例，在@Inject的时候并不初始化，而是使用时，主动调用其get方法获取实例。&lt;/p&gt;</content>
+&lt;p&gt;Lazy&lt;br&gt;Dagger2支持Lazy模式，通过Lazy模拟提供的实例，在@Inject的时候并不初始化，而是使用时，主动调用其get方法获取实例。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;img src=&quot;http://img0.tuicool.com/Uzui63.png!web&quot; alt=&quot;&quot;&gt;����Ʒ���� &lt;a href=&quot;http://creativecommons.org/licenses/by/2.5/cn/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;֪ʶ�������� 2.5 �й���½����Э��&lt;/a&gt; �������ɣ���ӭת�أ���ת����ע������Colin��s Nest��������ת�غ��������ݵ����������˱������а�Ȩ����Ȩ����&lt;br&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/12/09/Android部落格之Dagger&quot;&gt;http://tufusi.com/2016/12/09/Android部落格之Dagger&lt;/a&gt; 2框架/&lt;/p&gt;</content>
     
     <summary type="html">
     
@@ -412,7 +415,9 @@ class XxxComponent{
 &lt;li&gt;合同风险&lt;/li&gt;
 &lt;li&gt;工程款支付方式&lt;/li&gt;
 &lt;li&gt;成本控制&lt;/li&gt;
-&lt;/ul&gt;</content>
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;img src=&quot;http://img0.tuicool.com/Uzui63.png!web&quot; alt=&quot;&quot;&gt;����Ʒ���� &lt;a href=&quot;http://creativecommons.org/licenses/by/2.5/cn/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;֪ʶ�������� 2.5 �й���½����Э��&lt;/a&gt; �������ɣ���ӭת�أ���ת����ע������Colin��s Nest��������ת�غ��������ݵ����������˱������а�Ȩ����Ȩ����&lt;br&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/11/27/想不出标题JUST4LIFE/&quot;&gt;http://tufusi.com/2016/11/27/想不出标题JUST4LIFE/&lt;/a&gt;&lt;/p&gt;</content>
     
     <summary type="html">
     
@@ -705,7 +710,9 @@ class XxxComponent{
 &lt;li&gt;&lt;a href=&quot;androidlibs.org&quot;&gt;http://androidlibs.org/&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;http://appdevwiki.com/wiki/show/HomePage&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://appdevwiki.com/wiki/show/HomePage&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;https://www.libtastic.com/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://www.libtastic.com&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;</content>
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;img src=&quot;http://img0.tuicool.com/Uzui63.png!web&quot; alt=&quot;&quot;&gt;����Ʒ���� &lt;a href=&quot;http://creativecommons.org/licenses/by/2.5/cn/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;֪ʶ�������� 2.5 �й���½����Э��&lt;/a&gt; �������ɣ���ӭת�أ���ת����ע������Colin��s Nest��������ת�غ��������ݵ����������˱������а�Ȩ����Ȩ����&lt;br&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/11/16/【译】Must&quot;&gt;http://tufusi.com/2016/11/16/【译】Must&lt;/a&gt; Have Libraries/&lt;/p&gt;</content>
     
     <summary type="html">
     
@@ -835,7 +842,9 @@ class XxxComponent{
 &lt;li&gt;从Observable发射的数据中取特定的值（过滤操作）&lt;/li&gt;
 &lt;li&gt;转发Observable的部分值（条件/布尔/过滤操作）&lt;/li&gt;
 &lt;li&gt;对Observable发射的数据序列求值（算术/聚合操作）&lt;/li&gt;
-&lt;/ul&gt;</content>
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;img src=&quot;http://img0.tuicool.com/Uzui63.png!web&quot; alt=&quot;&quot;&gt;����Ʒ���� &lt;a href=&quot;http://creativecommons.org/licenses/by/2.5/cn/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;֪ʶ�������� 2.5 �й���½����Э��&lt;/a&gt; �������ɣ���ӭת�أ���ת����ע������Colin��s Nest��������ת�غ��������ݵ����������˱������а�Ȩ����Ȩ����&lt;br&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/08/20/RxJava系列-操作符/&quot;&gt;http://tufusi.com/2016/08/20/RxJava系列-操作符/&lt;/a&gt;&lt;/p&gt;</content>
     
     <summary type="html">
     
@@ -973,7 +982,9 @@ class XxxComponent{
 &lt;li&gt;看书看书看书 再做总结　－－　《重构-改善既有代码的设计》&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&quot;附文-－-关于架构重构的规则&quot;&gt;&lt;a href=&quot;#附文-－-关于架构重构的规则&quot; class=&quot;headerlink&quot; title=&quot;附文 － 关于架构重构的规则&quot;&gt;&lt;/a&gt;附文 － 关于架构重构的规则&lt;/h2&gt;&lt;p&gt;Uber技术主管在OSAC上谈及的关于架构重构的12条规则，不一起学习未免可惜：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/LeoCheung0221/LeoCheung0221.github.io/master/image/refratoring.png&quot; alt=&quot;REFRATORING&quot;&gt;&lt;/p&gt;</content>
+&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/LeoCheung0221/LeoCheung0221.github.io/master/image/refratoring.png&quot; alt=&quot;REFRATORING&quot;&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;img src=&quot;http://img0.tuicool.com/Uzui63.png!web&quot; alt=&quot;&quot;&gt;����Ʒ���� &lt;a href=&quot;http://creativecommons.org/licenses/by/2.5/cn/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;֪ʶ�������� 2.5 �й���½����Э��&lt;/a&gt; �������ɣ���ӭת�أ���ת����ע������Colin��s Nest��������ת�غ��������ݵ����������˱������а�Ȩ����Ȩ����&lt;br&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/08/13/进阶系列之APP重构/&quot;&gt;http://tufusi.com/2016/08/13/进阶系列之APP重构/&lt;/a&gt;&lt;/p&gt;</content>
     
     <summary type="html">
     
@@ -1357,7 +1368,9 @@ public View getView(int position, ViewconvertView, ViewGroup parent)
 &lt;h3 id=&quot;34-Android属性动画特性-（乐视、小米）&quot;&gt;&lt;a href=&quot;#34-Android属性动画特性-（乐视、小米）&quot; class=&quot;headerlink&quot; title=&quot;34.Android属性动画特性**（乐视、小米）&quot;&gt;&lt;/a&gt;34.Android属性动画特性**（乐视、小米）&lt;/h3&gt;&lt;p&gt;如果你的需求中只需要对View进行移动、缩放、旋转和淡入淡出操作，那么补间动画确实已经足够健全了。但是很显然，这些功能是不足以覆盖所有的场景的，一旦我们的需求超出了移动、缩放、旋转和淡入淡出这四种对View的操作，那么补间动画就不能再帮我们忙了，也就是说它在功能和可扩展方面都有相当大的局限性，那么下面我们就来看看补间动画所不能胜任的场景。&lt;/p&gt;
 &lt;p&gt;注意上面我在介绍补间动画的时候都有使用“对View进行操作”这样的描述，没错，补间动画是只能够作用在View上的。也就是说，我们可以对一个Button、TextView、甚至是LinearLayout、或者其它任何继承自View的组件进行动画操作，但是如果我们想要对一个非View的对象进行动画操作，抱歉，补间动画就帮不上忙了。可能有的朋友会感到不能理解，我怎么会需要对一个非View的对象进行动画操作呢？这里我举一个简单的例子，比如说我们有一个自定义的View，在这个View当中有一个Point对象用于管理坐标，然后在onDraw()方法当中就是根据这个Point对象的坐标值来进行绘制的。也就是说，如果我们可以对Point对象进行动画操作，那么整个自定义View的动画效果就有了。显然，补间动画是不具备这个功能的，这是它的第一个缺陷。&lt;/p&gt;
 &lt;p&gt;然后补间动画还有一个缺陷，就是它只能够实现移动、缩放、旋转和淡入淡出这四种动画操作，那如果我们希望可以对View的背景色进行动态地改变呢？很遗憾，我们只能靠自己去实现了。说白了，之前的补间动画机制就是使用硬编码的方式来完成的，功能限定死就是这些，基本上没有任何扩展性可言。&lt;/p&gt;
-&lt;p&gt;最后，补间动画还有一个致命的缺陷，就是它只是改变了View的显示效果而已，而不会真正去改变View的属性。什么意思呢？比如说，现在屏幕的左上角有一个按钮，然后我们通过补间动画将它移动到了屏幕的右下角，现在你可以去尝试点击一下这个按钮，点击事件是绝对不会触发的，因为实际上这个按钮还是停留在屏幕的左上角，只不过补间动画将这个按钮绘制到了屏幕的右下角而已。&lt;/p&gt;</content>
+&lt;p&gt;最后，补间动画还有一个致命的缺陷，就是它只是改变了View的显示效果而已，而不会真正去改变View的属性。什么意思呢？比如说，现在屏幕的左上角有一个按钮，然后我们通过补间动画将它移动到了屏幕的右下角，现在你可以去尝试点击一下这个按钮，点击事件是绝对不会触发的，因为实际上这个按钮还是停留在屏幕的左上角，只不过补间动画将这个按钮绘制到了屏幕的右下角而已。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;img src=&quot;http://img0.tuicool.com/Uzui63.png!web&quot; alt=&quot;&quot;&gt;����Ʒ���� &lt;a href=&quot;http://creativecommons.org/licenses/by/2.5/cn/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;֪ʶ�������� 2.5 �й���½����Э��&lt;/a&gt; �������ɣ���ӭת�أ���ת����ע������Colin��s Nest��������ת�غ��������ݵ����������˱������а�Ȩ����Ȩ����&lt;br&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/08/13/进阶系列之求职路漫漫/&quot;&gt;http://tufusi.com/2016/08/13/进阶系列之求职路漫漫/&lt;/a&gt;&lt;/p&gt;</content>
     
     <summary type="html">
     
@@ -1451,7 +1464,9 @@ Layout            lt
 &lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;其他规范&quot;&gt;&lt;a href=&quot;#其他规范&quot; class=&quot;headerlink&quot; title=&quot;其他规范&quot;&gt;&lt;/a&gt;其他规范&lt;/h3&gt;&lt;ul&gt;
 &lt;li&gt;Gradle引入第三方库时comment加上库地址。&lt;/li&gt;
 &lt;li&gt;编译相关的常量写入编译脚本。&lt;/li&gt;
-&lt;/ul&gt;</content>
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;img src=&quot;http://img0.tuicool.com/Uzui63.png!web&quot; alt=&quot;&quot;&gt;����Ʒ���� &lt;a href=&quot;http://creativecommons.org/licenses/by/2.5/cn/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;֪ʶ�������� 2.5 �й���½����Э��&lt;/a&gt; �������ɣ���ӭת�أ���ת����ע������Colin��s Nest��������ת�غ��������ݵ����������˱������а�Ȩ����Ȩ����&lt;br&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/08/13/进阶系列之代码开发规范/&quot;&gt;http://tufusi.com/2016/08/13/进阶系列之代码开发规范/&lt;/a&gt;&lt;/p&gt;</content>
     
     <summary type="html">
     
@@ -1473,388 +1488,13 @@ Layout            lt
     <published>2016-08-13T08:27:12.000Z</published>
     <updated>2016-12-10T04:18:38.943Z</updated>
     
-    <content type="html"></content>
+    <content type="html">&lt;hr&gt;
+&lt;p&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/08/13/进阶系列之年末总结——我的2016/&quot;&gt;http://tufusi.com/2016/08/13/进阶系列之年末总结——我的2016/&lt;/a&gt;&lt;/p&gt;</content>
     
     <summary type="html">
     
-    </summary>
-    
-      <category term="个人" scheme="http://tufusi.com/categories/%E4%B8%AA%E4%BA%BA/"/>
-    
-    
-      <category term="总结" scheme="http://tufusi.com/tags/%E6%80%BB%E7%BB%93/"/>
-    
-      <category term="生活" scheme="http://tufusi.com/tags/%E7%94%9F%E6%B4%BB/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>进阶系列之年中总结——我的2016</title>
-    <link href="http://tufusi.com/2016/08/13/%E8%BF%9B%E9%98%B6%E7%B3%BB%E5%88%97%E4%B9%8B%E4%B8%80%E5%B9%B4%E4%B8%80%E6%80%BB%E7%BB%93/"/>
-    <id>http://tufusi.com/2016/08/13/进阶系列之一年一总结/</id>
-    <published>2016-08-13T08:27:12.000Z</published>
-    <updated>2016-12-10T04:15:24.900Z</updated>
-    
-    <content type="html">&lt;h1 id=&quot;无论怎样-这可能是我人生中搭建的最搓的一次架构&quot;&gt;&lt;a href=&quot;#无论怎样-这可能是我人生中搭建的最搓的一次架构&quot; class=&quot;headerlink&quot; title=&quot;无论怎样 这可能是我人生中搭建的最搓的一次架构&quot;&gt;&lt;/a&gt;无论怎样 这可能是我人生中搭建的最搓的一次架构&lt;/h1&gt;&lt;p&gt;煎熬了一个月，项目总算吭哧吭哧的完成，从最初的技术选型，到框架搭建，再到着手开发app，是一次尝试，也让自己越来越坚定的想在Android之路走下去，像这么有意思的事，不做个纪念写点东西是不行的。&lt;/p&gt;
-&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
-&lt;p&gt;开发前就已做好面对各种坑的准备，只是没想到，坑一个个来的都那么的理所当然，甚至理直气壮，关于这些必须针对模块一一列举，本系列文章目前按如下顺序写，这也是我项目开发从零到一的一个思路，可能在以后随着经验值增长，会做的更细致一些。那就开始吧，首先&lt;/p&gt;
-&lt;h3 id=&quot;技术选型&quot;&gt;&lt;a href=&quot;#技术选型&quot; class=&quot;headerlink&quot; title=&quot;技术选型&quot;&gt;&lt;/a&gt;技术选型&lt;/h3&gt;&lt;p&gt;之所以把这列为第一项，很大程度上源于我对之前公司开发框架囿于桎梏所做出的一些改变吧，我很难想象再去开发一个app依旧停留在过去的思维之上，所以这次开发之前，就立过决心，这里罗列出当时的想法，一些还没付诸。&lt;br&gt;RxJava/RxAndroid + OkHttp + Retrofit ( + Dagger2 )&lt;br&gt;Dagger2还没有加入项目中，在下一版迭代前加入&lt;br&gt;后来开发中发现MVP模式开发很能解决Activity业务代码繁重的问题，解耦相当好，反正记住一个真理就行：所有牛逼的框架，那一定是解耦和相当出色的。要不然怎么可能你能用他也能用，当然性能也是衡量一个框架的好坏。反正Square公司出品，必属精品。有Github的朋友，快去star&lt;/p&gt;
-&lt;h3 id=&quot;框架搭建&quot;&gt;&lt;a href=&quot;#框架搭建&quot; class=&quot;headerlink&quot; title=&quot;框架搭建&quot;&gt;&lt;/a&gt;框架搭建&lt;/h3&gt;&lt;p&gt;开发IDE: Android Studio&lt;/p&gt;
-&lt;h4 id=&quot;主app-Android-Lib-Java-Lib&quot;&gt;&lt;a href=&quot;#主app-Android-Lib-Java-Lib&quot; class=&quot;headerlink&quot; title=&quot;主app + Android Lib + Java Lib&quot;&gt;&lt;/a&gt;主app + Android Lib + Java Lib&lt;/h4&gt;&lt;p&gt;（1）主app&lt;/p&gt;
-&lt;p&gt;（2）Android lib&lt;/p&gt;
-&lt;p&gt;（3）Java lib&lt;/p&gt;
-&lt;h4 id=&quot;基类封装&quot;&gt;&lt;a href=&quot;#基类封装&quot; class=&quot;headerlink&quot; title=&quot;基类封装&quot;&gt;&lt;/a&gt;基类封装&lt;/h4&gt;&lt;h4 id=&quot;UI-开发&quot;&gt;&lt;a href=&quot;#UI-开发&quot; class=&quot;headerlink&quot; title=&quot;UI  开发&quot;&gt;&lt;/a&gt;UI  开发&lt;/h4&gt;&lt;h4 id=&quot;业务编写&quot;&gt;&lt;a href=&quot;#业务编写&quot; class=&quot;headerlink&quot; title=&quot;业务编写&quot;&gt;&lt;/a&gt;业务编写&lt;/h4&gt;&lt;h4 id=&quot;渠道发包（混淆，签名，加固，上线）&quot;&gt;&lt;a href=&quot;#渠道发包（混淆，签名，加固，上线）&quot; class=&quot;headerlink&quot; title=&quot;渠道发包（混淆，签名，加固，上线）&quot;&gt;&lt;/a&gt;渠道发包（混淆，签名，加固，上线）&lt;/h4&gt;&lt;h4 id=&quot;性能优化&quot;&gt;&lt;a href=&quot;#性能优化&quot; class=&quot;headerlink&quot; title=&quot;性能优化&quot;&gt;&lt;/a&gt;性能优化&lt;/h4&gt;&lt;h4 id=&quot;工具辅助&quot;&gt;&lt;a href=&quot;#工具辅助&quot; class=&quot;headerlink&quot; title=&quot;工具辅助&quot;&gt;&lt;/a&gt;工具辅助&lt;/h4&gt;&lt;h4 id=&quot;基础总结篇&quot;&gt;&lt;a href=&quot;#基础总结篇&quot; class=&quot;headerlink&quot; title=&quot;基础总结篇&quot;&gt;&lt;/a&gt;基础总结篇&lt;/h4&gt;&lt;h2 id=&quot;Android公共技术：&quot;&gt;&lt;a href=&quot;#Android公共技术：&quot; class=&quot;headerlink&quot; title=&quot;Android公共技术：&quot;&gt;&lt;/a&gt;Android公共技术：&lt;/h2&gt;&lt;p&gt;&lt;a href=&quot;http://a.codekk.com/detail/Android/lightSky/%E5%85%AC%E5%85%B1%E6%8A%80%E6%9C%AF%E7%82%B9%E4%B9%8B%20Android%20%E5%8A%A8%E7%94%BB%E5%9F%BA%E7%A1%80&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;公共技术点之 Android 动画基础&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;http://a.codekk.com/detail/Android/Caij/%E5%85%AC%E5%85%B1%E6%8A%80%E6%9C%AF%E7%82%B9%E4%B9%8B%20Java%20%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;公共技术点之 Java 动态代理&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;http://a.codekk.com/detail/Android/%E6%89%94%E7%89%A9%E7%BA%BF/%E5%85%AC%E5%85%B1%E6%8A%80%E6%9C%AF%E7%82%B9%E4%B9%8B%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;公共技术点之依赖注入&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;http://a.codekk.com/detail/Android/Trinea/%E5%85%AC%E5%85%B1%E6%8A%80%E6%9C%AF%E7%82%B9%E4%B9%8B%20View%20%E4%BA%8B%E4%BB%B6%E4%BC%A0%E9%80%92&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;公共技术点之 View 事件传递&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;http://a.codekk.com/detail/Android/lightSky/%E5%85%AC%E5%85%B1%E6%8A%80%E6%9C%AF%E7%82%B9%E4%B9%8B%20View%20%E7%BB%98%E5%88%B6%E6%B5%81%E7%A8%8B&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;公共技术点之 View 绘制流程&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&quot;1-Android的Framework和Android-apk的打包过程&quot;&gt;&lt;a href=&quot;#1-Android的Framework和Android-apk的打包过程&quot; class=&quot;headerlink&quot; title=&quot;1.Android的Framework和Android apk的打包过程&quot;&gt;&lt;/a&gt;1.Android的Framework和Android apk的打包过程&lt;/h3&gt;&lt;p&gt;底层的Binder驱动，IPC的核心，SGL 2D绘图，OpenGL 3D绘图&lt;/p&gt;
-&lt;h3 id=&quot;2-多线程&quot;&gt;&lt;a href=&quot;#2-多线程&quot; class=&quot;headerlink&quot; title=&quot;2.多线程&quot;&gt;&lt;/a&gt;2.多线程&lt;/h3&gt;&lt;p&gt;&lt;a href=&quot;http://blog.csdn.net/goodlixueyong/article/details/45895997&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;AsyncTask的缺陷和问题&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;关于线程池：asynctask对应的线程池ThreadPoolExecutor都是进程范围内共享的，都是static的，所以是asynctask控制着进程范围内所有的子类实例。由于这个限制的存在，当使用默认线程池时，如果线程数超过线程池的最大容量，线程池就会爆掉(3.0后默认串行执行，不会出现这个问题)。针对这种情况，可以尝试自定义线程池，配合asynctask使用。&lt;/p&gt;
-&lt;p&gt;关于默认线程池：核心线程池中最多有CPU_COUNT+1个，最多有CPU_COUNT*2+1个，线程等待队列的最大等待数为128，但是可以自定义线程池。线程池是由AsyncTask来管理的，线程池允许tasks并行运行，xuyao注意的是并发情况下数据的一致性问题，新数据可能会被老数据覆盖掉，类似volatile变量。所以希望tasks能够串行运行的话，使用SERIAL_EXECUTOR。&lt;/p&gt;
-&lt;p&gt;自定义线程池：executeOnExecutor(Executor exec,Params… params) 自定义Executor&lt;/p&gt;
-&lt;p&gt;execute(Params… params){return executeOnExecutor(sDefaultExecutor,params);}&lt;/p&gt;
-&lt;p&gt;AsyncTask在不同的SDK版本中的区别：&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;http://zmywly8866.github.io/2015/09/29/android-call-asynctask-excute-not-run.html?utm_source=tuicool&amp;amp;utm_medium=referral&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;调用AsyncTask的excute方法不能立即执行程序的原因分析及改善方案&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;通过查阅官方文档发现，AsyncTask首次引入时，异步任务是在一个独立的线程中顺序的执行，也就是说一次只能执行一个任务，不能并行的执行，从1.6开始，AsyncTask引入了线程池，支持同时执行5个异步任务，也就是说同时只能有5个线程运行，超过的线程只能等待，等待前面的线程某个执行完了才被调度和运行。换句话说，如果一个进程中的AsyncTask实例个数超过5个，那么假如前5个都运行很长时间的话，那么第6个只能等待机会了。这是AsyncTask的一个限制，而且对于2.3以前的版本无法解决。如果你的应用需要大量的后台线程去执行任务，那么你只能放弃使用AsyncTask，自己创建线程池来管理Thread，或者干脆不用线程池直接使用Thread也无妨。不得不说，虽然AsyncTask较Thread使用起来方便，但是它最多只能同时运行5个线程，这也大大局限了它的实力，你必须要小心设计你的应用，错开使用AsyncTask的时间，尽力做到分时，或者保证数量不会大于5个，否则就会遇到上次提到的问题。可能是Google意识到了AsyncTask的局限性了，从Android3.0开始对AsyncTask的API作出了一些调整：每次只启动一个线程执行一个任务，完成之后再执行第二个任务，也就是相当于只有一个后台线程在执行所提交的任务。&lt;/p&gt;
-&lt;h5 id=&quot;1、生命周期&quot;&gt;&lt;a href=&quot;#1、生命周期&quot; class=&quot;headerlink&quot; title=&quot;1、生命周期&quot;&gt;&lt;/a&gt;1、生命周期&lt;/h5&gt;&lt;p&gt;很多开发者会认为一个在Activity中创建的AsyncTask会随着Activity的销毁而销毁。然而事实并非如此。AsyncTask会一直执行，直到doInBackground()方法执行完毕。然后，如果cancel(boolean)被调用,那么onCancelled(Result result)方法会被执行；否则，执行onPostExecute(Result result)方法。如果我们的Activity销毁之前，没有取消AsyncTask，这有可能让我们的AsyncTask崩溃(crash)。因为它想要处理的view已经不在了。所以，我们总是必须确保在销毁活动之前取消任务。总之，我们使用AsyncTask需要确保AsyncTask正确的取消。&lt;/p&gt;
-&lt;h5 id=&quot;2、内存泄漏&quot;&gt;&lt;a href=&quot;#2、内存泄漏&quot; class=&quot;headerlink&quot; title=&quot;2、内存泄漏&quot;&gt;&lt;/a&gt;2、内存泄漏&lt;/h5&gt;&lt;p&gt;如果AsyncTask被声明为Activity的非静态的内部类，那么AsyncTask会保留一个对Activity的引用。如果Activity已经被销毁，AsyncTask的后台线程还在执行，它将继续在内存里保留这个引用，导致Activity无法被回收，引起内存泄漏。&lt;/p&gt;
-&lt;h5 id=&quot;3、结果丢失&quot;&gt;&lt;a href=&quot;#3、结果丢失&quot; class=&quot;headerlink&quot; title=&quot;3、结果丢失&quot;&gt;&lt;/a&gt;3、结果丢失&lt;/h5&gt;&lt;p&gt;屏幕旋转或Activity在后台被系统杀掉等情况会导致Activity的重新创建，之前运行的AsyncTask会持有一个之前Activity的引用，这个引用已经无效，这时调用onPostExecute()再去更新界面将不再生效。&lt;/p&gt;
-&lt;h5 id=&quot;4、并行还是串行&quot;&gt;&lt;a href=&quot;#4、并行还是串行&quot; class=&quot;headerlink&quot; title=&quot;4、并行还是串行&quot;&gt;&lt;/a&gt;4、并行还是串行&lt;/h5&gt;&lt;p&gt;在Android1.6之前的版本，AsyncTask是串行的，在1.6至2.3的版本，改成了并行的。在2.3之后的版本又做了 修改，可以支持并行和串行，当想要串行执行时，直接执行execute()方法，如果需要执行executeOnExecutor(Executor)。&lt;/p&gt;
-&lt;h3 id=&quot;3-Android机制&quot;&gt;&lt;a href=&quot;#3-Android机制&quot; class=&quot;headerlink&quot; title=&quot;3.Android机制&quot;&gt;&lt;/a&gt;3.Android机制&lt;/h3&gt;&lt;h5 id=&quot;1-Linux-Sandbox-沙箱机制：&quot;&gt;&lt;a href=&quot;#1-Linux-Sandbox-沙箱机制：&quot; class=&quot;headerlink&quot; title=&quot;(1)Linux Sandbox 沙箱机制：&quot;&gt;&lt;/a&gt;(1)Linux Sandbox 沙箱机制：&lt;/h5&gt;&lt;p&gt;Android将数据分为system和data两个区。其中system是只读的，dada用来存放应用自己的数据，这保证了系统数据不会被随意改写。&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;应用之间的数据相互独立，每个应用都会有一个user id和group id，只有相同的user id并且来自同一个作者，才能访问它们的数据。
-作者通过对apk签名来标识自己，签名和uid构成了双重的保证。
-&lt;/code&gt;&lt;/pre&gt;&lt;h5 id=&quot;2-用户权限机制：&quot;&gt;&lt;a href=&quot;#2-用户权限机制：&quot; class=&quot;headerlink&quot; title=&quot;(2)用户权限机制：&quot;&gt;&lt;/a&gt;(2)用户权限机制：&lt;/h5&gt;&lt;p&gt;文件权限，UID,GID&lt;/p&gt;
-&lt;h5 id=&quot;3-用户权限机制：&quot;&gt;&lt;a href=&quot;#3-用户权限机制：&quot; class=&quot;headerlink&quot; title=&quot;(3)用户权限机制：&quot;&gt;&lt;/a&gt;(3)用户权限机制：&lt;/h5&gt;&lt;p&gt;android permission机制限制应用访问特定的资源，例如照相机、网络、外部存储等api&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;如何让两个app运行在同一个进程里？
-    1. 两个app要用相同的private key来签名
-    2. 两个app的Manifest文件中要添加一样的属性 android:sharedUserId(设置成相同的UID)
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;4-Binder机制&quot;&gt;&lt;a href=&quot;#4-Binder机制&quot; class=&quot;headerlink&quot; title=&quot;4.Binder机制&quot;&gt;&lt;/a&gt;4.Binder机制&lt;/h3&gt;&lt;p&gt;跨进程间通信(IPC):四大组件之间通过Intent互相跳转，Android实现IPC的方式是binder机制。&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;http://blog.csdn.net/notice520/article/details/8135600&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;android中的跨进程通信的实现（一）——远程调用过程和aidl&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;http://www.linuxidc.com/Linux/2012-07/66195.htm&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Android中的Binder机制的简要理解&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;http://blog.csdn.net/sunxingzhesunjinbiao/article/details/42195043&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Android中的Binder机制的简要理解二&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;In the Android platform, the binder is used for nearly everything that happens accross in the core plateform.&lt;/p&gt;
-&lt;p&gt;最底层的是Android的ashmen（Anonymous shared memoryy）机制，它负责辅助实现内存的分配，以及跨进程间通信所需要的内存共享。AIDL(Android Interface Definition Language)对BInder的使用进行了封装，可以让开发者方便的进行方法的远程调用，后面会详细介绍。Intent是最高一层的抽象，方便开发者进行常用的跨进程调用。&lt;/p&gt;
-&lt;p&gt;从英文字面上意思看，Binder具有粘结剂的意思，那么它把什么东西粘结在一起呢？在Android系统的Binder机制中，由一系统组件组成，分别是Client、Server、Service Manager和Binder驱动程序，其中Client、Server和Service Manager运行在用户区间，Binder驱动程序运行内核空间。Binder就是一种把这四个组件粘合在一起的粘结剂了，其中，核心组件便是Binder驱动了，ServiceManager提供了辅助管理的功能，Client和Server正是在Binder驱动和ServiceManager提供的基础设施上，进行Client-Server之间的通信。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;http://img.blog.csdn.net/20160329110351922&quot; alt=&quot;BINDER&quot; title=&quot;binder&quot;&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;1. Client、Server和ServiceManager实现在用户空间中，Binder驱动程序实现在内核空间中
-2. Binder驱动程序和ServiceManager在Android平台已经实现，开发者只需要在用户空间实现自己的Client和Server
-3. Binder驱动程序提供设备文件/dev/binder与用户空间交互，Client、Server和ServiceManager通过open和ioctl文件操作函数与Binder驱动程序进行通信
-4. Client和Server之间的进程间通信通过Binder驱动程序间接实现
-5. Service Manager是一个守护进程，用来管理Server，并向Client提供查询Server接口的能力
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;服务器端：一个Binder服务器就是一个Binder类的对象。当创建一个Binder对象后，内部就会开启一个线程，这个线程用语接收binder驱动发送的信息，收到消息后，会执行相关的服务代码。&lt;/p&gt;
-&lt;p&gt;Binder驱动：当服务端成功创建一个Binder对象后，Binder驱动也会相应的创建一个mRemote对象，该对象的类型也是也是Binder类。客户就可以借助这个mRemote对象来访问远程服务。&lt;/p&gt;
-&lt;p&gt;客户端：客户想要访问Binder的远程服务，就必须获取远程服务的Binder对象在binder驱动层对应的mRemote引用。当获取到mRemote对象的引用后，就可以调用相应Binder对象的服务了。&lt;/p&gt;
-&lt;p&gt;在这里，我们可以看到，客户端是通过Binder驱动来调用服务端的相关服务。首先，在服务端创建一个Binder对象，然后相应的在Binder驱动中创建一个Binder对象，接着客户端通过获取Binder对象的引用来调用服务端的服务。在Binder机制中正是借着Binder驱动将不同进程间的组件bind（粘连）在一起，实现通信。&lt;/p&gt;
-&lt;p&gt;mmap将一个文件或者其他对象映射进内存。文件被映射到多个页上，如果文件的大小不是所有页的大小之和，最后一个页不被使用的空间将会清零。munmap执行相反的操作，删除特定地址区域的对象映射。&lt;/p&gt;
-&lt;p&gt;当使用mmap映射文件到进程后，就可以直接操作这段虚拟内存进行文件的读写等操作，不必再调用read，write等系统调用。但需注意，直接对该段内存写时不会写入超过当前文件大小的内容。&lt;/p&gt;
-&lt;p&gt;采用共享内存通信的一个显而易见的好处是效率高，因为进程可以直接读写内存，而不需要任何数据的拷贝。对于像管道和消息队列等通信方式，则需要在内核和用户空间进行四次的数据拷贝，而共享内存只拷贝两次数据：一次从输入文件到共享内存区，另一次从共享内存区输出文件。实际上，进程之间在共享内存时，并不总是读写少量数据后就解除映射，有新的通信时，再重新建立共享内存区域。而是保存共享区域，直到通信完毕为止，这样，数据内容一直保存在共享内存中，并没有写回文件。共享内存中的内容往往是在解除映射时才写回文件的。因此，采用共享内存的通信方式效率是非常高的。&lt;/p&gt;
-&lt;p&gt;aidl主要就是帮助我们完成了包装数据和解包的过程，并调用了transact过程，而用来传递的数据包我们就称为parcel&lt;/p&gt;
-&lt;p&gt;AIDL: xxx.aidl-&amp;gt;xxx.java,注册service&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;1. 用aidl定义需要被调用方法接口
-2. 实现这些方法
-3. 调用这些方法
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;5-NDK&quot;&gt;&lt;a href=&quot;#5-NDK&quot; class=&quot;headerlink&quot; title=&quot;5.NDK&quot;&gt;&lt;/a&gt;5.NDK&lt;/h3&gt;&lt;p&gt;Dalvik虚拟机在调用一个成员函数的时候，如果发现该成员函数是一个JNI方法，那么就会直接跳到它的地址去执行。也就是说，JNI方法是直接在本地操作系统执行的，而不是Dalvik虚拟机解释器执行。由此也可以看出，JNI方法是Android应用程序与本地操作系统直接进行通信的一个手段。&lt;/p&gt;
-&lt;p&gt;JNI原理：&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;http://blog.csdn.net/luoshengyang/article/details/8923483&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Dalvik虚拟机JNI方法的注册过程分析&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;例子：当libnanosleep.so文件被加载的时候，函数JNI_OnLoad就会被调用。在函数JNI_OnLoad中，参数vm描述的是当前线程中的Dalvik虚拟机，通过调用它的成员函数GetEnv就可以获得一个JNIEnv对象。有了这个JNIEnv对象之后，我们就可以调用另外一个函数jniRegisterNativeMethods来向当前进程的Dalvik虚拟机注册一个JNI方法。&lt;/p&gt;
-&lt;h3 id=&quot;6-Android系统启动过程，App启动过程&quot;&gt;&lt;a href=&quot;#6-Android系统启动过程，App启动过程&quot; class=&quot;headerlink&quot; title=&quot;6.Android系统启动过程，App启动过程&quot;&gt;&lt;/a&gt;6.Android系统启动过程，App启动过程&lt;/h3&gt;&lt;p&gt;App启动过程：&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;http://blog.csdn.net/stonecao/article/details/6591847&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Activity启动过程详解&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;从桌面点击到activity启动的过程&lt;/p&gt;
-&lt;p&gt;1、Launcher线程捕获onclick的点击事件，调用Launcher.startActivitySafely,进一步调用Launcher.startActivity，最后调用父类Activity的startActivity。&lt;/p&gt;
-&lt;p&gt;2、Activity和ActivityManagerService交互，引入Instrumentation，将启动请求交给Instrumentation，调用Instrumentation.execStartActivity。&lt;/p&gt;
-&lt;p&gt;3、调用ActivityManagerService的startActivity方法，这里做了进程切换（具体过程请查看源码）。&lt;/p&gt;
-&lt;p&gt;4、开启Activity，调用onCreate方法&lt;/p&gt;
-&lt;h3 id=&quot;7-Activity-Fragment-Service生命周期&quot;&gt;&lt;a href=&quot;#7-Activity-Fragment-Service生命周期&quot; class=&quot;headerlink&quot; title=&quot;7.Activity,Fragment,Service生命周期&quot;&gt;&lt;/a&gt;7.Activity,Fragment,Service生命周期&lt;/h3&gt;&lt;p&gt;常见的例子：程序正运行着来电话了，这个程序咋办呢？中止了呗，如果中止的时候新出的一个Activity是全屏的onPause-&amp;gt;onStop，恢复的时候onStart-&amp;gt;onResume,如果打断这个应用程序的是一个Theme为Translucent或者Dialog的Activity那么只是onPause,恢复的时候onResume。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;onPause:  恢复的时候onResume&lt;/li&gt;
-&lt;li&gt;onCreate: 在这里创建界面，做一些数据的初始化工作&lt;/li&gt;
-&lt;li&gt;onStart:  到这一步变成用户可见不可交互的&lt;/li&gt;
-&lt;li&gt;onPause:  到这一步是可见但不可交互的，系统会停止动画等消耗CPU的事情，应该在这里保存你的一些 数据，因为这个时候你的程序的优先级降低，有可能被 系统回收。在这里保存的数据，应该在onResume里读出来。注意：这个方法里做的事情时间要短，因为下一个Activity不会等到这个方法完成才启动。&lt;/li&gt;
-&lt;li&gt;onStop:   变得不可见，被下一个Activity覆盖了(onPause和onStop的区别是否可见)&lt;/li&gt;
-&lt;li&gt;onDestroy:这是Activity被干掉前最后一个被调用方法了，可能是外面类调用finish方法或者是系统为了节省空间将它暂时性的干掉，可以用isFinishing()来判断它，如果你有一个ProgressDialog在线程中转动，请在onDestroy里把它cancel掉，不然等线程结束的时候，调用Dialog的cancel会抛出异常的。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;onPause,onstop,onDestroy，三种状态下，Activity都有可能被系统干掉。&lt;/p&gt;
-&lt;p&gt;启动另一个Activity然后finish，先调用旧Activity的onPause方法，然后调用新的Activity和onCreate-&amp;gt;onStart-&amp;gt;onResume方法，然后调用旧Activity的onStop-&amp;gt;onDestroy方法。&lt;/p&gt;
-&lt;p&gt;如果没有调用finish那么onDestroy方法不会被调用，而且在onStop之前还会调用onSavedInstanceState方法&lt;/p&gt;
-&lt;p&gt;onRestart方法执行完了之后还会调用onStart方法&lt;/p&gt;
-&lt;p&gt;fragment:[SupportFragmentManager,childFragment]&lt;/p&gt;
-&lt;p&gt;service:&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;http://www.cnblogs.com/mengdd/archive/2013/03/24/2979944.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Android Service的生命周期&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;http://www.cnblogs.com/perfy/p/3820502.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;android-Service和Thread的区别&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Service和Intent Service:没啥区别，只是IntentService在onCreate方法中开启新的HandlerThread去执行。&lt;/p&gt;
-&lt;p&gt;Service运行的进程和线程：当它运行的时候如果是LocalService，那么对应的Service是运行在主进程的main线程上的。如onCreate,onStart这些函数都是在系统调用的时候在主进程的main线程上运行的。如果是RemoteSevice，那么对应的Service则是运行在独立的main线程上。&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;1. 服务不是单一的进程，服务没有自己的进程，应用程序可以不同，服务运行在相同的进程中
-2. 服务不是线程，可以在线程中工作
-3. 在应用中，如果是长时间的在后台运行，而且不需要交互的情况下，使用服务
-4. 同样是在后台运行，不需要交互的情况下，如果只是完成某个任务，之后就不需要运行，而且可能是多个任务，需要长时间运行的情况下使用线程
-5. 如果任务占用CPU时间多，资源大的情况下，要使用线程
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Thread的运行是独立于Activity的，也就是说当一个Activity被finish之后，如果你没有主动停止Thread或者Thread里的run方法没有执行完毕的话，Thread就会一直执行。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;http://img.blog.csdn.net/20160329110448313&quot; alt=&quot;THREAD_VS_SERVICE&quot;&gt;&lt;/p&gt;
-&lt;h3 id=&quot;8-View绘画机制&quot;&gt;&lt;a href=&quot;#8-View绘画机制&quot; class=&quot;headerlink&quot; title=&quot;8.View绘画机制&quot;&gt;&lt;/a&gt;8.View绘画机制&lt;/h3&gt;&lt;p&gt;View的绘制主要涉及三个方法：onMeasure()、onLayout()、onDraw()&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;1. onMeasure主要用于计算view的大小，onLayout主要用于确定view在ContentView中的位置，onDraw主要是绘制View。
-2. 在执行onMeasure()、onLayout()方法时都会通过相应的标志位或者对应的坐标点来判断是否需要执行对应的函数，
-   如我们经常调用的invalidate方法就只会执行onDraw方法，因为此时的视图大小和位置均未发生变化，
-    除非调用requestLayout方法完整强制进行view的绘制，从而执行上面三个方法。
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;进度条组件：&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://github.com/hujiaweibujidao/ProgressView&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;ProgressView&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://github.com/hujiaweibujidao/AnnotationView&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;AnnotationView&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&quot;9-事件传递机制&quot;&gt;&lt;a href=&quot;#9-事件传递机制&quot; class=&quot;headerlink&quot; title=&quot;9.事件传递机制&quot;&gt;&lt;/a&gt;9.事件传递机制&lt;/h3&gt;&lt;p&gt;android 事件处理机制总结，ScrollView ViewPager ListView GridView嵌套小结&lt;/p&gt;
-&lt;p&gt;当手指触摸到屏幕时，系统就会调用相应View的onTouchEvent，并传入一系列的action。&lt;/p&gt;
-&lt;p&gt;dispatchTouchEvent的执行顺序为：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;首先触发ACTIVITY的dispatchTouchEvent,然后触发ACTIVITY的onUserInteraction
-
-然后触发LAYOUT的dispatchTouchEvent，然后触发LAYOUT的onInterceptTouchEvent
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这就解释了重写ViewGroup时必须调用super.dispatchTouchEvent();&lt;/p&gt;
-&lt;h5 id=&quot;1-dispatchTouchEvent&quot;&gt;&lt;a href=&quot;#1-dispatchTouchEvent&quot; class=&quot;headerlink&quot; title=&quot;(1)dispatchTouchEvent:&quot;&gt;&lt;/a&gt;(1)dispatchTouchEvent:&lt;/h5&gt;&lt;p&gt;此方法一般用于初步处理事件，因为动作是由此分发，所以通常会调用super.dispatchTouchEvent。这样就会继续调用onInterceptTouchEvent，再由onInterceptTouchEvent决定事件流向。&lt;/p&gt;
-&lt;h5 id=&quot;2-onInterceptTouchEvent&quot;&gt;&lt;a href=&quot;#2-onInterceptTouchEvent&quot; class=&quot;headerlink&quot; title=&quot;(2)onInterceptTouchEvent:&quot;&gt;&lt;/a&gt;(2)onInterceptTouchEvent:&lt;/h5&gt;&lt;p&gt;若返回值为true事件会传递到自己的onTouchEvent();若返回值为false传递到下一个View的dispatchTouchEvent();&lt;/p&gt;
-&lt;h5 id=&quot;3-onTouchEvent&quot;&gt;&lt;a href=&quot;#3-onTouchEvent&quot; class=&quot;headerlink&quot; title=&quot;(3)onTouchEvent():&quot;&gt;&lt;/a&gt;(3)onTouchEvent():&lt;/h5&gt;&lt;p&gt;若返回值为true，事件由自己消耗，后续动作让其处理；若返回值为false，自己不消耗事件了，向上返回让其他的父View的onTouchEvent接受处理&lt;/p&gt;
-&lt;p&gt;三大方法关系的伪代码：如果当前View拦截事件，就交给自己的onTouchEvent去处理，否则就丢给子View继续走相同的流程。&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;public boolean dispatchTouchEvent(MotionEvent ev)
-{
-       boolean consume = false;
-    if(onInterceptTouchEvent(ev))
-    {
-           consume = onTouchEvent(ev);
-    } else {
-        consume = child.dispatchTouchEvent(ev);
-    }
-    return consume;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;ul&gt;
-&lt;li&gt;onTouchEvent的传递：&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;当有多个层级的View时，在父层级允许的情况下，这个action会一直传递直到遇到最深层的View。所以touch事件最先调用的是最底层View的onTouchEvent，如果View的onTouchEvent接收到某个touch action并做了相应处理，最后有两种返回方式return true和return false；return true会告诉系统当前的View需要处理这次的touch事件，以后的系统发出的ACTION_MOVE,ACTION_UP还是需要继续监听并接收的，并且这次的action已经被处理掉了，父层的View是不可能触发onTouchEvent的了。所以每一个action最多只能有一个onTouchEvent接口返回true。如果返回false，便会通知系统，当前View不关心这一次的touch事件，此时这个action会传向父级，调用父级View的onTouchEvent。但是这一次的touch事件之后发出任何action，该View都不在接受，onTouchEvent在这一次的touch事件中再也不会触发，也就是说一旦View返回false，那么之后的ACTION_MOVE,ACTION_UP等ACTION就不会在传入这个View,但是下一次touch事件的action还是会传进来的。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;父层的onInterceptTouchEvent&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;前面说了底层的View能够接收到这次的事件有一个前提条件：在父层允许的情况下。假设不改变父层级的dispatch方法，在系统调用底层onTouchEvent之前会调用父View的onInterceptTouchEvent方法判断，父层View是否要截获本次touch事件之后的action。如果onInterceptTouchEvent返回了true，那么本次touch事件之后的所有action都不会向深层的View传递，统统都会传给父层View的onTouchEvent，就是说父层已经截获了这次touch事件，之后的action也不必询问onInterceptTouchEvent，在这次的touch事件之后发出的action时onInterceptTouchEvent不会再被调用，直到下一次touch事件的来临。如果onInterceptTouchEvent返回false，那么本次action将发送给更深层的View，并且之后的每一次action都会询问父层的onInterceptTouchEvent需不需要截获本次touch事件。只有ViewGroup才有onInterceptTouchEvent方法，因为一个普通的View肯定是位于最深层的View，只有ViewGroup才有onInterceptTouchEvent方法，因为一个普通的View肯定是位于最深层的View，touch能够传到这里已经是最后一站了，肯定会调用View的onTouchEvent()。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;底层View的getParent().requestDisallowInterceptTouchEvent(true)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;对于底层的View来说，有一种方法可以阻止父层的View获取touch事件，就是调用getParent().requestDisallowInterceptTouchEvent(true)方法。一旦底层View收到touch的action后调用这个方法那么父层View就不会再调用onInterceptTouchEvent了，也无法截获以后的action（如果父层ViewGroup和最底层View需要截获不同焦点，或不同手势的touch，不能使用这个写死）。&lt;/p&gt;
-&lt;p&gt;曾经开发过程中遇到的两个示例：左边是处理ViewPager和ListView的冲突，纪录水平和垂直方向的偏移量，如果水平方向的偏移更多的话就让ViewPager处理pager滑动&lt;/p&gt;
-&lt;p&gt;右边处理的ViewPager和ImageBanner的滑动冲突，同样是纪录偏移量，如果发生在ImageBanner上的水平偏移量大于垂直偏移量的话就让banner滚动&lt;/p&gt;
-&lt;p&gt;想想为什么右边是重写dispatchTouchEvent方法而不是onInterceptTouchEvent方法？&lt;/p&gt;
-&lt;p&gt;FixedViewPager&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;@Override
-public boolean onInterceptTouchEvent(MotionEvent ev)
-{
-    switch(ev.getAction() &amp;amp; MotionEvent.ACTION_MASK)
-    {
-        case MotionEvent.ACTION_DOWN:
-            mX = ev.getX();
-            mY = ev.getY();
-            break;
-        case MotionEvent.ACTION_MOVE:
-            float x = ev.getX();
-            float y = ev.getY();
-            float dX = x - mX;
-            float dY = y - mY;
-            float tmp = Math.abs(dX) / Math.abs(dY);
-            mX = x;
-            mY = y;
-            if(tmp &amp;gt; 1)
-            {
-                return true;
-            }
-            else
-            {
-                return super.omInterceptTouchEvent(ev);
-            }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;FixedImageLoadBanner&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;@override
-public boolean dispatchTouchEvent(MotionEvent ev)
-{
-    if(mX != 0 || mY != 0)
-    {
-        float dY = ev.getRawY() - mY;
-        float dX = ev.getRawX() - mX;
-        if(Math.abs(dY) &amp;gt; Math.abs(dX))
-        {
-            requestDisallowInterceptTouchEvent(false);
-        }
-        else
-        {
-            requestDisallowInterceptTouchEvent(true);
-        }
-    }
-    mX = ev.getRawX();
-    mY = ev.getRawY();
-    return super.dispatchTouchEvent(ev);
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;10-ART和Dalvik区别&quot;&gt;&lt;a href=&quot;#10-ART和Dalvik区别&quot; class=&quot;headerlink&quot; title=&quot;10.ART和Dalvik区别&quot;&gt;&lt;/a&gt;10.ART和Dalvik区别&lt;/h3&gt;&lt;p&gt;art上应用启动快，运行快，但是耗费更多存储空间，安装时间长，总的来说ART的功效就是”空间换时间”。&lt;/p&gt;
-&lt;p&gt;ART: Ahead of Time Dalvik: Just in Time&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;什么是Dalvik：&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Dalvik是Google公司自己设计用于Android平台的Java虚拟机。Dalvik虚拟机是Google等厂商合作开发的Android移动设备平台的核心组成部分之一，它可以支持已转换为.dex(即Dalvik Executable)格式的Java应用程序的运行，.dex格式是专为Dalvik应用设计的一种压缩格式，适合内存和处理器速度有限的系统。Dalvik经过优化，允许在有限的内存中同时运行多个虚拟机的实例，并且每一个Dalvik应用作为独立的Linux进程执行。独立的进程可以防止在虚拟机崩溃的时候所有程序都被关闭。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;什么是ART:&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Android操作系统已经成熟，Google的Android团队开始将注意力转向一些底层组件，其中之一是负责应用程序运行的Dalvik运行时。Google开发者已经花了两年时间开发更快执行效率更高更省电的替代ART运行时。ART代表Android Runtime,其处理应用程序执行的方式完全不同于Dalvik，Dalvik是依靠一个Just-In-Time(JIT)编译器去解释字节码。开发者编译后的应用代码需要通过一个解释器在用户的设备上运行，这一机制并不高效，但让应用能更容易在不同硬件和架构上运行。ART则完全改变了这套做法，在应用安装的时候就预编译字节码到机器语言，这一机制叫Ahead-Of-Time(AOT)编译。在移除解释代码这一过程后，应用程序执行将更有效率，启动更快。&lt;/p&gt;
-&lt;p&gt;ART优点：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;1. 系统性能的显著提升
-2. 应用启动更快、运行更快、体验更流畅、触感反馈更及时。
-3. 更长的电池续航能力
-4. 支持更低的硬件
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;ART缺点：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;1. 更大的存储空间占用，可能会增加10%-20%
-2. 更长的应用安装时间
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;###11.Scroller原理&lt;/p&gt;
-&lt;p&gt;Scroller执行流程里面的三个核心方法&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;1. mScroller.startScroll()
-2. mScroller.computeScrollOffset()
-3. view.computeScroll()
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;1、在mScroller.startScroll()中为滑动做了一些初始化准备，比如：起始坐标，滑动的距离和方向以及持续时间(有默认值)，动画开始时间等。&lt;/p&gt;
-&lt;p&gt;2、mScroller.computeScrollOffset()方法主要是根据当前已经消逝的时间来计算当前的坐标点。因为在mScroller.startScroll()中设置了动画时间，那么在computeScrollOffset()方法中依据已经消逝的时间就很容易得到当前时刻应该所处的位置并将其保存在变量mCurrX和mCurrY中。除此之外该方法还可判断动画是否已经结束。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;http://img.blog.csdn.net/20160329110551127&quot; alt=&quot;SCROLLER&quot;&gt;&lt;/p&gt;
-&lt;h3 id=&quot;12-Activity-Manager-Service-ActivityThread&quot;&gt;&lt;a href=&quot;#12-Activity-Manager-Service-ActivityThread&quot; class=&quot;headerlink&quot; title=&quot;12.Activity Manager Service, ActivityThread&quot;&gt;&lt;/a&gt;12.Activity Manager Service, ActivityThread&lt;/h3&gt;&lt;h3 id=&quot;13-Android几种进程&quot;&gt;&lt;a href=&quot;#13-Android几种进程&quot; class=&quot;headerlink&quot; title=&quot;13.Android几种进程&quot;&gt;&lt;/a&gt;13.Android几种进程&lt;/h3&gt;&lt;pre&gt;&lt;code&gt;1. 前台进程： 即与用户正在交互的Activity或者Activity用到的Service等，如果系统内存不足时前台进程是最后被杀死的
-2. 可见线程： 可以是处于暂停状态(onPause)的Activity或者绑定在其上的Service，即被用户可见，但由于失去了焦点而不能与用户交互
-3. 服务进程： 其中运行着使用startService方法启动的Service，虽然不被用户可见，但是却是用户关系的，
-             例如用户正在非音乐界面听的音乐或者正在非下载页面自己下载的文件等，当系统要用空间运行前两者进程时才会被终止
-4. 后台进程： 其中运行着执行onStop方法而停止的程序，但是却不是用户当前关心的，例如后台挂着的QQ,这样的进程系统一旦没有内存就首先被杀死。
-5. 空进程：   不包含任何应用程序的程序组件的进程，这样的进程系统是一般不会让他存在的。
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;如何避免后台进程被杀死？&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;1. 调用startForegound,让你的Service所在的进程成为前台进程
-2. Service的onStartCommand返回START_STICKY或START_REDELIVER_INTENT
-3. Service的onDestroy里面重新启动自己
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;14-Activity启动模式&quot;&gt;&lt;a href=&quot;#14-Activity启动模式&quot; class=&quot;headerlink&quot; title=&quot;14.Activity启动模式&quot;&gt;&lt;/a&gt;14.Activity启动模式&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;standard:&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Activity的默认加载方式，该方法会通过跳转到一个新的Activity，同时将该实例压入到栈中(不管该Activity是否已经存在在Task栈中，都是采用new操作，生命周期从onCreate()开始)。例如：栈中顺序是A B C D,此时D通过Intent跳转到A，那么栈中结构就变成A B C D A,点击返回按钮的显示顺序是D C B A，依次摧毁。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;singleTop:&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;singleTop模式下，当前Activity D位于栈顶的时候，如果通过Intent跳转到它本身的Activity(D)，那么不会重新创建一个新的D实例(走onNewIntent()),所以栈中的结构依次为A B C D,如果跳转到B，那么由于B不处于栈顶，所以会新建一个B实例并压入到栈中，结构就变成了A B C D B。应用实例：三条推送，点进去都是一个Activity，这肯定用singletop&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;singleTask:&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;singleTask模式下，Task栈中只能有一个对应的Activity实例。例如：Task栈1中结构为：A B C D。此时D通过Intent跳转到B（走onNewIntent()）,则栈的结构变成了:A,B。其中的C和D被栈弹出销毁了，也就是说位于B之上的实例都被销毁了。通常应用于首页，首页肯定在栈底部，也只能在栈底部。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;singleInstance:&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;singleInstance模式下，会将打开的Activity压入一个新的任务栈中。例如：Task栈1中结构为：A B C,C通过Intent跳转到了D（D的模式为singleInstance），那么则会新建一个Task，栈1中结构依旧为A B C,栈2中结构为D。此时屏幕显示D，之后D通过Intent跳转到D，栈2不会压入新的D，所以两个栈中的情况没发生改变。如果D跳转到了C，那么就会根据C对应的launchMode在栈1中进行对应的操作，C如果为standard，那么D跳转到C，栈1的结构为A B C C ,此时点击返回按钮，还是在C，栈1的结构变为A B C,而不会回到D。&lt;/p&gt;
-&lt;p&gt;##&lt;/p&gt;
-&lt;p&gt;launchMode为singleTask的时候，通过Intent启动到一个Activity，如果系统已经存在一个实例，系统就会将请求发送到这个实例上，但这个时候，系统就不会再调用通常情况下我们处理请求数据的onCreate方法，而不是调用onNewIntent方法。&lt;/p&gt;
-&lt;p&gt;onSavedInstanceState的调用遵循一个重要原则，即当系统”未经你许可”时销毁了你的Activity，则onSavedInstanceState会被系统调用，这时系统的责任，因为它必须要提供一个机会让你保存你的数据，至于onRestoreInstanceState方法，需要注意的是，onSavedInstanceState方法和onRestoreInstanceState方法”不一定”是成对调用的。&lt;/p&gt;
-&lt;p&gt;onRestoreInstanceState被调用的前提是，Activity A确实被系统销毁了，而如果仅仅是停留在有这种可能性的情况下，则该方法不会被调用，例如，当正在显示Activity A的时候，用户按下HOME键回到主界面，然后用户紧接着又返回到Activity A,这种情况下Activity A一般不会因为内存的原因被销毁，故Activity的onRestoreInstanceState方法不会被执行。&lt;/p&gt;
-&lt;p&gt;另外，onRestoreInstanceStated的bundle参数也会传递到onCreate方法中，你也可以选择在onCreate方法中做数据还原。&lt;/p&gt;
-&lt;p&gt;onSavedInstanceState(Bundle bundle)通常和onRestoreInstanceState(Bundle bundle)不会成对出现，onRestoreInstanceState这玩意不太好触发，给大家提个好办法，横竖屏切换的时候100%会触发。然后保存在onRestoreInstanceState bundle里面的数据，就是onCreate的那个参数bundle啦，要怎么恢复就看开发者了。&lt;/p&gt;
-&lt;h3 id=&quot;15-TMImageView图片库的设计&quot;&gt;&lt;a href=&quot;#15-TMImageView图片库的设计&quot; class=&quot;headerlink&quot; title=&quot;15.TMImageView图片库的设计&quot;&gt;&lt;/a&gt;15.TMImageView图片库的设计&lt;/h3&gt;&lt;p&gt;&lt;a href=&quot;&quot;&gt;Feature机制&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&quot;16-ListView优化&quot;&gt;&lt;a href=&quot;#16-ListView优化&quot; class=&quot;headerlink&quot; title=&quot;16.ListView优化&quot;&gt;&lt;/a&gt;16.ListView优化&lt;/h3&gt;&lt;pre&gt;&lt;code&gt;1. 首先，虽然大家都知道，还是提一下，利用好convertView来重用View，切忌每次getView都新建。ListView的核心原理就是重用View。
-   ListView有一个回收器，Item滑出界面的时候view就会回收这里，需要显示新的Item的时候，就尽量重用回收器里面的View。
-
-2. 利用好ViewType，例如你的ListView中有几个类型的Item，需要给每个类型创建不同的View，这样有利于ListView的回收，当然类型不能太多
-
-3. 尽量让ItemView的Layout层次结构简单，这时所有Layout都必须遵守的
-
-4. 善用自定义View，自定义View可以有效的减小Layout的层级，而且对绘制过程可以很好的控制
-
-5. 尽量保证Adapter的hasStableIds()返回true，这样在notifyDataSetChanged()的时候，如果id不变，listView将不会重新绘制这个View，达到优化的目的。
-
-6. 每个item不能太高，特别是不要超出屏幕的高度，可以参考Facebook的优化方法，把特别复杂的Item分解为若干个小的Item.
-
-7. 为了保证ListView滑动的流畅性，getView()中要做尽量少的事情，不要有耗时的操作。特别是滑动的时候不要加载图片，停下来再加载。
-
-8.使用RecyclerView代替。ListView每次更新数据都要notifyDataSetChanged(),有些太暴力了。RecyclerView在性能和可定制性上都有很大的改善，推荐使用。
-
-9.有时需要从根本上考虑，是否真的要使用listView来实现你的需求，或者是否有其他选择？
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;17-webView&quot;&gt;&lt;a href=&quot;#17-webView&quot; class=&quot;headerlink&quot; title=&quot;17.webView&quot;&gt;&lt;/a&gt;17.webView&lt;/h3&gt;&lt;p&gt;如何使用webview在js中调用java方法？&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;webView.addJavaScriptInterface(new Object(){xxx}, &amp;quot;xxx&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;答案：可以使用WebView控件执行JavaScript脚本，并且可以在JavaScript中执行Java代码。要想让WebView控件执行JavaScript，需要调用WebSettings.setJavaScriptEnabled方法，代码如下：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;WebView webView = (WebView)findViewById(R.id.webview);
-WebSettings webSettings = webView.getSettings();
-//设置WebView支持JavaScript
-webSettings.setJavaScriptEnabled(true);
-webView.setWebChromeClient(new WebChromeClient());
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;JavaScript调用Java方法需要使用WebView.addJavascriptInterface方法设置JavaScript调用的Java方法，代码如下：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;webView.addJavascriptInterface(new Object()
-{
-    //JavaScript调用的方法
-    public String process(String value)
-    {
-        //处理代码
-        return result;
-    }
-}, &amp;quot;demo&amp;quot;);       //demo是Java对象映射到JavaScript中的对象名
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;可以使用下面的JavaScript代码调用process方法，代码如下：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;&amp;lt;script language=&amp;quot;javascript&amp;quot;&amp;gt;
-function search()
-{
-    //调用searchWord方法
-    result.innerHTML = &amp;quot;&amp;lt;font color=&amp;apos;red&amp;apos;&amp;gt;&amp;quot; + window.demo.process(&amp;apos;data&amp;apos;) + &amp;quot;&amp;lt;/font&amp;gt;&amp;quot;;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;18-SurfaceView和View的最本质的区别&quot;&gt;&lt;a href=&quot;#18-SurfaceView和View的最本质的区别&quot; class=&quot;headerlink&quot; title=&quot;18.SurfaceView和View的最本质的区别&quot;&gt;&lt;/a&gt;18.SurfaceView和View的最本质的区别&lt;/h3&gt;&lt;p&gt;SurfaceView是在一个新起的单独线程中可以重新绘制画面，而view必须在UI的主线程中更新画面。&lt;/p&gt;
-&lt;p&gt;在UI的主线程中更新画面可能会引发问题，比如你更新的时间过长，那么你的主UI线程就会被你正在画的函数阻塞。那么将无法响应按键、触屏等消息。当使用SurfaceView由于是在新的线程中更新画面所以不会阻塞你的UI主线程。但这也带来了另外一个问题，就是事件同步。比如你触屏了一下，你需要SurfaceView中thread处理，一般就需要有一个event queue的设计来保存touchevent，这会稍稍复杂一点，因为涉及到线程安全。&lt;/p&gt;
-&lt;h3 id=&quot;19-标签&quot;&gt;&lt;a href=&quot;#19-标签&quot; class=&quot;headerlink&quot; title=&quot;19.标签&quot;&gt;&lt;/a&gt;19.标签&lt;/h3&gt;&lt;p&gt; &lt;a href=&quot;http://www.cnblogs.com/chrisfang6/articles/2217711.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;merge和include&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt; &lt;a href=&quot;http://www.open-open.com/lib/view/open1395456763025.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Android ViewStub的基本使用&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;简言之，都是用来解决重复布局的问题，但是标签能够在布局重用的时候减少UI层级结构。&lt;br&gt;viewStub标签是用来给其他的View事先占据好位置，当需要的时候用inflater()或者是setVisible()方法显示这些View。&lt;/p&gt;
-&lt;h3 id=&quot;20-ANR排错&quot;&gt;&lt;a href=&quot;#20-ANR排错&quot; class=&quot;headerlink&quot; title=&quot;20.ANR排错&quot;&gt;&lt;/a&gt;20.ANR排错&lt;/h3&gt;&lt;p&gt;1、ANR排错一般有三种类型&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;1. KeyDispatchTimeout(5 seconds) –主要类型按键或触摸事件在特定时间内无响应
-2. BroadcastTimeout(10 secends) –BroadcastReceiver在特定时间内无法处理完成
-3. ServiceTimeout(20 secends) –小概率事件 Service在特定的时间内无法处理完成
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;2、如何避免&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;1. UI线程尽量只做跟UI相关的工作
-2. 耗时的操作(比如数据库操作，I/O,连接网络或者别的有可能阻塞UI线程的操作)把它放在单独的线程处理
-3. 尽量用Handler来处理UIthread和别的thread之间的交互
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;3、如何排查&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;1. 首先分析log
-2. 从trace.txt文件查看调用stack，adb pull data/anr/traces.txt ./mytraces.txt
-3. 看代码
-4. 仔细查看ANR的成因(iowait?block?memoryleak?)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;4、监测ANR的Watchdog&lt;/p&gt;
-&lt;h3 id=&quot;21-fragment生命周期&quot;&gt;&lt;a href=&quot;#21-fragment生命周期&quot; class=&quot;headerlink&quot; title=&quot;21.fragment生命周期&quot;&gt;&lt;/a&gt;21.fragment生命周期&lt;/h3&gt;&lt;p&gt;&lt;img src=&quot;http://img.blog.csdn.net/20160329110747255&quot; alt=&quot;FRAGMENT&quot;&gt;&lt;/p&gt;
-&lt;p&gt;==================================  常见面试问题   =====================================&lt;/p&gt;
-&lt;h4 id=&quot;1、横竖屏切换时候Activity的生命周期&quot;&gt;&lt;a href=&quot;#1、横竖屏切换时候Activity的生命周期&quot; class=&quot;headerlink&quot; title=&quot;1、横竖屏切换时候Activity的生命周期&quot;&gt;&lt;/a&gt;1、横竖屏切换时候Activity的生命周期&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;1. 不设置Activityd饿android:configChanges时，切屏会重新掉哟过各个生命周期，切横屏时会执行一次，切竖屏时会执行两次
-2. 设置Activity的android:configChanges=”orientation”时，切屏还是会调用各个生命周期，切换横竖屏只会执行一次
-3. 设置Activity的android:configChanges=”orientation|keyboardHidden”时，切屏不会重新调用各个生命周期，只会执行onConfigurationChanged方法
-&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&quot;2、OOM-图片相关的-怎么处理&quot;&gt;&lt;a href=&quot;#2、OOM-图片相关的-怎么处理&quot; class=&quot;headerlink&quot; title=&quot;2、OOM(图片相关的)怎么处理?&quot;&gt;&lt;/a&gt;2、OOM(图片相关的)怎么处理?&lt;/h4&gt;&lt;p&gt;&lt;a href=&quot;http://mzh3344258.blog.51cto.com/1823534/804237&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Android 内存溢出解决方案（OOM） 整理总结&lt;/a&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;1. 在内存引用上做些处理，常用的有软引用、弱引用
-2. 在内存中加载图片时直接在内存中作处理，如：边界压缩
-3. 动态回收内存
-4. 优化Dalvik虚拟机的堆内存分配
-5. 自定义堆内存大小
-&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&quot;3、界面优化&quot;&gt;&lt;a href=&quot;#3、界面优化&quot; class=&quot;headerlink&quot; title=&quot;3、界面优化&quot;&gt;&lt;/a&gt;3、界面优化&lt;/h4&gt;&lt;p&gt;&lt;a href=&quot;http://www.mobile-open.com/2015/38640.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Android开发——性能优化之如何防止过度绘制&lt;/a&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;太多重叠的背景(overdraw)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;这个问题其实最容易解决，建议就是检查你在布局和代码中设置的背景，有些背景是隐藏在底下的，它永远不可能显示出来，这种没必要的背景一定要移除，因为它很可能会严重影响到app的性能。如果采用的是selector的背景，将normal状态的color设置为”@android:color/transparent”,也同样可以解决问题。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;太多重叠的View&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;第一个建议是 ：使用ViewStub来加载一些不常用的布局，它是一个轻量级且默认是不可见的视图，可以动态的加载一个布局，只要你用到这个重叠着的View的时候才加载，推迟加载的时间。&lt;/p&gt;
-&lt;p&gt;第二个建议是：如果使用了类似Viewpager＋Fragment这样的组合或者有多个Fragment在一个界面上，需要控制Fragment的显示和隐藏，尽量使用动态的Inflation view，它的性能要比SetVisibility好。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;复杂的Layout层级&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;这里的建议比较多一些，首先推荐使用Android提供的布局工具Hierarchy Viewer来检查和优化布局。第一个建议是：如果嵌套的线性布局加深了布局层次，可以使用相对布局来取代。第二个建议是：用标签来合并布局。第三个建议是：用标签来重用布局，抽取通用的布局可以让布局的逻辑更清晰明了。记住，这些建议的最终目的都是使得你的Layout在Hierarchy Viewer里变得宽而浅，而不是窄而深。&lt;/p&gt;
-&lt;h4 id=&quot;4、移动端获取网络数据优化的几个点&quot;&gt;&lt;a href=&quot;#4、移动端获取网络数据优化的几个点&quot; class=&quot;headerlink&quot; title=&quot;4、移动端获取网络数据优化的几个点&quot;&gt;&lt;/a&gt;4、移动端获取网络数据优化的几个点&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;1. 连接复用：节省连接建立时间，如开启 keep-alive。
-   对于Android来说默认情况下HttpURLConnection和HttpClient都开启了keep-alive。只是2.2之前HttpURLConnection存在影响连接池的Bug，
-   具体可见：Android HttpURLConnection及HttpClient选择
-
-2. 请求合并：即将多个请求合并为一个进行请求，比较常见的就是网页中的CSS Image Sprites。如果某个页面内请求过多，也可以考虑做一定的请求合并。
-
-3. 减少请求数据的大小：对于post请求，body可以做gzip压缩的，header也可以做数据压缩(不过只支持http 2.0)。
-
-4. 返回数据的body也可以做gzip压缩，body数据体积可以缩小到原来的30%左右。
-  （也可以考虑压缩返回的json数据的key数据的体积，尤其是针对返回数据格式变化不大的情况，支付宝聊天返回的数据用到了）
-
-5. 根据用户的当前的网络质量来判断下载什么质量的图片（电商用的比较多）
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;奇迹&lt;br&gt;这个世界每天都有奇迹&lt;br&gt;信不信在你&lt;br&gt;只是发生在你身上的奇迹几乎没有&lt;br&gt;这便是为什么你要努力&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;for(int 努力 = 0; 努力 &amp;lt; 奇迹.length; 努力++){
-    if(努力 == 奇迹.length)
-        return success;
-    else 
-        return again;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;h1 id=&quot;努力没有失败&quot;&gt;&lt;a href=&quot;#努力没有失败&quot; class=&quot;headerlink&quot; title=&quot;努力没有失败&quot;&gt;&lt;/a&gt;努力没有失败&lt;/h1&gt;&lt;h1 id=&quot;学习Android，突破自己，一年一总结，我是要当CTO的男人。&quot;&gt;&lt;a href=&quot;#学习Android，突破自己，一年一总结，我是要当CTO的男人。&quot; class=&quot;headerlink&quot; title=&quot;学习Android，突破自己，一年一总结，我是要当CTO的男人。&quot;&gt;&lt;/a&gt;学习Android，突破自己，一年一总结，我是要当CTO的男人。&lt;/h1&gt;</content>
-    
-    <summary type="html">
-    
-      &lt;h1 id=&quot;无论怎样-这可能是我人生中搭建的最搓的一次架构&quot;&gt;&lt;a href=&quot;#无论怎样-这可能是我人生中搭建的最搓的一次架构&quot; class=&quot;headerlink&quot; title=&quot;无论怎样 这可能是我人生中搭建的最搓的一次架构&quot;&gt;&lt;/a&gt;无论怎样 这可能是我人生中搭建的最搓的一次架构&lt;/h1&gt;&lt;p&gt;煎熬了一个月，项目总算吭哧吭哧的完成，从最初的技术选型，到框架搭建，再到着手开发app，是一次尝试，也让自己越来越坚定的想在Android之路走下去，像这么有意思的事，不做个纪念写点东西是不行的。&lt;/p&gt;
+      &lt;hr&gt;
+&lt;p&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/08/13/进阶系列之年末总结——我的2016/&quot;&gt;http://tufusi.com/2016/08/13/进阶系列之年末总结——我的2016/&lt;/a&gt;&lt;/p&gt;
     
     </summary>
     
@@ -2229,7 +1869,8 @@ function search()
     else 
         return again;
 }
-&lt;/code&gt;&lt;/pre&gt;&lt;h1 id=&quot;努力没有失败&quot;&gt;&lt;a href=&quot;#努力没有失败&quot; class=&quot;headerlink&quot; title=&quot;努力没有失败&quot;&gt;&lt;/a&gt;努力没有失败&lt;/h1&gt;&lt;h1 id=&quot;学习Android，突破自己，一年一总结，我是要当CTO的男人。&quot;&gt;&lt;a href=&quot;#学习Android，突破自己，一年一总结，我是要当CTO的男人。&quot; class=&quot;headerlink&quot; title=&quot;学习Android，突破自己，一年一总结，我是要当CTO的男人。&quot;&gt;&lt;/a&gt;学习Android，突破自己，一年一总结，我是要当CTO的男人。&lt;/h1&gt;</content>
+&lt;/code&gt;&lt;/pre&gt;&lt;h1 id=&quot;努力没有失败&quot;&gt;&lt;a href=&quot;#努力没有失败&quot; class=&quot;headerlink&quot; title=&quot;努力没有失败&quot;&gt;&lt;/a&gt;努力没有失败&lt;/h1&gt;&lt;h1 id=&quot;学习Android，突破自己，一年一总结，我是要当CTO的男人。&quot;&gt;&lt;a href=&quot;#学习Android，突破自己，一年一总结，我是要当CTO的男人。&quot; class=&quot;headerlink&quot; title=&quot;学习Android，突破自己，一年一总结，我是要当CTO的男人。&quot;&gt;&lt;/a&gt;学习Android，突破自己，一年一总结，我是要当CTO的男人。&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;&lt;img src=&quot;http://img0.tuicool.com/Uzui63.png!web&quot; alt=&quot;&quot;&gt;����Ʒ���� &lt;a href=&quot;http://creativecommons.org/licenses/by/2.5/cn/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;֪ʶ�������� 2.5 �й���½����Э��&lt;/a&gt; �������ɣ���ӭת�أ���ת����ע������Colin��s Nest��������ת�غ��������ݵ����������˱������а�Ȩ����Ȩ����&lt;br&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/08/13/进阶系列之年中总结——我的2016/&quot;&gt;http://tufusi.com/2016/08/13/进阶系列之年中总结——我的2016/&lt;/a&gt;&lt;/p&gt;</content>
     
     <summary type="html">
     
@@ -2323,7 +1964,9 @@ function search()
 &lt;h2 id=&quot;七、汇总&quot;&gt;&lt;a href=&quot;#七、汇总&quot; class=&quot;headerlink&quot; title=&quot;七、汇总&quot;&gt;&lt;/a&gt;七、汇总&lt;/h2&gt;&lt;p&gt;三者总体上来说，ImageLoader 的功能以及代理容易理解长度都一般。&lt;/p&gt;
 &lt;p&gt;Picasso 代码虽然只在一个包下，没有严格的包区分，但代码简单、逻辑清晰，一两个小时就能叫深入的了解完。&lt;/p&gt;
 &lt;p&gt;Glide 功能强大，但代码量大、流转复杂。在较深掌握的情况下才推荐使用，免得出了问题难以下手解决。&lt;/p&gt;
-&lt;p&gt;更多图片缓存库可见：&lt;a href=&quot;http://p.codekk.com/?s=%E5%9B%BE%E7%89%87%E7%BC%93%E5%AD%98&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Android 图片缓存库&lt;/a&gt;&lt;/p&gt;</content>
+&lt;p&gt;更多图片缓存库可见：&lt;a href=&quot;http://p.codekk.com/?s=%E5%9B%BE%E7%89%87%E7%BC%93%E5%AD%98&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Android 图片缓存库&lt;/a&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;img src=&quot;http://img0.tuicool.com/Uzui63.png!web&quot; alt=&quot;&quot;&gt;����Ʒ���� &lt;a href=&quot;http://creativecommons.org/licenses/by/2.5/cn/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;֪ʶ�������� 2.5 �й���½����Э��&lt;/a&gt; �������ɣ���ӭת�أ���ת����ע������Colin��s Nest��������ת�غ��������ݵ����������˱������а�Ȩ����Ȩ����&lt;br&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/08/13/进阶系列之图片缓存技术/&quot;&gt;http://tufusi.com/2016/08/13/进阶系列之图片缓存技术/&lt;/a&gt;&lt;/p&gt;</content>
     
     <summary type="html">
     
@@ -2354,7 +1997,8 @@ function search()
 &lt;p&gt;Presenter    作为中间层，从Model层获取数据,进行处理之后,交给View层进行展示.&lt;/p&gt;
 &lt;p&gt;View          只需要展示数据&lt;/p&gt;
 &lt;p&gt;Model         完成数据的请求处理&lt;/p&gt;
-&lt;h3 id=&quot;各模块具体职责&quot;&gt;&lt;a href=&quot;#各模块具体职责&quot; class=&quot;headerlink&quot; title=&quot;各模块具体职责:&quot;&gt;&lt;/a&gt;各模块具体职责:&lt;/h3&gt;</content>
+&lt;h3 id=&quot;各模块具体职责&quot;&gt;&lt;a href=&quot;#各模块具体职责&quot; class=&quot;headerlink&quot; title=&quot;各模块具体职责:&quot;&gt;&lt;/a&gt;各模块具体职责:&lt;/h3&gt;&lt;hr&gt;
+&lt;p&gt;&lt;img src=&quot;http://img0.tuicool.com/Uzui63.png!web&quot; alt=&quot;&quot;&gt;����Ʒ���� &lt;a href=&quot;http://creativecommons.org/licenses/by/2.5/cn/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;֪ʶ�������� 2.5 �й���½����Э��&lt;/a&gt; �������ɣ���ӭת�أ���ת����ע������Colin��s Nest��������ת�غ��������ݵ����������˱������а�Ȩ����Ȩ����&lt;br&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/08/13/进阶系列之MVP架构/&quot;&gt;http://tufusi.com/2016/08/13/进阶系列之MVP架构/&lt;/a&gt;&lt;/p&gt;</content>
     
     <summary type="html">
     
@@ -2383,7 +2027,8 @@ function search()
 &lt;p&gt;3） 多用组合，少用继承。&lt;/p&gt;
 &lt;p&gt;4） 为了交互对象之间的松耦合设计而努力。&lt;/p&gt;
 &lt;h3 id=&quot;二、-设计模式&quot;&gt;&lt;a href=&quot;#二、-设计模式&quot; class=&quot;headerlink&quot; title=&quot;二、 设计模式&quot;&gt;&lt;/a&gt;二、 设计模式&lt;/h3&gt;&lt;h4 id=&quot;『策略模式』&quot;&gt;&lt;a href=&quot;#『策略模式』&quot; class=&quot;headerlink&quot; title=&quot;『策略模式』&quot;&gt;&lt;/a&gt;『策略模式』&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;定义了算法族，分别封装起来，让它们之间可以互相替换，此模式让算法的变化独立于使用算法的客户
-&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&quot;『观察者模式』&quot;&gt;&lt;a href=&quot;#『观察者模式』&quot; class=&quot;headerlink&quot; title=&quot;『观察者模式』&quot;&gt;&lt;/a&gt;『观察者模式』&lt;/h4&gt;</content>
+&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&quot;『观察者模式』&quot;&gt;&lt;a href=&quot;#『观察者模式』&quot; class=&quot;headerlink&quot; title=&quot;『观察者模式』&quot;&gt;&lt;/a&gt;『观察者模式』&lt;/h4&gt;&lt;hr&gt;
+&lt;p&gt;&lt;img src=&quot;http://img0.tuicool.com/Uzui63.png!web&quot; alt=&quot;&quot;&gt;����Ʒ���� &lt;a href=&quot;http://creativecommons.org/licenses/by/2.5/cn/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;֪ʶ�������� 2.5 �й���½����Э��&lt;/a&gt; �������ɣ���ӭת�أ���ת����ע������Colin��s Nest��������ת�غ��������ݵ����������˱������а�Ȩ����Ȩ����&lt;br&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/08/13/进阶系列之设计模式/&quot;&gt;http://tufusi.com/2016/08/13/进阶系列之设计模式/&lt;/a&gt;&lt;/p&gt;</content>
     
     <summary type="html">
     
@@ -2405,9 +2050,13 @@ function search()
     <published>2016-06-20T15:09:23.000Z</published>
     <updated>2016-12-09T14:49:21.457Z</updated>
     
-    <content type="html"></content>
+    <content type="html">&lt;hr&gt;
+&lt;p&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/06/20/优秀第三方SDK分析-Fresco/&quot;&gt;http://tufusi.com/2016/06/20/优秀第三方SDK分析-Fresco/&lt;/a&gt;&lt;/p&gt;</content>
     
     <summary type="html">
+    
+      &lt;hr&gt;
+&lt;p&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/06/20/优秀第三方SDK分析-Fresco/&quot;&gt;http://tufusi.com/2016/06/20/优秀第三方SDK分析-Fresco/&lt;/a&gt;&lt;/p&gt;
     
     </summary>
     
@@ -2474,7 +2123,9 @@ function search()
 &lt;li&gt;&lt;p&gt;隐式依赖: 通过anchor属性来确立。把child的layout_anchor属性设置为dependent view 的id，然后设置child的layout_anchorGravity属性，这个属性是用来当dependent view变化时做出怎样的响应的。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;无论显式还是隐式，当dependent view发生变化时，Behavior类中onDependentViewChanged()方法都会被调用。&lt;/p&gt;</content>
+&lt;p&gt;无论显式还是隐式，当dependent view发生变化时，Behavior类中onDependentViewChanged()方法都会被调用。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;img src=&quot;http://img0.tuicool.com/Uzui63.png!web&quot; alt=&quot;&quot;&gt;����Ʒ���� &lt;a href=&quot;http://creativecommons.org/licenses/by/2.5/cn/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;֪ʶ�������� 2.5 �й���½����Э��&lt;/a&gt; �������ɣ���ӭת�أ���ת����ע������Colin��s Nest��������ת�غ��������ݵ����������˱������а�Ȩ����Ȩ����&lt;br&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/06/20/Android优化交互-协调布局详解/&quot;&gt;http://tufusi.com/2016/06/20/Android优化交互-协调布局详解/&lt;/a&gt;&lt;/p&gt;</content>
     
     <summary type="html">
     
@@ -2498,9 +2149,13 @@ function search()
     <published>2016-06-20T14:57:42.000Z</published>
     <updated>2016-12-08T09:10:34.246Z</updated>
     
-    <content type="html"></content>
+    <content type="html">&lt;hr&gt;
+&lt;p&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/06/20/Android优化交互-嵌套机制详解/&quot;&gt;http://tufusi.com/2016/06/20/Android优化交互-嵌套机制详解/&lt;/a&gt;&lt;/p&gt;</content>
     
     <summary type="html">
+    
+      &lt;hr&gt;
+&lt;p&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/06/20/Android优化交互-嵌套机制详解/&quot;&gt;http://tufusi.com/2016/06/20/Android优化交互-嵌套机制详解/&lt;/a&gt;&lt;/p&gt;
     
     </summary>
     
@@ -2556,7 +2211,9 @@ function search()
 &lt;h1 id=&quot;PermissionsDispatcher-plugin&quot;&gt;&lt;a href=&quot;#PermissionsDispatcher-plugin&quot; class=&quot;headerlink&quot; title=&quot;PermissionsDispatcher plugin&quot;&gt;&lt;/a&gt;PermissionsDispatcher plugin&lt;/h1&gt;&lt;p&gt;自动生成6.0权限的代码&lt;/p&gt;
 &lt;h1 id=&quot;WakaTime&quot;&gt;&lt;a href=&quot;#WakaTime&quot; class=&quot;headerlink&quot; title=&quot;WakaTime&quot;&gt;&lt;/a&gt;WakaTime&lt;/h1&gt;&lt;p&gt;记录在IDE上工作时间的插件&lt;/p&gt;
 &lt;h1 id=&quot;AndroidWiFiADB&quot;&gt;&lt;a href=&quot;#AndroidWiFiADB&quot; class=&quot;headerlink&quot; title=&quot;AndroidWiFiADB&quot;&gt;&lt;/a&gt;AndroidWiFiADB&lt;/h1&gt;&lt;p&gt;无线调试应用插件&lt;/p&gt;
-&lt;h1 id=&quot;AndroidLocalizationer&quot;&gt;&lt;a href=&quot;#AndroidLocalizationer&quot; class=&quot;headerlink&quot; title=&quot;AndroidLocalizationer&quot;&gt;&lt;/a&gt;AndroidLocalizationer&lt;/h1&gt;&lt;p&gt;用于将项目中的 string 资源自动翻译为其他语言的 Android Studio/IntelliJ IDEA 插件&lt;/p&gt;</content>
+&lt;h1 id=&quot;AndroidLocalizationer&quot;&gt;&lt;a href=&quot;#AndroidLocalizationer&quot; class=&quot;headerlink&quot; title=&quot;AndroidLocalizationer&quot;&gt;&lt;/a&gt;AndroidLocalizationer&lt;/h1&gt;&lt;p&gt;用于将项目中的 string 资源自动翻译为其他语言的 Android Studio/IntelliJ IDEA 插件&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;img src=&quot;http://img0.tuicool.com/Uzui63.png!web&quot; alt=&quot;&quot;&gt;����Ʒ���� &lt;a href=&quot;http://creativecommons.org/licenses/by/2.5/cn/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;֪ʶ�������� 2.5 �й���½����Э��&lt;/a&gt; �������ɣ���ӭת�أ���ת����ע������Colin��s Nest��������ת�غ��������ݵ����������˱������а�Ȩ����Ȩ����&lt;br&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/06/14/AndroidStudio之Plugins/&quot;&gt;http://tufusi.com/2016/06/14/AndroidStudio之Plugins/&lt;/a&gt;&lt;/p&gt;</content>
     
     <summary type="html">
     
@@ -2612,7 +2269,9 @@ function search()
 &lt;p&gt;针对JDK1.8, 等公司项目上线我会专门看一些这方面的资料进行博客整理，主要对RetroLambda结合RxJava的一些功能展示及Sourcecode理解&lt;/p&gt;
 &lt;h5 id=&quot;productFlavors（渠道打包）&quot;&gt;&lt;a href=&quot;#productFlavors（渠道打包）&quot; class=&quot;headerlink&quot; title=&quot;productFlavors（渠道打包）&quot;&gt;&lt;/a&gt;productFlavors（渠道打包）&lt;/h5&gt;&lt;p&gt;该部分在项目完成上线之前，会将所看资料整合另开一篇文章说明。&lt;/p&gt;
 &lt;h3 id=&quot;总结&quot;&gt;&lt;a href=&quot;#总结&quot; class=&quot;headerlink&quot; title=&quot;总结&quot;&gt;&lt;/a&gt;总结&lt;/h3&gt;&lt;p&gt;其实在使用Gradle构建时，如果项目引用的依赖过于多而杂，而又需要考虑到这些依赖版本的更新问题，参考过&lt;a href=&quot;http://blog.zhaiyifan.cn/2016/03/14/android-new-project-from-0-p2/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;MarkZhai&lt;/a&gt;的博客,本人也偏向于新建全局gradle，专门用于管理版本的迭代问题，不用一处改处处改，效果在试过之后会能明显feel到。&lt;/p&gt;
-&lt;p&gt;刚来新公司，一个人负责项目从零起步到最后打包上线，不得不说，这是一个挑战，但这又何尝不是一个机会，目前还处于app开发阶段。在抛弃前公司一直沿用的Volley Network Framework之后，我一直在尝试着使用更多以前未接触过的技术，RxJava，Dagger，OkHttp+Retrofit，Stetho+GsonFormat and so on，包括这次的关于Gradle的博客书写，发现Gradle其实也蛮好（zhuang）用(bi)的！当然用这些新技术需要花不少的时间成本，但“ 总有人要赢的，那个人为什么不是我 ”， 爱豆科比的经典名言啊。&lt;br&gt;努力 奋斗 致每一位正在努力的小婊砸&lt;/p&gt;</content>
+&lt;p&gt;刚来新公司，一个人负责项目从零起步到最后打包上线，不得不说，这是一个挑战，但这又何尝不是一个机会，目前还处于app开发阶段。在抛弃前公司一直沿用的Volley Network Framework之后，我一直在尝试着使用更多以前未接触过的技术，RxJava，Dagger，OkHttp+Retrofit，Stetho+GsonFormat and so on，包括这次的关于Gradle的博客书写，发现Gradle其实也蛮好（zhuang）用(bi)的！当然用这些新技术需要花不少的时间成本，但“ 总有人要赢的，那个人为什么不是我 ”， 爱豆科比的经典名言啊。&lt;br&gt;努力 奋斗 致每一位正在努力的小婊砸&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;img src=&quot;http://img0.tuicool.com/Uzui63.png!web&quot; alt=&quot;&quot;&gt;����Ʒ���� &lt;a href=&quot;http://creativecommons.org/licenses/by/2.5/cn/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;֪ʶ�������� 2.5 �й���½����Э��&lt;/a&gt; �������ɣ���ӭת�أ���ת����ע������Colin��s Nest��������ת�غ��������ݵ����������˱������а�Ȩ����Ȩ����&lt;br&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/06/07/AndroidStudio之Gradle/&quot;&gt;http://tufusi.com/2016/06/07/AndroidStudio之Gradle/&lt;/a&gt;&lt;/p&gt;</content>
     
     <summary type="html">
     
@@ -2880,7 +2539,10 @@ FuncX 和 ActionX 区别，FuncX包装的是有返回值的方法
 &lt;p&gt;换种方式理解： &lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;在Observable执行了lift(Operator)方法之后，会返回一个新的Observable，
 这个新的Observable会向代理一样， 负责接收原始的Observable发出的事件，并在处理之后发送给Subscriber。
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;未完待续。。。&quot;&gt;&lt;a href=&quot;#未完待续。。。&quot; class=&quot;headerlink&quot; title=&quot;未完待续。。。&quot;&gt;&lt;/a&gt;未完待续。。。&lt;/h3&gt;&lt;iframe frameborder=&quot;no&quot; border=&quot;0&quot; marginwidth=&quot;0&quot; marginheight=&quot;0&quot; width=&quot;330&quot; height=&quot;86&quot; src=&quot;http://music.163.com/outchain/player?type=2&amp;id=94639&amp;auto=1&amp;height=66&quot;&gt;&lt;/iframe&gt;</content>
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;未完待续。。。&quot;&gt;&lt;a href=&quot;#未完待续。。。&quot; class=&quot;headerlink&quot; title=&quot;未完待续。。。&quot;&gt;&lt;/a&gt;未完待续。。。&lt;/h3&gt;&lt;iframe frameborder=&quot;no&quot; border=&quot;0&quot; marginwidth=&quot;0&quot; marginheight=&quot;0&quot; width=&quot;330&quot; height=&quot;86&quot; src=&quot;http://music.163.com/outchain/player?type=2&amp;id=94639&amp;auto=1&amp;height=66&quot;&gt;&lt;/iframe&gt;
+
+&lt;hr&gt;
+&lt;p&gt;&lt;img src=&quot;http://img0.tuicool.com/Uzui63.png!web&quot; alt=&quot;&quot;&gt;����Ʒ���� &lt;a href=&quot;http://creativecommons.org/licenses/by/2.5/cn/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;֪ʶ�������� 2.5 �й���½����Э��&lt;/a&gt; �������ɣ���ӭת�أ���ת����ע������Colin��s Nest��������ת�غ��������ݵ����������˱������а�Ȩ����Ȩ����&lt;br&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/06/07/Android部落格之RxJava框架/&quot;&gt;http://tufusi.com/2016/06/07/Android部落格之RxJava框架/&lt;/a&gt;&lt;/p&gt;</content>
     
     <summary type="html">
     
@@ -2903,9 +2565,13 @@ FuncX 和 ActionX 区别，FuncX包装的是有返回值的方法
     <published>2016-06-02T01:23:58.000Z</published>
     <updated>2016-12-09T12:21:48.524Z</updated>
     
-    <content type="html"></content>
+    <content type="html">&lt;hr&gt;
+&lt;p&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/06/02/Android部落格之Retrofit框架/&quot;&gt;http://tufusi.com/2016/06/02/Android部落格之Retrofit框架/&lt;/a&gt;&lt;/p&gt;</content>
     
     <summary type="html">
+    
+      &lt;hr&gt;
+&lt;p&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/06/02/Android部落格之Retrofit框架/&quot;&gt;http://tufusi.com/2016/06/02/Android部落格之Retrofit框架/&lt;/a&gt;&lt;/p&gt;
     
     </summary>
     
@@ -2915,6 +2581,219 @@ FuncX 和 ActionX 区别，FuncX包装的是有返回值的方法
       <category term="Square" scheme="http://tufusi.com/tags/Square/"/>
     
       <category term="RESTful API注解" scheme="http://tufusi.com/tags/RESTful-API%E6%B3%A8%E8%A7%A3/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Android部落格之OkHttp框架</title>
+    <link href="http://tufusi.com/2016/06/01/Android%E9%83%A8%E8%90%BD%E6%A0%BC%E4%B9%8BOkHttp%E6%A1%86%E6%9E%B6/"/>
+    <id>http://tufusi.com/2016/06/01/Android部落格之OkHttp框架/</id>
+    <published>2016-06-01T02:20:47.000Z</published>
+    <updated>2016-12-09T12:22:12.221Z</updated>
+    
+    <content type="html">&lt;p&gt;来自&lt;a href=&quot;http://square.github.io/okhttp/#examples&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;OkHttp官方网站&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;http://blog.piasy.com/img/201607/okhttp_full_process.png&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;整体流程图-参考&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;OkHttp&quot;&gt;&lt;a href=&quot;#OkHttp&quot; class=&quot;headerlink&quot; title=&quot;OkHttp&quot;&gt;&lt;/a&gt;OkHttp&lt;/h3&gt;&lt;blockquote&gt;
+&lt;p&gt;官网概述：Android和Java应用程序的HTTP&amp;amp;HTTP/2的客户端&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;h3 id=&quot;简单使用&quot;&gt;&lt;a href=&quot;#简单使用&quot; class=&quot;headerlink&quot; title=&quot;简单使用&quot;&gt;&lt;/a&gt;简单使用&lt;/h3&gt;&lt;h4 id=&quot;1、创建OkHttpClint对象&quot;&gt;&lt;a href=&quot;#1、创建OkHttpClint对象&quot; class=&quot;headerlink&quot; title=&quot;1、创建OkHttpClint对象&quot;&gt;&lt;/a&gt;1、创建OkHttpClint对象&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;OkHttpClient client = new OkHttpClient();
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;当然也可以通过Build构造自定义的Http客户端&lt;/p&gt;
+&lt;h4 id=&quot;2、发起HTTP请求&quot;&gt;&lt;a href=&quot;#2、发起HTTP请求&quot; class=&quot;headerlink&quot; title=&quot;2、发起HTTP请求&quot;&gt;&lt;/a&gt;2、发起HTTP请求&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;String run() throws IOException{
+    Request request = new Request.Builder()
+      .url(url)
+       .build(); 
+
+    Response response = client.newCall(request).execute();
+    return response.body().string();
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;OkHttpClient实现了Call.Factory, 它是负责创建HTTP请求,负责根据请求创建新的Call,代码如下:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;/**
+ * Prepares the {@code request} to be executed at some point in the future.
+ */
+@override
+public Call newCall(Request request){
+    return new RealCall(this,request);
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;下面针对RealCall,分情况研究:&lt;/p&gt;
+&lt;h5 id=&quot;2-1-同步网络请求&quot;&gt;&lt;a href=&quot;#2-1-同步网络请求&quot; class=&quot;headerlink&quot; title=&quot;2.1 同步网络请求&quot;&gt;&lt;/a&gt;2.1 同步网络请求&lt;/h5&gt;&lt;pre&gt;&lt;code&gt;@override
+public Response execute() throws IOException{
+    synchronized(this){
+        if(executed) -------------------------------------------------------------(1)
+            throws new IllegalStateException(&amp;quot;Already Exceuted&amp;quot;); 
+        executed = true;
+    }
+    try{
+        client.dispatcher().exedcuted(this); -------------------------------------(2)
+        Response result = getResponseWithInterceptorChain(); ---------------------(3)
+        if(result == null)
+            throws new IOException(&amp;quot;Canceled&amp;quot;);
+        return result;
+    }finally{
+        client.dispatcher().finished(this); --------------------------------------(4)
+    }
+} 
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;步骤分解:&lt;/p&gt;
+&lt;p&gt;(1): 检查这个call是否已经执行过，每个call只能被执行一次&lt;/p&gt;
+&lt;p&gt;(2): 利用client.dispatcher().executed(this)来实际执行请求&lt;/p&gt;
+&lt;p&gt;(3): 调用函数获取HTTP响应结果,在这个过程中还会进行一个拦截链操作&lt;/p&gt;
+&lt;p&gt;(4): 通知dispatcher执行完毕&lt;/p&gt;
+&lt;p&gt;而真正发出网络请求,解析返回结果的,还是getResponseWithInterceptorChain:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;private Response getResponseWithInterceptorChain() throws IOException{
+    //Build a full stack of interceptors
+    List&amp;lt;Interceptor&amp;gt; interceptors = new ArrayList&amp;lt;&amp;gt;();
+    interceptors.addAll(client.interceptors());
+    interceptors.add(retryAndFollowUpInterceptor);
+    interceptors.add(new BridgeInterceptor(client.cookieJar()));
+    interceptors.add(new CacheInterceptor(client.internalCache()));
+    interceptors.add(new ConnectInterceptor(client));
+    if(!retryAndFollowUpInterceptor.isForWebSocket()){
+        interceptors.addAll(client.networkInterceptors());
+    }
+
+    interceptors.add(
+        new CallServerInterceptor(
+            retryAndFollowUpInterceptor.isForWebSocket()));
+    Interceptor.Chain chain = new RealInterceptorChain(
+        interceptors,null,null,null,0,originalRequest);
+
+    return chain.proceed(originalRequest);
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Interceptor其实是最核心的一个东西,并非简简单单的拦截器,它把实际的网络请求、缓存等等功能全部统一起来，每个功能都只是一个Interceptor,再连接成一个Interceptor.Chain,最终完成一次圆满的网络请求.&lt;/p&gt;
+&lt;p&gt;依照上面代码块,Interceptor.Chain的分布:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;blog.piasy.com/img/201607/okhttp_interceptors.png&quot;&gt;结构图&lt;/a&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;1.在配置OkHttpClient时设置的interceptors;
+
+2.负责失败重试以及重定向的RetryAndFollowUpInterceptor;
+
+3.负责把用户构造的请求转换为发送到服务器的请求、把服务器返回的响应转换为用户友好的响应的BridgeInterceptor;
+
+4.负责人读取缓存直接返回、更新缓存的CacheInterceptor;
+
+5.负责和服务器建立连接的ConnectInterceptor;
+
+6.配置OkHttpClient时设置的networkInterceptors;
+
+7.负责向服务器发送请求数据、从服务器读取响应数据的CallServerInterceptor.
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这里位置决定功能，最后一个Interceptor一定是负责和服务器实现通信的，而重定向、缓存等一定是在通信之前完成。&lt;/p&gt;
+&lt;h6 id=&quot;2-1-1-建立连接-ConnectInterceptor&quot;&gt;&lt;a href=&quot;#2-1-1-建立连接-ConnectInterceptor&quot; class=&quot;headerlink&quot; title=&quot;2.1.1 建立连接:ConnectInterceptor&quot;&gt;&lt;/a&gt;2.1.1 建立连接:ConnectInterceptor&lt;/h6&gt;&lt;pre&gt;&lt;code&gt;@override
+public Response intercept(Chain chain) throws IOException{
+    RealInterceptorChain realChain = (RealInterceptorChain)chain;
+    Request request  = realChain.request();
+    StreamAllocation streamAllocation = realChain.streamAllocation();
+
+    // We need the network to satisfy this request. Possibly for validating a conditional GET.
+    boolean doExtensiveHealthChecks = !request.method().equals(&amp;quot;GET&amp;quot;);
+    HttpCodec httpCodec = streamAllocation.newStream(client, doExtensiveHealthChecks);
+    RealConnection connection = streamAllocation.connection();
+
+    return realChain.proceed(request, streamAllocation, httpCodec, connection);
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;建立连接其实就是创建HttpCodec对象,HttpCodec是对HTTP协议操作的抽象,在HttpCodec中,它利用Okio对socket的读写操作进行封装.&lt;/p&gt;
+&lt;h6 id=&quot;2-1-2-发送和接收数据-CallServerInterceptor&quot;&gt;&lt;a href=&quot;#2-1-2-发送和接收数据-CallServerInterceptor&quot; class=&quot;headerlink&quot; title=&quot;2.1.2 发送和接收数据:CallServerInterceptor&quot;&gt;&lt;/a&gt;2.1.2 发送和接收数据:CallServerInterceptor&lt;/h6&gt;&lt;pre&gt;&lt;code&gt;@override
+public Response intercept(Chain chain) throws IOException{
+    HttpCodec httpCodex = ((RealInterceptorChain)chain).httpStream();
+    StreamAllocation streamAllocation = ((RealInterceptorChain)chain).streamAllocation();
+    Request request = chain.request();
+
+    long sentRequestMillis = System.currentTimeMillis();
+    httpCodec.writeRequestHeaders(request); ----------------------------------------------------------(1)
+
+    if(HttpMethod.permitsRequestBody(request.method()) &amp;amp;&amp;amp; request.body()!=null){ ---------------------(2)
+        Sink requestBodyOut = httpCodec.createRequestBody(request, request.body().contentLength());
+        BufferedSink bufferedRequestBody = Okio.buffer(requestBodyOut);
+        request.body().writeTo(bufferedRequestBody);
+        bufferedRequestBody.close();
+    }
+
+    httpCodec.finishRequest();
+
+    Response response = httpCodec.readResponseHeaders() ----------------------------------------------(3)
+          .request(request)
+          .handshake(streamAllocation.connection().handshake())
+         .sentRequestAtMillis(sentRequestMillis)
+         .receivedResponseAtMillis(System.currentTimeMillis())
+         .build();
+
+    if (!forWebSocket || response.code() != 101) {
+        response = response.newBuilder() -------------------------------------------------------------(4)
+            .body(httpCodec.openResponseBody(response))
+            .build();
+    }
+
+    if (&amp;quot;close&amp;quot;.equalsIgnoreCase(response.request().header(&amp;quot;Connection&amp;quot;))
+          || &amp;quot;close&amp;quot;.equalsIgnoreCase(response.header(&amp;quot;Connection&amp;quot;))) {
+        streamAllocation.noNewStreams();
+    }
+
+    // 省略部分检查代码
+
+    return response;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;主要部分:&lt;/p&gt;
+&lt;p&gt;1.向服务器发送request header;&lt;/p&gt;
+&lt;p&gt;2.如果有request body，就向服务器发送;&lt;/p&gt;
+&lt;p&gt;3.读取response header，先构造一个Response对象;&lt;/p&gt;
+&lt;p&gt;4.如果有response body,就在3的基础上加上body构造一个新的Response对象&lt;/p&gt;
+&lt;h5 id=&quot;2-2-异步网络请求-详见Dispatcher-java&quot;&gt;&lt;a href=&quot;#2-2-异步网络请求-详见Dispatcher-java&quot; class=&quot;headerlink&quot; title=&quot;2.2 异步网络请求 - 详见Dispatcher.java&quot;&gt;&lt;/a&gt;2.2 异步网络请求 - 详见Dispatcher.java&lt;/h5&gt;&lt;pre&gt;&lt;code&gt;client.newCall(request).enqueue(new Callback(){
+    @override
+    public void onFailure(Call call, IOException e){
+    }
+
+    @override
+    public void onResponse(Call call, Response response) throws IOException{
+        System.out.println(response.body().string());
+    }
+});
+
+//RealCall#enqueue
+@override
+public void enqueue(Callback responseCallback){
+    synchronized(this){
+        if(executed) throws new IllegalStateException(&amp;quot;Already Executed&amp;quot;);
+        executed = true;
+    }
+    client.dispatcher().enqueue(new AsyncCall(responseCallback));
+}
+
+//Dispatcher#enqueue
+synchronized void enqueue(AsyncCall call){
+    if(runningAsyncCalls.size()&amp;lt;maxRequests &amp;amp;&amp;amp;　runningCallForHost(call)&amp;lt;maxRequestsPerHost){
+        runningAsyncCalls.add(call);
+        executorService().execute(call);
+    }else{
+        readyAsyncCalls.add(call);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;此处可以看到dispatcher在异步执行请求过程中的作用.如果当前还能执行一个并发请求,那就立即执行,否则就加入readyAsyncCalls队列,而正在执行的请求执行完毕之后,会调用promoteCalls()函数,来迭代readyAsyncCalls队列,next()出AsyncCall,并将AsyncCall加入到runningAsyncCalls队列中,开始执行.&lt;/p&gt;
+&lt;p&gt;AsyncCall是RealCall的一个innerClass,继承NamedRunnable抽象类,该抽象类实现了Runnable接口,功能是设置线程名称.所以AsyncCall其实就是被OkHttp命名规范的一个异步请求类,它可以被提交到ExecutorService上执行,在执行时会调用getResponseWithInterceptorChain()函数,并将结果通过responseCallback回调传递给上层使用.&lt;/p&gt;
+&lt;p&gt;如此,同步和异步其实原理是一样的,都是在getResponseWithInterceptorChain()函数中通过Interceptor链来实现网络请求逻辑,而异步则是通过ExecutorService来实现的.&lt;/p&gt;
+&lt;h4 id=&quot;3、获取响应数据&quot;&gt;&lt;a href=&quot;#3、获取响应数据&quot; class=&quot;headerlink&quot; title=&quot;3、获取响应数据&quot;&gt;&lt;/a&gt;3、获取响应数据&lt;/h4&gt;&lt;p&gt;在同步(Call#execute()执行之后)或者异步(Callback#onResponse()回调中)请求完成之后,可以从Respouse对象中华获取到响应数据,包括HTTP status code, status message, response header, response body等等.这里的body需通过数据流方式来进行访问。&lt;/p&gt;
+&lt;p&gt;响应body被封装到 ResponseBody类中,需注意亮点:&lt;/p&gt;
+&lt;p&gt;1) 每个body只能被消费一次,多次消费会抛出异常;&lt;/p&gt;
+&lt;p&gt;2) body必须被关闭,否则会发生资源泄漏&lt;/p&gt;
+&lt;h4 id=&quot;4、HTTP缓存&quot;&gt;&lt;a href=&quot;#4、HTTP缓存&quot; class=&quot;headerlink&quot; title=&quot;4、HTTP缓存&quot;&gt;&lt;/a&gt;4、HTTP缓存&lt;/h4&gt;&lt;p&gt;在建立连接、和服务器通信之前，就是CacheInterceptor,在建立连接之前,我们检查响应是否已经被缓存、缓存是否可用，如果是则直接返回缓存的数据，否则就进行后面的流程，并在返回之前，把网络的数据写入缓存中。&lt;/p&gt;
+&lt;p&gt;CacheInterceptor类里主要逻辑都在覆写的intercept方法里,通过缓存策略获取networkRequest和cacheResponse进行检查判断,也可以通过实现InternalCache接口,在构造OkHttpClient时进行设置,这样就可以自定义缓存策略了。&lt;/p&gt;
+&lt;h3 id=&quot;Summary&quot;&gt;&lt;a href=&quot;#Summary&quot; class=&quot;headerlink&quot; title=&quot;Summary&quot;&gt;&lt;/a&gt;Summary&lt;/h3&gt;&lt;p&gt;&lt;iframe frameborder=&quot;no&quot; border=&quot;0&quot; marginwidth=&quot;0&quot; marginheight=&quot;0&quot; width=&quot;330&quot; height=&quot;86&quot; src=&quot;http://music.163.com/outchain/player?type=2&amp;id=28188171&amp;auto=1&amp;height=66&quot;&gt;&lt;/iframe&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;img src=&quot;http://img0.tuicool.com/Uzui63.png!web&quot; alt=&quot;&quot;&gt;����Ʒ���� &lt;a href=&quot;http://creativecommons.org/licenses/by/2.5/cn/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;֪ʶ�������� 2.5 �й���½����Э��&lt;/a&gt; �������ɣ���ӭת�أ���ת����ע������Colin��s Nest��������ת�غ��������ݵ����������˱������а�Ȩ����Ȩ����&lt;br&gt;�������ӣ�&lt;a href=&quot;http://tufusi.com/2016/06/01/Android部落格之OkHttp框架/&quot;&gt;http://tufusi.com/2016/06/01/Android部落格之OkHttp框架/&lt;/a&gt;&lt;/p&gt;</content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;来自&lt;a href=&quot;http://square.github.io/okhttp/#examples&quot;&gt;OkHttp官方网站&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;http://blog.piasy.com/img/201607/okhttp_full_process.png&quot;&gt;整体流程图-参考&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;OkHttp&quot;&gt;&lt;a href=&quot;#OkHttp&quot; class=&quot;headerlink&quot; title=&quot;OkHttp&quot;&gt;&lt;/a&gt;OkHttp&lt;/h3&gt;&lt;blockquote&gt;
+&lt;p&gt;官网概述：Android和Java应用程序的HTTP&amp;amp;HTTP/2的客户端&lt;/p&gt;
+&lt;/blockquote&gt;
+    
+    </summary>
+    
+      <category term="开源框架" scheme="http://tufusi.com/categories/%E5%BC%80%E6%BA%90%E6%A1%86%E6%9E%B6/"/>
+    
+    
+      <category term="Square" scheme="http://tufusi.com/tags/Square/"/>
+    
+      <category term="网络通信" scheme="http://tufusi.com/tags/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/"/>
     
   </entry>
   
