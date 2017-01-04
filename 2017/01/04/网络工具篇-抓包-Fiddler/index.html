@@ -1,0 +1,2075 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="网络抓包," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="OnePiece" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="序章Fiddler是一个很好用的抓包工具，可以将网络传输发送与接受的数据包进行截获、重发、编辑、转存等操作。也可以用来检测网络安全。这里搜集各大网络的资料，总结了常用的功能。
+1. Fiddler 抓包简介Fiddler是通过改写HTTP代理，让数据从它那通过，来监控并且截取到数据。Fiddler在打开时，就设置好了浏览器的代理。当关闭的时候，又把代理还原了。
+1） 字段说明Fiddler想要抓到">
+<meta property="og:type" content="article">
+<meta property="og:title" content="网络工具篇 - 抓包(Fiddler)">
+<meta property="og:url" content="http://tufusi.com/2017/01/04/网络工具篇-抓包-Fiddler/index.html">
+<meta property="og:site_name" content="OnePiece">
+<meta property="og:description" content="序章Fiddler是一个很好用的抓包工具，可以将网络传输发送与接受的数据包进行截获、重发、编辑、转存等操作。也可以用来检测网络安全。这里搜集各大网络的资料，总结了常用的功能。
+1. Fiddler 抓包简介Fiddler是通过改写HTTP代理，让数据从它那通过，来监控并且截取到数据。Fiddler在打开时，就设置好了浏览器的代理。当关闭的时候，又把代理还原了。
+1） 字段说明Fiddler想要抓到">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234158609-143657944.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234159468-1047137951.gif">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234200047-1757509080.gif">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234201406-1416873112.gif">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234202375-1737717316.gif">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234202812-1354392122.gif">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234203515-1304170577.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234204531-965189067.gif">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234205547-1927498766.gif">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234206203-722749081.gif">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234207000-575730385.gif">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234207625-740567358.gif">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234208297-916097140.gif">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234209640-1298497869.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234210172-1709733575.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234210703-1810906238.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234211297-1181901939.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234213515-1617989240.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234214140-838447913.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234214828-810550242.gif">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234215406-1088186512.gif">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234216015-2008519780.gif">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234216531-1803780843.gif">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234217078-1617370921.gif">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160119000324093-1538967179.gif">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234218890-2133347180.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120130545953-2034481316.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234219765-703426619.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234224843-907043204.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234227062-846408602.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125401968-22426265.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118235316718-1553324600.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118235317328-711964625.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118235318172-1052872585.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234228140-2037050814.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234229250-1993071078.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234230343-471116797.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124738422-909023754.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124739218-1083286524.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124740203-69950239.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124747047-421831359.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124843828-142667262.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124848922-1087943477.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124849640-39807059.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124855281-1725826056.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124905156-91772621.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124911547-1662798136.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125000187-1387164060.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125000843-2060195202.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125004609-1600396322.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125406187-1394564312.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125408672-279510487.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125409703-1678932502.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125414093-255856593.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125414797-2077867027.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125415547-1825599853.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125416093-439467539.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125417734-817450905.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125418343-1404670131.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125418906-1712835498.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125424047-1175695668.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125424797-1724110564.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125425984-995334279.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125426687-1642870815.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125430750-1560884194.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125431687-881357645.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125433422-1492238172.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125437359-2010010315.png">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125438093-1008328282.png">
+<meta property="og:updated_time" content="2017-01-04T09:50:40.309Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="网络工具篇 - 抓包(Fiddler)">
+<meta name="twitter:description" content="序章Fiddler是一个很好用的抓包工具，可以将网络传输发送与接受的数据包进行截获、重发、编辑、转存等操作。也可以用来检测网络安全。这里搜集各大网络的资料，总结了常用的功能。
+1. Fiddler 抓包简介Fiddler是通过改写HTTP代理，让数据从它那通过，来监控并且截取到数据。Fiddler在打开时，就设置好了浏览器的代理。当关闭的时候，又把代理还原了。
+1） 字段说明Fiddler想要抓到">
+<meta name="twitter:image" content="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234158609-143657944.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://tufusi.com/2017/01/04/网络工具篇-抓包-Fiddler/"/>
+
+
+
+
+
+  <title> 网络工具篇 - 抓包(Fiddler) | OnePiece </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?f30a329013fea1ff3a67cd95d8967aef";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">OnePiece</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Some of life, you have to go to the great challanges. - By Kobe Bryant</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-schedule">
+          <a href="/calendars" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-calendar"></i> <br />
+            
+            日程
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-guestbook">
+          <a href="/guestbook" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-commenting"></i> <br />
+            
+            留言
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-shop">
+          <a href="http://www.agaric.top/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-shopping-cart"></i> <br />
+            
+            我的商城
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+
+      <li> <a title="把这个链接拖到你的Chrome收藏夹工具栏中" href='javascript:(function() {
+     	    function c() {
+     	        var e = document.createElement("link");
+     	        e.setAttribute("type", "text/css");
+     	        e.setAttribute("rel", "stylesheet");
+     	        e.setAttribute("href", f);
+     	        e.setAttribute("class", l);
+     	        document.body.appendChild(e)
+     	    }
+
+     	    function h() {
+     	        var e = document.getElementsByClassName(l);
+     	        for (var t = 0; t < e.length; t++) {
+     	            document.body.removeChild(e[t])
+     	        }
+     	    }
+
+     	    function p() {
+     	        var e = document.createElement("div");
+     	        e.setAttribute("class", a);
+     	        document.body.appendChild(e);
+     	        setTimeout(function() {
+     	            document.body.removeChild(e)
+     	        }, 100)
+     	    }
+
+     	    function d(e) {
+     	        return {
+     	            height : e.offsetHeight,
+     	            width : e.offsetWidth
+     	        }
+     	    }
+
+     	    function v(i) {
+     	        var s = d(i);
+     	        return s.height > e && s.height < n && s.width > t && s.width < r
+     	    }
+
+     	    function m(e) {
+     	        var t = e;
+     	        var n = 0;
+     	        while (!!t) {
+     	            n += t.offsetTop;
+     	            t = t.offsetParent
+     	        }
+     	        return n
+     	    }
+
+     	    function g() {
+     	        var e = document.documentElement;
+     	        if (!!window.innerWidth) {
+     	            return window.innerHeight
+     	        } else if (e && !isNaN(e.clientHeight)) {
+     	            return e.clientHeight
+     	        }
+     	        return 0
+     	    }
+
+     	    function y() {
+     	        if (window.pageYOffset) {
+     	            return window.pageYOffset
+     	        }
+     	        return Math.max(document.documentElement.scrollTop, document.body.scrollTop)
+     	    }
+
+     	    function E(e) {
+     	        var t = m(e);
+     	        return t >= w && t <= b + w
+     	    }
+
+     	    function S() {
+     	        var e = document.createElement("audio");
+     	        e.setAttribute("class", l);
+     	        e.src = i;
+     	        e.loop = false;
+     	        e.addEventListener("canplay", function() {
+     	            setTimeout(function() {
+     	                x(k)
+     	            }, 500);
+     	            setTimeout(function() {
+     	                N();
+     	                p();
+     	                for (var e = 0; e < O.length; e++) {
+     	                    T(O[e])
+     	                }
+     	            }, 15500)
+     	        }, true);
+     	        e.addEventListener("ended", function() {
+     	            N();
+     	            h()
+     	        }, true);
+     	        e.innerHTML = " <p>If you are reading this, it is because your browser does not support the audio element. We recommend that you get a new browser.</p> <p>";
+     	        document.body.appendChild(e);
+     	        e.play()
+     	    }
+
+     	    function x(e) {
+     	        e.className += " " + s + " " + o
+     	    }
+
+     	    function T(e) {
+     	        e.className += " " + s + " " + u[Math.floor(Math.random() * u.length)]
+     	    }
+
+     	    function N() {
+     	        var e = document.getElementsByClassName(s);
+     	        var t = new RegExp("\\b" + s + "\\b");
+     	        for (var n = 0; n < e.length; ) {
+     	            e[n].className = e[n].className.replace(t, "")
+     	        }
+     	    }
+
+     	    var e = 30;
+     	    var t = 30;
+     	    var n = 350;
+     	    var r = 350;
+     	    var i = "//s3.amazonaws.com/moovweb-marketing/playground/harlem-shake.mp3";
+     	    var s = "mw-harlem_shake_me";
+     	    var o = "im_first";
+     	    var u = ["im_drunk", "im_baked", "im_trippin", "im_blown"];
+     	    var a = "mw-strobe_light";
+     	    var f = "//s3.amazonaws.com/moovweb-marketing/playground/harlem-shake-style.css";
+     	    var l = "mw_added_css";
+     	    var b = g();
+     	    var w = y();
+     	    var C = document.getElementsByTagName("*");
+     	    var k = null;
+     	    for (var L = 0; L < C.length; L++) {
+     	        var A = C[L];
+     	        if (v(A)) {
+     	            if (E(A)) {
+     	                k = A;
+     	                break
+     	            }
+     	        }
+     	    }
+     	    if (A === null) {
+     	        console.warn("Could not find a node of the right size. Please try a different page.");
+     	        return
+     	    }
+     	    c();
+     	    S();		
+     	    var O = [];
+     	    for (var L = 0; L < C.length; L++) {
+     	        var A = C[L];
+     	        if (v(A)) {
+     	            O.push(A)
+     	        }
+     	    }
+     	    })()    '>High一下</a> </li>
+
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://tufusi.com/2017/01/04/网络工具篇-抓包-Fiddler/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="LeoCheung">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="http://img.wdjimg.com/mms/icon/v1/9/9c/de366a247aeddb5809193003fa9c99c9_256_256.png">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="OnePiece">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="OnePiece" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                网络工具篇 - 抓包(Fiddler)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-01-04T17:47:04+08:00">
+                2017-01-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/工具类/" itemprop="url" rel="index">
+                    <span itemprop="name">工具类</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2017/01/04/网络工具篇-抓包-Fiddler/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/01/04/网络工具篇-抓包-Fiddler/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2017/01/04/网络工具篇-抓包-Fiddler/" class="leancloud_visitors" data-flag-title="网络工具篇 - 抓包(Fiddler)">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="序章"><a href="#序章" class="headerlink" title="序章"></a>序章</h1><p>Fiddler是一个很好用的抓包工具，可以将网络传输发送与接受的数据包进行截获、重发、编辑、转存等操作。也可以用来检测网络安全。这里搜集各大网络的资料，总结了常用的功能。</p>
+<h2 id="1-Fiddler-抓包简介"><a href="#1-Fiddler-抓包简介" class="headerlink" title="1. Fiddler 抓包简介"></a>1. Fiddler 抓包简介</h2><p>Fiddler是通过改写HTTP代理，让数据从它那通过，来监控并且截取到数据。Fiddler在打开时，就设置好了浏览器的代理。当关闭的时候，又把代理还原了。</p>
+<h3 id="1）-字段说明"><a href="#1）-字段说明" class="headerlink" title="1） 字段说明"></a>1） 字段说明</h3><p>Fiddler想要抓到数据包，要确保Capture Traffic是开启，在File –&gt; Capture Traffic。开启后在左下角会有显示，也可以直接点击左下角的图标来关闭/开启抓包功能。</p>
+<p>Fiddler开始工作，抓到的数据包就会显示在列表里面，下面总结这些什么意思：</p>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234158609-143657944.png" alt=""></p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>#</td>
+<td>抓取HTTP Request的顺序,从1开始，以此递增</td>
+</tr>
+<tr>
+<td>Result</td>
+<td>HTTP状态码</td>
+</tr>
+<tr>
+<td>Protocol</td>
+<td>请求使用的协议，如HTTP/HTTPS/FTP等</td>
+</tr>
+<tr>
+<td>Host</td>
+<td>请求地址的主机名</td>
+</tr>
+<tr>
+<td>URL</td>
+<td>请求资源的位置</td>
+</tr>
+<tr>
+<td>Body</td>
+<td>该请求的大小</td>
+</tr>
+<tr>
+<td>Caching</td>
+<td>请求的缓存过期时间或者缓存控制值</td>
+</tr>
+<tr>
+<td>Content-Type</td>
+<td>请求响应的类型</td>
+</tr>
+<tr>
+<td>Process</td>
+<td>发送此请求的进程：进程ID</td>
+</tr>
+<tr>
+<td>Comments</td>
+<td>允许用户为此回话添加备注</td>
+</tr>
+<tr>
+<td>Custom</td>
+<td>允许用户设置自定义值</td>
+</tr>
+<tr>
+<td>图标</td>
+<td>含义</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234159468-1047137951.gif" alt=""></td>
+<td>请求已经发往服务器</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234200047-1757509080.gif" alt=""></td>
+<td>已从服务器下载响应结果</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234201406-1416873112.gif" alt=""></td>
+<td>请求从断点处暂停</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234202375-1737717316.gif" alt=""></td>
+<td>响应从断点处暂停</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234202812-1354392122.gif" alt=""></td>
+<td>请求使用 HTTP 的 HEAD 方法，即响应没有内容（Body）</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234203515-1304170577.png" alt=""></td>
+<td>请求使用 HTTP 的 POST 方法</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234204531-965189067.gif" alt=""></td>
+<td>请求使用 HTTP 的 CONNECT 方法，使用 HTTPS 协议建立连接隧道</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234205547-1927498766.gif" alt=""></td>
+<td>响应是 HTML 格式</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234206203-722749081.gif" alt=""></td>
+<td>响应是一张图片</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234207000-575730385.gif" alt=""></td>
+<td>响应是脚本格式</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234207625-740567358.gif" alt=""></td>
+<td>响应是 CSS 格式</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234208297-916097140.gif" alt=""></td>
+<td>响应是 XML 格式</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234209640-1298497869.png" alt=""></td>
+<td>响应是 JSON 格式</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234210172-1709733575.png" alt=""></td>
+<td>响应是一个音频文件</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234210703-1810906238.png" alt=""></td>
+<td>响应是一个视频文件</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234211297-1181901939.png" alt=""></td>
+<td>响应是一个 SilverLight</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234213515-1617989240.png" alt=""></td>
+<td>响应是一个 FLASH</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234214140-838447913.png" alt=""></td>
+<td>响应是一个字体</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234214828-810550242.gif" alt=""></td>
+<td>普通响应成功</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234215406-1088186512.gif" alt=""></td>
+<td>响应是 HTTP/300、301、302、303 或 307 重定向</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234216015-2008519780.gif" alt=""></td>
+<td>响应是 HTTP/304（无变更）：使用缓存文件</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234216531-1803780843.gif" alt=""></td>
+<td>响应需要客户端证书验证</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234217078-1617370921.gif" alt=""></td>
+<td>服务端错误</td>
+</tr>
+<tr>
+<td><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160119000324093-1538967179.gif" alt=""></td>
+<td>会话被客户端、Fiddler 或者服务端终止</td>
+</tr>
+</tbody>
+</table>
+<h3 id="2）-Statistics-请求的性能数据分析"><a href="#2）-Statistics-请求的性能数据分析" class="headerlink" title="2）. Statistics 请求的性能数据分析"></a>2）. Statistics 请求的性能数据分析</h3><p>点击一个请求，可以看到Statistics关于HTTP请求的性能以及数据分析：</p>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234218890-2133347180.png" alt=""></p>
+<h3 id="3）-Inspectors-查看数据内容"><a href="#3）-Inspectors-查看数据内容" class="headerlink" title="3）. Inspectors 查看数据内容"></a>3）. Inspectors 查看数据内容</h3><p>Inspectors用于查看会话的内容，上半部分是请求的内容，下半部分是响应的内容：</p>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120130545953-2034481316.png" alt=""></p>
+<h3 id="4）-AutoResponder-允许拦截指定规则的请求"><a href="#4）-AutoResponder-允许拦截指定规则的请求" class="headerlink" title="4）. AutoResponder 允许拦截指定规则的请求"></a>4）. AutoResponder 允许拦截指定规则的请求</h3><p>AutoResponder允许你拦截指定规则的求情，并返回本地资源或Fiddler资源，从而代替服务器响应。<br>看下图5步，将“baidu”这个关键字与我的电脑“F:\Users\YukiO\Pictures\boy.jpeg”这张图片绑定了，点击Save保存后勾选Enable rules，再访问baidu，就会被劫持。</p>
+<h4 id="1-字符串匹配（默认）：只要包含指定字符串（不区分大小写），全部认为是匹配"><a href="#1-字符串匹配（默认）：只要包含指定字符串（不区分大小写），全部认为是匹配" class="headerlink" title="1. 字符串匹配（默认）：只要包含指定字符串（不区分大小写），全部认为是匹配"></a>1. 字符串匹配（默认）：只要包含指定字符串（不区分大小写），全部认为是匹配</h4><table>
+<thead>
+<tr>
+<th>字符串匹配（baidu）</th>
+<th>是否匹配</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="http://www.baidu.com" target="_blank" rel="external">http://www.baidu.com</a></td>
+<td>匹配</td>
+</tr>
+<tr>
+<td><a href="http://pan.baidu.com" target="_blank" rel="external">http://pan.baidu.com</a></td>
+<td>匹配</td>
+</tr>
+<tr>
+<td><a href="http://tieba.baidu.com" target="_blank" rel="external">http://tieba.baidu.com</a></td>
+<td>匹配</td>
+</tr>
+</tbody>
+</table>
+<h4 id="2-正则表达式匹配：以“regex-”开头，使用正则表达式来匹配，这是区分大小写的"><a href="#2-正则表达式匹配：以“regex-”开头，使用正则表达式来匹配，这是区分大小写的" class="headerlink" title="2. 正则表达式匹配：以“regex:”开头，使用正则表达式来匹配，这是区分大小写的"></a>2. 正则表达式匹配：以“regex:”开头，使用正则表达式来匹配，这是区分大小写的</h4><table>
+<thead>
+<tr>
+<th>字符串匹配（regex:.+.(jpg / gif / bmp ) $）</th>
+<th>是否匹配</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="http://bbs.fishc.com/Path1/query=foo.bmp&amp;bar" target="_blank" rel="external">http://bbs.fishc.com/Path1/query=foo.bmp&amp;bar</a></td>
+<td>不匹配</td>
+</tr>
+<tr>
+<td><a href="http://bbs.fishc.com/Path1/query=example.gif" target="_blank" rel="external">http://bbs.fishc.com/Path1/query=example.gif</a></td>
+<td>匹配</td>
+</tr>
+<tr>
+<td><a href="http://bbs.fishc.com/Path1/query=example.bmp" target="_blank" rel="external">http://bbs.fishc.com/Path1/query=example.bmp</a></td>
+<td>匹配</td>
+</tr>
+<tr>
+<td><a href="http://bbs.fishc.com/Path1/query=example.Gif" target="_blank" rel="external">http://bbs.fishc.com/Path1/query=example.Gif</a></td>
+<td>不匹配</td>
+</tr>
+</tbody>
+</table>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234219765-703426619.png" alt=""></p>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234224843-907043204.png" alt=""></p>
+<h3 id="5）-Composer-自定义请求发送服务器"><a href="#5）-Composer-自定义请求发送服务器" class="headerlink" title="5）. Composer 自定义请求发送服务器"></a>5）. Composer 自定义请求发送服务器</h3><p>Composer允许自定义请求发送到服务器，可以手动创建一个新的请求，也可以在会话表中，拖拽一个现有的请求；<br>Parsed模式下你只需要提供简单的URLS地址即可（如下图，也可以在RequestBody定制一些属性，如模拟浏览器User-Agent）</p>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234227062-846408602.png" alt=""></p>
+<h3 id="6）-Filters-请求过滤规则"><a href="#6）-Filters-请求过滤规则" class="headerlink" title="6）. Filters 请求过滤规则"></a>6）. Filters 请求过滤规则</h3><p>Fiters 是过滤请求用的，左边的窗口不断的更新，当想看系统的请求的时候，刷新一下浏览器，一大片请求一直刷新屏幕。这时通过过滤规则来过滤掉不想看到的请求。</p>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125401968-22426265.png" alt=""></p>
+<p>勾选左上角的Use Filters开启过滤器，这里有两个最常用的过滤条件：Zone和Host</p>
+<ul>
+<li><p>1、Zone 指定只显示内网（Intranet）或互联网（Internet）的内容：<br><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118235316718-1553324600.png" alt=""></p>
+</li>
+<li><p>2、Host 指定显示某个域名下的会话：</p>
+</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118235317328-711964625.png" alt=""></p>
+<h3 id="7）-Timeline-请求响应时间"><a href="#7）-Timeline-请求响应时间" class="headerlink" title="7）. Timeline 请求响应时间"></a>7）. Timeline 请求响应时间</h3><p>在左侧会话窗口点击一个或多个（同时按下 Ctrl 键），Timeline 便会显示指定内容从服务端传输到客户端的时间：</p>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118235318172-1052872585.png" alt=""></p>
+<h2 id="2-Fiddler-设置解密HTTPS的网络数据"><a href="#2-Fiddler-设置解密HTTPS的网络数据" class="headerlink" title="2. Fiddler 设置解密HTTPS的网络数据"></a>2. Fiddler 设置解密HTTPS的网络数据</h2><p>Fiddler可以通过伪造CA证书来欺骗浏览器和服务器。Fiddler是个很会装逼的好东西，大概原理就是在浏览器面前Fiddler伪装成一个HTTPS服务器，而在真正的HTTPS服务器面前Fiddler又装成浏览器，从而实现解密HTTPS数据包的目的。<br>解密HTTPS需要手动开启，依次点击：</p>
+<ul>
+<li><ol>
+<li>Tools –&gt; Fiddler Options –&gt;  HTTPS</li>
+</ol>
+</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234228140-2037050814.png" alt=""></p>
+<ul>
+<li><ol>
+<li>勾选Decrypt HTTPS Traffic</li>
+</ol>
+</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234229250-1993071078.png" alt=""></p>
+<ul>
+<li><ol>
+<li>点击OK</li>
+</ol>
+</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234230343-471116797.png" alt=""></p>
+<h2 id="3-Fiddler-抓取iPhone-Android数据包"><a href="#3-Fiddler-抓取iPhone-Android数据包" class="headerlink" title="3. Fiddler 抓取iPhone / Android数据包"></a>3. Fiddler 抓取iPhone / Android数据包</h2><p>想要Fiddler抓取移动端设备的数据包，其实很简单，先来说说移动设备怎么去访问网络，看了下面这张图，就明白了。</p>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124738422-909023754.png" alt=""></p>
+<p>可以看得出，移动端的数据包，都是要走wifi出去，所以我们可以把自己的电脑开启热点，将手机连上电脑，Fiddler开启代理后，让这些数据通过Fiddler，Fiddler就可以抓到这些包，然后发给路由器（如图）：</p>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124739218-1083286524.png" alt=""></p>
+<ul>
+<li><ol>
+<li>打开Wifi热点，让手机连上（我这里用的360wifi，其实随意一个都行）</li>
+</ol>
+</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124740203-69950239.png" alt=""></p>
+<ul>
+<li><ol>
+<li>打开Fidder，点击菜单栏中的 [Tools] –&gt; [Fiddler Options]</li>
+</ol>
+</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124747047-421831359.png" alt=""></p>
+<ul>
+<li><ol>
+<li>点击 [Connections] ，设置代理端口是8888， 勾选 Allow remote computers to connect， 点击OK</li>
+</ol>
+</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124843828-142667262.png" alt=""></p>
+<ul>
+<li><ol>
+<li>这时在 Fiddler 可以看到自己本机无线网卡的IP了（要是没有的话，重启Fiddler，或者可以在cmd中ipconfig找到自己的网卡IP）</li>
+</ol>
+</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124848922-1087943477.png" alt=""></p>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124849640-39807059.png" alt=""></p>
+<ul>
+<li><ol>
+<li>在手机端连接PC的wifi，并且设置代理IP与端口（代理IP就是上图的IP，端口是Fiddler的代理端口8888）</li>
+</ol>
+</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124855281-1725826056.png" alt=""></p>
+<ul>
+<li><ol>
+<li>访问网页输入代理IP和端口，下载Fiddler的证书，点击下图FiddlerRoot certificate</li>
+</ol>
+</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124905156-91772621.png" alt=""></p>
+<p>【注意】：如果打开浏览器碰到类似下面的报错，请打开Fiddler的证书解密模式（Fiddler 设置解密HTTPS的网络数据）</p>
+<pre><code>No root certificate was found. Have you enabled HTTPS traffic decryption in Fiddler yet?
+</code></pre><p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124911547-1662798136.png" alt=""></p>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125000187-1387164060.png" alt=""></p>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125000843-2060195202.png" alt=""></p>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125004609-1600396322.png" alt=""></p>
+<ul>
+<li><ol>
+<li>安装完了证书，可以用手机访问应用，就可以看到截取到的数据包了。（下图选中是布卡漫画的数据包，下面还有QQ邮箱的）</li>
+</ol>
+</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125406187-1394564312.png" alt=""></p>
+<h2 id="4-Fiddler-内置命令与断点"><a href="#4-Fiddler-内置命令与断点" class="headerlink" title="4. Fiddler 内置命令与断点"></a>4. Fiddler 内置命令与断点</h2><p>  Fiddler还有一个藏的很深的命令框，就是眼前，我用了几年的Fiddler都没有发现它，偶尔在别人的文章发现还有这个小功能，还蛮好用的，整理下记录在这里。</p>
+<p>FIddler断点功能就是将请求截获下来，但是不发送，这个时候你可以干很多事情，比如说，把包改了，再发送给服务器。  </p>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125408672-279510487.png" alt=""></p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>对应请求项</th>
+<th>介绍</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>?</td>
+<td>All</td>
+<td>问号后边跟一个字符串，可以匹配出包含这个字符串的请求</td>
+<td>?google</td>
+</tr>
+<tr>
+<td>&gt;</td>
+<td>Body</td>
+<td>大于号后面跟一个数字，可以匹配出请求大小，大于这个数字请求</td>
+<td>&gt;1000</td>
+</tr>
+<tr>
+<td>&lt;</td>
+<td>Body</td>
+<td>小于号跟大于号相反，匹配出请求大小，小于这个数字的请求</td>
+<td>&lt;100</td>
+</tr>
+<tr>
+<td>=</td>
+<td>Result</td>
+<td>等于号后面跟数字，可以匹配HTTP返回码</td>
+<td>=200</td>
+</tr>
+<tr>
+<td>@</td>
+<td>Host</td>
+<td>@后面跟Host，可以匹配域名</td>
+<td>@www.baidu.com</td>
+</tr>
+<tr>
+<td>select</td>
+<td>Content-Type</td>
+<td>select后面跟响应类型，可以匹配到相关的类型</td>
+<td>select image</td>
+</tr>
+<tr>
+<td>cls</td>
+<td>All</td>
+<td>清空当前所有请求</td>
+<td>cls</td>
+</tr>
+<tr>
+<td>dump</td>
+<td>All</td>
+<td>将所有请求打包成saz压缩包，保存到“我的文档\Fiddler2\Captures”目录下dump</td>
+</tr>
+<tr>
+<td>start</td>
+<td>All</td>
+<td>开始监听请求</td>
+<td>start</td>
+</tr>
+<tr>
+<td>stop</td>
+<td>All</td>
+<td>停止监听请求</td>
+<td>stop </td>
+</tr>
+</tbody>
+</table>
+<p>断点命令</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>对应请求项</th>
+<th>介绍</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>bpafter</td>
+<td>All</td>
+<td>bpafter后边跟一个字符串，表示中断所有包含该字符串的请求</td>
+<td>bpafter baidu（输入bpafter解除断点）</td>
+</tr>
+<tr>
+<td>bpu</td>
+<td>All</td>
+<td>跟bpafter差不多，只不过这个是收到请求了，中断响应</td>
+<td>bpu baidu（输入bpu解除断点）</td>
+</tr>
+<tr>
+<td>bps</td>
+<td>Result</td>
+<td>后面跟状态吗，表示中断所有是这个状态码的请求</td>
+<td>bps 200（输入bps解除断点）</td>
+</tr>
+<tr>
+<td>bpv / bpm</td>
+<td>HTTP方法</td>
+<td>只中断HTTP方法的命令，HTTP方法如POST、GET</td>
+<td>bpv get（输入bpv解除断点）</td>
+</tr>
+<tr>
+<td>g / Go</td>
+<td>All</td>
+<td>放行所有中断下来的请求</td>
+<td>g</td>
+</tr>
+</tbody>
+</table>
+<p>示例演示：</p>
+<ul>
+<li>?</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125409703-1678932502.png" alt=""></p>
+<ul>
+<li>&gt;</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125414093-255856593.png" alt=""></p>
+<ul>
+<li>&lt;</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125414797-2077867027.png" alt=""></p>
+<ul>
+<li>=</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125415547-1825599853.png" alt=""></p>
+<ul>
+<li>@</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125416093-439467539.png" alt=""></p>
+<ul>
+<li>select</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125417734-817450905.png" alt=""></p>
+<ul>
+<li>cls</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125418343-1404670131.png" alt=""></p>
+<ul>
+<li>dump</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125418906-1712835498.png" alt=""></p>
+<p>断点命令：</p>
+<p>断点可以直接点击Fiddler下图的图标位置，就可以设置全部请求的断点，断点的命令可以精确设置需要截获那些请求。如下示例：</p>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125424047-1175695668.png" alt=""></p>
+<p> 命令：</p>
+<ul>
+<li>bpafter</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125424797-1724110564.png" alt=""></p>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125425984-995334279.png" alt=""></p>
+<ul>
+<li>bps</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125426687-1642870815.png" alt=""></p>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125430750-1560884194.png" alt=""></p>
+<ul>
+<li>bpv</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125431687-881357645.png" alt=""></p>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125433422-1492238172.png" alt=""></p>
+<ul>
+<li>g / go</li>
+</ul>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125437359-2010010315.png" alt=""></p>
+<p><img src="http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125438093-1008328282.png" alt=""></p>
+<hr>
+<p><br><strong>友情提醒</strong><br></p>
+
+<p>如果有任何疑问，请留言或者找到我的联系方式进行联系我，希望文章对你有所帮助！</p>
+<p>本文永久链接：<a href="http://tufusi.com/2017/01/04/网络工具篇-抓包-Fiddler/">http://tufusi.com/2017/01/04/网络工具篇-抓包-Fiddler/</a></p>
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/网络抓包/" rel="tag"># 网络抓包</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/12/26/微信小程序系列-组件篇/" rel="next" title="微信小程序系列-组件篇">
+                <i class="fa fa-chevron-left"></i> 微信小程序系列-组件篇
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <div class="ds-share flat" data-thread-key="2017/01/04/网络工具篇-抓包-Fiddler/"
+     data-title="网络工具篇 - 抓包(Fiddler)"
+     data-content=""
+     data-url="http://tufusi.com/2017/01/04/网络工具篇-抓包-Fiddler/">
+  <div class="ds-share-inline">
+    <ul  class="ds-share-icons-16">
+
+      <li data-toggle="ds-share-icons-more"><a class="ds-more" href="javascript:void(0);">分享到：</a></li>
+      <li><a class="ds-weibo" href="javascript:void(0);" data-service="weibo">微博</a></li>
+      <li><a class="ds-qzone" href="javascript:void(0);" data-service="qzone">QQ空间</a></li>
+      <li><a class="ds-qqt" href="javascript:void(0);" data-service="qqt">腾讯微博</a></li>
+      <li><a class="ds-wechat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+
+    </ul>
+    <div class="ds-share-icons-more">
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2017/01/04/网络工具篇-抓包-Fiddler/"
+           data-title="网络工具篇 - 抓包(Fiddler)" data-url="http://tufusi.com/2017/01/04/网络工具篇-抓包-Fiddler/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://img.wdjimg.com/mms/icon/v1/9/9c/de366a247aeddb5809193003fa9c99c9_256_256.png"
+               alt="LeoCheung" />
+          <p class="site-author-name" itemprop="name">LeoCheung</p>
+          <p class="site-description motion-element" itemprop="description">做人如果没有梦想,那和咸鱼有什么分别</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">25</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">12</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">27</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/LeoCheung0221" target="_blank" title="Github">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  Github
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://twitter.com/leocheung4ever" target="_blank" title="Twitter">
+                  
+                    <i class="fa fa-fw fa-twitter"></i>
+                  
+                  Twitter
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.facebook.com/leo.cheung.50702" target="_blank" title="Facebook">
+                  
+                    <i class="fa fa-fw fa-facebook"></i>
+                  
+                  Facebook
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.instagram.com/leocheung4ever/" target="_blank" title="Instagram">
+                  
+                    <i class="fa fa-fw fa-instagram"></i>
+                  
+                  Instagram
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://cn.linkedin.com/in/林-张-236b63119" target="_blank" title="LinkedIn">
+                  
+                    <i class="fa fa-fw fa-linkedin"></i>
+                  
+                  LinkedIn
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://plus.google.com/105160953871918801486" target="_blank" title="GooglePlus">
+                  
+                    <i class="fa fa-fw fa-google-plus"></i>
+                  
+                  GooglePlus
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://stackoverflow.com/users/6230182/leocheung" target="_blank" title="stackoverflow">
+                  
+                    <i class="fa fa-fw fa-stack-overflow"></i>
+                  
+                  stackoverflow
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/u/2277088634?is_all=1" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              Links
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.trinea.cn/" title="Trinea" target="_blank">Trinea</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jakewharton.com/" title="JakeWharton" target="_blank">JakeWharton</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="mailto:leocheung4ever@gmail.com" title="Contact Me" target="_blank">Contact Me</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#序章"><span class="nav-number">1.</span> <span class="nav-text">序章</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Fiddler-抓包简介"><span class="nav-number">1.1.</span> <span class="nav-text">1. Fiddler 抓包简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1）-字段说明"><span class="nav-number">1.1.1.</span> <span class="nav-text">1） 字段说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2）-Statistics-请求的性能数据分析"><span class="nav-number">1.1.2.</span> <span class="nav-text">2）. Statistics 请求的性能数据分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3）-Inspectors-查看数据内容"><span class="nav-number">1.1.3.</span> <span class="nav-text">3）. Inspectors 查看数据内容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4）-AutoResponder-允许拦截指定规则的请求"><span class="nav-number">1.1.4.</span> <span class="nav-text">4）. AutoResponder 允许拦截指定规则的请求</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-字符串匹配（默认）：只要包含指定字符串（不区分大小写），全部认为是匹配"><span class="nav-number">1.1.4.1.</span> <span class="nav-text">1. 字符串匹配（默认）：只要包含指定字符串（不区分大小写），全部认为是匹配</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-正则表达式匹配：以“regex-”开头，使用正则表达式来匹配，这是区分大小写的"><span class="nav-number">1.1.4.2.</span> <span class="nav-text">2. 正则表达式匹配：以“regex:”开头，使用正则表达式来匹配，这是区分大小写的</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5）-Composer-自定义请求发送服务器"><span class="nav-number">1.1.5.</span> <span class="nav-text">5）. Composer 自定义请求发送服务器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6）-Filters-请求过滤规则"><span class="nav-number">1.1.6.</span> <span class="nav-text">6）. Filters 请求过滤规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7）-Timeline-请求响应时间"><span class="nav-number">1.1.7.</span> <span class="nav-text">7）. Timeline 请求响应时间</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Fiddler-设置解密HTTPS的网络数据"><span class="nav-number">1.2.</span> <span class="nav-text">2. Fiddler 设置解密HTTPS的网络数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Fiddler-抓取iPhone-Android数据包"><span class="nav-number">1.3.</span> <span class="nav-text">3. Fiddler 抓取iPhone / Android数据包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Fiddler-内置命令与断点"><span class="nav-number">1.4.</span> <span class="nav-text">4. Fiddler 内置命令与断点</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Powered By - LeoCheung</span>
+</div>
+
+
+<div class="powered-by">
+    MyZone
+</div>
+
+<div class="theme-info">
+  博客 - 张十三爱你一万年
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"tufusi"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("OElE34RjYsQ2HhGwqjBUH5vE-gzGzoHsz", "3mtN4OdOkHTfNyymvF1rvL80");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+
+  
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("OElE34RjYsQ2HhGwqjBUH5vE-gzGzoHsz", "3mtN4OdOkHTfNyymvF1rvL80");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+  
+  
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("OElE34RjYsQ2HhGwqjBUH5vE-gzGzoHsz", "3mtN4OdOkHTfNyymvF1rvL80");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+  
+</body>
+</html>

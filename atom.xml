@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://tufusi.com/"/>
-  <updated>2016-12-26T08:55:37.524Z</updated>
+  <updated>2017-01-04T09:50:40.309Z</updated>
   <id>http://tufusi.com/</id>
   
   <author>
@@ -14,6 +14,516 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>网络工具篇 - 抓包(Fiddler)</title>
+    <link href="http://tufusi.com/2017/01/04/%E7%BD%91%E7%BB%9C%E5%B7%A5%E5%85%B7%E7%AF%87-%E6%8A%93%E5%8C%85-Fiddler/"/>
+    <id>http://tufusi.com/2017/01/04/网络工具篇-抓包-Fiddler/</id>
+    <published>2017-01-04T09:47:04.000Z</published>
+    <updated>2017-01-04T09:50:40.309Z</updated>
+    
+    <content type="html">&lt;h1 id=&quot;序章&quot;&gt;&lt;a href=&quot;#序章&quot; class=&quot;headerlink&quot; title=&quot;序章&quot;&gt;&lt;/a&gt;序章&lt;/h1&gt;&lt;p&gt;Fiddler是一个很好用的抓包工具，可以将网络传输发送与接受的数据包进行截获、重发、编辑、转存等操作。也可以用来检测网络安全。这里搜集各大网络的资料，总结了常用的功能。&lt;/p&gt;
+&lt;h2 id=&quot;1-Fiddler-抓包简介&quot;&gt;&lt;a href=&quot;#1-Fiddler-抓包简介&quot; class=&quot;headerlink&quot; title=&quot;1. Fiddler 抓包简介&quot;&gt;&lt;/a&gt;1. Fiddler 抓包简介&lt;/h2&gt;&lt;p&gt;Fiddler是通过改写HTTP代理，让数据从它那通过，来监控并且截取到数据。Fiddler在打开时，就设置好了浏览器的代理。当关闭的时候，又把代理还原了。&lt;/p&gt;
+&lt;h3 id=&quot;1）-字段说明&quot;&gt;&lt;a href=&quot;#1）-字段说明&quot; class=&quot;headerlink&quot; title=&quot;1） 字段说明&quot;&gt;&lt;/a&gt;1） 字段说明&lt;/h3&gt;&lt;p&gt;Fiddler想要抓到数据包，要确保Capture Traffic是开启，在File –&amp;gt; Capture Traffic。开启后在左下角会有显示，也可以直接点击左下角的图标来关闭/开启抓包功能。&lt;/p&gt;
+&lt;p&gt;Fiddler开始工作，抓到的数据包就会显示在列表里面，下面总结这些什么意思：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234158609-143657944.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;名称&lt;/th&gt;
+&lt;th&gt;含义&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;#&lt;/td&gt;
+&lt;td&gt;抓取HTTP Request的顺序,从1开始，以此递增&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Result&lt;/td&gt;
+&lt;td&gt;HTTP状态码&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Protocol&lt;/td&gt;
+&lt;td&gt;请求使用的协议，如HTTP/HTTPS/FTP等&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Host&lt;/td&gt;
+&lt;td&gt;请求地址的主机名&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;URL&lt;/td&gt;
+&lt;td&gt;请求资源的位置&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Body&lt;/td&gt;
+&lt;td&gt;该请求的大小&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Caching&lt;/td&gt;
+&lt;td&gt;请求的缓存过期时间或者缓存控制值&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Content-Type&lt;/td&gt;
+&lt;td&gt;请求响应的类型&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Process&lt;/td&gt;
+&lt;td&gt;发送此请求的进程：进程ID&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Comments&lt;/td&gt;
+&lt;td&gt;允许用户为此回话添加备注&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Custom&lt;/td&gt;
+&lt;td&gt;允许用户设置自定义值&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;图标&lt;/td&gt;
+&lt;td&gt;含义&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234159468-1047137951.gif&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;请求已经发往服务器&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234200047-1757509080.gif&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;已从服务器下载响应结果&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234201406-1416873112.gif&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;请求从断点处暂停&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234202375-1737717316.gif&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;响应从断点处暂停&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234202812-1354392122.gif&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;请求使用 HTTP 的 HEAD 方法，即响应没有内容（Body）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234203515-1304170577.png&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;请求使用 HTTP 的 POST 方法&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234204531-965189067.gif&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;请求使用 HTTP 的 CONNECT 方法，使用 HTTPS 协议建立连接隧道&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234205547-1927498766.gif&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;响应是 HTML 格式&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234206203-722749081.gif&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;响应是一张图片&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234207000-575730385.gif&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;响应是脚本格式&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234207625-740567358.gif&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;响应是 CSS 格式&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234208297-916097140.gif&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;响应是 XML 格式&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234209640-1298497869.png&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;响应是 JSON 格式&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234210172-1709733575.png&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;响应是一个音频文件&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234210703-1810906238.png&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;响应是一个视频文件&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234211297-1181901939.png&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;响应是一个 SilverLight&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234213515-1617989240.png&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;响应是一个 FLASH&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234214140-838447913.png&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;响应是一个字体&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234214828-810550242.gif&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;普通响应成功&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234215406-1088186512.gif&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;响应是 HTTP/300、301、302、303 或 307 重定向&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234216015-2008519780.gif&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;响应是 HTTP/304（无变更）：使用缓存文件&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234216531-1803780843.gif&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;响应需要客户端证书验证&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234217078-1617370921.gif&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;服务端错误&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160119000324093-1538967179.gif&quot; alt=&quot;&quot;&gt;&lt;/td&gt;
+&lt;td&gt;会话被客户端、Fiddler 或者服务端终止&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id=&quot;2）-Statistics-请求的性能数据分析&quot;&gt;&lt;a href=&quot;#2）-Statistics-请求的性能数据分析&quot; class=&quot;headerlink&quot; title=&quot;2）. Statistics 请求的性能数据分析&quot;&gt;&lt;/a&gt;2）. Statistics 请求的性能数据分析&lt;/h3&gt;&lt;p&gt;点击一个请求，可以看到Statistics关于HTTP请求的性能以及数据分析：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234218890-2133347180.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;h3 id=&quot;3）-Inspectors-查看数据内容&quot;&gt;&lt;a href=&quot;#3）-Inspectors-查看数据内容&quot; class=&quot;headerlink&quot; title=&quot;3）. Inspectors 查看数据内容&quot;&gt;&lt;/a&gt;3）. Inspectors 查看数据内容&lt;/h3&gt;&lt;p&gt;Inspectors用于查看会话的内容，上半部分是请求的内容，下半部分是响应的内容：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120130545953-2034481316.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;h3 id=&quot;4）-AutoResponder-允许拦截指定规则的请求&quot;&gt;&lt;a href=&quot;#4）-AutoResponder-允许拦截指定规则的请求&quot; class=&quot;headerlink&quot; title=&quot;4）. AutoResponder 允许拦截指定规则的请求&quot;&gt;&lt;/a&gt;4）. AutoResponder 允许拦截指定规则的请求&lt;/h3&gt;&lt;p&gt;AutoResponder允许你拦截指定规则的求情，并返回本地资源或Fiddler资源，从而代替服务器响应。&lt;br&gt;看下图5步，将“baidu”这个关键字与我的电脑“F:\Users\YukiO\Pictures\boy.jpeg”这张图片绑定了，点击Save保存后勾选Enable rules，再访问baidu，就会被劫持。&lt;/p&gt;
+&lt;h4 id=&quot;1-字符串匹配（默认）：只要包含指定字符串（不区分大小写），全部认为是匹配&quot;&gt;&lt;a href=&quot;#1-字符串匹配（默认）：只要包含指定字符串（不区分大小写），全部认为是匹配&quot; class=&quot;headerlink&quot; title=&quot;1. 字符串匹配（默认）：只要包含指定字符串（不区分大小写），全部认为是匹配&quot;&gt;&lt;/a&gt;1. 字符串匹配（默认）：只要包含指定字符串（不区分大小写），全部认为是匹配&lt;/h4&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;字符串匹配（baidu）&lt;/th&gt;
+&lt;th&gt;是否匹配&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;http://www.baidu.com&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://www.baidu.com&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;匹配&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;http://pan.baidu.com&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://pan.baidu.com&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;匹配&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;http://tieba.baidu.com&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://tieba.baidu.com&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;匹配&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h4 id=&quot;2-正则表达式匹配：以“regex-”开头，使用正则表达式来匹配，这是区分大小写的&quot;&gt;&lt;a href=&quot;#2-正则表达式匹配：以“regex-”开头，使用正则表达式来匹配，这是区分大小写的&quot; class=&quot;headerlink&quot; title=&quot;2. 正则表达式匹配：以“regex:”开头，使用正则表达式来匹配，这是区分大小写的&quot;&gt;&lt;/a&gt;2. 正则表达式匹配：以“regex:”开头，使用正则表达式来匹配，这是区分大小写的&lt;/h4&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;字符串匹配（regex:.+.(jpg / gif / bmp ) $）&lt;/th&gt;
+&lt;th&gt;是否匹配&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;http://bbs.fishc.com/Path1/query=foo.bmp&amp;amp;bar&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://bbs.fishc.com/Path1/query=foo.bmp&amp;amp;bar&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;不匹配&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;http://bbs.fishc.com/Path1/query=example.gif&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://bbs.fishc.com/Path1/query=example.gif&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;匹配&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;http://bbs.fishc.com/Path1/query=example.bmp&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://bbs.fishc.com/Path1/query=example.bmp&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;匹配&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;http://bbs.fishc.com/Path1/query=example.Gif&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://bbs.fishc.com/Path1/query=example.Gif&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;不匹配&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234219765-703426619.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234224843-907043204.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;h3 id=&quot;5）-Composer-自定义请求发送服务器&quot;&gt;&lt;a href=&quot;#5）-Composer-自定义请求发送服务器&quot; class=&quot;headerlink&quot; title=&quot;5）. Composer 自定义请求发送服务器&quot;&gt;&lt;/a&gt;5）. Composer 自定义请求发送服务器&lt;/h3&gt;&lt;p&gt;Composer允许自定义请求发送到服务器，可以手动创建一个新的请求，也可以在会话表中，拖拽一个现有的请求；&lt;br&gt;Parsed模式下你只需要提供简单的URLS地址即可（如下图，也可以在RequestBody定制一些属性，如模拟浏览器User-Agent）&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234227062-846408602.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;h3 id=&quot;6）-Filters-请求过滤规则&quot;&gt;&lt;a href=&quot;#6）-Filters-请求过滤规则&quot; class=&quot;headerlink&quot; title=&quot;6）. Filters 请求过滤规则&quot;&gt;&lt;/a&gt;6）. Filters 请求过滤规则&lt;/h3&gt;&lt;p&gt;Fiters 是过滤请求用的，左边的窗口不断的更新，当想看系统的请求的时候，刷新一下浏览器，一大片请求一直刷新屏幕。这时通过过滤规则来过滤掉不想看到的请求。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125401968-22426265.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt;勾选左上角的Use Filters开启过滤器，这里有两个最常用的过滤条件：Zone和Host&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;1、Zone 指定只显示内网（Intranet）或互联网（Internet）的内容：&lt;br&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118235316718-1553324600.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;2、Host 指定显示某个域名下的会话：&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118235317328-711964625.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;h3 id=&quot;7）-Timeline-请求响应时间&quot;&gt;&lt;a href=&quot;#7）-Timeline-请求响应时间&quot; class=&quot;headerlink&quot; title=&quot;7）. Timeline 请求响应时间&quot;&gt;&lt;/a&gt;7）. Timeline 请求响应时间&lt;/h3&gt;&lt;p&gt;在左侧会话窗口点击一个或多个（同时按下 Ctrl 键），Timeline 便会显示指定内容从服务端传输到客户端的时间：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118235318172-1052872585.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;h2 id=&quot;2-Fiddler-设置解密HTTPS的网络数据&quot;&gt;&lt;a href=&quot;#2-Fiddler-设置解密HTTPS的网络数据&quot; class=&quot;headerlink&quot; title=&quot;2. Fiddler 设置解密HTTPS的网络数据&quot;&gt;&lt;/a&gt;2. Fiddler 设置解密HTTPS的网络数据&lt;/h2&gt;&lt;p&gt;Fiddler可以通过伪造CA证书来欺骗浏览器和服务器。Fiddler是个很会装逼的好东西，大概原理就是在浏览器面前Fiddler伪装成一个HTTPS服务器，而在真正的HTTPS服务器面前Fiddler又装成浏览器，从而实现解密HTTPS数据包的目的。&lt;br&gt;解密HTTPS需要手动开启，依次点击：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;ol&gt;
+&lt;li&gt;Tools –&amp;gt; Fiddler Options –&amp;gt;  HTTPS&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234228140-2037050814.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;ol&gt;
+&lt;li&gt;勾选Decrypt HTTPS Traffic&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234229250-1993071078.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;ol&gt;
+&lt;li&gt;点击OK&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160118234230343-471116797.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;h2 id=&quot;3-Fiddler-抓取iPhone-Android数据包&quot;&gt;&lt;a href=&quot;#3-Fiddler-抓取iPhone-Android数据包&quot; class=&quot;headerlink&quot; title=&quot;3. Fiddler 抓取iPhone / Android数据包&quot;&gt;&lt;/a&gt;3. Fiddler 抓取iPhone / Android数据包&lt;/h2&gt;&lt;p&gt;想要Fiddler抓取移动端设备的数据包，其实很简单，先来说说移动设备怎么去访问网络，看了下面这张图，就明白了。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124738422-909023754.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt;可以看得出，移动端的数据包，都是要走wifi出去，所以我们可以把自己的电脑开启热点，将手机连上电脑，Fiddler开启代理后，让这些数据通过Fiddler，Fiddler就可以抓到这些包，然后发给路由器（如图）：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124739218-1083286524.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;ol&gt;
+&lt;li&gt;打开Wifi热点，让手机连上（我这里用的360wifi，其实随意一个都行）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124740203-69950239.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;ol&gt;
+&lt;li&gt;打开Fidder，点击菜单栏中的 [Tools] –&amp;gt; [Fiddler Options]&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124747047-421831359.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;ol&gt;
+&lt;li&gt;点击 [Connections] ，设置代理端口是8888， 勾选 Allow remote computers to connect， 点击OK&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124843828-142667262.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;ol&gt;
+&lt;li&gt;这时在 Fiddler 可以看到自己本机无线网卡的IP了（要是没有的话，重启Fiddler，或者可以在cmd中ipconfig找到自己的网卡IP）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124848922-1087943477.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124849640-39807059.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;ol&gt;
+&lt;li&gt;在手机端连接PC的wifi，并且设置代理IP与端口（代理IP就是上图的IP，端口是Fiddler的代理端口8888）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124855281-1725826056.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;ol&gt;
+&lt;li&gt;访问网页输入代理IP和端口，下载Fiddler的证书，点击下图FiddlerRoot certificate&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124905156-91772621.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt;【注意】：如果打开浏览器碰到类似下面的报错，请打开Fiddler的证书解密模式（Fiddler 设置解密HTTPS的网络数据）&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;No root certificate was found. Have you enabled HTTPS traffic decryption in Fiddler yet?
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120124911547-1662798136.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125000187-1387164060.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125000843-2060195202.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125004609-1600396322.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;ol&gt;
+&lt;li&gt;安装完了证书，可以用手机访问应用，就可以看到截取到的数据包了。（下图选中是布卡漫画的数据包，下面还有QQ邮箱的）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125406187-1394564312.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;h2 id=&quot;4-Fiddler-内置命令与断点&quot;&gt;&lt;a href=&quot;#4-Fiddler-内置命令与断点&quot; class=&quot;headerlink&quot; title=&quot;4. Fiddler 内置命令与断点&quot;&gt;&lt;/a&gt;4. Fiddler 内置命令与断点&lt;/h2&gt;&lt;p&gt;  Fiddler还有一个藏的很深的命令框，就是眼前，我用了几年的Fiddler都没有发现它，偶尔在别人的文章发现还有这个小功能，还蛮好用的，整理下记录在这里。&lt;/p&gt;
+&lt;p&gt;FIddler断点功能就是将请求截获下来，但是不发送，这个时候你可以干很多事情，比如说，把包改了，再发送给服务器。  &lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125408672-279510487.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;命令&lt;/th&gt;
+&lt;th&gt;对应请求项&lt;/th&gt;
+&lt;th&gt;介绍&lt;/th&gt;
+&lt;th&gt;示例&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;?&lt;/td&gt;
+&lt;td&gt;All&lt;/td&gt;
+&lt;td&gt;问号后边跟一个字符串，可以匹配出包含这个字符串的请求&lt;/td&gt;
+&lt;td&gt;?google&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&amp;gt;&lt;/td&gt;
+&lt;td&gt;Body&lt;/td&gt;
+&lt;td&gt;大于号后面跟一个数字，可以匹配出请求大小，大于这个数字请求&lt;/td&gt;
+&lt;td&gt;&amp;gt;1000&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&amp;lt;&lt;/td&gt;
+&lt;td&gt;Body&lt;/td&gt;
+&lt;td&gt;小于号跟大于号相反，匹配出请求大小，小于这个数字的请求&lt;/td&gt;
+&lt;td&gt;&amp;lt;100&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;=&lt;/td&gt;
+&lt;td&gt;Result&lt;/td&gt;
+&lt;td&gt;等于号后面跟数字，可以匹配HTTP返回码&lt;/td&gt;
+&lt;td&gt;=200&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;@&lt;/td&gt;
+&lt;td&gt;Host&lt;/td&gt;
+&lt;td&gt;@后面跟Host，可以匹配域名&lt;/td&gt;
+&lt;td&gt;@www.baidu.com&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;select&lt;/td&gt;
+&lt;td&gt;Content-Type&lt;/td&gt;
+&lt;td&gt;select后面跟响应类型，可以匹配到相关的类型&lt;/td&gt;
+&lt;td&gt;select image&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;cls&lt;/td&gt;
+&lt;td&gt;All&lt;/td&gt;
+&lt;td&gt;清空当前所有请求&lt;/td&gt;
+&lt;td&gt;cls&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;dump&lt;/td&gt;
+&lt;td&gt;All&lt;/td&gt;
+&lt;td&gt;将所有请求打包成saz压缩包，保存到“我的文档\Fiddler2\Captures”目录下dump&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;start&lt;/td&gt;
+&lt;td&gt;All&lt;/td&gt;
+&lt;td&gt;开始监听请求&lt;/td&gt;
+&lt;td&gt;start&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;stop&lt;/td&gt;
+&lt;td&gt;All&lt;/td&gt;
+&lt;td&gt;停止监听请求&lt;/td&gt;
+&lt;td&gt;stop &lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;断点命令&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;命令&lt;/th&gt;
+&lt;th&gt;对应请求项&lt;/th&gt;
+&lt;th&gt;介绍&lt;/th&gt;
+&lt;th&gt;示例&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;bpafter&lt;/td&gt;
+&lt;td&gt;All&lt;/td&gt;
+&lt;td&gt;bpafter后边跟一个字符串，表示中断所有包含该字符串的请求&lt;/td&gt;
+&lt;td&gt;bpafter baidu（输入bpafter解除断点）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;bpu&lt;/td&gt;
+&lt;td&gt;All&lt;/td&gt;
+&lt;td&gt;跟bpafter差不多，只不过这个是收到请求了，中断响应&lt;/td&gt;
+&lt;td&gt;bpu baidu（输入bpu解除断点）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;bps&lt;/td&gt;
+&lt;td&gt;Result&lt;/td&gt;
+&lt;td&gt;后面跟状态吗，表示中断所有是这个状态码的请求&lt;/td&gt;
+&lt;td&gt;bps 200（输入bps解除断点）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;bpv / bpm&lt;/td&gt;
+&lt;td&gt;HTTP方法&lt;/td&gt;
+&lt;td&gt;只中断HTTP方法的命令，HTTP方法如POST、GET&lt;/td&gt;
+&lt;td&gt;bpv get（输入bpv解除断点）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;g / Go&lt;/td&gt;
+&lt;td&gt;All&lt;/td&gt;
+&lt;td&gt;放行所有中断下来的请求&lt;/td&gt;
+&lt;td&gt;g&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;示例演示：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125409703-1678932502.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&amp;gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125414093-255856593.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&amp;lt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125414797-2077867027.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;=&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125415547-1825599853.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;@&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125416093-439467539.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;select&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125417734-817450905.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;cls&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125418343-1404670131.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;dump&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125418906-1712835498.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt;断点命令：&lt;/p&gt;
+&lt;p&gt;断点可以直接点击Fiddler下图的图标位置，就可以设置全部请求的断点，断点的命令可以精确设置需要截获那些请求。如下示例：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125424047-1175695668.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt; 命令：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;bpafter&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125424797-1724110564.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125425984-995334279.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;bps&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125426687-1642870815.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125430750-1560884194.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;bpv&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125431687-881357645.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125433422-1492238172.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;g / go&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125437359-2010010315.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://images2015.cnblogs.com/blog/626593/201601/626593-20160120125438093-1008328282.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;br&gt;&lt;strong&gt;友情提醒&lt;/strong&gt;&lt;br&gt;&lt;/p&gt;
+
+&lt;p&gt;如果有任何疑问，请留言或者找到我的联系方式进行联系我，希望文章对你有所帮助！&lt;/p&gt;
+&lt;p&gt;本文永久链接：&lt;a href=&quot;http://tufusi.com/2017/01/04/网络工具篇-抓包-Fiddler/&quot;&gt;http://tufusi.com/2017/01/04/网络工具篇-抓包-Fiddler/&lt;/a&gt;&lt;/p&gt;</content>
+    
+    <summary type="html">
+    
+      &lt;h1 id=&quot;序章&quot;&gt;&lt;a href=&quot;#序章&quot; class=&quot;headerlink&quot; title=&quot;序章&quot;&gt;&lt;/a&gt;序章&lt;/h1&gt;&lt;p&gt;Fiddler是一个很好用的抓包工具，可以将网络传输发送与接受的数据包进行截获、重发、编辑、转存等操作。也可以用来检测网络安全。这里搜集各大
+    
+    </summary>
+    
+      <category term="工具类" scheme="http://tufusi.com/categories/%E5%B7%A5%E5%85%B7%E7%B1%BB/"/>
+    
+    
+      <category term="网络抓包" scheme="http://tufusi.com/tags/%E7%BD%91%E7%BB%9C%E6%8A%93%E5%8C%85/"/>
+    
+  </entry>
   
   <entry>
     <title>微信小程序系列-组件篇</title>
@@ -36,7 +546,7 @@
     <link href="http://tufusi.com/2016/12/26/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%E7%B3%BB%E5%88%97-%E5%85%A5%E9%97%A8%E7%AF%87/"/>
     <id>http://tufusi.com/2016/12/26/微信小程序系列-入门篇/</id>
     <published>2016-12-26T02:47:01.000Z</published>
-    <updated>2016-12-26T08:58:54.434Z</updated>
+    <updated>2016-12-26T09:12:35.964Z</updated>
     
     <content type="html">&lt;p&gt;先来一张马总演讲照片镇镇楼&lt;br&gt;&lt;img src=&quot;https://raw.githubusercontent.com/LeoCheung0221/LeoCheung0221.github.io/master/images/wechat/mahuateng.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;微信小程序自9月份发出内测邀请函后就颇受外界各大技术媒体及群众关注，进而又在十一月份实行正式对外开放公测。而在几天前的深商互联网大会上，鹅厂马厂长又宣布称春节前会推出微信“小程序”，这应该是近几年各大APP群雄割据之下商业入口点切得最深最狠的一次，算得上是在革APP的命。这种不需要下载安转即可使用的应用，实现了应用“At your fingertips”的梦想,用户扫一扫或者搜一下即可打开应用。也体现出“用完即走”的理念，用户不用关心是否安装太多应用的问题。真正做到应用将无处不在，而又随时可用，但又无需安装卸载。这也势必在移动应用江湖中掀起一场血雨腥风。BTW，掌握这门开发技术，也能给自己求职加加筹码，加之微信端入口流量之大，对于想创业的IT人来说门槛也降低了不少，那么就开始吧！&lt;/p&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
@@ -70,6 +580,7 @@
 &lt;li&gt;.wxss 后缀 - 样式表文件&lt;/li&gt;
 &lt;li&gt;.wxml 后缀 - 页面布局文件&lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;说明: 稍加注意会发现在index文件下并没有对应的index.json；这是因为如果未给页面的文件夹下设置.json配置文件,系统会默认配置项目中的app.json文件供页面使用。可以试着将logs文件夹下的.json文件删除即可理解。 &lt;/p&gt;
 &lt;h2 id=&quot;手机预览&quot;&gt;&lt;a href=&quot;#手机预览&quot; class=&quot;headerlink&quot; title=&quot;手机预览&quot;&gt;&lt;/a&gt;手机预览&lt;/h2&gt;&lt;p&gt;进入左侧菜单“项目” -》 点击“预览” -》扫码后即可在微信客户端中体验&lt;br&gt;由于个人开发暂不可申请AppID，所以预览功能还未开放给个人。&lt;/p&gt;
 &lt;hr&gt;
 &lt;p&gt;&lt;br&gt;&lt;strong&gt;友情提醒&lt;/strong&gt;&lt;br&gt;&lt;/p&gt;
@@ -357,9 +868,9 @@ class XxxComponent{
       <category term="开源框架" scheme="http://tufusi.com/categories/%E5%BC%80%E6%BA%90%E6%A1%86%E6%9E%B6/"/>
     
     
-      <category term="依赖注入" scheme="http://tufusi.com/tags/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5/"/>
-    
       <category term="Square" scheme="http://tufusi.com/tags/Square/"/>
+    
+      <category term="依赖注入" scheme="http://tufusi.com/tags/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5/"/>
     
   </entry>
   
@@ -2479,63 +2990,6 @@ function search()
       <category term="IDE" scheme="http://tufusi.com/tags/IDE/"/>
     
       <category term="Android Studio" scheme="http://tufusi.com/tags/Android-Studio/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>AndroidStudio之Gradle</title>
-    <link href="http://tufusi.com/2016/06/07/AndroidStudio%E4%B9%8BGradle/"/>
-    <id>http://tufusi.com/2016/06/07/AndroidStudio之Gradle/</id>
-    <published>2016-06-07T11:31:22.000Z</published>
-    <updated>2016-06-19T06:24:30.132Z</updated>
-    
-    <content type="html">&lt;h3 id=&quot;Gradle-概述&quot;&gt;&lt;a href=&quot;#Gradle-概述&quot; class=&quot;headerlink&quot; title=&quot;Gradle 概述&quot;&gt;&lt;/a&gt;Gradle 概述&lt;/h3&gt;&lt;p&gt;是可以用于Android开发的新一代的构建系统， 也是Android Studio默认的构建工具。其脚本是基于JVM语言 – &lt;a href=&quot;https://en.wikipedia.org/wiki/Groovy_(programming_language&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Groovy&lt;/a&gt;) 编写而成，再加上&lt;a href=&quot;https://en.wikipedia.org/wiki/Domain-specific_language&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;DSL（领域特定语言）&lt;/a&gt;组成的。因为Groovy是JVM语言，所以可以使用大部分的Java语言库。所谓DSL就是专门针对Android开发的插件，比如标准Gradle之外的一些新的方法（Method）、闭包（Closure）等。&lt;/p&gt;
-&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
-&lt;h4 id=&quot;analysis-in-AS&quot;&gt;&lt;a href=&quot;#analysis-in-AS&quot; class=&quot;headerlink&quot; title=&quot;analysis in AS&quot;&gt;&lt;/a&gt;analysis in AS&lt;/h4&gt;&lt;p&gt;Android Studio新建一个工程后，默认生成两个build.gralde文件，一个位于project根目录下，一个位于app目录下。除此还有一个文件settings.gradle。&lt;/p&gt;
-&lt;p&gt;根目录下的脚本文件是针对module的全局配置，它的作用域内包含的所有 module 是通过settings.gradle来配置。app文件夹就是一个module，如果在当前project中新增Module – library，就要在settings.gralde文件中包含这个新的module。&lt;/p&gt;
-&lt;p&gt;当然很多朋友我相信在新建项目以及库的时候更多是通过右键建立的，这样更加方便，但要知晓其中的原理，对于熟悉gradle构建系统来说是不可或缺的。&lt;/p&gt;
-&lt;h3 id=&quot;gradle脚本的基本结构&quot;&gt;&lt;a href=&quot;#gradle脚本的基本结构&quot; class=&quot;headerlink&quot; title=&quot;gradle脚本的基本结构&quot;&gt;&lt;/a&gt;gradle脚本的基本结构&lt;/h3&gt;&lt;p&gt;用新建工程为例，根目录的build.gradle的内容如下所示：&lt;br&gt;&lt;figure class=&quot;highlight sh&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;12&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;13&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;14&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;15&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;16&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;17&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;18&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;19&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;20&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;21&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;22&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;23&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;// Top-level build file &lt;span class=&quot;built_in&quot;&gt;where&lt;/span&gt; you can add configuration options common to all sub-projects/modules.&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;buildscript &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    repositories &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        jcenter()&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    dependencies &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        classpath &lt;span class=&quot;string&quot;&gt;&#39;com.android.tools.build:gradle:2.1.0&#39;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        // NOTE: Do not place your application dependencies here; they belong&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        // &lt;span class=&quot;keyword&quot;&gt;in&lt;/span&gt; the individual module build.gradle files&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;allprojects &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    repositories &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        jcenter(）&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;task clean(&lt;span class=&quot;built_in&quot;&gt;type&lt;/span&gt;: Delete) &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    delete rootProject.buildDir&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;然后是 settings.gradle 文件：&lt;br&gt;&lt;figure class=&quot;highlight sh&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;include &lt;span class=&quot;string&quot;&gt;&#39;:app&#39;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;app就是应用程序的一个module，如果有多个module，可以在为 include 方法添加多个参数，并以逗号隔开。&lt;/p&gt;
-&lt;p&gt;最后是app/build.gradle&lt;/p&gt;
-&lt;figure class=&quot;highlight sh&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;12&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;13&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;14&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;15&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;16&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;17&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;18&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;19&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;20&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;21&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;22&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;23&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;24&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;25&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;26&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;27&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;28&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;29&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;30&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;31&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;32&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;33&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;34&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;35&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;36&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;37&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;38&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;39&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;40&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;41&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;42&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;43&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;44&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;45&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;46&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;47&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;48&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;49&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;50&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;51&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;52&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;53&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;54&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;55&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;56&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;57&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;58&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;59&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;60&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;61&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;apply plugin: &lt;span class=&quot;string&quot;&gt;&#39;com.android.application&#39;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;android &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    compileSdkVersion 23&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    buildToolsVersion &lt;span class=&quot;string&quot;&gt;&quot;23.0.3&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    compileOptions &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;built_in&quot;&gt;source&lt;/span&gt;Compatibility JavaVersion.VERSION_1_7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        targetCompatibility JavaVersion.VERSION_1_7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    defaultConfig &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        applicationId &lt;span class=&quot;string&quot;&gt;&quot;app full name&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        minSdkVersion 14&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        targetSdkVersion 23&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        versionCode 1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        versionName &lt;span class=&quot;string&quot;&gt;&quot;1.0.0&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    signingConfigs &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        release &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;            storeFile file(&lt;span class=&quot;string&quot;&gt;&#39;release.keystore&#39;&lt;/span&gt;)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;            storePassword &lt;span class=&quot;string&quot;&gt;&quot;yourstorepassword&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;            keyAlias &lt;span class=&quot;string&quot;&gt;&quot;yourkeyalias&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;            keyPassword &lt;span class=&quot;string&quot;&gt;&quot;yourkeypassword&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        debug &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;            storeFile file(&lt;span class=&quot;string&quot;&gt;&#39;debug.keystore&#39;&lt;/span&gt;)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    buildTypes &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        release &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;            minifyEnabled &lt;span class=&quot;literal&quot;&gt;true&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;            proguardFiles getDefaultProguardFile(&lt;span class=&quot;string&quot;&gt;&#39;proguard-android.txt&#39;&lt;/span&gt;), &lt;span class=&quot;string&quot;&gt;&#39;proguard-rules.pro&#39;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;            signingConfig signingConfigs.release&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        debug &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;            signingConfig signingConfigs.debug&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    productFlavors &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        market &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;            Wandoujia &amp;#123;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;            ...&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;repositories &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    flatDir &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;built_in&quot;&gt;dirs&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&#39;libs&#39;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;dependencies &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    compile fileTree(dir: &lt;span class=&quot;string&quot;&gt;&#39;libs&#39;&lt;/span&gt;, include: [&lt;span class=&quot;string&quot;&gt;&#39;*.jar&#39;&lt;/span&gt;])&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;built_in&quot;&gt;test&lt;/span&gt;Compile &lt;span class=&quot;string&quot;&gt;&#39;junit:junit:4.12&#39;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    compile &lt;span class=&quot;string&quot;&gt;&#39;com.android.support:appcompat-v7:23.4.0&#39;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;p&gt;Groovy 的基本语法&lt;br&gt;方法调用&lt;br&gt;&lt;figure class=&quot;highlight sh&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;apply plugin: &lt;span class=&quot;string&quot;&gt;&#39;com.android.application&#39;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;以上语句中的apply是一个方法，给它传递了一个参数plugin，plugin 的值是’com.android.application’。&lt;/p&gt;
-&lt;p&gt;如果有多个参数，则以逗号隔开，例如&lt;br&gt;&lt;figure class=&quot;highlight sh&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;compile name: &lt;span class=&quot;string&quot;&gt;&#39;supertoasts&#39;&lt;/span&gt;, ext: &lt;span class=&quot;string&quot;&gt;&#39;aar&#39;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;闭包&lt;/p&gt;
-&lt;p&gt;Groovy中花括号包含的部分成为一个闭包（Closure）。例如下面的代码&lt;br&gt;&lt;figure class=&quot;highlight sh&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;compileOptions &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;built_in&quot;&gt;source&lt;/span&gt;Compatibility JavaVersion.VERSION_1_7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    targetCompatibility JavaVersion.VERSION_1_7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;compileOptions 是一个 Method， 它的参数是一个闭包， 这个闭包内依次执行了两个方法 – sourceCompatibility 和targetCompatibility， 参数都是JavaVersion.VERSION_1_7,即是你jdk配置环境所使用的版本。&lt;/p&gt;
-&lt;p&gt;闭包也可以嵌套包含&lt;br&gt;&lt;figure class=&quot;highlight sh&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;repositories &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    flatDir &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;built_in&quot;&gt;dirs&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&#39;libs&#39;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;h4 id=&quot;常见使用方法&quot;&gt;&lt;a href=&quot;#常见使用方法&quot; class=&quot;headerlink&quot; title=&quot;常见使用方法&quot;&gt;&lt;/a&gt;常见使用方法&lt;/h4&gt;&lt;h5 id=&quot;包依赖（aar）&quot;&gt;&lt;a href=&quot;#包依赖（aar）&quot; class=&quot;headerlink&quot; title=&quot;包依赖（aar）&quot;&gt;&lt;/a&gt;包依赖（aar）&lt;/h5&gt;&lt;p&gt;使用aar时可以分为两种情况&lt;br&gt;① aar位于本地目录&lt;/p&gt;
-&lt;p&gt;首先在 Build.gradle(Module:app) 中 android 的参数闭包中添加调用方法 repositories&lt;br&gt;&lt;figure class=&quot;highlight sh&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;repositories &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    flatDir &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;	    &lt;span class=&quot;built_in&quot;&gt;dirs&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&#39;libs&#39;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;然后在 dependencies 的参数闭包中添加&lt;br&gt;&lt;figure class=&quot;highlight sh&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;compile name: &lt;span class=&quot;string&quot;&gt;&#39;supertoasts&#39;&lt;/span&gt;, ext: &lt;span class=&quot;string&quot;&gt;&#39;aar&#39;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;② aar位于远程仓库&lt;/p&gt;
-&lt;p&gt;这里以maven为例，当然也可以使用其他类型的仓库，例如 Ivy、Bintray。&lt;/p&gt;
-&lt;p&gt;只需要在jar包引用方式后面添加一个@aar就可以了&lt;br&gt;&lt;figure class=&quot;highlight sh&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;compile &lt;span class=&quot;string&quot;&gt;&#39;com.github.johnpersano:supertoasts:1.3.4@aar&#39;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;包依赖（jar）&lt;br&gt;&lt;figure class=&quot;highlight sh&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;compile group:&lt;span class=&quot;string&quot;&gt;&#39;com.github.johnpersano&#39;&lt;/span&gt;,module: &lt;span class=&quot;string&quot;&gt;&#39;supertoasts&#39;&lt;/span&gt;,version: &lt;span class=&quot;string&quot;&gt;&#39;1.3.4&#39;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;可以简写成&lt;br&gt;&lt;figure class=&quot;highlight sh&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;compile &lt;span class=&quot;string&quot;&gt;&#39;com.github.johnpersano:supertoasts:1.3.4&#39;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;去掉重复依赖&lt;br&gt;&lt;figure class=&quot;highlight sh&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;compile &lt;span class=&quot;string&quot;&gt;&#39;com.github.johnpersano:supertoasts:1.3.4&#39;&lt;/span&gt; &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    exclude module: &lt;span class=&quot;string&quot;&gt;&#39;annotations&#39;&lt;/span&gt;, group: &lt;span class=&quot;string&quot;&gt;&#39;com.google.android&#39;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;使用 Java7 或者 Java8&lt;br&gt;&lt;figure class=&quot;highlight sh&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;compileOptions &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  &lt;span class=&quot;built_in&quot;&gt;source&lt;/span&gt;Compatibility JavaVersion.VERSION_1_7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  targetCompatibility JavaVersion.VERSION_1_7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;针对JDK1.8, 等公司项目上线我会专门看一些这方面的资料进行博客整理，主要对RetroLambda结合RxJava的一些功能展示及Sourcecode理解&lt;/p&gt;
-&lt;h5 id=&quot;productFlavors（渠道打包）&quot;&gt;&lt;a href=&quot;#productFlavors（渠道打包）&quot; class=&quot;headerlink&quot; title=&quot;productFlavors（渠道打包）&quot;&gt;&lt;/a&gt;productFlavors（渠道打包）&lt;/h5&gt;&lt;p&gt;该部分在项目完成上线之前，会将所看资料整合另开一篇文章说明。&lt;/p&gt;
-&lt;h3 id=&quot;总结&quot;&gt;&lt;a href=&quot;#总结&quot; class=&quot;headerlink&quot; title=&quot;总结&quot;&gt;&lt;/a&gt;总结&lt;/h3&gt;&lt;p&gt;其实在使用Gradle构建时，如果项目引用的依赖过于多而杂，而又需要考虑到这些依赖版本的更新问题，参考过&lt;a href=&quot;http://blog.zhaiyifan.cn/2016/03/14/android-new-project-from-0-p2/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;MarkZhai&lt;/a&gt;的博客,本人也偏向于新建全局gradle，专门用于管理版本的迭代问题，不用一处改处处改，效果在试过之后会能明显feel到。&lt;/p&gt;
-&lt;p&gt;刚来新公司，一个人负责项目从零起步到最后打包上线，不得不说，这是一个挑战，但这又何尝不是一个机会，目前还处于app开发阶段。在抛弃前公司一直沿用的Volley Network Framework之后，我一直在尝试着使用更多以前未接触过的技术，RxJava，Dagger，OkHttp+Retrofit，Stetho+GsonFormat and so on，包括这次的关于Gradle的博客书写，发现Gradle其实也蛮好（zhuang）用(bi)的！当然用这些新技术需要花不少的时间成本，但“ 总有人要赢的，那个人为什么不是我 ”， 爱豆科比的经典名言啊。&lt;br&gt;努力 奋斗 致每一位正在努力的小婊砸&lt;/p&gt;
-&lt;hr&gt;
-&lt;p&gt;&lt;br&gt;&lt;strong&gt;友情提醒&lt;/strong&gt;&lt;br&gt;&lt;/p&gt;
-
-&lt;p&gt;如果有任何疑问，请留言或者找到我的联系方式进行联系我，希望文章对你有所帮助！&lt;/p&gt;
-&lt;p&gt;本文永久链接：&lt;a href=&quot;http://tufusi.com/2016/06/07/AndroidStudio之Gradle/&quot;&gt;http://tufusi.com/2016/06/07/AndroidStudio之Gradle/&lt;/a&gt;&lt;/p&gt;</content>
-    
-    <summary type="html">
-    
-      &lt;h3 id=&quot;Gradle-概述&quot;&gt;&lt;a href=&quot;#Gradle-概述&quot; class=&quot;headerlink&quot; title=&quot;Gradle 概述&quot;&gt;&lt;/a&gt;Gradle 概述&lt;/h3&gt;&lt;p&gt;是可以用于Android开发的新一代的构建系统， 也是Android Studio默认的构建工具。其脚本是基于JVM语言 – &lt;a href=&quot;https://en.wikipedia.org/wiki/Groovy_(programming_language&quot;&gt;Groovy&lt;/a&gt;) 编写而成，再加上&lt;a href=&quot;https://en.wikipedia.org/wiki/Domain-specific_language&quot;&gt;DSL（领域特定语言）&lt;/a&gt;组成的。因为Groovy是JVM语言，所以可以使用大部分的Java语言库。所谓DSL就是专门针对Android开发的插件，比如标准Gradle之外的一些新的方法（Method）、闭包（Closure）等。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="Gradle" scheme="http://tufusi.com/categories/Gradle/"/>
-    
-    
-      <category term="Gradle，Android，BuildSystem" scheme="http://tufusi.com/tags/Gradle%EF%BC%8CAndroid%EF%BC%8CBuildSystem/"/>
     
   </entry>
   
