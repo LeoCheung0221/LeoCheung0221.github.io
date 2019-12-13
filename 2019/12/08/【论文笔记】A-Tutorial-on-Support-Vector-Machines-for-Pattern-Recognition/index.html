@@ -1,0 +1,282 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【论文笔记】A Tutorial on Support Vector Machines for Pattern Recognition | ONE·PIECE</title><meta name="description" content="用于模式识别的支持向量机教程"><meta name="keywords" content="Pattern Recognition,SVMs,Statistical Learning Theory,VC Dimension"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="http://www.tufusi.com/baidu_verify_S7HPSRHOBw.html"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【论文笔记】A Tutorial on Support Vector Machines for Pattern Recognition"><meta name="twitter:description" content="用于模式识别的支持向量机教程"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/kevin-ku-w7ZyuGYNpRQ-unsplash.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【论文笔记】A Tutorial on Support Vector Machines for Pattern Recognition"><meta property="og:url" content="http://tufusi.com/2019/12/08/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91A-Tutorial-on-Support-Vector-Machines-for-Pattern-Recognition/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="用于模式识别的支持向量机教程"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/kevin-ku-w7ZyuGYNpRQ-unsplash.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2019/12/08/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91A-Tutorial-on-Support-Vector-Machines-for-Pattern-Recognition/"><link rel="prev" title="【论文笔记】Kernel Logistic Regression and the Import Vector Machine" href="http://tufusi.com/2019/12/11/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91Kernel-Logistic-Regression-and-the-Import-Vector-Machine/"><link rel="next" title="【机器学习模型】决策树学习（二）" href="http://tufusi.com/2019/12/02/%E3%80%90%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B%E3%80%91%E5%86%B3%E7%AD%96%E6%A0%91%E5%AD%A6%E4%B9%A0%EF%BC%88%E4%BA%8C%EF%BC%89/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://img.wdjimg.com/mms/icon/v1/9/9c/de366a247aeddb5809193003fa9c99c9_256_256.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">20</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">40</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">3</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#摘要"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">摘要</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#简介"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">简介</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#有关研究工作"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">有关研究工作</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#SVM学习模型"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">SVM学习模型</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#线性可分支持向量机"><span class="toc_mobile_items-number">3.1.1.</span> <span class="toc_mobile_items-text">线性可分支持向量机</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#线性支持向量机"><span class="toc_mobile_items-number">3.1.2.</span> <span class="toc_mobile_items-text">线性支持向量机</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#非线性支持向量机"><span class="toc_mobile_items-number">3.1.3.</span> <span class="toc_mobile_items-text">非线性支持向量机</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#模式识别与机器学习的泛化性能边界"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">模式识别与机器学习的泛化性能边界</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#支持向量机的VC维"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">支持向量机的VC维</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#SVMs的泛化性能"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">SVMs的泛化性能</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#LinearSVC"><span class="toc_mobile_items-number">3.4.1.</span> <span class="toc_mobile_items-text">LinearSVC</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#对于非线性数据的分类"><span class="toc_mobile_items-number">3.4.2.</span> <span class="toc_mobile_items-text">对于非线性数据的分类</span></a></li></ol></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#总结"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">总结</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#摘要"><span class="toc-number">1.</span> <span class="toc-text">摘要</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#简介"><span class="toc-number">2.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#有关研究工作"><span class="toc-number">3.</span> <span class="toc-text">有关研究工作</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#SVM学习模型"><span class="toc-number">3.1.</span> <span class="toc-text">SVM学习模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#线性可分支持向量机"><span class="toc-number">3.1.1.</span> <span class="toc-text">线性可分支持向量机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#线性支持向量机"><span class="toc-number">3.1.2.</span> <span class="toc-text">线性支持向量机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#非线性支持向量机"><span class="toc-number">3.1.3.</span> <span class="toc-text">非线性支持向量机</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#模式识别与机器学习的泛化性能边界"><span class="toc-number">3.2.</span> <span class="toc-text">模式识别与机器学习的泛化性能边界</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#支持向量机的VC维"><span class="toc-number">3.3.</span> <span class="toc-text">支持向量机的VC维</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SVMs的泛化性能"><span class="toc-number">3.4.</span> <span class="toc-text">SVMs的泛化性能</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#LinearSVC"><span class="toc-number">3.4.1.</span> <span class="toc-text">LinearSVC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#对于非线性数据的分类"><span class="toc-number">3.4.2.</span> <span class="toc-text">对于非线性数据的分类</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#总结"><span class="toc-number">4.</span> <span class="toc-text">总结</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/kevin-ku-w7ZyuGYNpRQ-unsplash.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【论文笔记】A Tutorial on Support Vector Machines for Pattern Recognition</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2019-12-08<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2019-12-10</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">4.2k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 14 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>这周的论文笔记是『A Tutorial on Support Vector Machines for Pattern Recognition』，说是这周，其实是贪心导师一个月前步骤的作业了(捂脸ing)，由于双十一前后公司各种上线，导致每天只能看看录播课程，不过接下来到年前应该都有时间，所以赶紧充（装）实（bi）起来！</p>
+<a id="more"></a>
+<h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h1><p>关于这篇论文，堪称SVM最佳，而之所以最佳，在于它不同于一般论文直接从SVM概念入手，开篇即谈分类模型，而是先从VC维和结构风险化概述开始，通过这两个概念来阐述用于可分离和不可分离数据的线性支持向量机（SVMs），接下来通过一个<strong>机械类比</strong>（将两个或两类性质根本不同、仅有某些表面相似的对象进行类比的逻辑错误），讨论SVM在何时会是全局唯一解。然后讲解如何进行支持向量训练。再然后最重要的来了，详细的讨论了用于构造数据中非线性支持向量机解的核映射技术，后面还介绍SVMs如何支持超高VC维（甚至是无穷维），通过计算齐次多项式和高斯函数的VC维的径向基函数核等等。也正因此，支持向量机方法是建立在统计学习理论的VC维理论和结构风险最小原理基础之上的。</p>
+<!-- more -->
+<h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>支持向量机（SVM）是一种二分类模型。它的基本模型是定义在特征空间上的间隔最大的线性分类器，间隔最大使它有别于感知机；支持向量机也包括核技巧，这使它成为实质上的非线性分类器。<strong>支持向量机的学习策略就是间隔最大化</strong>，即可转化成一个求解凸二次规划问题，亦可等价于一个正则化的合页损失函数的最小化问题。<strong>支持向量机的学习算法是求解凸二次规划的最优化算法</strong>。</p>
+<ul>
+<li><p>核函数</p>
+<p>当输入控件为欧式空间或离散集合、特征空间为希尔伯特空间时，核函数表示将输入从输入空间映射到特征空间得到的特征向量之间的内积。</p>
+</li>
+<li><p>核技巧</p>
+<p>通过使用核函数可以学习非线性支持向量机，等价于隐式地在高维的特征空间中学习线性支持向量机。</p>
+</li>
+<li><p>核方法</p>
+<p>比支持向量机更为一般的机器学习方法。</p>
+</li>
+<li><p>结构风险最小化</p>
+<p><strong>置信风险：</strong>分类器对未知样本进行分类，得到的误差</p>
+<p><strong>经验风险：</strong>训练好的分类器，对训练样本重新分类得到的误差（即样本误差）。它是模型关于训练样本集的平均损失。当样本容量很大时，经验风险最小化能保证有很好的学习效果，比如：极大似然估计（MLE）就是经验风险最小化的例子。当模型是条件概率分布，损失函数是对数损失函数时，经验风险最小化就是等于极大似然估计。<font color=#A55858>但当样本容量过小时，经验风险最小化学习的效果未必会很好，会产生过拟合现象</font>。而结构风险最小化（Structural Risk Minimization, SRM）则是为了防止过拟合而提出的策略。</p>
+<p><strong>结构风险：</strong>置信风险 + 经验风险</p>
+<p>结构风险最小化是为了防止过拟合而提出的一种策略，<font color=#A55858><strong>它等价于正则化</strong></font>。贝叶斯估计中最大后验概率估计就是结构风险最小化的一个例子。当模型的条件概率分布、损失函数是对数损失函数、模型复杂度由模型先验概率表示时，结构风险最小化等价于最大后验概率估计。监督学习问题变成经验风险或结构风险函数的最优化问题，这时经验风险或结构风险函数是最优化的目标函数。</p>
+</li>
+<li><p>VC维</p>
+<p>将N个点进行分类，如分成两类（二维线性分类器），那么有$2^N$中分法。若存在这样一种假设H，它能准确的将$2^N$种问题进行分类。那么这些点的数量N，就是假设H的VC维，表示VC(H)。简单讲：<font color=#A55858><strong>只要存在N个样本能够被成功打散（Shatter），并且不存在N+1个样本能够被打散（随机划分类别）的话，就称这一函数集合的VC维是N</strong></font>。它反映一个模型（假设空间中的一个函数）的学习能力，VC维越大，则模型的容量越大。若H能够打散任意大小的集合，那么VC(H)为无穷大。</p>
+</li>
+</ul>
+<h1 id="有关研究工作"><a href="#有关研究工作" class="headerlink" title="有关研究工作"></a>有关研究工作</h1><h2 id="SVM学习模型"><a href="#SVM学习模型" class="headerlink" title="SVM学习模型"></a>SVM学习模型</h2><p>Cortes与Vapnik提出非线性支持向量机，Boser、Cuyon与Vapnik又引入核技巧，提出非线性支持向量机。</p>
+<h3 id="线性可分支持向量机"><a href="#线性可分支持向量机" class="headerlink" title="线性可分支持向量机"></a>线性可分支持向量机</h3><p>线性可分支持向量机处理的是严格线性可分的数据集</p>
+<blockquote>
+<p>   给定线性可分训练集，通过间隔最大化或者等价地求解相应的凸二次规划问题学习得到的分离超平面为</p>
+<p>&emsp;&emsp;$w^{*}·x + b^{*} = 0$</p>
+<p>以及相应的分类决策函数</p>
+<p>&emsp;&emsp;$f(x) = sign(w^{*}·x + b^{*})$</p>
+<p>或者</p>
+<p>&emsp;&emsp;$f(x) = sign(\sum_{i=1}^{N} \alpha ^{*} y ^{*}&lt; x_i, x &gt;  + b ^{*})$</p>
+<p>称为线性可分支持向量机</p>
+<p>其学习的优化问题如下：</p>
+<p>&ensp;&emsp;&emsp;&emsp;$\min_{w,b}$ &emsp;$\frac{1}{2}\left | w \right |^{2}$</p>
+<p>&emsp;s.t.&emsp; $y_i(w·x_i) - 1 \geq 0，i = 1,2,…,N$</p>
+</blockquote>
+<h3 id="线性支持向量机"><a href="#线性支持向量机" class="headerlink" title="线性支持向量机"></a>线性支持向量机</h3><p>线性支持向量机处理的是线性不可分的数据集。对于线性支持向量机的优化问题，就是在线性可分支持向量机的基础上加一个松弛变量。</p>
+<blockquote>
+<p>其学习的优化问题如下：</p>
+<p>&ensp;&emsp;&emsp;&emsp;$\min_{w,b,\xi}$ &emsp;$\frac{1}{2}\left | w \right |^{2} + C\sum_{i=1}^{N}\xi_i$</p>
+<p>&emsp;s.t.&emsp; $y_i(w_i + b) \geq 1，i = 1,2,…,N$</p>
+<p>&ensp;&emsp;&emsp;&emsp;$\xi_i \geq 0，i = 1,2,…,N$</p>
+<p>所求的分类超平面和决策函数与线性可分支持向量机相同</p>
+</blockquote>
+<p>这里要简单介绍一下<strong>KKT条件</strong>（Karush-Kuhn-Tucker Conditions）和 <strong>拉格朗日乘子法</strong>，这个在SVM推导中需要用到</p>
+<p>介绍之前，先了解一些定义（部分在周作业中证明过）</p>
+<blockquote>
+<p><strong>凸集定义：</strong> 欧式空间中，对于集合中的任意两点的连线，连线上任意一点都在集合中，那么这个集合就是凸集。<br><strong>凸函数定义：</strong> 对于任意属于[0, 1]的 m 和 任意属于凸集上的两点$c_1$和$c_2$，有$f(mc_1 + (1-m)c_2) \leq mf(c_1) + (1-m)f(c_2)$，几何上的意义就是<font color=#A55858>两点<strong>连线上</strong>的某点函数值</font>，大于等于<font color=#A55858>两点之间某点的函数值</font>。凸函数上的任一局部最小点均是全局极小点。<br><strong>半正定矩阵：</strong> 特征值大于等于0的实对称矩阵。<br><strong>半正定矩阵的充要条件：</strong> 行列式（n阶顺序主子式）等于0，行列式的i阶顺序主子式 $\geq$ 0，i 从1到 n-1。<br><strong>凸函数的充要条件：</strong> 如果f(x)在开凸集S上具有二阶连续偏导数，且f(x)的海森矩阵（二阶偏导矩阵）在S上处处半正定，则f(x)为S上的凸函数。</p>
+</blockquote>
+<ul>
+<li>什么是KKT条件</li>
+</ul>
+<blockquote>
+<p>&emsp; 对于具有等式和不等式约束的一般优化问题</p>
+<script type="math/tex; mode=display">\left\{\begin{matrix}
+\min f(x) & 最值问题\\ 
+s.t. g_j(x) \leq 0 (j = 1,2,3,...,m); & 不等式约束\\ 
+h_k(x) = 0 (k = 1,2,3,...,l) & 等式约束
+\end{matrix}\right.</script><p>&emsp; KKT条件给出了判断 $\mathbf{x}^{*}$是否为最优解的必要条件，即：</p>
+<script type="math/tex; mode=display">\left\{\begin{matrix}
+\frac{\partial f}{\partial x_i} + \sum_{j=1}^{m}\mu _j\frac{\partial g_i}{\partial x_i} +  \sum_{k=1}^{l}\lambda _k \frac{\partial h_k}{\partial x_i} = 0\\ 
+\\ 
+h_k(x) = 0, (k = 1,2,3,...,l)\\ 
+\\ 
+\mu_jg_j(x) = 0, (j = 1,2,3,...,m)\\ 
+\\ 
+\mu_j \geq 0
+\end{matrix}\right.</script><ul>
+<li>1、关于等式约束优化问题，这里其实就是<strong>拉格朗日乘子法</strong></li>
+<li>2、关于不等式优化问题，就是<strong>将不等式约束条件转换为等式约束条件</strong>（做法：引入松弛变量）</li>
+</ul>
+</blockquote>
+<ul>
+<li>什么是拉格朗日乘子法</li>
+</ul>
+<blockquote>
+<p>&emsp; 简单点就是，一个无约束问题，加上一个被$\lambda$乘上的约束条件问题，当无约束问题的极值点梯度与约束条件问题的切线垂直，那么这个$\lambda$就是拉格朗日乘子。这样就将原来的无约束问题转换为在拉格朗日乘子处理之后的等式约束优化问题了。而对于不等式约束优化问题就交托给上面的KKT条件了。</p>
+</blockquote>
+<h3 id="非线性支持向量机"><a href="#非线性支持向量机" class="headerlink" title="非线性支持向量机"></a>非线性支持向量机</h3><p>非线性支持向量机引入了核函数。</p>
+<blockquote>
+<p>分类决策函数如下：</p>
+<p>&emsp;&emsp;$f(x) = sign(\sum_{i=1}^{N}\alpha ^{*} _i y_i \kappa (x_i, x) + b^ *)$</p>
+</blockquote>
+<h2 id="模式识别与机器学习的泛化性能边界"><a href="#模式识别与机器学习的泛化性能边界" class="headerlink" title="模式识别与机器学习的泛化性能边界"></a>模式识别与机器学习的泛化性能边界</h2><p>假设有$\varphi$个样本，每个样本包含如下一对数据$(x_i, y_i)$，其中，向量$\vec{x}_i \in R^n$，i=1，2，…，$\varphi$，$y_i$为给定的标签。</p>
+<p>以树的识别问题来说，$\vec{x}_i$表示的是一个像素灰度值的向量，则 $y_i$ = 1（若图中有树）和 $y_i$ = -1（若图中无树）；</p>
+<p>假设这些数据中存在未知的概率分布$P(\vec{x}, y)$，并且数据满足独立同分布（Independently Identically Distribution, IID）。【注】$P$代表累积概率分布，$p$代表密度分布。</p>
+<p>这个假设相比于对每个$\vec{x}$给定一个标签$y$更加一般化：它允许对于给定的$\vec{x}$都有一个$y$的分布，在这种情况下，可靠源将会依照由$\vec{x}_i$而产生的固定分布对$y_i$进行赋值。即这将对每个给定的$\vec{x}$赋予一个固定的$y$。</p>
+<p>现在假设我们有一个机器的任务：学习将$\vec{x}_i$映射到$y_i$上。这个机器实际上是通过一系列可能的映射$\vec{x}_i$ → $f(\vec{x}, \alpha)$来定义的。其中，函数$f(\vec{x}, \alpha)$通过可以调节的参数$\alpha$来标示的。$\alpha$的一个特别的选择生成了我们所谓的“训练机”。因此，一个有着固定的结构和确定权重偏量的神经网络被称为“学习机”。</p>
+<blockquote>
+<p>&emsp;故一个训练机的测试误差的期望值如下：</p>
+<p>&emsp;&emsp;&emsp;&emsp;$R(\alpha) = \int \frac{1}{2}\left | y - f(\vec{x}, \alpha) \right |dP(\vec{x}, y)$</p>
+<p>&emsp;当概率密度函数$p(\vec{x},y)$有值时，$dP(\vec{x}, y) = p(\vec{x}, y)\mathrm{d} x\mathrm{d} y$</p>
+<p>&emsp;&emsp;&emsp;&emsp;<strong>$R(\alpha)$被称为期望风险</strong>。</p>
+<p>&emsp;&emsp;&emsp;&emsp;<strong>$R_{emp}(\alpha)$则被称为经验风险：训练集测量的平均误差率</strong>（针对固定且有限的观测样本）</p>
+<p>&emsp;&emsp;&emsp;&emsp;$R_{emp}(\alpha) = \int \frac{1}{2\varphi}\sum_{i=1}^{\varphi}\left | y_i - f(\vec{x}, \alpha) \right |$</p>
+<p>&emsp;$R_{emp}$是一个针对特定 $\alpha$ 的选择 和 一个特定训练集 $\{x_i, y_i\}$ 的固定数值。</p>
+<p>&emsp;而$\frac{1}{2\varphi}\left | y_i - f(\vec{x}, \alpha) \right |$则被称为损失。对于此种情形，这里的损失只可以取值0和1。</p>
+<p>&emsp;现在选择一些 $\eta$ 满足 $0\leq \eta\leq1$，对于选取这些值的损失，有概率 $1-\eta$，将会有如下所示边界：</p>
+<p>&emsp;&emsp;&emsp;&emsp;<strong>$R(\alpha) \leq R_{emp}(\alpha) + \sqrt{\frac{h(\log(\frac{2\varphi}{h} + 1)) - \log (\frac{\eta}{4})}{\varphi}}$</strong></p>
+<p>&emsp;其中，h是一个非负整数，即Vapnik Chervonenkis（VC）维数，上式右边称为“<strong>Risk Bound风险边界</strong>”，$\sqrt{\frac{h(\log(\frac{2\varphi}{h} + 1)) - \log (\frac{\eta}{4})}{\varphi}}$<strong>称为“VC置信”</strong>。</p>
+</blockquote>
+<p>关于风险边界有三个特征：</p>
+<ul>
+<li><p>$P(\vec{x}, y)$的独立性；</p>
+</li>
+<li><p>计算左侧通常是不可能的；</p>
+</li>
+<li><p>如果我们知道VC维数，就可以很轻易的计算出右侧的值。</p>
+</li>
+</ul>
+<p>这样给定几个不同的学习机，选择一个固定的且相当小的 $\eta$ ，就可以选择能最小化右边式子的机器（函数），我们就可以给出实际风险最小边界的机器（函数）了。</p>
+<h2 id="支持向量机的VC维"><a href="#支持向量机的VC维" class="headerlink" title="支持向量机的VC维"></a>支持向量机的VC维</h2><p>在讲SVM的VC维之前，首先介绍一下影响置信风险的因素，这其中有：训练样本数目和分类函数的VC维。</p>
+<p>因为训练样本数目，即样本越多，那么得到的误差又可以越小（置信风险就可以很小）；VC维越大，问题的解的种类就越多，推广泛化能力就越差，置信风险也就越大。因此增加样本数，降低VC维，才能降低置信风险。而一般的分类函数却需要提高VC维（即样本的特征数量），来降低经验风险，如多项式风雷函数。</p>
+<p>结构风险最小化SRM就是同时兼顾经验风险和结构风险。在小样本情况下，能取得比较好的分类效果。<strong><font color=#FF0000>保证分类精度（经验风险）的同时，降低学习机器的VC维</font></strong>。正因如此，SVM就是这样一种努力最小化结构风险的算法。</p>
+<h2 id="SVMs的泛化性能"><a href="#SVMs的泛化性能" class="headerlink" title="SVMs的泛化性能"></a>SVMs的泛化性能</h2><p>这里引用一下维基百科介绍：在机器学习中，SVMs是具有相关学习算法的监督学习模型。它是用于分析分类和回归分析的数据的。而SVM的分类模型却可大致分成这四种：</p>
+<ul>
+<li><p>最大边界分类器</p>
+</li>
+<li><p>使用核函数的分类器</p>
+</li>
+<li><p>软边缘分类器</p>
+</li>
+<li><p>软边缘 + 核函数分类器</p>
+</li>
+</ul>
+<p>可以发现，SVM既可以做线性分类，也可以做非线性分类，和线性回归等等，相较于逻辑回归、线性回归、决策树等模型，它的效果都是在它们之上的。</p>
+<p>在sklearn中，是配有一个超参数C，来控制模型复杂度的。C越大，容忍度（泛化程度）越小，反之C越小，容忍度越高。而这个超参数C中，正是通过一个正则量，来控制SVM的泛化能力的，防止过拟合（一般使用grid search网格搜索，一种常用找最优超参数的算法）。</p>
+<p>下面介绍SVM一些实现方法</p>
+<h3 id="LinearSVC"><a href="#LinearSVC" class="headerlink" title="LinearSVC"></a>LinearSVC</h3><p>线性分类支持向量机，优点：简单  缺点：不支持核函数 复杂度：$O(m*n)$</p>
+<p>最经典的就是手写体识别和鸢尾花识别</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> sklearn <span class="keyword">import</span> datasets</span><br><span class="line"><span class="keyword">from</span> sklearn.pipeline <span class="keyword">import</span> Pipeline</span><br><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> StandardScaler</span><br><span class="line"><span class="keyword">from</span> sklearn.svm <span class="keyword">import</span> LinearSVC</span><br><span class="line"></span><br><span class="line">iris = datasets.load_iris()</span><br><span class="line">X = iris[<span class="string">"data"</span>][:,(<span class="number">2</span>,<span class="number">3</span>)]</span><br><span class="line">y = (iris[<span class="string">"target"</span>]==<span class="number">2</span>).astype(np.float64)</span><br><span class="line">svm_clf = Pipeline((</span><br><span class="line">    (<span class="string">"scaler"</span>,StandardScaler()),</span><br><span class="line">    (<span class="string">"Linear_svc"</span>,LinearSVC(C=<span class="number">1</span>,loss=<span class="string">"hinge"</span>)),</span><br><span class="line">    ))</span><br><span class="line">svm_clf.fit(X,y)</span><br><span class="line">print(svm_clf.predit([[<span class="number">5.5</span>,<span class="number">1.7</span>]]))</span><br></pre></td></tr></table></figure>
+<h3 id="对于非线性数据的分类"><a href="#对于非线性数据的分类" class="headerlink" title="对于非线性数据的分类"></a>对于非线性数据的分类</h3><p>无非两种处理方法：<strong>构造高维特征</strong> 和 <strong>构造相似度特征</strong></p>
+<ul>
+<li><font color="36CCFF">使用高维空间特征</font>：即映射高维空间上，利用Kernel思想</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> PolynomialFeatures</span><br><span class="line">polynomial_svm_clf = Pipeline((</span><br><span class="line">     (<span class="string">"poly_features"</span>, PolynomialFeatures(degree=<span class="number">3</span>)),</span><br><span class="line">     (<span class="string">"scaler"</span>, StandardScaler()),</span><br><span class="line">     (<span class="string">"svm_clf"</span>, LinearSVC(C=<span class="number">10</span>, loss=<span class="string">"hinge"</span>))</span><br><span class="line">   ))</span><br><span class="line">polynomial_svm_clf.fit(X, y)</span><br></pre></td></tr></table></figure>
+<p>这种核技巧可以极大地简化模型，不需要显式的处理高维特征，并且可以计算出较复杂的情况。但是模型越复杂，过拟合风险就越大，泛化性能就越差。</p>
+<p>这里使用SVC（基于libsvm库，支持核函数，但是缺点是不能使用大规模数据，复杂度：<script type="math/tex">O(m^2*n) - O(m^3*n)</script>）</p>
+<p>其中coef0参数表示：高次与低次权重</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.svm <span class="keyword">import</span> SVC</span><br><span class="line">poly_kernel_svm_clf = Pipeline((</span><br><span class="line">      (<span class="string">"scaler"</span>, StandardScaler()),</span><br><span class="line">      (<span class="string">"svm_clf"</span>, SVC(kernel=<span class="string">"poly"</span>, degree=<span class="number">3</span>, coef0=<span class="number">1</span>, C=<span class="number">5</span>))</span><br><span class="line">    ))</span><br><span class="line">poly_kernel_svm_clf.fit(X, y)</span><br></pre></td></tr></table></figure>
+<ul>
+<li><font color="36CCFF">构造相似度特征</font>：计算高斯距离（Gaussian RBF Kernel径向基函数）</li>
+</ul>
+<p>高斯距离定义：</p>
+<blockquote>
+<p>Gaussian RBF等式<br>&emsp;&emsp;$\phi \gamma (\mathbf{X},\iota )=exp(-\gamma \left || \mathbf{X},\iota |\right | ^2)$</p>
+<p>$\gamma$是用来控制高斯曲线形状的，对于数据点之间的距离才会发挥它应有的作用。</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">rbf_kernel_svm_clf = Pipeline((</span><br><span class="line">      (<span class="string">"scaler"</span>, StandardScaler()),</span><br><span class="line">      (<span class="string">"svm_clf"</span>, SVC(kernel=<span class="string">"rbf"</span>, gamma=<span class="number">5</span>, C=<span class="number">0.001</span>))</span><br><span class="line">   ))</span><br><span class="line">rbf_kernel_svm_clf.fit(X, y)</span><br></pre></td></tr></table></figure>
+<p>… …</p>
+<p>这里真的还能细挖出好多好多知识点，后面学习sklean框架时再补上吧。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>要说SVM的这篇论文阐述的知识，确实可以称得上是“细致入微”，而SVM的优势就在于解决<strong>小样本、非线性、以及高维</strong>的回归和二分类问题。在与问题复杂度上，SVM要求的样本是相对较少的；而在样本数据线性不可分上，SVM也是比较擅长的，通过<strong>核函数和松弛变量</strong>来实现；即使在样本维度很高情况下，SVM依然保持着优势，它产生的分类器简洁，用到样本信息还少，几乎可以有效的避免过拟合问题。基于种种，接下来还是需要结合实战，再配备这篇教程，好好体验一下SVM的强大。</p>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Pattern-Recognition/">Pattern Recognition    </a><a class="post-meta__tags" href="/tags/SVMs/">SVMs    </a><a class="post-meta__tags" href="/tags/Statistical-Learning-Theory/">Statistical Learning Theory    </a><a class="post-meta__tags" href="/tags/VC-Dimension/">VC Dimension    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/kevin-ku-w7ZyuGYNpRQ-unsplash.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2019/12/11/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91Kernel-Logistic-Regression-and-the-Import-Vector-Machine/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/kelly-sikkema-cXkrqY2wFyc-unsplash.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【论文笔记】Kernel Logistic Regression and the Import Vector Machine</span></div></a></div><div class="next-post pull_right"><a href="/2019/12/02/%E3%80%90%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B%E3%80%91%E5%86%B3%E7%AD%96%E6%A0%91%E5%AD%A6%E4%B9%A0%EF%BC%88%E4%BA%8C%EF%BC%89/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/page/article_number_lot.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【机器学习模型】决策树学习（二）</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/kevin-ku-w7ZyuGYNpRQ-unsplash.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2019 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action" target="_blank" rel="noopener"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div></body></html>
