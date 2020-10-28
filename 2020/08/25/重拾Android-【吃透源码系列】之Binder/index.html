@@ -1,0 +1,242 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>重拾Android-【吃透源码系列】之Binder | ONE·PIECE</title><meta name="description" content="重拾Android-【吃透源码系列】之Binder"><meta name="keywords" content="framework源码"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="重拾Android-【吃透源码系列】之Binder"><meta name="twitter:description" content="重拾Android-【吃透源码系列】之Binder"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286986.jpg"><meta property="og:type" content="article"><meta property="og:title" content="重拾Android-【吃透源码系列】之Binder"><meta property="og:url" content="http://tufusi.com/2020/08/25/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E5%90%83%E9%80%8F%E6%BA%90%E7%A0%81%E7%B3%BB%E5%88%97%E3%80%91%E4%B9%8BBinder/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="重拾Android-【吃透源码系列】之Binder"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286986.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2020/08/25/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E5%90%83%E9%80%8F%E6%BA%90%E7%A0%81%E7%B3%BB%E5%88%97%E3%80%91%E4%B9%8BBinder/"><link rel="prev" title="重拾Android-【必知必会SDK】之Glide" href="http://tufusi.com/2020/08/26/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E5%BF%85%E7%9F%A5%E5%BF%85%E4%BC%9ASDK%E3%80%91%E4%B9%8BGlide/"><link rel="next" title="重拾Android-【吃透源码系列】之PKMS" href="http://tufusi.com/2020/08/24/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E5%90%83%E9%80%8F%E6%BA%90%E7%A0%81%E7%B3%BB%E5%88%97%E3%80%91%E4%B9%8BPKMS/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> 重拾Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">209</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">70</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">8</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> 重拾Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#简介"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">简介</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#内存划分"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">内存划分</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#传统-IPC-传输数据"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">传统 IPC 传输数据</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#Binder-传输数据"><span class="toc_mobile_items-number">1.3.</span> <span class="toc_mobile_items-text">Binder 传输数据</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#Binder"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">Binder</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#三种-IPC-方式的数据的拷贝次数"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">三种 IPC 方式的数据的拷贝次数</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#面向对象的-Binder-IPC"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">面向对象的 Binder  IPC</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#Binder-模型"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">Binder 模型</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#Linux进程间通信机制"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">Linux进程间通信机制</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#Binder的驱动注册"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">Binder的驱动注册</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#Binder的JNI注册"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">Binder的JNI注册</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#剑指大厂"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">剑指大厂</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#Binder有什么优势？-—-《ByteDance》"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">Binder有什么优势？ — 《ByteDance》</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#Binder是如何做到一次拷贝？-—-《Tencent》"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">Binder是如何做到一次拷贝？ — 《Tencent》</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#mmap的原理讲解-—-《Tencent》"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">mmap的原理讲解 — 《Tencent》</span></a></li></ol></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#简介"><span class="toc-number">1.</span> <span class="toc-text">简介</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#内存划分"><span class="toc-number">1.1.</span> <span class="toc-text">内存划分</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#传统-IPC-传输数据"><span class="toc-number">1.2.</span> <span class="toc-text">传统 IPC 传输数据</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Binder-传输数据"><span class="toc-number">1.3.</span> <span class="toc-text">Binder 传输数据</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Binder"><span class="toc-number">2.</span> <span class="toc-text">Binder</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#三种-IPC-方式的数据的拷贝次数"><span class="toc-number">2.1.</span> <span class="toc-text">三种 IPC 方式的数据的拷贝次数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#面向对象的-Binder-IPC"><span class="toc-number">2.2.</span> <span class="toc-text">面向对象的 Binder  IPC</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Binder-模型"><span class="toc-number">3.</span> <span class="toc-text">Binder 模型</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux进程间通信机制"><span class="toc-number">3.1.</span> <span class="toc-text">Linux进程间通信机制</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Binder的驱动注册"><span class="toc-number">4.</span> <span class="toc-text">Binder的驱动注册</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Binder的JNI注册"><span class="toc-number">5.</span> <span class="toc-text">Binder的JNI注册</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#剑指大厂"><span class="toc-number">6.</span> <span class="toc-text">剑指大厂</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Binder有什么优势？-—-《ByteDance》"><span class="toc-number">6.1.</span> <span class="toc-text">Binder有什么优势？ — 《ByteDance》</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Binder是如何做到一次拷贝？-—-《Tencent》"><span class="toc-number">6.2.</span> <span class="toc-text">Binder是如何做到一次拷贝？ — 《Tencent》</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mmap的原理讲解-—-《Tencent》"><span class="toc-number">6.3.</span> <span class="toc-text">mmap的原理讲解 — 《Tencent》</span></a></li></ol></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286986.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">重拾Android-【吃透源码系列】之Binder</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2020-08-25<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2020-08-31</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">2k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 6 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>我们知道Android系统启动之后，要想启动一个应用程序则需要保证该应用程序的进程先被启动，如果该进程不存在就会请求 Zygote 进程启动需要的应用程序进程。这样在 Zygote 的 Java 框架层（Framework源码层）中会创建一个 Server 端的 Socket，这个 Socket 用来等待 AMS 请求 Zygote 来创建新的应用程序进程（Zygote 进程通过 fork 自身创建应用程序进程），这样应用程序进程就会获得 Zygote 进程在启动时创建的虚拟机实例。与此同时，也创建出了 <strong>Binder 线程池</strong> 和 <strong>消息循环</strong>，这样运行在应用进程中的应用程序就可以很方便的使用 Binder 进行进程间通信以及处理消息了。</p>
+<a id="more"></a>
+<h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>既然决定吃透源码，那就必须从源头捋起，所以这篇文章会综合《深入理解Android内核设计思想》、《Android开发艺术探索》以及《Android进阶解密》三书，加上在享学课堂学习有关 Binder 进程课程，会在本文中对Binder设计细节做一个全面的阐述。首先通过介绍 Binder 通信模型和 Binder 通信协议了解 Binder 的设计需求；然后分别阐述 Binder 在系统不同架构分层间的呈现方式及其作用，最后分析 Binder 在数据接收端的设计考虑，包括：线程池管理、内存映射、等待队列等。为读者尽最大可能展现 <strong>Android Binder</strong> 原本的样貌。这样学就够了！</p>
+<h2 id="内存划分"><a href="#内存划分" class="headerlink" title="内存划分"></a>内存划分</h2><p><img alt="内存划分.png" data-src="https://i.loli.net/2020/08/31/N5Po8YVDzInqbBJ.png" class="lazyload"></p>
+<h2 id="传统-IPC-传输数据"><a href="#传统-IPC-传输数据" class="headerlink" title="传统 IPC 传输数据"></a>传统 IPC 传输数据</h2><p><img alt="传统 IPC 传输数据.png" data-src="https://i.loli.net/2020/08/31/63sj5DqQd8aEpRz.png" class="lazyload"></p>
+<h2 id="Binder-传输数据"><a href="#Binder-传输数据" class="headerlink" title="Binder 传输数据"></a>Binder 传输数据</h2><p><img alt="Binder 传输数据.png" data-src="https://i.loli.net/2020/08/31/Lg8lbcy3JOidRCh.png" class="lazyload"></p>
+<h1 id="Binder"><a href="#Binder" class="headerlink" title="Binder"></a>Binder</h1><p>Binder 是 Android 系统进程间通信（IPC）方式之一，这里为了突出 Android Binder IPC 通信机制的优越性，先分析对比一波 <strong>共享内存</strong>、<strong>Socket</strong> 和本文介绍的 Binder 的数据拷贝。</p>
+<h2 id="三种-IPC-方式的数据的拷贝次数"><a href="#三种-IPC-方式的数据的拷贝次数" class="headerlink" title="三种 IPC 方式的数据的拷贝次数"></a>三种 IPC 方式的数据的拷贝次数</h2><p><img alt="图片1.png" data-src="https://i.loli.net/2020/08/31/FEnhdxKc5RP4GJT.png" class="lazyload"></p>
+<blockquote>
+<p>共享内存</p>
+<blockquote>
+<p>共享内存可以类比 Java 的内存， 堆就是线程共享区域，而此处的堆就是 Linux 里的内存共享区域，虽然无需拷贝，但控制复杂，难以复用，基于此方案的通信，试想一下，如果有一个恶意的程序或者某个app运行崩溃，就会导致关联的应用甚至系统跟着奔溃，这是致命的。</p>
+</blockquote>
+<p>Socket/管道/消息队列</p>
+<blockquote>
+<p>基于 C/S 架构的通信，目前 linux 支持 的 IPC 包括传统的管道，System V IPC，即消息队列/共享内存/信号量，以及 socket 中只有 socket 支持 Client-Server 的通信方式。</p>
+<p>socket 作为一款通用接口，其传输效率低效，开销巨大，主要用在跨网络的进程间通信和本机上进程间的低速通信。如果采用socket在底层架设一套协议，这无疑加重系统设计的复杂性，而且也难以保证通信效率。</p>
+<p>消息队列和管道采用存储-转发方式，即数据先从发送方缓存区拷贝到内核开辟的缓存区中，然后再从内核缓存区拷贝到接收方缓存区，这里至少有两次拷贝过程。</p>
+</blockquote>
+<p>Binder（基于传输性、安全性考虑均是最佳）</p>
+<blockquote>
+<p>基于 C/S 通信模式，传输过程只需一次拷贝，为发送方添加 UID/PID 身份，既支持实名 Binder，也支持匿名 Binder，安全性高。</p>
+</blockquote>
+</blockquote>
+<h2 id="面向对象的-Binder-IPC"><a href="#面向对象的-Binder-IPC" class="headerlink" title="面向对象的 Binder  IPC"></a>面向对象的 Binder  IPC</h2><p>Binder 使用 Client-Server 通信方式：一个进程作为 Server 提供诸如视频/音频解码，视频捕获，地址本查询，网络连接等服务；多个进程作为 Client 向 Server 发起服务请求，获得所需要的服务。</p>
+<p>要想实现 Client-Server 通信据必须实现以下两点：</p>
+<ul>
+<li><p>Server 必须有确定的访问接入点或者说地址来接受Client的请求， 并且 Client 可以通过某种途径获知 Server 的地址；</p>
+</li>
+<li><p>制定 Command-Reply 协议来传输数据</p>
+</li>
+</ul>
+<p>这就好比，网络通信中，Server 的访问接入点就是 Server 主机的IP地址+端口号，传输协议为 TCP 协议；</p>
+<p>对 Binder 而言，Binder 可以看成 Server 提供的实现某个特定服务的访问接入点，Client 通过这个 “地址” 向 Server 发送请求来使用该服务；</p>
+<p>对 Client 而言，Binder 可以看成是通向 Server 的管道入口，要想和某个 Server 通信首先必须建立这个管道并获得管道入口。</p>
+<blockquote>
+<p>与其他 IPC 方式不同点在于，Binder 使用了面向对象思想来描述作为访问接入点的 Binder 和在 Client 中的入口：</p>
+<blockquote>
+<p>Binder 是一个实体位于 Server 中的对象，该对象提供了一套方法用以实现对服务的请求，就象类的成员函数。</p>
+<p>遍布于 Client 中的入口可以看成指向这个 Binder 对象的“指针”，一旦获得了这个“指针”就可以调用该对象的方法访问 Server。</p>
+</blockquote>
+</blockquote>
+<h1 id="Binder-模型"><a href="#Binder-模型" class="headerlink" title="Binder 模型"></a>Binder 模型</h1><p>Binder 框架定义了四个角色：<strong>Server</strong>、<strong>Client</strong>、<strong>ServiceManager</strong>、<strong>Binder驱动</strong>，这其中前三个位于 <strong>用户空间</strong>，驱动位于 <strong>内核空间</strong>。这四个角色的关系和互联网类似：Server 是服务器，Client 是客户终 端，SMgr 是域名服务器（DNS），驱动是路由器。</p>
+<h2 id="Linux进程间通信机制"><a href="#Linux进程间通信机制" class="headerlink" title="Linux进程间通信机制"></a>Linux进程间通信机制</h2><p>管道、信号量、Socket、共享内存</p>
+<p>共享内存：数据发送方、内核、数据接收方 三者共享一块物理内存空间</p>
+<p>Binder：数据发送方通过 <code>copy_fromm_user()</code> 拷贝一次，将数据拷贝到内核，而内核和数据接收方有一块内存共享区域，所以这两者无需拷贝，即可使用。</p>
+<h1 id="Binder的驱动注册"><a href="#Binder的驱动注册" class="headerlink" title="Binder的驱动注册"></a>Binder的驱动注册</h1><p><strong>Linux 一切皆文件</strong></p>
+<p>binder_init</p>
+<ul>
+<li><p>分配内存</p>
+</li>
+<li><p>初始化设备</p>
+</li>
+<li><p>放入设备链表 binder_devices</p>
+</li>
+</ul>
+<p>binder_open</p>
+<ul>
+<li><blockquote>
+<p>初始化 proc 创建 binder_proc 进程对象</p>
+</blockquote>
+</li>
+<li><blockquote>
+<blockquote>
+<p>创建同步锁 binder_lock</p>
+</blockquote>
+</blockquote>
+</li>
+<li><blockquote>
+<blockquote>
+<p>串联进程链表 binder_procs -&gt; binder_proc -&gt; binder_proc-&gt;  // hlist_head -&gt; hlist_node -&gt; hlist_node -&gt; </p>
+</blockquote>
+</blockquote>
+</li>
+<li><blockquote>
+<blockquote>
+<p>内核函数filp -&gt; proc 赋值 private_data(后续binder访问全是它)  // flip()函数反置bitset中所有的位，即将1设为0，0设为1。</p>
+</blockquote>
+</blockquote>
+</li>
+<li><blockquote>
+<blockquote>
+<p>解除同步锁 binder_unlock</p>
+</blockquote>
+</blockquote>
+</li>
+</ul>
+<p>binder_mmap</p>
+<ul>
+<li><p>struct vm_struct*area  ——— 内核的虚拟内存</p>
+</li>
+<li><p>struct vm_area_struct*vma ——— 进程的虚拟内存（4M 驱动设定；1M - 8k 应用层设定 ===》 binder传输超过1M就会崩溃）</p>
+</li>
+</ul>
+<ul>
+<li><blockquote>
+<p>area = get_vm_area(vma-&gt;vma_end - vma-&gt;vma_start, VMREMAP) 分配内存重新建立映射关联</p>
+</blockquote>
+</li>
+<li><blockquote>
+<p>proc buffer指针 指向 area 的内核虚拟指针</p>
+</blockquote>
+</li>
+<li><blockquote>
+<p>计算用户空间偏移值 user_buffer_offset：用户空间虚拟内存地址（proc-&gt;buffer） = 虚拟内存地址（vma-&gt;vm_start） + 偏移值（proc-&gt;user_buffer_offset）</p>
+</blockquote>
+</li>
+</ul>
+<h1 id="Binder的JNI注册"><a href="#Binder的JNI注册" class="headerlink" title="Binder的JNI注册"></a>Binder的JNI注册</h1><h1 id="剑指大厂"><a href="#剑指大厂" class="headerlink" title="剑指大厂"></a>剑指大厂</h1><h2 id="Binder有什么优势？-—-《ByteDance》"><a href="#Binder有什么优势？-—-《ByteDance》" class="headerlink" title="Binder有什么优势？ — 《ByteDance》"></a>Binder有什么优势？ — 《ByteDance》</h2><p>优点：<br>内存开辟<br>风险隔离</p>
+<h2 id="Binder是如何做到一次拷贝？-—-《Tencent》"><a href="#Binder是如何做到一次拷贝？-—-《Tencent》" class="headerlink" title="Binder是如何做到一次拷贝？ — 《Tencent》"></a>Binder是如何做到一次拷贝？ — 《Tencent》</h2><p><strong>内存划分</strong>：内存被操作系统分成两块：用户空间和内核空间，用户空间时用户程序代码运行的地方，内核空间是系统内核运行的地方，可以共享。为了安全，这两者是隔离的，这样即使用户的应用程序崩溃也不会影响到内核。</p>
+<p>32位系统 Vs 64位系统</p>
+<p>32位系统，即2^32，即总共可访问地址为4G。内核1G，用户空间3G。</p>
+<p>64位系统，低位：0-47位才是有效的可变地址（寻址空间256T），高位：48-63位全补0或1。<br>一般高位全补0对应的地址空间是用户空间。高位全补1对应的是内核空间。</p>
+<h2 id="mmap的原理讲解-—-《Tencent》"><a href="#mmap的原理讲解-—-《Tencent》" class="headerlink" title="mmap的原理讲解 — 《Tencent》"></a>mmap的原理讲解 — 《Tencent》</h2><p><strong>MMAP</strong>：Linux通过将一个虚拟 内存区域与一个磁盘上的对象关联起来，以初始化这个虚拟内存区域的内容，这个过程称为内存映射（memory mapping）</p>
+<p>对文件进行mmap，会在进程的虚拟内存分配地址空间，建立映射关系。实现这样的映射关系后，就可以对这一段内存采用指针的方式进行读写操作，而系统会自动回写到对应的文件磁盘上。</p>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/framework%E6%BA%90%E7%A0%81/">framework源码    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286986.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2020/08/26/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E5%BF%85%E7%9F%A5%E5%BF%85%E4%BC%9ASDK%E3%80%91%E4%B9%8BGlide/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/566.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>重拾Android-【必知必会SDK】之Glide</span></div></a></div><div class="next-post pull_right"><a href="/2020/08/24/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E5%90%83%E9%80%8F%E6%BA%90%E7%A0%81%E7%B3%BB%E5%88%97%E3%80%91%E4%B9%8BPKMS/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/503.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>重拾Android-【吃透源码系列】之PKMS</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2020/08/23/重拾Android-【吃透源码系列】之AMS/" title="重拾Android-【吃透源码系列】之AMS"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286996.jpg"><div class="relatedPosts_title">重拾Android-【吃透源码系列】之AMS</div></a></div><div class="relatedPosts_item"><a href="/2020/08/31/重拾Android-【吃透源码系列】之Activity/" title="重拾Android-【吃透源码系列】之Activity"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/300.jpg"><div class="relatedPosts_title">重拾Android-【吃透源码系列】之Activity</div></a></div><div class="relatedPosts_item"><a href="/2020/08/29/重拾Android-【吃透源码系列】之Android系统启动（三）启动服务/" title="重拾Android-【吃透源码系列】之Android系统启动（三）启动服务"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/302.jpg"><div class="relatedPosts_title">重拾Android-【吃透源码系列】之Android系统启动（三）启动服务</div></a></div><div class="relatedPosts_item"><a href="/2020/08/24/重拾Android-【吃透源码系列】之PKMS/" title="重拾Android-【吃透源码系列】之PKMS"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/503.jpg"><div class="relatedPosts_title">重拾Android-【吃透源码系列】之PKMS</div></a></div><div class="relatedPosts_item"><a href="/2020/08/23/重拾Android-【吃透源码系列】之WMS/" title="重拾Android-【吃透源码系列】之WMS"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286980.jpg"><div class="relatedPosts_title">重拾Android-【吃透源码系列】之WMS</div></a></div><div class="relatedPosts_item"><a href="/2020/08/29/重拾Android-【吃透源码系列】之Android系统启动（四）属性服务/" title="重拾Android-【吃透源码系列】之Android系统启动（四）属性服务"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/303.jpg"><div class="relatedPosts_title">重拾Android-【吃透源码系列】之Android系统启动（四）属性服务</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286986.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2020 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action" target="_blank" rel="noopener"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div></body></html>
