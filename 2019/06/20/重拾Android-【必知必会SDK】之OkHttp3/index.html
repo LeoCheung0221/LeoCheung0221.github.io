@@ -350,26 +350,23 @@ function activateLightMode(){
 (function(){
   if(sessionStorage.getItem("_hexo_protect_harness")) return;
 
-  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  // 将列表页中 Harness 分类文章标题链接指向密码门
   var items = document.querySelectorAll(".recent-post-item");
   items.forEach(function(item){
     var catLink = item.querySelector('a[href*="/Harness"]');
     if(!catLink) return;
 
-    // 把标题链接改为密码门
     var titleLink = item.querySelector("a.article-title");
     if(titleLink){
       titleLink.setAttribute("data-original-href", titleLink.href);
       titleLink.href = "/harness";
       titleLink.style.opacity = "0.5";
-      // 加锁图标
       var lock = document.createElement("i");
       lock.className = "fa fa-lock";
       lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
       titleLink.insertBefore(lock, titleLink.firstChild);
     }
 
-    // 隐藏摘要内容
     var content = item.querySelector(".content");
     if(content){
       content.textContent = "🔒 此内容需要密码访问";
@@ -378,10 +375,9 @@ function activateLightMode(){
     }
   });
 
-  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
-  var allLinks = document.querySelectorAll("a[href*='/Harness']");
-  allLinks.forEach(function(link){
-    // 分类/标签路径中的 Harness，改成指向密码门
+  // 归档/标签/分类页中的 Harness 分类链接也指向密码门
+  var catLinks = document.querySelectorAll("a[href*='/Harness']");
+  catLinks.forEach(function(link){
     if(link.classList.contains("article-meta__categories") ||
        link.classList.contains("post-meta__categories")){
       link.href = "/harness";
