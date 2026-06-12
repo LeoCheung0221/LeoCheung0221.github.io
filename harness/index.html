@@ -257,7 +257,6 @@ function activateLightMode(){
 
     errorEl.classList.remove("show");
 
-    // 纯 JS SHA256（兼容 HTTP/HTTPS）
     var hash = sha256(pwd);
 
     if (hash === EXPECTED_HASH) {
@@ -294,23 +293,8 @@ function activateLightMode(){
     }
   }
 
-  // ====== 纯 JavaScript SHA256 实现（HTTP/HTTPS 通用） ======
-  function sha256(s) {
-    // 优先使用 Web Crypto API（HTTPS 环境）
-    if (typeof crypto !== "undefined" && crypto.subtle && crypto.subtle.digest) {
-      var msg = new TextEncoder().encode(s);
-      return crypto.subtle.digest("SHA-256", msg).then(function(buf) {
-        return Array.from(new Uint8Array(buf)).map(function(b) {
-          return b.toString(16).padStart(2, "0");
-        }).join("");
-      });
-    }
-
-    // HTTP 环境 fallback：纯 JS SHA256
-    return Promise.resolve(sha256Pure(s));
-  }
-
-  function sha256Pure(str) {
+  // ====== 纯 JavaScript SHA256 实现（同步，HTTP/HTTPS 通用） ======
+  function sha256(str) {
     function R(n, x) { return (x >>> n) | (x << (32 - n)); }
     function S(n, x) { return x >>> n; }
 
