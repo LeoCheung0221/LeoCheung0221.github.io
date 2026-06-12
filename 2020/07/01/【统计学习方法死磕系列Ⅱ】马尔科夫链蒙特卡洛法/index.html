@@ -1,0 +1,431 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【统计学习方法死磕系列Ⅱ】马尔科夫链蒙特卡洛法 | ONE·PIECE</title><meta name="description" content="【统计学习方法死磕系列Ⅱ】马尔科夫链蒙特卡洛法"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【统计学习方法死磕系列Ⅱ】马尔科夫链蒙特卡洛法"><meta name="twitter:description" content="【统计学习方法死磕系列Ⅱ】马尔科夫链蒙特卡洛法"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【统计学习方法死磕系列Ⅱ】马尔科夫链蒙特卡洛法"><meta property="og:url" content="http://tufusi.com/2020/07/01/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E2%85%A1%E3%80%91%E9%A9%AC%E5%B0%94%E7%A7%91%E5%A4%AB%E9%93%BE%E8%92%99%E7%89%B9%E5%8D%A1%E6%B4%9B%E6%B3%95/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【统计学习方法死磕系列Ⅱ】马尔科夫链蒙特卡洛法"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2020/07/01/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E2%85%A1%E3%80%91%E9%A9%AC%E5%B0%94%E7%A7%91%E5%A4%AB%E9%93%BE%E8%92%99%E7%89%B9%E5%8D%A1%E6%B4%9B%E6%B3%95/"><link rel="prev" title="【统计学习方法死磕系列】提升算法" href="http://tufusi.com/2020/07/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%8F%90%E5%8D%87%E7%AE%97%E6%B3%95/"><link rel="next" title="【经典算法】神经网络BP算法" href="http://tufusi.com/2020/06/20/%E3%80%90%E7%BB%8F%E5%85%B8%E7%AE%97%E6%B3%95%E3%80%91%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9CBP%E7%AE%97%E6%B3%95/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E5%BC%95%E8%A8%80%EF%BC%9A%E5%BD%93%E7%A7%AF%E5%88%86%E6%97%A0%E6%B3%95%E8%A7%A3%E6%9E%90%E8%AE%A1%E7%AE%97%E6%97%B6"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、引言：当积分无法解析计算时</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81Monte-Carlo-%E4%B8%8E-Markov-Chain"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、Monte Carlo 与 Markov Chain</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-Monte-Carlo-%E6%96%B9%E6%B3%95"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 Monte Carlo 方法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E9%93%BE"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 马尔可夫链</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-MCMC-%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 MCMC 的核心思想</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81Metropolis-Hastings-%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、Metropolis-Hastings 算法</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E5%8A%A8%E6%9C%BA"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 动机</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 算法流程</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-%E6%8E%A5%E5%8F%97%E6%A6%82%E7%8E%87%E7%9A%84%E7%9B%B4%E8%A7%82%E7%90%86%E8%A7%A3"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 接受概率的直观理解</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-MH-%E6%8E%A5%E5%8F%97-%E6%8B%92%E7%BB%9D%E6%A1%86%E6%9E%B6"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">3.4 MH &#x3D; 接受&#x2F;拒绝框架</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-5-%E5%B8%B8%E7%94%A8%E5%BB%BA%E8%AE%AE%E5%88%86%E5%B8%83"><span class="toc_mobile_items-number">3.5.</span> <span class="toc_mobile_items-text">3.5 常用建议分布</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-6-%E6%AD%A5%E9%95%BF%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="toc_mobile_items-number">3.6.</span> <span class="toc_mobile_items-text">3.6 步长的影响</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-7-Python-%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">3.7.</span> <span class="toc_mobile_items-text">3.7 Python 实现</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81Gibbs-%E9%87%87%E6%A0%B7"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、Gibbs 采样</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E5%8A%A8%E6%9C%BA"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 动机</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 算法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-%E4%B8%8E-MH-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 与 MH 的关系</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-4-Gibbs-%E9%87%87%E6%A0%B7%E7%9A%84%E9%80%82%E7%94%A8%E6%9D%A1%E4%BB%B6"><span class="toc_mobile_items-number">4.4.</span> <span class="toc_mobile_items-text">4.4 Gibbs 采样的适用条件</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-5-Gibbs-vs-MH"><span class="toc_mobile_items-number">4.5.</span> <span class="toc_mobile_items-text">4.5 Gibbs vs MH</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81Hamiltonian-Monte-Carlo%EF%BC%88HMC%EF%BC%89"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、Hamiltonian Monte Carlo（HMC）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E5%8A%A8%E6%9C%BA"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 动机</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-%E7%89%A9%E7%90%86%E7%B1%BB%E6%AF%94"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 物理类比</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-Leapfrog-%E7%A7%AF%E5%88%86"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 Leapfrog 积分</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-4-NUTS%EF%BC%9A%E8%87%AA%E9%80%82%E5%BA%94-HMC"><span class="toc_mobile_items-number">5.4.</span> <span class="toc_mobile_items-text">5.4 NUTS：自适应 HMC</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-5-HMC-vs-MH-vs-Gibbs"><span class="toc_mobile_items-number">5.5.</span> <span class="toc_mobile_items-text">5.5 HMC vs MH vs Gibbs</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-6-Slice-Sampling%EF%BC%9A%E6%97%A0%E9%9C%80%E8%B0%83%E5%8F%82%E7%9A%84-MCMC"><span class="toc_mobile_items-number">5.6.</span> <span class="toc_mobile_items-text">5.6 Slice Sampling：无需调参的 MCMC</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-7-%E5%AE%9E%E6%88%98%EF%BC%9A%E4%BD%BF%E7%94%A8-Stan-%E5%92%8C-PyMC-%E8%BF%9B%E8%A1%8C%E8%B4%9D%E5%8F%B6%E6%96%AF%E5%9B%9E%E5%BD%92"><span class="toc_mobile_items-number">5.7.</span> <span class="toc_mobile_items-text">5.7 实战：使用 Stan 和 PyMC 进行贝叶斯回归</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81MCMC-%E8%AF%8A%E6%96%AD%E4%B8%8E%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、MCMC 诊断与最佳实践</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E6%94%B6%E6%95%9B%E8%AF%8A%E6%96%AD"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 收敛诊断</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-Burn-in-%E5%92%8C-Thinning"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 Burn-in 和 Thinning</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-%E5%AE%9E%E8%B7%B5%E6%B8%85%E5%8D%95"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">6.3 实践清单</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、面试高频问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、总结</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%BC%95%E8%A8%80%EF%BC%9A%E5%BD%93%E7%A7%AF%E5%88%86%E6%97%A0%E6%B3%95%E8%A7%A3%E6%9E%90%E8%AE%A1%E7%AE%97%E6%97%B6"><span class="toc-number">1.</span> <span class="toc-text">一、引言：当积分无法解析计算时</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Monte-Carlo-%E4%B8%8E-Markov-Chain"><span class="toc-number">2.</span> <span class="toc-text">二、Monte Carlo 与 Markov Chain</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Monte-Carlo-%E6%96%B9%E6%B3%95"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 Monte Carlo 方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E9%93%BE"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 马尔可夫链</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-MCMC-%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 MCMC 的核心思想</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Metropolis-Hastings-%E7%AE%97%E6%B3%95"><span class="toc-number">3.</span> <span class="toc-text">三、Metropolis-Hastings 算法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%8A%A8%E6%9C%BA"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 动机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 算法流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%8E%A5%E5%8F%97%E6%A6%82%E7%8E%87%E7%9A%84%E7%9B%B4%E8%A7%82%E7%90%86%E8%A7%A3"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 接受概率的直观理解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-MH-%E6%8E%A5%E5%8F%97-%E6%8B%92%E7%BB%9D%E6%A1%86%E6%9E%B6"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 MH &#x3D; 接受&#x2F;拒绝框架</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-%E5%B8%B8%E7%94%A8%E5%BB%BA%E8%AE%AE%E5%88%86%E5%B8%83"><span class="toc-number">3.5.</span> <span class="toc-text">3.5 常用建议分布</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-%E6%AD%A5%E9%95%BF%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="toc-number">3.6.</span> <span class="toc-text">3.6 步长的影响</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-7-Python-%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.7.</span> <span class="toc-text">3.7 Python 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Gibbs-%E9%87%87%E6%A0%B7"><span class="toc-number">4.</span> <span class="toc-text">四、Gibbs 采样</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%8A%A8%E6%9C%BA"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 动机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E7%AE%97%E6%B3%95"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E4%B8%8E-MH-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 与 MH 的关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-Gibbs-%E9%87%87%E6%A0%B7%E7%9A%84%E9%80%82%E7%94%A8%E6%9D%A1%E4%BB%B6"><span class="toc-number">4.4.</span> <span class="toc-text">4.4 Gibbs 采样的适用条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-Gibbs-vs-MH"><span class="toc-number">4.5.</span> <span class="toc-text">4.5 Gibbs vs MH</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Hamiltonian-Monte-Carlo%EF%BC%88HMC%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">五、Hamiltonian Monte Carlo（HMC）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E5%8A%A8%E6%9C%BA"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 动机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E7%89%A9%E7%90%86%E7%B1%BB%E6%AF%94"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 物理类比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-Leapfrog-%E7%A7%AF%E5%88%86"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 Leapfrog 积分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-NUTS%EF%BC%9A%E8%87%AA%E9%80%82%E5%BA%94-HMC"><span class="toc-number">5.4.</span> <span class="toc-text">5.4 NUTS：自适应 HMC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-HMC-vs-MH-vs-Gibbs"><span class="toc-number">5.5.</span> <span class="toc-text">5.5 HMC vs MH vs Gibbs</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-6-Slice-Sampling%EF%BC%9A%E6%97%A0%E9%9C%80%E8%B0%83%E5%8F%82%E7%9A%84-MCMC"><span class="toc-number">5.6.</span> <span class="toc-text">5.6 Slice Sampling：无需调参的 MCMC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-7-%E5%AE%9E%E6%88%98%EF%BC%9A%E4%BD%BF%E7%94%A8-Stan-%E5%92%8C-PyMC-%E8%BF%9B%E8%A1%8C%E8%B4%9D%E5%8F%B6%E6%96%AF%E5%9B%9E%E5%BD%92"><span class="toc-number">5.7.</span> <span class="toc-text">5.7 实战：使用 Stan 和 PyMC 进行贝叶斯回归</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81MCMC-%E8%AF%8A%E6%96%AD%E4%B8%8E%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc-number">6.</span> <span class="toc-text">六、MCMC 诊断与最佳实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E6%94%B6%E6%95%9B%E8%AF%8A%E6%96%AD"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 收敛诊断</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-Burn-in-%E5%92%8C-Thinning"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 Burn-in 和 Thinning</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E5%AE%9E%E8%B7%B5%E6%B8%85%E5%8D%95"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 实践清单</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E9%A2%98"><span class="toc-number">7.</span> <span class="toc-text">七、面试高频问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-number">8.</span> <span class="toc-text">八、总结</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【统计学习方法死磕系列Ⅱ】马尔科夫链蒙特卡洛法</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2020-07-01<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0/">统计学习</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">4.5k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 18 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、引言：当积分无法解析计算时"><a href="#一、引言：当积分无法解析计算时" class="headerlink" title="一、引言：当积分无法解析计算时"></a>一、引言：当积分无法解析计算时</h2><p>贝叶斯推断中的一个核心难题是计算后验分布的各种期望：</p>
+<p>$$
+\mathbb{E}_{p(\theta|X)}[f(\theta)] = \int f(\theta) p(\theta|X) d\theta
+$$</p>
+<p>这个积分在低维时可以用数值方法（如梯形法则），但在高维时（如 $\theta$ 有数百个维度）会遭遇”维度的诅咒”——积分离散网格数以指数增长。</p>
+<p><strong>马尔科夫链蒙特卡洛</strong>（Markov Chain Monte Carlo, MCMC）是解决这一难题的利器。它的核心思想是：<strong>不必直接计算积分，而是从目标分布中采样</strong>。如果用大量样本 $\theta^{(1)}, \theta^{(2)}, \dots, \theta^{(S)}$ 来近似后验分布，那么期望可以直接用样本平均估计：</p>
+<p>$$
+\mathbb{E}[f(\theta)] \approx \frac{1}{S} \sum_{s=1}^{S} f(\theta^{(s)})
+$$</p>
+<p>MCMC 方法通过构造一个以目标分布为平稳分布的马尔可夫链来实现采样，已经成为现代贝叶斯统计和机器学习中不可或缺的工具。</p>
+<h2 id="二、Monte-Carlo-与-Markov-Chain"><a href="#二、Monte-Carlo-与-Markov-Chain" class="headerlink" title="二、Monte Carlo 与 Markov Chain"></a>二、Monte Carlo 与 Markov Chain</h2><h3 id="2-1-Monte-Carlo-方法"><a href="#2-1-Monte-Carlo-方法" class="headerlink" title="2.1 Monte Carlo 方法"></a>2.1 Monte Carlo 方法</h3><p>Monte Carlo 方法的核心是：<strong>用随机采样来近似确定性计算</strong>。</p>
+<p>最简单的是<strong>独立采样</strong>（如 rejection sampling, importance sampling）——直接从目标分布（或某个易采样的建议分布）中独立抽取样本。</p>
+<p>但问题是：对于复杂的高维分布，独立采样几乎不可行。你无法从”完全没有解析形式”的后验分布中直接采样。</p>
+<h3 id="2-2-马尔可夫链"><a href="#2-2-马尔可夫链" class="headerlink" title="2.2 马尔可夫链"></a>2.2 马尔可夫链</h3><p>一个马尔可夫链由状态空间 $\mathcal{X}$ 和转移核 $T(x’|x)$ 定义。其最关键的性质是：如果转移核满足某些条件（不可约、非周期），则存在唯一的<strong>平稳分布</strong> $\pi$：</p>
+<p>$$
+\pi(x') = \int T(x'|x) \pi(x) dx
+$$</p>
+<p>这意味着无论从哪个初始状态出发，经过足够多的转移步后，链的状态分布将收敛到 $\pi$。</p>
+<h3 id="2-3-MCMC-的核心思想"><a href="#2-3-MCMC-的核心思想" class="headerlink" title="2.3 MCMC 的核心思想"></a>2.3 MCMC 的核心思想</h3><p>MCMC 将上述两个概念结合：</p>
+<ol>
+<li>构造一个以<strong>目标分布 $p(x)$</strong> 为平稳分布的马尔可夫链</li>
+<li>运行这个链，丢弃初始的”burn-in”样本（未收敛）</li>
+<li>用收敛后的样本做 Monte Carlo 估计</li>
+</ol>
+<p>MCMC 的精妙之处在于：<strong>我们只需要知道目标分布的比例（unnormalized density），不需要归一化常数</strong>。因为大多数 MCMC 算法只用到 $\frac{p(x’)}{p(x)}$ 这样的比值，归一化常数被约掉了。</p>
+<p>在贝叶斯推断中，这尤其方便——后验分布 $p(\theta|X) \propto p(X|\theta)p(\theta)$，我们只需要似然和先验即可采样。</p>
+<h2 id="三、Metropolis-Hastings-算法"><a href="#三、Metropolis-Hastings-算法" class="headerlink" title="三、Metropolis-Hastings 算法"></a>三、Metropolis-Hastings 算法</h2><h3 id="3-1-动机"><a href="#3-1-动机" class="headerlink" title="3.1 动机"></a>3.1 动机</h3><p>Metropolis-Hastings（MH）算法是所有 MCMC 方法中最根本的。它是由 Metropolis 等人（1953）提出，后由 Hastings（1970）推广的。</p>
+<h3 id="3-2-算法流程"><a href="#3-2-算法流程" class="headerlink" title="3.2 算法流程"></a>3.2 算法流程</h3><p>MH 算法从当前状态 $x$ 出发，通过以下步骤生成下一个状态：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Algorithm: Metropolis-Hastings</span><br><span class="line">----------------------------------------------</span><br><span class="line">Input: target density p(x) (up to constant), </span><br><span class="line">       proposal distribution q(x&#x27;|x), </span><br><span class="line">       number of iterations S</span><br><span class="line">Output: samples x^(1), ..., x^(S)</span><br><span class="line"></span><br><span class="line">Initialize x^(0)</span><br><span class="line"></span><br><span class="line">For t = 0 to S-1:</span><br><span class="line">    1. Propose x&#x27; ~ q(x&#x27; | x^(t))</span><br><span class="line">    </span><br><span class="line">    2. Compute acceptance probability:</span><br><span class="line">       α = min(1, [p(x&#x27;) * q(x^(t) | x&#x27;)] / [p(x^(t)) * q(x&#x27; | x^(t))])</span><br><span class="line">    </span><br><span class="line">    3. Accept or reject:</span><br><span class="line">       Draw u ~ Uniform(0, 1)</span><br><span class="line">       If u &lt; α:</span><br><span class="line">           x^(t+1) = x&#x27;</span><br><span class="line">       Else:</span><br><span class="line">           x^(t+1) = x^(t)</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-接受概率的直观理解"><a href="#3-3-接受概率的直观理解" class="headerlink" title="3.3 接受概率的直观理解"></a>3.3 接受概率的直观理解</h3><p>接受概率：</p>
+<p>$$
+\alpha(x \to x') = \min\left(1, \frac{p(x')}{p(x)} \cdot \frac{q(x|x')}{q(x'|x)}\right)
+$$</p>
+<p>两个部分的乘积：</p>
+<ul>
+<li>**$\frac{p(x’)}{p(x)}$**（目标比）：如果 $x’$ 比 $x$ 更”好”（目标密度更高），则倾向于接受。这是算法的”爬山”倾向。</li>
+<li>**$\frac{q(x|x’)}{q(x’|x)}$**（Hastings 修正）：如果从 $x$ 很容易到达 $x’$，但从 $x’$ 很难回到 $x$，则需要降低接受概率以保持细致平衡（detailed balance）。</li>
+</ul>
+<h3 id="3-4-MH-接受-拒绝框架"><a href="#3-4-MH-接受-拒绝框架" class="headerlink" title="3.4 MH &#x3D; 接受&#x2F;拒绝框架"></a>3.4 MH &#x3D; 接受&#x2F;拒绝框架</h3><p>如果把 MH 看作一种”带约束的随机游走”：</p>
+<ul>
+<li>建议分布 $q$ 控制<strong>探索</strong>——向哪个方向走、走多远</li>
+<li>接受概率 $\alpha$ 控制<strong>利用</strong>——只接受”好”的提议</li>
+</ul>
+<p>两者配合，确保长期来看，采样点精确地按照 $p(x)$ 分布。</p>
+<h3 id="3-5-常用建议分布"><a href="#3-5-常用建议分布" class="headerlink" title="3.5 常用建议分布"></a>3.5 常用建议分布</h3><p>| 名称 | $q(x’|x)$ | 特点 |<br>|——|———–|——|<br>| 随机游走 MH | $x’ &#x3D; x + \epsilon, \epsilon \sim \mathcal{N}(0, \sigma^2)$ | 对称，接受率简化为 $p(x’)&#x2F;p(x)$ |<br>| 独立 MH | $q(x’|x) &#x3D; g(x’)$ | 建议独立于当前状态 |<br>| Adaptive MH | $\sigma$ 随采样自适应调整 | 自动调参 |</p>
+<h3 id="3-6-步长的影响"><a href="#3-6-步长的影响" class="headerlink" title="3.6 步长的影响"></a>3.6 步长的影响</h3><ul>
+<li><strong>步长太小</strong>：几乎所有提议都被接受，但探索缓慢——高度自相关的样本，有效样本量低</li>
+<li><strong>步长太大</strong>：大多数提议落在低密度区被拒绝——链”粘住”不动</li>
+<li><strong>最优接受率</strong>：在高斯目标分布下，随机游走 MH 的最优接受率约为 <strong>0.234</strong>（Roberts et al., 1997）</li>
+</ul>
+<h3 id="3-7-Python-实现"><a href="#3-7-Python-实现" class="headerlink" title="3.7 Python 实现"></a>3.7 Python 实现</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">metropolis_hastings</span>(<span class="params">log_target, x0, sigma, n_iters, n_burnin=<span class="number">1000</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    Random-walk Metropolis-Hastings.</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">    log_target: log of target density (up to const)</span></span><br><span class="line"><span class="string">    x0: initial state</span></span><br><span class="line"><span class="string">    sigma: proposal std (scalar or vector)</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    x = x0.copy()</span><br><span class="line">    samples = []</span><br><span class="line">    n_accept = <span class="number">0</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(n_iters):</span><br><span class="line">        <span class="comment"># Propose</span></span><br><span class="line">        x_prop = x + sigma * np.random.randn(*x.shape)</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># Accept/reject</span></span><br><span class="line">        log_alpha = log_target(x_prop) - log_target(x)</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> np.log(np.random.rand()) &lt; log_alpha:</span><br><span class="line">            x = x_prop</span><br><span class="line">            n_accept += <span class="number">1</span></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> i &gt;= n_burnin:</span><br><span class="line">            samples.append(x.copy())</span><br><span class="line">    </span><br><span class="line">    accept_rate = n_accept / n_iters</span><br><span class="line">    <span class="keyword">return</span> np.array(samples), accept_rate</span><br><span class="line"></span><br><span class="line"><span class="comment"># Example: sample from a 2D Gaussian</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">log_target</span>(<span class="params">x</span>):</span><br><span class="line">    <span class="keyword">return</span> -<span class="number">0.5</span> * (x[<span class="number">0</span>]**<span class="number">2</span> / <span class="number">2</span> + x[<span class="number">1</span>]**<span class="number">2</span> / <span class="number">0.5</span>)</span><br><span class="line"></span><br><span class="line">samples, acc = metropolis_hastings(</span><br><span class="line">    log_target, x0=np.array([<span class="number">0.0</span>, <span class="number">0.0</span>]), </span><br><span class="line">    sigma=<span class="number">0.5</span>, n_iters=<span class="number">10000</span></span><br><span class="line">)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Acceptance rate: <span class="subst">&#123;acc:<span class="number">.3</span>f&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="四、Gibbs-采样"><a href="#四、Gibbs-采样" class="headerlink" title="四、Gibbs 采样"></a>四、Gibbs 采样</h2><h3 id="4-1-动机"><a href="#4-1-动机" class="headerlink" title="4.1 动机"></a>4.1 动机</h3><p>Gibbs 采样（Geman &amp; Geman, 1984）是 MH 算法的一个特例，专门用于多维分布。当我们可以从每个变量的<strong>条件分布</strong> $p(x_i | x_{-i})$ 中直接采样时，Gibbs 采样将 MH 的接受率固定为 1（即总是接受）。</p>
+<h3 id="4-2-算法"><a href="#4-2-算法" class="headerlink" title="4.2 算法"></a>4.2 算法</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Algorithm: Gibbs Sampling</span><br><span class="line">----------------------------------------------</span><br><span class="line">Input: conditional distributions p(x_i | x_1, ..., x_&#123;i-1&#125;, x_&#123;i+1&#125;, ..., x_d)</span><br><span class="line">Output: samples</span><br><span class="line"></span><br><span class="line">Initialize x^(0) = (x_1^(0), ..., x_d^(0))</span><br><span class="line"></span><br><span class="line">For t = 0 to S-1:</span><br><span class="line">    x_1^(t+1) ~ p(x_1 | x_2^(t), x_3^(t), ..., x_d^(t))</span><br><span class="line">    x_2^(t+1) ~ p(x_2 | x_1^(t+1), x_3^(t), ..., x_d^(t))</span><br><span class="line">    ...</span><br><span class="line">    x_d^(t+1) ~ p(x_d | x_1^(t+1), x_2^(t+1), ..., x_&#123;d-1&#125;^(t+1))</span><br></pre></td></tr></table></figure>
+
+<p>Gibbs 采样逐个维度更新，每次从当前所有其他变量条件下的条件分布中采样。</p>
+<h3 id="4-3-与-MH-的关系"><a href="#4-3-与-MH-的关系" class="headerlink" title="4.3 与 MH 的关系"></a>4.3 与 MH 的关系</h3><p>Gibbs 采样可以看作 MH 的一个特例：提议分布为 $q(x_i’|x) &#x3D; p(x_i’|x_{-i})$，接受概率恒为 1。</p>
+<p>证明：</p>
+<p>$$
+\alpha = \min\left(1, \frac{p(x_i', x_{-i})}{p(x_i, x_{-i})} \cdot \frac{p(x_i|x_{-i})}{p(x_i'|x_{-i})}\right)
+$$</p>
+<p>由于 $p(x_i’, x_{-i}) &#x3D; p(x_i’|x_{-i})p(x_{-i})$，代入得 $\alpha &#x3D; 1$。</p>
+<h3 id="4-4-Gibbs-采样的适用条件"><a href="#4-4-Gibbs-采样的适用条件" class="headerlink" title="4.4 Gibbs 采样的适用条件"></a>4.4 Gibbs 采样的适用条件</h3><p>Gibbs 采样最适用于以下场景：</p>
+<ul>
+<li>可以写出每个变量的条件分布（如共轭模型）</li>
+<li>变量之间有较强的依存关系</li>
+</ul>
+<p>经典应用包括：LDA 中的主题推断、贝叶斯混合模型、Ising 模型等。</p>
+<h3 id="4-5-Gibbs-vs-MH"><a href="#4-5-Gibbs-vs-MH" class="headerlink" title="4.5 Gibbs vs MH"></a>4.5 Gibbs vs MH</h3><table>
+<thead>
+<tr>
+<th>方面</th>
+<th>Metropolis-Hastings</th>
+<th>Gibbs Sampling</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>接受率</td>
+<td>需要调参以达到 ~0.234</td>
+<td>恒为 1</td>
+</tr>
+<tr>
+<td>条件分布</td>
+<td>不需要知道</td>
+<td>必须能直接采样</td>
+</tr>
+<tr>
+<td>调参</td>
+<td>需要调 proposal</td>
+<td>无参数</td>
+</tr>
+<tr>
+<td>高相关性</td>
+<td>可能拒绝很多</td>
+<td>每步都移动</td>
+</tr>
+<tr>
+<td>模型要求</td>
+<td>低（只需密度比值）</td>
+<td>高（需要完整的条件分布）</td>
+</tr>
+</tbody></table>
+<h2 id="五、Hamiltonian-Monte-Carlo（HMC）"><a href="#五、Hamiltonian-Monte-Carlo（HMC）" class="headerlink" title="五、Hamiltonian Monte Carlo（HMC）"></a>五、Hamiltonian Monte Carlo（HMC）</h2><h3 id="5-1-动机"><a href="#5-1-动机" class="headerlink" title="5.1 动机"></a>5.1 动机</h3><p>MH 和 Gibbs 采样在高维、强相关的分布中表现不佳——它们进行的是随机游走式的探索，有效样本效率低。</p>
+<p><strong>Hamiltonian Monte Carlo</strong>（HMC, Duane et al. 1987; Neal 2011）通过引入物理学中的哈密尔顿动力学原理，使得采样器能沿着目标分布的等高线进行大幅度跳跃，大幅提高了采样效率。</p>
+<h3 id="5-2-物理类比"><a href="#5-2-物理类比" class="headerlink" title="5.2 物理类比"></a>5.2 物理类比</h3><p>HMC 将采样问题类比为粒子在势能场中的运动：</p>
+<ul>
+<li><strong>位置</strong> $q$：我们想要采样的参数（对应 $\theta$）</li>
+<li><strong>动量</strong> $p$：辅助变量，从 $\mathcal{N}(0, M)$ 中采样</li>
+<li><strong>势能</strong> $U(q) &#x3D; -\log p(q)$：目标分布的负对数密度</li>
+<li><strong>动能</strong> $K(p) &#x3D; \frac{1}{2}p^T M^{-1} p$</li>
+<li><strong>哈密尔顿量</strong> $H(q, p) &#x3D; U(q) + K(p)$：总能量</li>
+</ul>
+<p>哈密尔顿动力学方程：</p>
+<p>$$
+\frac{dq}{dt} = \frac{\partial H}{\partial p} = M^{-1}p, \quad \frac{dp}{dt} = -\frac{\partial H}{\partial q} = -\nabla U(q)
+$$</p>
+<h3 id="5-3-Leapfrog-积分"><a href="#5-3-Leapfrog-积分" class="headerlink" title="5.3 Leapfrog 积分"></a>5.3 Leapfrog 积分</h3><p>HMC 使用<strong>蛙跳法</strong>（leapfrog integrator）来数值模拟哈密尔顿动力学：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Leapfrog(q, p, ε, L):</span><br><span class="line">    p = p - (ε/2) * ∇U(q)</span><br><span class="line">    for i = 1..L:</span><br><span class="line">        q = q + ε * M^&#123;-1&#125; * p</span><br><span class="line">        if i &lt; L:</span><br><span class="line">            p = p - ε * ∇U(q)</span><br><span class="line">    p = p - (ε/2) * ∇U(q)</span><br><span class="line">    return q, p</span><br></pre></td></tr></table></figure>
+
+<p>HMC 的接受概率使用 Metropolis 修正：</p>
+<p>$$
+\alpha = \min(1, \exp(H(q, p) - H(q', p')))
+$$</p>
+<p>由于数值误差，$H$ 不是完全守恒的，所以需要 Metropolis 步骤修正。</p>
+<h3 id="5-4-NUTS：自适应-HMC"><a href="#5-4-NUTS：自适应-HMC" class="headerlink" title="5.4 NUTS：自适应 HMC"></a>5.4 NUTS：自适应 HMC</h3><p><strong>No-U-Turn Sampler</strong>（NUTS, Hoffman &amp; Gelman 2014）是 HMC 的一种自适应版本，它自动调整蛙跳步数 $L$，当轨迹开始”掉头”时停止。NUTS 是 Stan 概率编程语言中使用的默认采样器。</p>
+<h3 id="5-5-HMC-vs-MH-vs-Gibbs"><a href="#5-5-HMC-vs-MH-vs-Gibbs" class="headerlink" title="5.5 HMC vs MH vs Gibbs"></a>5.5 HMC vs MH vs Gibbs</h3><table>
+<thead>
+<tr>
+<th>方面</th>
+<th>MH</th>
+<th>Gibbs</th>
+<th>HMC</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>探索方式</td>
+<td>随机游走</td>
+<td>坐标轴移动</td>
+<td>沿梯度”滑行”</td>
+</tr>
+<tr>
+<td>高维效率</td>
+<td>差</td>
+<td>中</td>
+<td>好</td>
+</tr>
+<tr>
+<td>需要梯度</td>
+<td>否</td>
+<td>否</td>
+<td>是</td>
+</tr>
+<tr>
+<td>超参数</td>
+<td>proposal 标准差</td>
+<td>无</td>
+<td>$\varepsilon$ (步长), $L$ (步数)</td>
+</tr>
+<tr>
+<td>ESS&#x2F;iteration</td>
+<td>低</td>
+<td>中</td>
+<td>高</td>
+</tr>
+</tbody></table>
+<p><strong>ESS</strong>（Effective Sample Size）：有效样本量。由于 MCMC 样本是相关的，$S$ 个 MCMC 样本的信息量相当于 $\text{ESS} \ll S$ 个独立样本。</p>
+<h3 id="5-6-Slice-Sampling：无需调参的-MCMC"><a href="#5-6-Slice-Sampling：无需调参的-MCMC" class="headerlink" title="5.6 Slice Sampling：无需调参的 MCMC"></a>5.6 Slice Sampling：无需调参的 MCMC</h3><p><strong>Slice Sampling</strong>（Neal, 2003）是另一种经典的 MCMC 方法。它的核心思想是：通过在目标分布 $p(x)$ 的”上方”和”下方”交替采样，自动选择步长，从而消除了对 proposal 标准差的调参需求。</p>
+<p>Slice Sampling 引入辅助变量 $y$（”高度”），在增广空间 $(x, y)$ 上采样。联合分布为：</p>
+<p>$$
+p(x, y) = \begin{cases}
+1 / Z & \text{if } 0 \leq y \leq p(x) \\
+0 & \text{otherwise}
+\end{cases}
+$$</p>
+<p>其中 $Z &#x3D; \int p(x) dx$ 是归一化常数。$p(x, y)$ 对 $y$ 积分后 $x$ 的边缘分布恰为 $p(x)$。</p>
+<p><strong>算法流程</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Algorithm: Slice Sampling</span><br><span class="line">----------------------------------------------</span><br><span class="line">For t = 0 to S-1:</span><br><span class="line">    1. Draw y ~ Uniform(0, p(x^(t)))   // &quot;切片&quot;高度</span><br><span class="line">    2. Find interval (L, R) containing x^(t) </span><br><span class="line">       where p(x) ≥ y                   // &quot;步出&quot;（stepping out）</span><br><span class="line">    3. Draw x^(t+1) ~ Uniform(L, R)     // &quot;步内采样&quot;</span><br><span class="line">       If p(x^(t+1)) &lt; y: shrink interval and retry</span><br></pre></td></tr></table></figure>
+
+<p>Slice Sampling 的优势：</p>
+<ul>
+<li><strong>无 proposal 调参</strong>：不需要选择 proposal 分布或步长</li>
+<li><strong>对多峰分布适应性好</strong>：在步出（stepping out）阶段自动适应局部分布宽度</li>
+<li><strong>实现简单</strong></li>
+</ul>
+<p>局限：</p>
+<ul>
+<li><strong>多维扩展困难</strong>：在多维空间中，slice sampling 需要在每个维度独立运行，效率下降</li>
+<li><strong>轻尾分布可能效率低</strong>：如果目标分布有很长的轻尾，”步出”可能非常耗时</li>
+</ul>
+<p>Slice Sampling 在早期贝叶斯计算中广泛使用（如 JAGS、早期的 PyMC），但在 HMC&#x2F;NUTS 成熟后逐渐被取代。理解它仍然有价值——它的双阶段（步出 + 步内）设计体现了 MCMC 方法设计中的核心权衡：探索（找到高概率区域）vs 利用（在高概率区域内采样）。</p>
+<h3 id="5-7-实战：使用-Stan-和-PyMC-进行贝叶斯回归"><a href="#5-7-实战：使用-Stan-和-PyMC-进行贝叶斯回归" class="headerlink" title="5.7 实战：使用 Stan 和 PyMC 进行贝叶斯回归"></a>5.7 实战：使用 Stan 和 PyMC 进行贝叶斯回归</h3><p>现代 MCMC 的实际使用通常不手写采样器，而是使用概率编程语言（PPL）。以下是使用 PyMC 进行贝叶斯线性回归的完整示例：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> pymc <span class="keyword">as</span> pm</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="comment"># Simulate data</span></span><br><span class="line">np.random.seed(<span class="number">42</span>)</span><br><span class="line">X = np.random.randn(<span class="number">100</span>, <span class="number">2</span>)</span><br><span class="line">true_beta = np.array([<span class="number">2.0</span>, -<span class="number">1.5</span>])</span><br><span class="line">true_sigma = <span class="number">0.5</span></span><br><span class="line">y = X @ true_beta + true_sigma * np.random.randn(<span class="number">100</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Bayesian linear regression with PyMC</span></span><br><span class="line"><span class="keyword">with</span> pm.Model() <span class="keyword">as</span> model:</span><br><span class="line">    <span class="comment"># Priors</span></span><br><span class="line">    beta = pm.Normal(<span class="string">&#x27;beta&#x27;</span>, mu=<span class="number">0</span>, sigma=<span class="number">10</span>, shape=<span class="number">2</span>)</span><br><span class="line">    sigma = pm.HalfNormal(<span class="string">&#x27;sigma&#x27;</span>, sigma=<span class="number">5</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># Likelihood</span></span><br><span class="line">    mu = pm.math.dot(X, beta)</span><br><span class="line">    y_obs = pm.Normal(<span class="string">&#x27;y_obs&#x27;</span>, mu=mu, sigma=sigma, observed=y)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># Sample (NUTS is the default sampler)</span></span><br><span class="line">    trace = pm.sample(draws=<span class="number">2000</span>, tune=<span class="number">1000</span>, chains=<span class="number">4</span>, random_seed=<span class="number">42</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Posterior summary</span></span><br><span class="line">summary = pm.summary(trace)</span><br><span class="line"><span class="built_in">print</span>(summary)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Check convergence</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;R-hat: <span class="subst">&#123;pm.rhat(trace)&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;ESS: <span class="subst">&#123;pm.ess(trace)&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Posterior predictive</span></span><br><span class="line"><span class="keyword">with</span> model:</span><br><span class="line">    post_pred = pm.sample_posterior_predictive(trace)</span><br></pre></td></tr></table></figure>
+
+<p>使用 Stan 的等价代码（在 <code>.stan</code> 文件中）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">data &#123;</span><br><span class="line">    int&lt;lower=0&gt; N;</span><br><span class="line">    int&lt;lower=0&gt; K;</span><br><span class="line">    matrix[N, K] X;</span><br><span class="line">    vector[N] y;</span><br><span class="line">&#125;</span><br><span class="line">parameters &#123;</span><br><span class="line">    vector[K] beta;</span><br><span class="line">    real&lt;lower=0&gt; sigma;</span><br><span class="line">&#125;</span><br><span class="line">model &#123;</span><br><span class="line">    beta ~ normal(0, 10);</span><br><span class="line">    sigma ~ normal(0, 5);</span><br><span class="line">    y ~ normal(X * beta, sigma);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>关键实践要点：</p>
+<ol>
+<li><strong>tune（warm-up）</strong>：Stan&#x2F;PyMC 默认使用 warm-up 阶段自动调整 HMC&#x2F;NUTS 的步长和 mass matrix。这是 MCMC 自动化的重要一步。</li>
+<li><strong>Mass Matrix 自适应</strong>：NUTS 在 warm-up 阶段会学习参数之间的相关性（通过估计 posterior 协方差矩阵），从而设置合适的 HMC mass matrix。这解释了为什么 NUTS 在高相关性分布中仍然高效。</li>
+<li><strong>Target Acceptance Rate</strong>：NUTS 默认目标接受率为 0.8（对于 HMC，最优接受率高于随机游走 MH 的 0.234）。</li>
+<li><strong>Divergences</strong>：如果出现 divergent transitions，通常意味着步长太大或模型参数化不当。可以使用非中心化参数化（non-centered parameterization）解决。</li>
+</ol>
+<h2 id="六、MCMC-诊断与最佳实践"><a href="#六、MCMC-诊断与最佳实践" class="headerlink" title="六、MCMC 诊断与最佳实践"></a>六、MCMC 诊断与最佳实践</h2><h3 id="6-1-收敛诊断"><a href="#6-1-收敛诊断" class="headerlink" title="6.1 收敛诊断"></a>6.1 收敛诊断</h3><p><strong>$\hat{R}$ 统计量</strong>（Gelman-Rubin 统计量）：比较多个独立链的链间方差和链内方差：</p>
+<p>$$
+\hat{R} = \sqrt{\frac{\widehat{\text{var}}^+(\psi)}{W}}
+$$</p>
+<p>其中 $\widehat{\text{var}}^+$ 是 $\text{pooled}$ 后验方差的估计，$W$ 是链内方差。</p>
+<p>当 $\hat{R} &lt; 1.01$ 时，链通常被认为已经收敛。</p>
+<p><strong>迹图</strong>（Trace plot）：画出参数值随时间的变化，目测是否有趋势或周期。</p>
+<p><strong>自相关函数</strong>（ACF）：检查样本的相关性衰减速度。</p>
+<h3 id="6-2-Burn-in-和-Thinning"><a href="#6-2-Burn-in-和-Thinning" class="headerlink" title="6.2 Burn-in 和 Thinning"></a>6.2 Burn-in 和 Thinning</h3><ul>
+<li><strong>Burn-in</strong>：丢弃前 $B$ 个样本，以消除初始状态的影响。一般在迹图稳定后即可判定 burn-in 结束</li>
+<li><strong>Thinning</strong>：每隔 $m$ 个样本保留 1 个，以减少存储和自相关。注意：thinning 不会增加有效信息量，纯属存储优化</li>
+</ul>
+<h3 id="6-3-实践清单"><a href="#6-3-实践清单" class="headerlink" title="6.3 实践清单"></a>6.3 实践清单</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">MCMC 最佳实践清单：</span><br><span class="line">□ 运行至少 4 条独立链，从不同初始点出发</span><br><span class="line">□ 确保 R̂ &lt; 1.01（最好 &lt; 1.005）</span><br><span class="line">□ 检查 ESS（应 ≥ 100 每链用于基本推断）</span><br><span class="line">□ 目检 trace plots 确保没有趋势</span><br><span class="line">□ 检查是否有发散转移（divergent transitions）</span><br><span class="line">□ 对高维模型考虑使用 HMC/NUTS</span><br></pre></td></tr></table></figure>
+
+<h2 id="七、面试高频问题"><a href="#七、面试高频问题" class="headerlink" title="七、面试高频问题"></a>七、面试高频问题</h2><p><strong>Q1：MCMC 与普通的 Monte Carlo 有什么区别？</strong></p>
+<p>普通 Monte Carlo 方法尝试从目标分布<strong>独立采样</strong>（如 rejection sampling, importance sampling）。这在低维可行，但在高维遭遇维度灾难。</p>
+<p>MCMC 不要求独立采样，而是构造一个马尔可夫链，其平稳分布等于目标分布。样本虽然是<strong>相关的</strong>，但只要链足够长，样本平均仍然收敛到真实期望。MCMC 在高维问题中通常更可行。</p>
+<p><strong>Q2：MH 算法为什么需要接受&#x2F;拒绝步骤？不能直接接受所有提议吗？</strong></p>
+<p>如果直接接受所有提议，链的平稳分布将由提议分布 $q$ 决定，而非目标分布 $p$。例如，如果 $q$ 倾向于往右走，直接接受所有提议会导致链越来越右，采样不到左侧的区域。</p>
+<p>接受&#x2F;拒绝步骤通过精确的 Metropolis 修正（$\alpha &#x3D; \min(1, \frac{p(x’)q(x|x’)}{p(x)q(x’|x)})$）保证了<strong>细致平衡条件</strong>（detailed balance）：</p>
+<p>$$
+p(x) T(x'|x) = p(x') T(x|x')
+$$</p>
+<p>细致平衡蕴含 $p$ 是链的平稳分布。</p>
+<p><strong>Q3：Gibbs 采样为什么总是接受？它的秘密是什么？</strong></p>
+<p>Gibbs 采样的提议分布是 $q(x_i’|x) &#x3D; p(x_i’|x_{-i})$。代入 MH 的接受概率：</p>
+<p>$$
+\alpha = \min\left(1, \frac{p(x')}{p(x)} \cdot \frac{p(x_i|x_{-i})}{p(x_i'|x_{-i})}\right)
+$$</p>
+<p>而 $p(x’) &#x3D; p(x_i’|x_{-i}) p(x_{-i})$，$p(x) &#x3D; p(x_i|x_{-i}) p(x_{-i})$，代入得：</p>
+<p>$$
+\alpha = \min\left(1, \frac{p(x_i'|x_{-i})p(x_{-i})}{p(x_i|x_{-i})p(x_{-i})} \cdot \frac{p(x_i|x_{-i})}{p(x_i'|x_{-i})}\right) = \min(1, 1) = 1
+$$</p>
+<p>Gibbs 不”神奇”，它只是选择了使接受率恒为 1 的特殊提议分布。</p>
+<p><strong>Q4：HMC 为什么比随机游走 MH 更高效？原理是什么？</strong></p>
+<p>随机游走 MH 的探索是无方向的——$\sqrt{n}$ 步后只走了 $\approx \sigma \sqrt{n}$ 的距离（随机游走的均方根位移）。在 $d$ 维中，这极其缓慢。</p>
+<p>HMC 利用目标分布的<strong>梯度信息</strong>，沿着分布的”山谷”（高概率密度方向）进行长距离移动。在物理类比中，粒子沿着等势能面的切线方向滑行（维持了总能量），能快速穿越状态空间——这等价于利用了分布的几何结构。</p>
+<p>代价是需要计算梯度 $\nabla \log p(x)$，但对于可微分的模型，现代自动微分工具（如 Stan, PyMC, TensorFlow Probability）使这变得简单。</p>
+<p><strong>Q5：如何判断 MCMC 链是否收敛？有哪些诊断手段？</strong></p>
+<ol>
+<li><strong>$\hat{R}$（Gelman-Rubin）</strong>：比较链间方差和链内方差，$\hat{R} &lt; 1.01$ 表示收敛</li>
+<li><strong>迹图</strong>：多条链的迹图混合在一起，没有明显趋势</li>
+<li><strong>自相关图</strong>：lag 增大后自相关快速衰减</li>
+<li><strong>有效样本量（ESS）</strong>：$\text{ESS} &gt; 100$ per chain</li>
+<li><strong>发散转移检测</strong>：HMC&#x2F;NUTS 中，如果蛙跳积分出现数值不稳定（步长太大），会标记为 divergent transition</li>
+</ol>
+<p>综合使用这些诊断手段，而非依赖单一指标。</p>
+<h2 id="八、总结"><a href="#八、总结" class="headerlink" title="八、总结"></a>八、总结</h2><p>MCMC 是现代贝叶斯统计的引擎。它将一个看似不可能的高维积分问题，转化为构造和模拟马尔可夫链的问题。从 Metropolis-Hastings 到 Gibbs 采样再到 Hamiltonian Monte Carlo，MCMC 方法在理论与计算效率上不断进化，使得越来越复杂的贝叶斯模型能够在可接受的时间内进行推断。</p>
+<p>理解 MCMC 不仅是学习统计方法的必要步骤，也是理解概率编程语言（如 Stan, PyMC, JAGS）内部工作原理的关键。在后续的学习中，当你看到这些工具快速地对复杂贝叶斯模型进行采样时，你应当意识到：它们背后运行的正是本文介绍的这些优雅算法。</p>
+<p><strong>参考文献</strong>：</p>
+<ol>
+<li>Metropolis, N., Rosenbluth, A. W., Rosenbluth, M. N., Teller, A. H., &amp; Teller, E. (1953). Equation of state calculations by fast computing machines. <em>Journal of Chemical Physics</em>, 21(6), 1087-1092.</li>
+<li>Hastings, W. K. (1970). Monte Carlo sampling methods using Markov chains and their applications. <em>Biometrika</em>, 57(1), 97-109.</li>
+<li>Geman, S., &amp; Geman, D. (1984). Stochastic relaxation, Gibbs distributions, and the Bayesian restoration of images. <em>IEEE Transactions on Pattern Analysis and Machine Intelligence</em>, 6(6), 721-741.</li>
+<li>Neal, R. M. (2011). MCMC using Hamiltonian dynamics. <em>Handbook of Markov Chain Monte Carlo</em>.</li>
+<li>Hoffman, M. D., &amp; Gelman, A. (2014). The No-U-Turn Sampler: Adaptively setting path lengths in Hamiltonian Monte Carlo. <em>JMLR</em>, 15(1), 1593-1623.</li>
+</ol>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2020/07/01/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E2%85%A1%E3%80%91%E9%A9%AC%E5%B0%94%E7%A7%91%E5%A4%AB%E9%93%BE%E8%92%99%E7%89%B9%E5%8D%A1%E6%B4%9B%E6%B3%95/">http://tufusi.com/2020/07/01/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E2%85%A1%E3%80%91%E9%A9%AC%E5%B0%94%E7%A7%91%E5%A4%AB%E9%93%BE%E8%92%99%E7%89%B9%E5%8D%A1%E6%B4%9B%E6%B3%95/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2020/07/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%8F%90%E5%8D%87%E7%AE%97%E6%B3%95/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【统计学习方法死磕系列】提升算法</span></div></a></div><div class="next-post pull_right"><a href="/2020/06/20/%E3%80%90%E7%BB%8F%E5%85%B8%E7%AE%97%E6%B3%95%E3%80%91%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9CBP%E7%AE%97%E6%B3%95/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【经典算法】神经网络BP算法</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

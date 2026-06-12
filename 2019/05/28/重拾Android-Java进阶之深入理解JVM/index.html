@@ -1,0 +1,529 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>Java进阶之深入理解JVM | ONE·PIECE</title><meta name="description" content="Java进阶之深入理解JVM"><meta name="keywords" content="JVM"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Java进阶之深入理解JVM"><meta name="twitter:description" content="Java进阶之深入理解JVM"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/photo-1589371709918-9dfa8c55338e.jpg"><meta property="og:type" content="article"><meta property="og:title" content="Java进阶之深入理解JVM"><meta property="og:url" content="http://tufusi.com/2019/05/28/%E9%87%8D%E6%8B%BEAndroid-Java%E8%BF%9B%E9%98%B6%E4%B9%8B%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="Java进阶之深入理解JVM"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/photo-1589371709918-9dfa8c55338e.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2019/05/28/%E9%87%8D%E6%8B%BEAndroid-Java%E8%BF%9B%E9%98%B6%E4%B9%8B%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM/"><link rel="prev" title="Java进阶之深入理解ClassLoader类加载" href="http://tufusi.com/2019/05/29/%E9%87%8D%E6%8B%BEAndroid-Java%E8%BF%9B%E9%98%B6%E4%B9%8B%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3ClassLoader%E7%B1%BB%E5%8A%A0%E8%BD%BD/"><link rel="next" title="Java进阶之深入理解GC机制" href="http://tufusi.com/2019/05/27/%E9%87%8D%E6%8B%BEAndroid-Java%E8%BF%9B%E9%98%B6%E4%B9%8B%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3GC%E6%9C%BA%E5%88%B6/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81JVM-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、JVM 整体架构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%AD%90%E7%B3%BB%E7%BB%9F"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、类加载子系统</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E7%9A%84%E4%B8%89%E4%B8%AA%E9%98%B6%E6%AE%B5"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 类加载的三个阶段</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 类加载器的层次结构</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA%E5%9F%9F"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、运行时数据区域</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E7%A8%8B%E5%BA%8F%E8%AE%A1%E6%95%B0%E5%99%A8%EF%BC%88PC-Register%EF%BC%89"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 程序计数器（PC Register）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-Java-%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88%EF%BC%88Stack%EF%BC%89"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 Java 虚拟机栈（Stack）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-%E6%9C%AC%E5%9C%B0%E6%96%B9%E6%B3%95%E6%A0%88%EF%BC%88Native-Method-Stack%EF%BC%89"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 本地方法栈（Native Method Stack）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-%E5%A0%86%EF%BC%88Heap%EF%BC%89"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">3.4 堆（Heap）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-5-%E6%96%B9%E6%B3%95%E5%8C%BA%EF%BC%88Method-Area-Metaspace%EF%BC%89"><span class="toc_mobile_items-number">3.5.</span> <span class="toc_mobile_items-text">3.5 方法区（Method Area &#x2F; Metaspace）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-6-%E7%9B%B4%E6%8E%A5%E5%86%85%E5%AD%98%EF%BC%88Direct-Memory%EF%BC%89%E4%B8%8E-Code-Cache"><span class="toc_mobile_items-number">3.6.</span> <span class="toc_mobile_items-text">3.6 直接内存（Direct Memory）与 Code Cache</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%88%9B%E5%BB%BA%E4%B8%8E%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、对象的创建与内存布局</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E5%AF%B9%E8%B1%A1%E5%88%9B%E5%BB%BA%E7%9A%84%E5%AE%8C%E6%95%B4%E6%B5%81%E7%A8%8B"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 对象创建的完整流程</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 对象的内存布局</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-%E5%AF%B9%E8%B1%A1%E7%9A%84%E8%AE%BF%E9%97%AE%E5%AE%9A%E4%BD%8D"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 对象的访问定位</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、执行引擎</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E8%A7%A3%E9%87%8A%E6%89%A7%E8%A1%8C"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 解释执行</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-JIT-%E7%BC%96%E8%AF%91"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 JIT 编译</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-JIT-%E7%BC%96%E8%AF%91%E7%9A%84%E7%BB%8F%E5%85%B8%E4%BC%98%E5%8C%96"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 JIT 编译的经典优化</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-4-ART-%E7%9A%84%E6%89%A7%E8%A1%8C%E6%A8%A1%E5%BC%8F"><span class="toc_mobile_items-number">5.4.</span> <span class="toc_mobile_items-text">5.4 ART 的执行模式</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E7%BC%96%E8%AF%91%E4%B8%8E%E6%89%A7%E8%A1%8C%E5%85%A8%E9%93%BE%E8%B7%AF"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、编译与执行全链路</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-class-%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 class 文件结构详解</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81JVM-vs-ART-%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、JVM vs ART 对比</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%85%B3%E9%94%AE%E5%B7%AE%E5%BC%82%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">关键差异详解</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81JVM-%E8%B0%83%E4%BC%98%E5%B8%B8%E7%94%A8%E5%8F%82%E6%95%B0"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、JVM 调优常用参数</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E6%BA%90%E7%A0%81%E8%B7%AF%E5%BE%84%E6%B1%87%E6%80%BB"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、源码路径汇总</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81%E5%B8%B8%E8%A7%81%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">十、常见面试题</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81JVM-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="toc-number">1.</span> <span class="toc-text">一、JVM 整体架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%AD%90%E7%B3%BB%E7%BB%9F"><span class="toc-number">2.</span> <span class="toc-text">二、类加载子系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E7%9A%84%E4%B8%89%E4%B8%AA%E9%98%B6%E6%AE%B5"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 类加载的三个阶段</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 类加载器的层次结构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA%E5%9F%9F"><span class="toc-number">3.</span> <span class="toc-text">三、运行时数据区域</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%A8%8B%E5%BA%8F%E8%AE%A1%E6%95%B0%E5%99%A8%EF%BC%88PC-Register%EF%BC%89"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 程序计数器（PC Register）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Java-%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88%EF%BC%88Stack%EF%BC%89"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 Java 虚拟机栈（Stack）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%9C%AC%E5%9C%B0%E6%96%B9%E6%B3%95%E6%A0%88%EF%BC%88Native-Method-Stack%EF%BC%89"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 本地方法栈（Native Method Stack）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%A0%86%EF%BC%88Heap%EF%BC%89"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 堆（Heap）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-%E6%96%B9%E6%B3%95%E5%8C%BA%EF%BC%88Method-Area-Metaspace%EF%BC%89"><span class="toc-number">3.5.</span> <span class="toc-text">3.5 方法区（Method Area &#x2F; Metaspace）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-%E7%9B%B4%E6%8E%A5%E5%86%85%E5%AD%98%EF%BC%88Direct-Memory%EF%BC%89%E4%B8%8E-Code-Cache"><span class="toc-number">3.6.</span> <span class="toc-text">3.6 直接内存（Direct Memory）与 Code Cache</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%88%9B%E5%BB%BA%E4%B8%8E%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80"><span class="toc-number">4.</span> <span class="toc-text">四、对象的创建与内存布局</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%AF%B9%E8%B1%A1%E5%88%9B%E5%BB%BA%E7%9A%84%E5%AE%8C%E6%95%B4%E6%B5%81%E7%A8%8B"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 对象创建的完整流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 对象的内存布局</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E5%AF%B9%E8%B1%A1%E7%9A%84%E8%AE%BF%E9%97%AE%E5%AE%9A%E4%BD%8D"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 对象的访问定位</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E"><span class="toc-number">5.</span> <span class="toc-text">五、执行引擎</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E8%A7%A3%E9%87%8A%E6%89%A7%E8%A1%8C"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 解释执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-JIT-%E7%BC%96%E8%AF%91"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 JIT 编译</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-JIT-%E7%BC%96%E8%AF%91%E7%9A%84%E7%BB%8F%E5%85%B8%E4%BC%98%E5%8C%96"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 JIT 编译的经典优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-ART-%E7%9A%84%E6%89%A7%E8%A1%8C%E6%A8%A1%E5%BC%8F"><span class="toc-number">5.4.</span> <span class="toc-text">5.4 ART 的执行模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E7%BC%96%E8%AF%91%E4%B8%8E%E6%89%A7%E8%A1%8C%E5%85%A8%E9%93%BE%E8%B7%AF"><span class="toc-number">6.</span> <span class="toc-text">六、编译与执行全链路</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-class-%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E8%AF%A6%E8%A7%A3"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 class 文件结构详解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81JVM-vs-ART-%E5%AF%B9%E6%AF%94"><span class="toc-number">7.</span> <span class="toc-text">七、JVM vs ART 对比</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E5%B7%AE%E5%BC%82%E8%AF%A6%E8%A7%A3"><span class="toc-number">7.1.</span> <span class="toc-text">关键差异详解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81JVM-%E8%B0%83%E4%BC%98%E5%B8%B8%E7%94%A8%E5%8F%82%E6%95%B0"><span class="toc-number">8.</span> <span class="toc-text">八、JVM 调优常用参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E6%BA%90%E7%A0%81%E8%B7%AF%E5%BE%84%E6%B1%87%E6%80%BB"><span class="toc-number">9.</span> <span class="toc-text">九、源码路径汇总</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E5%B8%B8%E8%A7%81%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="toc-number">10.</span> <span class="toc-text">十、常见面试题</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/photo-1589371709918-9dfa8c55338e.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">Java进阶之深入理解JVM</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2019-05-28<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-11</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">5.6k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 19 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、JVM-整体架构"><a href="#一、JVM-整体架构" class="headerlink" title="一、JVM 整体架构"></a>一、JVM 整体架构</h2><p>JVM（Java Virtual Machine）是 Java 跨平台能力的基石。它定义了 Java 程序执行的标准环境，向上为 Java 语言提供统一的运行时语义，向下屏蔽了底层操作系统和硬件差异。</p>
+<p>JVM 规范的架构可以分为以下几个子系统：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌─────────────────────────────────────────────────┐</span><br><span class="line">│              类加载子系统                         │</span><br><span class="line">│   Bootstrap CL → Extension CL → Application CL  │</span><br><span class="line">│   加载 → 链接(验证/准备/解析) → 初始化            │</span><br><span class="line">├─────────────────────────────────────────────────┤</span><br><span class="line">│              运行时数据区域                       │</span><br><span class="line">│  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ │</span><br><span class="line">│  │ 方法区│ │ 堆   │ │虚拟机栈│ │本地方法│ │  PC  │ │</span><br><span class="line">│  │Method │ │ Heap │ │ Stack │ │  栈    │ │寄存器│ │</span><br><span class="line">│  │ Area  │ │      │ │      │ │NMT Stack│ │      │ │</span><br><span class="line">│  └──────┘ └──────┘ └──────┘ └──────┘ └──────┘ │</span><br><span class="line">├─────────────────────────────────────────────────┤</span><br><span class="line">│              执行引擎                           │</span><br><span class="line">│   解释器 → JIT 编译器 → 垃圾回收器               │</span><br><span class="line">├─────────────────────────────────────────────────┤</span><br><span class="line">│           本地方法接口 (JNI)                      │</span><br><span class="line">│           本地方法库 (libc, libm, ...)           │</span><br><span class="line">└─────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h2 id="二、类加载子系统"><a href="#二、类加载子系统" class="headerlink" title="二、类加载子系统"></a>二、类加载子系统</h2><h3 id="2-1-类加载的三个阶段"><a href="#2-1-类加载的三个阶段" class="headerlink" title="2.1 类加载的三个阶段"></a>2.1 类加载的三个阶段</h3><p>类的生命周期分为 7 个阶段：加载（Loading）、验证（Verification）、准备（Preparation）、解析（Resolution）、初始化（Initialization）、使用（Using）、卸载（Unloading）。其中加载、验证、准备、初始化、卸载这 5 个阶段的顺序是确定的，解析阶段可能在初始化之后（为了支持动态绑定）。</p>
+<p><strong>加载（Loading）</strong></p>
+<ul>
+<li>通过全限定名获取类的二进制字节流</li>
+<li>将字节流转换为方法区的运行时数据结构</li>
+<li>在堆中生成 <code>java.lang.Class</code> 对象，作为方法区类数据的入口</li>
+</ul>
+<p><strong>验证（Verification）</strong></p>
+<ul>
+<li>文件格式验证：魔数 <code>0xCAFEBABE</code>、版本号、常量池</li>
+<li>元数据验证：是否有父类、是否继承了 final 类</li>
+<li>字节码验证：类型安全、操作数栈与局部变量表匹配</li>
+<li>符号引用验证：能否解析到实际的类、方法、字段</li>
+</ul>
+<p>源码中，HotSpot 的验证逻辑在 <code>src/hotspot/share/classfile/verifier.cpp</code> 中，整体验证入口是 <code>Verifier::verify()</code>。</p>
+<p><strong>准备（Preparation）</strong></p>
+<ul>
+<li>为静态变量分配内存并赋”零值”</li>
+<li>例如 <code>public static int value = 123;</code> 在此阶段 value &#x3D; 0（不是 123！）</li>
+<li>123 是在初始化阶段的 <code>&lt;clinit&gt;</code> 中赋值的</li>
+<li>但被 <code>final</code> 修饰的 static 变量（编译期常量）会在此阶段直接赋值</li>
+</ul>
+<p><strong>解析（Resolution）</strong></p>
+<ul>
+<li>将常量池中的符号引用替换为直接引用</li>
+<li>包括类解析、字段解析、方法解析、接口方法解析</li>
+</ul>
+<p><strong>初始化（Initialization）</strong></p>
+<ul>
+<li>执行 <code>&lt;clinit&gt;</code> 方法（静态变量赋值 + static 代码块）</li>
+<li>父类先于子类初始化</li>
+<li><code>&lt;clinit&gt;</code> 方法是线程安全的（JVM 保证同一个类的 <code>&lt;clinit&gt;</code> 只被一个线程执行）</li>
+</ul>
+<h3 id="2-2-类加载器的层次结构"><a href="#2-2-类加载器的层次结构" class="headerlink" title="2.2 类加载器的层次结构"></a>2.2 类加载器的层次结构</h3><p>JVM 使用<strong>双亲委派模型</strong>（Parent Delegation Model）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Bootstrap ClassLoader (启动类加载器)</span><br><span class="line">    ↑ 委派</span><br><span class="line">Extension ClassLoader (扩展类加载器) — JDK 9+ 改为 Platform ClassLoader</span><br><span class="line">    ↑ 委派</span><br><span class="line">Application ClassLoader (应用/系统类加载器)</span><br></pre></td></tr></table></figure>
+
+<p><strong>工作流程</strong>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// ClassLoader.loadClass() 的核心逻辑（简化）</span></span><br><span class="line"><span class="keyword">protected</span> Class&lt;?&gt; loadClass(String name, <span class="type">boolean</span> resolve) </span><br><span class="line">        <span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (getClassLoadingLock(name)) &#123;</span><br><span class="line">        <span class="comment">// 1. 检查是否已加载</span></span><br><span class="line">        Class&lt;?&gt; c = findLoadedClass(name);</span><br><span class="line">        <span class="keyword">if</span> (c == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">// 2. 委派给父加载器</span></span><br><span class="line">                <span class="keyword">if</span> (parent != <span class="literal">null</span>) &#123;</span><br><span class="line">                    c = parent.loadClass(name, <span class="literal">false</span>);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">// 父加载器为 null 时，尝试 Bootstrap ClassLoader</span></span><br><span class="line">                    c = findBootstrapClassOrNull(name);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">                <span class="comment">// 父加载器找不到，自己尝试</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (c == <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="comment">// 3. 自己加载</span></span><br><span class="line">                c = findClass(name);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> c;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>为什么需要双亲委派？</strong></p>
+<ul>
+<li>安全性：防止核心类库被篡改。例如用户自定义的 <code>java.lang.String</code> 不会被加载（因为 Bootstrap ClassLoader 已经加载了 rt.jar 中的 String）。</li>
+<li>唯一性：保证同一个类不会被多个 ClassLoader 重复加载，避免类型转换异常。</li>
+</ul>
+<p><strong>Android 中的 ClassLoader</strong></p>
+<p>Android 不使用 JVM 的类加载器模型，而是用 <code>PathClassLoader</code> 和 <code>DexClassLoader</code>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Android 类加载器层次</span></span><br><span class="line">BootClassLoader (加载 framework 类)</span><br><span class="line">    ↑</span><br><span class="line">PathClassLoader (加载已安装的 APK 中的 DEX)</span><br><span class="line">    ↑</span><br><span class="line">DexClassLoader (加载外部的 DEX/JAR)</span><br></pre></td></tr></table></figure>
+
+<p>Android 类加载器的源码路径：</p>
+<ul>
+<li><code>libcore/dalvik/src/main/java/dalvik/system/BaseDexClassLoader.java</code></li>
+<li><code>libcore/dalvik/src/main/java/dalvik/system/PathClassLoader.java</code></li>
+<li><code>libcore/dalvik/src/main/java/dalvik/system/DexClassLoader.java</code></li>
+</ul>
+<h2 id="三、运行时数据区域"><a href="#三、运行时数据区域" class="headerlink" title="三、运行时数据区域"></a>三、运行时数据区域</h2><h3 id="3-1-程序计数器（PC-Register）"><a href="#3-1-程序计数器（PC-Register）" class="headerlink" title="3.1 程序计数器（PC Register）"></a>3.1 程序计数器（PC Register）</h3><p>PC 寄存器是一块很小的内存空间，是线程私有的。如果线程正在执行 Java 方法，PC 记录的是当前字节码指令的地址；如果执行 native 方法，PC 为空（undefined）。PC 是 JVM 中唯一不会抛出 <code>OutOfMemoryError</code> 的区域。</p>
+<h3 id="3-2-Java-虚拟机栈（Stack）"><a href="#3-2-Java-虚拟机栈（Stack）" class="headerlink" title="3.2 Java 虚拟机栈（Stack）"></a>3.2 Java 虚拟机栈（Stack）</h3><p>每个线程都有一个私有的虚拟机栈。每个方法执行时创建一个<strong>栈帧（Stack Frame）</strong>，栈帧中存储：</p>
+<ul>
+<li><strong>局部变量表（Local Variable Table）</strong>：存储方法参数和方法内局部变量。基本类型直接存值，引用类型存储指向堆的指针。slot 是局部变量表的最小单位，long 和 double 占用 2 个 slot。</li>
+<li><strong>操作数栈（Operand Stack）</strong>：JVM 指令的”工作台”。字节码指令从局部变量表加载数据到操作数栈，执行计算后再将结果压回操作数栈。</li>
+<li><strong>动态链接（Dynamic Linking）</strong>：指向运行时常量池中该栈帧所属方法的引用。</li>
+<li><strong>方法返回地址（Return Address）</strong>：方法调用后需要返回到的指令位置。</li>
+</ul>
+<p>栈的深度在编译期已确定。如果线程请求的栈深度超过 JVM 允许的最大深度，抛出 <code>StackOverflowError</code>；如果栈可以动态扩展但无法申请到足够内存，抛出 <code>OutOfMemoryError</code>。</p>
+<h3 id="3-3-本地方法栈（Native-Method-Stack）"><a href="#3-3-本地方法栈（Native-Method-Stack）" class="headerlink" title="3.3 本地方法栈（Native Method Stack）"></a>3.3 本地方法栈（Native Method Stack）</h3><p>与虚拟机栈类似，但服务于 native 方法（JNI 调用）。在 HotSpot 中，虚拟机栈和本地方法栈是合并在一起的。</p>
+<h3 id="3-4-堆（Heap）"><a href="#3-4-堆（Heap）" class="headerlink" title="3.4 堆（Heap）"></a>3.4 堆（Heap）</h3><p>堆是 JVM 中最大的一块内存区域，是所有线程共享的。几乎所有对象实例和数组都在堆上分配。</p>
+<p>JVM 堆的结构（HotSpot）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Young Generation (1/3 of heap)</span><br><span class="line">  ├── Eden (8/10 of Young)</span><br><span class="line">  ├── Survivor0 (1/10 of Young)</span><br><span class="line">  └── Survivor1 (1/10 of Young)</span><br><span class="line">Old Generation (2/3 of heap)</span><br></pre></td></tr></table></figure>
+
+<p><strong>对象晋升到老年代的条件：</strong></p>
+<ol>
+<li>年龄达到 <code>MaxTenuringThreshold</code>（默认 15）</li>
+<li>Survivor 区中相同年龄的对象大小总和超过 Survivor 空间的一半</li>
+<li>大对象直接进入老年代（通过 <code>-XX:PretenureSizeThreshold</code> 指定）</li>
+</ol>
+<h3 id="3-5-方法区（Method-Area-Metaspace）"><a href="#3-5-方法区（Method-Area-Metaspace）" class="headerlink" title="3.5 方法区（Method Area &#x2F; Metaspace）"></a>3.5 方法区（Method Area &#x2F; Metaspace）</h3><p>方法区存储类信息、常量、静态变量、JIT 编译后的代码缓存。在 JDK 8 之前，方法区使用永久代（PermGen）实现，位于堆中。JDK 8+ 使用<strong>元空间（Metaspace）</strong>，位于本地内存中，不再受堆大小限制。</p>
+<p>在 Android ART 中，类似的概念是：</p>
+<ul>
+<li><strong>Class Table</strong>：存储类的元数据（方法的 ArtMethod、字段的 ArtField）</li>
+<li><strong>Intern Table</strong>：字符串常量池</li>
+<li><strong>DexCache</strong>：解析后的常量池缓存</li>
+</ul>
+<p>相关源码：<code>art/runtime/class_linker.cc</code> — 类的加载和元数据管理。</p>
+<h3 id="3-6-直接内存（Direct-Memory）与-Code-Cache"><a href="#3-6-直接内存（Direct-Memory）与-Code-Cache" class="headerlink" title="3.6 直接内存（Direct Memory）与 Code Cache"></a>3.6 直接内存（Direct Memory）与 Code Cache</h3><p>除了上述五个经典区域外，JVM 还使用了两块重要的本地内存：</p>
+<ul>
+<li><strong>直接内存（Direct Memory）</strong>：用于 NIO DirectByteBuffer，通过 <code>Unsafe.allocateMemory</code> 分配。不受堆大小限制，但受 <code>-XX:MaxDirectMemorySize</code> 控制（默认与 -Xmx 相同）。分配和回收开销高于堆对象。</li>
+<li><strong>代码缓存（Code Cache）</strong>：存储 JIT 编译生成的机器码。大小受 <code>-XX:ReservedCodeCacheSize</code> 控制。如果代码缓存满了，JIT 停止编译，程序退回到纯解释执行，性能急剧下降——这种情况称为”代码缓存清除（Code Cache Flushing）”。</li>
+</ul>
+<h2 id="四、对象的创建与内存布局"><a href="#四、对象的创建与内存布局" class="headerlink" title="四、对象的创建与内存布局"></a>四、对象的创建与内存布局</h2><h3 id="4-1-对象创建的完整流程"><a href="#4-1-对象创建的完整流程" class="headerlink" title="4.1 对象创建的完整流程"></a>4.1 对象创建的完整流程</h3><p>从 <code>new Object()</code> 到堆上出现一个对象实例，经历了以下步骤：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. 类加载检查</span><br><span class="line">   └→ 常量池中定位到类的符号引用 → 检查类是否已加载/解析/初始化</span><br><span class="line">      → 若未加载，先执行类加载</span><br><span class="line"></span><br><span class="line">2. 分配内存</span><br><span class="line">   ├── 指针碰撞（Bump the Pointer）—— 适用于内存规整的收集器（Serial, ParNew）</span><br><span class="line">   │     用过的内存在一侧，空闲的在另一侧，中间有一个指针作为分界</span><br><span class="line">   │     分配时只需将指针向空闲侧移动对象大小的距离</span><br><span class="line">   └── 空闲列表（Free List）—— 适用于 CMS 这种基于 Mark-Sweep 的收集器</span><br><span class="line">         虚拟机维护一个列表记录可用的内存块，分配时从列表中找到足够大的块</span><br><span class="line"></span><br><span class="line">3. 并发安全处理</span><br><span class="line">   ├── CAS + 失败重试：对指针修改使用 Compare-And-Swap</span><br><span class="line">   └── TLAB（Thread Local Allocation Buffer）：</span><br><span class="line">         每个线程在 Eden 区预分配一小块内存（默认 Eden 的 1%）</span><br><span class="line">         线程在该区域内使用指针碰撞分配，无需加锁</span><br><span class="line">         只有在 TLAB 用完时才同步分配新的 TLAB</span><br><span class="line"></span><br><span class="line">4. 内存空间初始化（赋予零值）</span><br><span class="line">   将分配的内存空间全部初始化为零值（不包括对象头）</span><br><span class="line">   这保证了 Java 字段的默认值在未显式初始化时就是零值</span><br><span class="line"></span><br><span class="line">5. 设置对象头</span><br><span class="line">   类的元数据指针、对象的 HashCode（延迟计算）、GC 分代年龄</span><br><span class="line">   偏向锁/轻量级锁/重量级锁的标志位</span><br><span class="line"></span><br><span class="line">6. 执行 &lt;init&gt; 方法</span><br><span class="line">   调用构造函数，完成字段的显式初始化</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-对象的内存布局"><a href="#4-2-对象的内存布局" class="headerlink" title="4.2 对象的内存布局"></a>4.2 对象的内存布局</h3><p>一个 Java 对象在堆内存中的布局分为三部分：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌──────────────┐</span><br><span class="line">│   对象头      │  ← Mark Word (32/64 bit) + Klass Pointer (32/64 bit)</span><br><span class="line">│   (Header)   │     包含: hashCode, GC年龄, 锁状态标志, 线程持有的锁, 偏向线程ID</span><br><span class="line">├──────────────┤</span><br><span class="line">│  实例数据      │  ← 各字段按顺序排列（父类字段在前）</span><br><span class="line">│ (Instance    │     相同宽度的字段分配在一起（满足对齐要求）</span><br><span class="line">│   Data)      │     默认顺序: longs/doubles → ints/floats → shorts/chars → bytes/booleans → oops</span><br><span class="line">├──────────────┤</span><br><span class="line">│   对齐填充     │  ← 对象大小必须是 8 字节的整数倍</span><br><span class="line">│  (Padding)   │</span><br><span class="line">└──────────────┘</span><br></pre></td></tr></table></figure>
+
+<p><strong>Mark Word 的位布局（64位 JVM，压缩指针开启时）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th align="left">锁状态</th>
+<th align="left">62..34</th>
+<th align="left">33..3</th>
+<th align="left">2</th>
+<th align="left">1</th>
+<th align="left">0</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">无锁</td>
+<td align="left">unused</td>
+<td align="left">hashCode (31位)</td>
+<td align="left">0</td>
+<td align="left">GC年龄(4位)</td>
+<td align="left">01</td>
+</tr>
+<tr>
+<td align="left">偏向锁</td>
+<td align="left">线程ID(54位)</td>
+<td align="left">Epoch(2位)</td>
+<td align="left">0</td>
+<td align="left">GC年龄(4位)</td>
+<td align="left">01</td>
+</tr>
+<tr>
+<td align="left">轻量级锁</td>
+<td align="left">指向栈中锁记录的指针</td>
+<td align="left">…</td>
+<td align="left">00</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">重量级锁</td>
+<td align="left">指向重量级锁的指针</td>
+<td align="left">…</td>
+<td align="left">10</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">GC标记</td>
+<td align="left">空</td>
+<td align="left">…</td>
+<td align="left">11</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<p>在 HotSpot 源码中，对象布局相关逻辑在 <code>src/hotspot/share/oops/oop.hpp</code> 和 <code>src/hotspot/share/oops/markWord.hpp</code>。</p>
+<h3 id="4-3-对象的访问定位"><a href="#4-3-对象的访问定位" class="headerlink" title="4.3 对象的访问定位"></a>4.3 对象的访问定位</h3><p>JVM 规范没有规定对象引用的具体实现方式。HotSpot 使用<strong>直接指针</strong>方式（引用直接存储对象的内存地址），这也是最主流的方式。另一种方式是<strong>句柄池</strong>：引用指向句柄池中的一个入口，该入口包含两个指针，分别指向堆中的对象实例和方法区中的类型数据。句柄池的优势是 GC 移动对象时只需修改句柄池中的实例指针，而引用本身不需要修改——但代价是每次访问都要多一次指针跳转。</p>
+<h2 id="五、执行引擎"><a href="#五、执行引擎" class="headerlink" title="五、执行引擎"></a>五、执行引擎</h2><h3 id="5-1-解释执行"><a href="#5-1-解释执行" class="headerlink" title="5.1 解释执行"></a>5.1 解释执行</h3><p>JVM 的初始执行模式是解释执行：逐条读取字节码指令，翻译为机器指令并执行。解释器的优势是启动快，不需要预热时间，适合短生命周期的程序。缺点是执行效率低——同一条字节码指令可能被解释成千上万次。</p>
+<p>HotSpot 中有两套解释器：</p>
+<ul>
+<li><strong>C++ 解释器</strong>（<code>src/hotspot/share/interpreter/bytecodeInterpreter.cpp</code>）：纯 C++ 实现，可移植性好，但性能一般。</li>
+<li><strong>模板解释器</strong>（<code>src/hotspot/cpu/x86/templateTable_x86.cpp</code>）：为每个字节码指令生成一段汇编模板，执行时直接将对应模板复制到指令缓冲区中。性能优于 C++ 解释器，是 HotSpot 的默认解释器。</li>
+</ul>
+<h3 id="5-2-JIT-编译"><a href="#5-2-JIT-编译" class="headerlink" title="5.2 JIT 编译"></a>5.2 JIT 编译</h3><p>JIT（Just-In-Time）编译器在运行时将热点代码（Hot Spot——这就是 HotSpot 名字的由来）编译为本地机器码，后续调用直接执行机器码，大幅提升性能。</p>
+<p><strong>JIT 编译的触发条件</strong>：</p>
+<p>HotSpot 使用”热点探测”（Hot Spot Detection），两种探测方式：</p>
+<ul>
+<li><strong>基于采样的热点探测</strong>：周期性检查栈顶，如果某方法经常出现在栈顶，则标记为热点。简单但不够精确。</li>
+<li><strong>基于计数器的热点探测</strong>：为每个方法维护调用计数器（Invocation Counter）和回边计数器（Back Edge Counter，用于循环）。计数器超过阈值（Client 模式默认 1500 次，Server 模式默认 10000 次）时触发 JIT 编译。</li>
+</ul>
+<p><strong>C1 vs C2 编译器</strong>：</p>
+<ul>
+<li><strong>C1（Client Compiler）</strong>：编译速度快，优化较少。适合 GUI 应用（启动时间敏感）。</li>
+<li><strong>C2（Server Compiler）</strong>：编译速度慢，但优化激进（内联、逃逸分析、循环展开、空值检查消除等）。适合长时间运行的服务端应用。</li>
+</ul>
+<p><strong>分层编译（Tiered Compilation）</strong>：JDK 7+ 默认开启。C1 提供快速编译以加速启动，C2 在后台对持续热点的方法进行更深度的优化。</p>
+<h3 id="5-3-JIT-编译的经典优化"><a href="#5-3-JIT-编译的经典优化" class="headerlink" title="5.3 JIT 编译的经典优化"></a>5.3 JIT 编译的经典优化</h3><ul>
+<li><strong>方法内联（Method Inlining）</strong>：将小方法的代码直接嵌入调用者中，消除方法调用开销。这是最重要的优化，因为它还为其他优化（如逃逸分析）创造条件。</li>
+<li><strong>逃逸分析（Escape Analysis）</strong>：分析对象的作用域。如果对象不会逃逸出线程或方法，则可以进行标量替换（将对象的字段拆分为基本类型）、锁消除（去掉不必要的同步）、栈上分配（对象在栈上分配，无需 GC）。</li>
+<li><strong>循环优化</strong>：循环展开（Loop Unrolling）、循环外提（Loop Invariant Hoisting）、范围检查消除（Range Check Elimination）。</li>
+<li><strong>无效代码消除（Dead Code Elimination）</strong>：移除不会执行到的代码和没有副作用的空操作。</li>
+</ul>
+<h3 id="5-4-ART-的执行模式"><a href="#5-4-ART-的执行模式" class="headerlink" title="5.4 ART 的执行模式"></a>5.4 ART 的执行模式</h3><p>ART 的执行模式更为多样化：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. 解释执行 (Interpreter)</span><br><span class="line">   └→ art/runtime/interpreter/interpreter_common.cc</span><br><span class="line">      Interpreter 逐条执行 Dex 字节码</span><br><span class="line"></span><br><span class="line">2. AOT 编译 (Ahead-of-Time)</span><br><span class="line">   └→ art/dex2oat/dex2oat.cc</span><br><span class="line">      安装时用 dex2oat 将 DEX 编译为 .oat (ELF 格式)</span><br><span class="line">      Android 7+ 混合使用 AOT + Profile Guided Compilation</span><br><span class="line"></span><br><span class="line">3. JIT 编译 (Just-in-Time)</span><br><span class="line">   └→ art/runtime/jit/jit.cc</span><br><span class="line">      运行时将热点代码编译为本地机器码</span><br><span class="line">      Android 7+ 引入 JIT 编译器</span><br><span class="line"></span><br><span class="line">4. 混合模式 (Hybrid)</span><br><span class="line">   └→ 解释 + JIT + AOT</span><br><span class="line">      Profile 记录热点方法 → JIT 编译 → 后台空闲时 dex2oat AOT编译</span><br></pre></td></tr></table></figure>
+
+<h2 id="六、编译与执行全链路"><a href="#六、编译与执行全链路" class="headerlink" title="六、编译与执行全链路"></a>六、编译与执行全链路</h2><p>从 <code>.java</code> 到最终执行，完整路径如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">.java 源文件</span><br><span class="line">  ↓ javac (前端编译)</span><br><span class="line">.class 字节码（符合 JVM 规范）</span><br><span class="line">  ↓ ClassLoader (加载 → 链接 → 初始化)</span><br><span class="line">方法区中的类元数据 + 堆中的 Class 对象</span><br><span class="line">  ↓ 字节码解释器 / JIT 编译器</span><br><span class="line">对应平台的机器码（x86-64, ARM64, RISC-V...）</span><br><span class="line">  ↓ CPU 执行</span><br></pre></td></tr></table></figure>
+
+<p><strong>javac 编译的详细过程</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. Parse (词法分析 + 语法分析)</span><br><span class="line">   └→ com.sun.tools.javac.parser.JavacParser</span><br><span class="line">      生成 AST (Abstract Syntax Tree)</span><br><span class="line"></span><br><span class="line">2. Enter (符号填充)</span><br><span class="line">   └→ com.sun.tools.javac.comp.Enter</span><br><span class="line">      将类、方法、字段的定义注册到符号表</span><br><span class="line"></span><br><span class="line">3. Annotation Processing (注解处理)</span><br><span class="line">   └→ JSR-269 APT</span><br><span class="line">      如果有注解处理器，在此阶段执行</span><br><span class="line"></span><br><span class="line">4. Attribute (语义分析)</span><br><span class="line">   └→ com.sun.tools.javac.comp.Attr</span><br><span class="line">      类型检查、常量折叠</span><br><span class="line"></span><br><span class="line">5. Flow (数据流分析)</span><br><span class="line">   └→ com.sun.tools.javac.comp.Flow</span><br><span class="line">      变量赋值检查、异常检查、可达性分析</span><br><span class="line"></span><br><span class="line">6. Desugar (解语法糖)</span><br><span class="line">   └→ com.sun.tools.javac.comp.TransTypes</span><br><span class="line">      泛型擦除、自动装箱拆箱、foreach 循环展开</span><br><span class="line"></span><br><span class="line">7. Generate (字节码生成)</span><br><span class="line">   └→ com.sun.tools.javac.jvm.Gen</span><br><span class="line">      生成 ClassWriter → 输出 .class 文件</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-1-class-文件结构详解"><a href="#6-1-class-文件结构详解" class="headerlink" title="6.1 class 文件结构详解"></a>6.1 class 文件结构详解</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ClassFile &#123;</span><br><span class="line">    u4             magic;            // 0xCAFEBABE</span><br><span class="line">    u2             minor_version;    // 次版本号</span><br><span class="line">    u2             major_version;    // 主版本号（如 Java 8 = 52, Java 11 = 55, Java 17 = 61）</span><br><span class="line">    u2             constant_pool_count;</span><br><span class="line">    cp_info        constant_pool[constant_pool_count - 1];</span><br><span class="line">    u2             access_flags;     // ACC_PUBLIC, ACC_FINAL, ACC_INTERFACE, etc.</span><br><span class="line">    u2             this_class;</span><br><span class="line">    u2             super_class;</span><br><span class="line">    u2             interfaces_count;</span><br><span class="line">    u2             interfaces[interfaces_count];</span><br><span class="line">    u2             fields_count;</span><br><span class="line">    field_info     fields[fields_count];</span><br><span class="line">    u2             methods_count;</span><br><span class="line">    method_info    methods[methods_count];</span><br><span class="line">    u2             attributes_count;</span><br><span class="line">    attribute_info attributes[attributes_count];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用 <code>javap -verbose ClassName.class</code> 可以反编译 class 文件，查看完整的常量池、字节码和方法签名。</p>
+<h2 id="七、JVM-vs-ART-对比"><a href="#七、JVM-vs-ART-对比" class="headerlink" title="七、JVM vs ART 对比"></a>七、JVM vs ART 对比</h2><table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">HotSpot JVM</th>
+<th align="left">ART (Android Runtime)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">可执行文件</td>
+<td align="left">.class (JVM 字节码)</td>
+<td align="left">.dex (Dalvik 字节码)</td>
+</tr>
+<tr>
+<td align="left">指令集</td>
+<td align="left">基于操作数栈</td>
+<td align="left">基于寄存器（Dalvik 字节码是 register-based）</td>
+</tr>
+<tr>
+<td align="left">编译方式</td>
+<td align="left">解释 + C1&#x2F;C2 JIT</td>
+<td align="left">解释 + JIT + AOT (dex2oat)</td>
+</tr>
+<tr>
+<td align="left">类加载器</td>
+<td align="left">Bootstrap → Extension → Application</td>
+<td align="left">BootClassLoader → PathClassLoader</td>
+</tr>
+<tr>
+<td align="left">GC</td>
+<td align="left">G1 (默认), Serial, Parallel, CMS, ZGC</td>
+<td align="left">Concurrent Copying (Android 10+)</td>
+</tr>
+<tr>
+<td align="left">方法区</td>
+<td align="left">Metaspace (JDK 8+)</td>
+<td align="left">Class Table + DexCache</td>
+</tr>
+<tr>
+<td align="left">常量池</td>
+<td align="left">每 class 一个常量池</td>
+<td align="left">共享常量池（多 class 共享 DEX 中的常量池）</td>
+</tr>
+<tr>
+<td align="left">进程模型</td>
+<td align="left">每个 JVM 实例一个进程</td>
+<td align="left">Zygote fork（共享预加载的类和资源）</td>
+</tr>
+</tbody></table>
+<h3 id="关键差异详解"><a href="#关键差异详解" class="headerlink" title="关键差异详解"></a>关键差异详解</h3><p><strong>DEX vs .class</strong></p>
+<p>JVM 的每个 .class 文件有独立的常量池（Constant Pool），而 DEX 将多个 .class 的常量池合并为一个共享常量池。这显著减少了重复数据。例如，所有类中出现的 <code>&quot;java/lang/String&quot;</code> 字符串在 .class 文件中每个类都会存一份，但在 DEX 中只存一份。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">JVM .class:</span><br><span class="line">  class1.class: [常量池: &quot;java/lang/String&quot;, &quot;toString&quot;, ...]</span><br><span class="line">  class2.class: [常量池: &quot;java/lang/String&quot;, &quot;hashCode&quot;, ...]</span><br><span class="line">  → &quot;java/lang/String&quot; 重复存储</span><br><span class="line"></span><br><span class="line">DEX:</span><br><span class="line">  classes.dex: [共享常量池: &quot;java/lang/String&quot;, &quot;toString&quot;, &quot;hashCode&quot;, ...]</span><br><span class="line">  → 多 class 共享，体积更小</span><br></pre></td></tr></table></figure>
+
+<p><strong>寄存器 vs 操作数栈</strong></p>
+<p>Dalvik 字节码是基于寄存器的（register-based），这与 x86&#x2F;ARM 的物理寄存器更接近。但注意：Dalvik 的寄存器是<strong>虚拟寄存器</strong>，数量可变（方法头指定 <code>.registers N</code>），而非物理寄存器。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">JVM 字节码 (栈式):</span><br><span class="line">  iload_1      // 将局部变量 1 (int) 压栈</span><br><span class="line">  iload_2      // 将局部变量 2 (int) 压栈</span><br><span class="line">  iadd         // 弹出栈顶两个 int，相加后压栈</span><br><span class="line">  istore_3     // 将栈顶 int 存入局部变量 3</span><br><span class="line"></span><br><span class="line">Dalvik 字节码 (寄存器式):</span><br><span class="line">  add-int v3, v1, v2   // v3 = v1 + v2 (一条指令完成)</span><br></pre></td></tr></table></figure>
+
+<h2 id="八、JVM-调优常用参数"><a href="#八、JVM-调优常用参数" class="headerlink" title="八、JVM 调优常用参数"></a>八、JVM 调优常用参数</h2><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+<th>常见设置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>-Xms</code></td>
+<td>初始堆大小</td>
+<td>与 -Xmx 相同可减少 GC</td>
+</tr>
+<tr>
+<td><code>-Xmx</code></td>
+<td>最大堆大小</td>
+<td>根据应用需求，通常 2-4GB</td>
+</tr>
+<tr>
+<td><code>-Xss</code></td>
+<td>线程栈大小</td>
+<td>默认 1MB，可降到 256KB</td>
+</tr>
+<tr>
+<td><code>-XX:MetaspaceSize</code></td>
+<td>元空间初始大小</td>
+<td>根据类的数量设定</td>
+</tr>
+<tr>
+<td><code>-XX:MaxMetaspaceSize</code></td>
+<td>元空间最大大小</td>
+<td>防止 Metaspace OOM</td>
+</tr>
+<tr>
+<td><code>-XX:MaxDirectMemorySize</code></td>
+<td>直接内存最大</td>
+<td>与 NIO buffer 用量匹配</td>
+</tr>
+<tr>
+<td><code>-XX:ReservedCodeCacheSize</code></td>
+<td>代码缓存大小</td>
+<td>默认 240MB，可调至 512MB</td>
+</tr>
+</tbody></table>
+<h2 id="九、源码路径汇总"><a href="#九、源码路径汇总" class="headerlink" title="九、源码路径汇总"></a>九、源码路径汇总</h2><table>
+<thead>
+<tr>
+<th align="left">组件</th>
+<th align="left">AOSP 路径</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">ART 启动</td>
+<td align="left"><code>art/runtime/runtime.cc</code></td>
+<td align="left">ART Runtime 的创建和初始化</td>
+</tr>
+<tr>
+<td align="left">类链接器</td>
+<td align="left"><code>art/runtime/class_linker.cc</code></td>
+<td align="left">类加载、链接的核心实现</td>
+</tr>
+<tr>
+<td align="left">解释器</td>
+<td align="left"><code>art/runtime/interpreter/interpreter_common.cc</code></td>
+<td align="left">字节码解释执行</td>
+</tr>
+<tr>
+<td align="left">JIT</td>
+<td align="left"><code>art/runtime/jit/jit.cc</code></td>
+<td align="left">JIT 编译器管理</td>
+</tr>
+<tr>
+<td align="left">dex2oat</td>
+<td align="left"><code>art/dex2oat/dex2oat.cc</code></td>
+<td align="left">AOT 编译器入口</td>
+</tr>
+<tr>
+<td align="left">堆管理</td>
+<td align="left"><code>art/runtime/gc/heap.cc</code></td>
+<td align="left">堆分配与 GC 调度</td>
+</tr>
+<tr>
+<td align="left">Java 层 ClassLoader</td>
+<td align="left"><code>libcore/dalvik/src/main/java/dalvik/system/</code></td>
+<td align="left">Android 类加载器</td>
+</tr>
+<tr>
+<td align="left">JNI</td>
+<td align="left"><code>art/runtime/jni_internal.cc</code></td>
+<td align="left">JNI 调用管理</td>
+</tr>
+</tbody></table>
+<h2 id="十、常见面试题"><a href="#十、常见面试题" class="headerlink" title="十、常见面试题"></a>十、常见面试题</h2><p><strong>Q1: 详细描述一个对象从 new 到可以使用的完整过程。</strong></p>
+<p>A: 当执行 <code>new Object()</code> 时：(1) JVM 检查该类是否已被加载，若未加载则经历完整的类加载流程；(2) 计算对象需要的空间大小，在堆中分配内存——分配策略取决于 GC 算法：指针碰撞（Serial&#x2F;ParNew）或空闲列表（CMS）；(3) 并发安全性通过 TLAB 或 CAS+重试机制保证；(4) 将分配的内存空间清零（不包括对象头），这使得所有实例字段拥有默认值；(5) 设置对象头，包括 Mark Word 和 Klass Pointer；(6) 执行 <code>&lt;init&gt;</code> 方法（构造函数），完成字段的显式初始化。</p>
+<p><strong>Q2: 什么是双亲委派模型？为什么要这样设计？Android 的 ClassLoader 和 JVM 的有何不同？</strong></p>
+<p>A: 双亲委派模型要求除了顶层的 Bootstrap ClassLoader 外，所有 ClassLoader 在加载一个类时优先委派给父 ClassLoader。设计目的：(1) 安全性——防止核心类库被篡改；(2) 唯一性——避免同一个类被不同 ClassLoader 加载后引发 <code>ClassCastException</code>。Android 的 ClassLoader 差异：使用 BootClassLoader → PathClassLoader&#x2F;DexClassLoader，没有 Extension ClassLoader 这一层，且通过 <code>DexPathList</code> 管理多个 DEX 文件。</p>
+<p><strong>Q3: 方法区&#x2F;元空间会发生 GC 吗？什么情况下会触发？</strong></p>
+<p>A: 方法区&#x2F;元空间也会发生 GC，只是频率远低于堆 GC。触发条件：(1) 该类所有的实例都已被回收；(2) 该类的 ClassLoader 已被回收；(3) 该类的 Class 对象没有被任何地方引用。满足以上三个条件后，该类的元数据就可以在下次 Full GC 时被回收。频繁生成动态代理类可能导致 Metaspace 溢出（<code>OutOfMemoryError: Metaspace</code>），需要关注 <code>-XX:MaxMetaspaceSize</code> 的设置。</p>
+<p><strong>Q4: JVM 中操作数栈（operand stack）和局部变量表（local variable table）有什么区别？为什么 JVM 选择栈式架构而不是寄存器架构？</strong></p>
+<p>A: 操作数栈是一个 LIFO 的数据结构，用于存储字节码指令的中间结果。局部变量表是一个数组，存储方法的参数和局部变量。两者同属于栈帧的一部分，但用途不同：局部变量表是”存储”，操作数栈是”计算”。JVM 选择栈式架构的原因是<strong>平台无关性</strong>——栈不需要依赖物理 CPU 的寄存器数量和编号（x86-64 有 16 个寄存器，ARM64 有 31 个，RISC-V 有 32 个），这使得字节码可以无缝运行在任何平台上。但 JIT 编译器可以在运行时将栈式字节码转换为高效的寄存器式机器码，消除这一劣势。</p>
+<p><strong>Q5: 什么是 TLAB？为什么需要它？它的大小是如何确定的？</strong></p>
+<p>A: TLAB（Thread Local Allocation Buffer）是 JVM 为每个线程在 Eden 区预分配的一小块内存缓冲区。线程在分配小对象时，优先在自己的 TLAB 中使用指针碰撞分配，无需与其他线程竞争全局锁。当 TLAB 用完时，线程申请一个新的 TLAB（此时需要同步）。TLAB 避免了多线程场景下频繁的 CAS 竞争，显著提升了对象分配效率。TLAB 的大小由 <code>-XX:TLABSize</code> 指定，默认为 Eden 区的 1%。TLAB 内部有浪费（waste）的概念——如果一个 TLAB 剩余空间不够分配下一个对象，这部分空间就被浪费。JVM 通过动态调整来平衡浪费率和 TLAB 申请频率。</p>
+<p><strong>Q6: JVM 如何保证 <code>&lt;clinit&gt;</code> 方法在多线程环境下的安全执行？</strong></p>
+<p>A: JVM 规范要求 <code>&lt;clinit&gt;</code> 方法在多线程环境下只能被一个线程执行，并且执行完成后其他线程才能继续。具体实现：每个类在 JVM 内部有一个 <code>initialization_state</code> 状态，包括 “uninitialized”、”being_initialized”、”fully_initialized”、”initialization_error”。第一个线程发现类处于 “uninitialized” 状态时，通过 CAS 将其改为 “being_initialized”，然后执行 <code>&lt;clinit&gt;</code>。其他线程检查到 “being_initialized” 状态时，会阻塞等待直到第一个线程执行完成。这就是为什么类的静态初始化块是线程安全的——但需要注意：如果 <code>&lt;clinit&gt;</code> 中有死锁（例如 A 的 <code>&lt;clinit&gt;</code> 等 B，B 的 <code>&lt;clinit&gt;</code> 等 A），整个应用会挂死。</p>
+<hr>
+<p><strong>参考文档：</strong></p>
+<ul>
+<li>The Java Virtual Machine Specification, Java SE 11 Edition</li>
+<li>AOSP: <code>art/runtime/</code> — ART 运行时实现</li>
+<li>Oracle HotSpot Source: <code>src/hotspot/share/</code></li>
+<li>“深入理解Java虚拟机” 周志明 著</li>
+</ul>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/JVM/">JVM    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/photo-1589371709918-9dfa8c55338e.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2019/05/29/%E9%87%8D%E6%8B%BEAndroid-Java%E8%BF%9B%E9%98%B6%E4%B9%8B%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3ClassLoader%E7%B1%BB%E5%8A%A0%E8%BD%BD/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/uploadbeta2.com.jpeg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>Java进阶之深入理解ClassLoader类加载</span></div></a></div><div class="next-post pull_right"><a href="/2019/05/27/%E9%87%8D%E6%8B%BEAndroid-Java%E8%BF%9B%E9%98%B6%E4%B9%8B%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3GC%E6%9C%BA%E5%88%B6/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/uploadbeta3.com.jpeg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>Java进阶之深入理解GC机制</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2021/04/15/重拾Android-【深入理解JVM字节码】第十篇、Instrumentation原理/" title="【深入理解JVM字节码】第十篇、Java Instrumentation原理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/259.jpg"><div class="relatedPosts_title">【深入理解JVM字节码】第十篇、Java Instrumentation原理</div></a></div><div class="relatedPosts_item"><a href="/2021/04/05/重拾Android-【深入理解JVM字节码】第八篇、Kotlin字节码原理/" title="【深入理解JVM字节码】第八篇、Kotlin字节码原理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/265.jpg"><div class="relatedPosts_title">【深入理解JVM字节码】第八篇、Kotlin字节码原理</div></a></div><div class="relatedPosts_item"><a href="/2021/03/01/重拾Android-【深入理解JVM字节码】第一篇、class文件结构/" title="【深入理解JVM字节码】第一篇、class文件结构"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/247.jpg"><div class="relatedPosts_title">【深入理解JVM字节码】第一篇、class文件结构</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/photo-1589371709918-9dfa8c55338e.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

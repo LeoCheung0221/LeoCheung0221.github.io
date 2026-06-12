@@ -1,0 +1,1375 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【Claude Code源码剖析】19-顶级大语言模型学习路径与资料全集 | ONE·PIECE</title><meta name="description" content="🔒 此内容需要密码访问"><meta name="keywords" content="源码分析,Claude Code,Agent,LLM"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【Claude Code源码剖析】19-顶级大语言模型学习路径与资料全集"><meta name="twitter:description" content="🔒 此内容需要密码访问"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【Claude Code源码剖析】19-顶级大语言模型学习路径与资料全集"><meta property="og:url" content="http://tufusi.com/2026/04/20/%E3%80%90Claude%20Code%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E3%80%9119-%E9%A1%B6%E7%BA%A7%E6%A8%A1%E5%9E%8B%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84%E4%B8%8E%E8%B5%84%E6%96%99/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="🔒 此内容需要密码访问"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2026/04/20/%E3%80%90Claude%20Code%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E3%80%9119-%E9%A1%B6%E7%BA%A7%E6%A8%A1%E5%9E%8B%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84%E4%B8%8E%E8%B5%84%E6%96%99/"><link rel="prev" title="【Claude Code源码剖析】20-Swarm 多 Agent 协调系统" href="http://tufusi.com/2026/04/26/%E3%80%90Claude%20Code%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E3%80%9120-Swarm%E5%A4%9AAgent%E5%8D%8F%E8%B0%83%E7%B3%BB%E7%BB%9F/"><link rel="next" title="【Claude Code源码剖析】18-API 请求链路与本地模型部署" href="http://tufusi.com/2026/04/19/%E3%80%90Claude%20Code%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E3%80%9118-%E5%8E%9F%E7%89%88%E6%9C%AC%E5%9C%B0%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2%E6%8C%87%E5%8D%97/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E7%AC%AC%E4%B8%80%E9%98%B6%E6%AE%B5%EF%BC%9A%E6%95%B0%E5%AD%A6%E4%B8%8E%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E5%9F%BA%E7%A1%80%EF%BC%881-3%E4%B8%AA%E6%9C%88%EF%BC%89"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">第一阶段：数学与深度学习基础（1-3个月）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-%E5%BF%85%E5%A4%87%E6%95%B0%E5%AD%A6%E5%9F%BA%E7%A1%80"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">1.1 必备数学基础</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-2-%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E5%85%A5%E9%97%A8"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">1.2 深度学习入门</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E7%AC%AC%E4%BA%8C%E9%98%B6%E6%AE%B5%EF%BC%9ATransformer-%E6%9E%B6%E6%9E%84%E6%B7%B1%E5%85%A5%EF%BC%881-2%E4%B8%AA%E6%9C%88%EF%BC%89"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">第二阶段：Transformer 架构深入（1-2个月）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E5%A5%A0%E5%9F%BA%E6%80%A7%E8%AE%BA%E6%96%87%EF%BC%88%E5%BF%85%E8%AF%BB%EF%BC%8C%E6%8C%89%E5%B9%B4%E4%BB%BD%E9%A1%BA%E5%BA%8F%EF%BC%89"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 奠基性论文（必读，按年份顺序）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-Attention-Is-All-You-Need%EF%BC%882017%EF%BC%89"><span class="toc_mobile_items-number">2.1.1.</span> <span class="toc_mobile_items-text">📄 Attention Is All You Need（2017）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-GPT-3-Language-Models-are-Few-Shot-Learners%EF%BC%882020%EF%BC%89"><span class="toc_mobile_items-number">2.1.2.</span> <span class="toc_mobile_items-text">📄 GPT-3: Language Models are Few-Shot Learners（2020）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-Scaling-Laws-for-Neural-Language-Models%EF%BC%882020%EF%BC%89"><span class="toc_mobile_items-number">2.1.3.</span> <span class="toc_mobile_items-text">📄 Scaling Laws for Neural Language Models（2020）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E5%8A%A8%E6%89%8B%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0%EF%BC%88%E5%BF%85%E5%81%9A%EF%BC%8C%E7%90%86%E8%A7%A3%E6%AF%94%E7%9C%8B%E8%AE%BA%E6%96%87%E6%9B%B4%E6%B7%B1%EF%BC%89"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 动手代码实现（必做，理解比看论文更深）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-%E7%8E%B0%E4%BB%A3-Transformer-%E6%9E%B6%E6%9E%84%E4%BC%98%E5%8C%96%E8%AE%BA%E6%96%87"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 现代 Transformer 架构优化论文</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-FlashAttention%EF%BC%882022%EF%BC%89"><span class="toc_mobile_items-number">2.3.1.</span> <span class="toc_mobile_items-text">📄 FlashAttention（2022）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-RoFormer%EF%BC%9ARoPE-%E6%97%8B%E8%BD%AC%E4%BD%8D%E7%BD%AE%E7%BC%96%E7%A0%81%EF%BC%882021%EF%BC%89"><span class="toc_mobile_items-number">2.3.2.</span> <span class="toc_mobile_items-text">📄 RoFormer：RoPE 旋转位置编码（2021）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-Switch-Transformers%EF%BC%9A%E9%80%9A%E5%90%91%E4%B8%87%E4%BA%BF%E5%8F%82%E6%95%B0%E7%9A%84%E7%A8%80%E7%96%8F-MoE%EF%BC%882021%EF%BC%89"><span class="toc_mobile_items-number">2.3.3.</span> <span class="toc_mobile_items-text">📄 Switch Transformers：通向万亿参数的稀疏 MoE（2021）</span></a></li></ol></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E7%AC%AC%E4%B8%89%E9%98%B6%E6%AE%B5%EF%BC%9A%E5%A4%A7%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83%E6%96%B9%E6%B3%95%EF%BC%881-2%E4%B8%AA%E6%9C%88%EF%BC%89"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">第三阶段：大模型训练方法（1-2个月）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E9%A2%84%E8%AE%AD%E7%BB%83%E5%9F%BA%E7%A1%80"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 预训练基础</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-Chinchilla%EF%BC%9A%E8%AE%AD%E7%BB%83%E8%AE%A1%E7%AE%97%E6%9C%80%E4%BC%98%E5%A4%A7%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%EF%BC%882022%EF%BC%89"><span class="toc_mobile_items-number">3.1.1.</span> <span class="toc_mobile_items-text">📄 Chinchilla：训练计算最优大语言模型（2022）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-LLaMA-1%EF%BC%9A%E5%BC%80%E6%94%BE%E9%AB%98%E6%95%88%E5%9F%BA%E7%A1%80%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%EF%BC%882023%EF%BC%89"><span class="toc_mobile_items-number">3.1.2.</span> <span class="toc_mobile_items-text">📄 LLaMA 1：开放高效基础语言模型（2023）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-The-Llama-3-Herd-of-Models%EF%BC%882024%EF%BC%89"><span class="toc_mobile_items-number">3.1.3.</span> <span class="toc_mobile_items-text">📄 The Llama 3 Herd of Models（2024）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-DeepSeek-V3-Technical-Report%EF%BC%882024%EF%BC%89"><span class="toc_mobile_items-number">3.1.4.</span> <span class="toc_mobile_items-text">📄 DeepSeek-V3 Technical Report（2024）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-Qwen2-5-Technical-Report%EF%BC%882024%EF%BC%89"><span class="toc_mobile_items-number">3.1.5.</span> <span class="toc_mobile_items-text">📄 Qwen2.5 Technical Report（2024）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E5%AF%B9%E9%BD%90%E8%AE%AD%E7%BB%83%E6%96%B9%E6%B3%95"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 对齐训练方法</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-InstructGPT%EF%BC%88RLHF%EF%BC%89%EF%BC%882022%EF%BC%89"><span class="toc_mobile_items-number">3.2.1.</span> <span class="toc_mobile_items-text">📄 InstructGPT（RLHF）（2022）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-Constitutional-AI%EF%BC%88CAI%EF%BC%89%EF%BC%882022%EF%BC%89"><span class="toc_mobile_items-number">3.2.2.</span> <span class="toc_mobile_items-text">📄 Constitutional AI（CAI）（2022）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-Direct-Preference-Optimization%EF%BC%88DPO%EF%BC%89%EF%BC%882023%EF%BC%89"><span class="toc_mobile_items-number">3.2.3.</span> <span class="toc_mobile_items-text">📄 Direct Preference Optimization（DPO）（2023）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-%E6%8E%A8%E7%90%86%E8%83%BD%E5%8A%9B%EF%BC%88Reasoning-Models%EF%BC%89%E2%80%94%E2%80%94-2025-2026-%E5%B9%B4%E6%9C%80%E6%A0%B8%E5%BF%83%E6%96%B9%E5%90%91"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 推理能力（Reasoning Models）—— 2025-2026 年最核心方向</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-Chain-of-Thought-Prompting%EF%BC%882022%EF%BC%89"><span class="toc_mobile_items-number">3.3.1.</span> <span class="toc_mobile_items-text">📄 Chain-of-Thought Prompting（2022）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-DeepSeek-R1%EF%BC%882025%EF%BC%89%E2%80%94%E2%80%94-%E7%9B%AE%E5%89%8D%E6%9C%80%E5%AE%8C%E6%95%B4%E5%85%AC%E5%BC%80%E7%9A%84-Reasoning-%E6%A8%A1%E5%9E%8B"><span class="toc_mobile_items-number">3.3.2.</span> <span class="toc_mobile_items-text">📄 DeepSeek-R1（2025）—— 目前最完整公开的 Reasoning 模型</span></a></li></ol></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E7%AC%AC%E5%9B%9B%E9%98%B6%E6%AE%B5%EF%BC%9A%E5%B7%A5%E7%A8%8B%E4%B8%8E%E7%B3%BB%E7%BB%9F%EF%BC%88%E5%B9%B6%E8%A1%8C%E5%AD%A6%E4%B9%A0%EF%BC%89"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">第四阶段：工程与系统（并行学习）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%AD%E7%BB%83"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 分布式训练</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 推理优化</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-%E5%AE%9E%E8%B7%B5%E6%A1%86%E6%9E%B6"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 实践框架</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E7%AC%AC%E4%BA%94%E9%98%B6%E6%AE%B5%EF%BC%9A%E5%89%8D%E6%B2%BF%E6%A8%A1%E5%9E%8B%E6%8A%80%E6%9C%AF%E6%8A%A5%E5%91%8A%EF%BC%88%E7%B2%BE%E8%AF%BB%E6%B8%85%E5%8D%95%EF%BC%89"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">第五阶段：前沿模型技术报告（精读清单）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-OpenAI-%E7%B3%BB%E5%88%97"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 OpenAI 系列</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-GPT-4-Technical-Report%EF%BC%882023%EF%BC%89"><span class="toc_mobile_items-number">5.1.1.</span> <span class="toc_mobile_items-text">📄 GPT-4 Technical Report（2023）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#o1-o3-%E7%B3%BB%E5%88%97"><span class="toc_mobile_items-number">5.1.2.</span> <span class="toc_mobile_items-text">o1&#x2F;o3 系列</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-Anthropic-Claude-%E7%B3%BB%E5%88%97"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 Anthropic &#x2F; Claude 系列</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-Constitutional-AI%EF%BC%882022%EF%BC%89"><span class="toc_mobile_items-number">5.2.1.</span> <span class="toc_mobile_items-text">📄 Constitutional AI（2022）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#Anthropic-%E5%8F%AF%E8%A7%A3%E9%87%8A%E6%80%A7%E7%A0%94%E7%A9%B6%EF%BC%88transformer-circuits-pub%EF%BC%89"><span class="toc_mobile_items-number">5.2.2.</span> <span class="toc_mobile_items-text">Anthropic 可解释性研究（transformer-circuits.pub）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#Claude-Model-Cards"><span class="toc_mobile_items-number">5.2.3.</span> <span class="toc_mobile_items-text">Claude Model Cards</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-Google-Gemini-%E7%B3%BB%E5%88%97"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 Google &#x2F; Gemini 系列</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-Gemini-A-Family-of-Highly-Capable-Multimodal-Models%EF%BC%882023%EF%BC%89"><span class="toc_mobile_items-number">5.3.1.</span> <span class="toc_mobile_items-text">📄 Gemini: A Family of Highly Capable Multimodal Models（2023）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-Gemini-1-5-Unlocking-multimodal-understanding-across-millions-of-tokens%EF%BC%882024%EF%BC%89"><span class="toc_mobile_items-number">5.3.2.</span> <span class="toc_mobile_items-text">📄 Gemini 1.5: Unlocking multimodal understanding across millions of tokens（2024）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-4-DeepSeek-%E7%B3%BB%E5%88%97%EF%BC%88%E6%9E%B6%E6%9E%84%E6%9C%80%E5%AE%8C%E6%95%B4%E5%85%AC%E5%BC%80%EF%BC%89"><span class="toc_mobile_items-number">5.4.</span> <span class="toc_mobile_items-text">5.4 DeepSeek 系列（架构最完整公开）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#DeepSeek-%E6%8A%80%E6%9C%AF%E6%BC%94%E8%BF%9B%E8%B7%AF%E7%BA%BF"><span class="toc_mobile_items-number">5.4.1.</span> <span class="toc_mobile_items-text">DeepSeek 技术演进路线</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-DeepSeek-V2%EF%BC%882024%EF%BC%89"><span class="toc_mobile_items-number">5.4.2.</span> <span class="toc_mobile_items-text">📄 DeepSeek-V2（2024）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-DeepSeek-V3%EF%BC%882024%EF%BC%89"><span class="toc_mobile_items-number">5.4.3.</span> <span class="toc_mobile_items-text">📄 DeepSeek-V3（2024）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%F0%9F%93%84-DeepSeek-R1%EF%BC%882025%EF%BC%89"><span class="toc_mobile_items-number">5.4.4.</span> <span class="toc_mobile_items-text">📄 DeepSeek-R1（2025）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-5-Meta-LLaMA-%E7%B3%BB%E5%88%97"><span class="toc_mobile_items-number">5.5.</span> <span class="toc_mobile_items-text">5.5 Meta &#x2F; LLaMA 系列</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#LLaMA-%E7%B3%BB%E5%88%97%E6%BC%94%E8%BF%9B"><span class="toc_mobile_items-number">5.5.1.</span> <span class="toc_mobile_items-text">LLaMA 系列演进</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-6-%E9%98%BF%E9%87%8C-Qwen-%E7%B3%BB%E5%88%97"><span class="toc_mobile_items-number">5.6.</span> <span class="toc_mobile_items-text">5.6 阿里 &#x2F; Qwen 系列</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E7%AC%AC%E5%85%AD%E9%98%B6%E6%AE%B5%EF%BC%9A%E5%85%B3%E9%94%AE%E6%8A%80%E6%9C%AF%E7%BB%86%E8%8A%82%E8%AE%BA%E6%96%87%EF%BC%88%E6%B7%B1%E5%85%A5%E7%A0%94%E7%A9%B6%EF%BC%89"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">第六阶段：关键技术细节论文（深入研究）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%9C%BA%E5%88%B6%E4%BC%98%E5%8C%96"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 注意力机制优化</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-%E4%BD%8D%E7%BD%AE%E7%BC%96%E7%A0%81"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 位置编码</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-FFN-%E5%92%8C%E5%BD%92%E4%B8%80%E5%8C%96"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">6.3 FFN 和归一化</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-4-MoE-%E6%9E%B6%E6%9E%84%E6%B7%B1%E5%85%A5"><span class="toc_mobile_items-number">6.4.</span> <span class="toc_mobile_items-text">6.4 MoE 架构深入</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E7%AC%AC%E4%B8%83%E9%98%B6%E6%AE%B5%EF%BC%9AAnthropic-%E5%8F%AF%E8%A7%A3%E9%87%8A%E6%80%A7%E7%A0%94%E7%A9%B6%EF%BC%88%E7%90%86%E8%A7%A3-AI-%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%EF%BC%89"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">第七阶段：Anthropic 可解释性研究（理解 AI 内部机制）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%A0%B8%E5%BF%83%E7%B3%BB%E5%88%97%EF%BC%88%E6%8C%89%E9%87%8D%E8%A6%81%E6%80%A7%E6%8E%92%E5%BA%8F%EF%BC%89"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">核心系列（按重要性排序）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%BA%90%E6%B1%87%E6%80%BB"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">学习资源汇总</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%95%99%E6%9D%90"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">教材</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E8%A7%86%E9%A2%91%E8%AF%BE%E7%A8%8B%EF%BC%88%E5%85%A8%E9%83%A8%E5%85%8D%E8%B4%B9%EF%BC%89"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">视频课程（全部免费）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E9%AB%98%E8%B4%A8%E9%87%8F%E6%8A%80%E6%9C%AF%E5%8D%9A%E5%AE%A2%EF%BC%88%E5%86%85%E5%AE%B9%E7%BB%8F%E8%BF%87%E9%AA%8C%E8%AF%81%EF%BC%89"><span class="toc_mobile_items-number">8.3.</span> <span class="toc_mobile_items-text">高质量技术博客（内容经过验证）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#GitHub-%E9%87%8D%E8%A6%81%E4%BB%93%E5%BA%93%EF%BC%88%E5%B7%B2%E9%AA%8C%E8%AF%81%E5%AD%98%E5%9C%A8%EF%BC%89"><span class="toc_mobile_items-number">8.4.</span> <span class="toc_mobile_items-text">GitHub 重要仓库（已验证存在）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#arXiv-%E8%AE%BA%E6%96%87%E7%B4%A2%E5%BC%95%EF%BC%88%E6%89%80%E6%9C%89%E9%93%BE%E6%8E%A5%E5%B7%B2%E9%AA%8C%E8%AF%81%EF%BC%89"><span class="toc_mobile_items-number">8.5.</span> <span class="toc_mobile_items-text">arXiv 论文索引（所有链接已验证）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E6%8E%A8%E8%8D%90%E5%AD%A6%E4%B9%A0%E9%A1%BA%E5%BA%8F%EF%BC%886%E4%B8%AA%E6%9C%88%E8%AE%A1%E5%88%92%EF%BC%89"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">推荐学习顺序（6个月计划）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%B3%E4%BA%8E-Claude-Opus-4-claude-4-%E7%B3%BB%E5%88%97%E7%9A%84%E5%85%B7%E4%BD%93%E9%99%90%E5%88%B6"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">关于 Claude Opus-4 &#x2F; claude-4 系列的具体限制</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%B3%E9%94%AE%E6%B4%9E%E8%A7%81%EF%BC%9A%E7%90%86%E8%A7%A3%E2%80%9D%E9%A1%B6%E7%BA%A7%E6%A8%A1%E5%9E%8B%E2%80%9D%E5%B7%AE%E8%B7%9D%E5%9C%A8%E5%93%AA%E9%87%8C"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">关键洞见：理解”顶级模型”差距在哪里</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E7%AC%AC%E5%85%AB%E9%98%B6%E6%AE%B5%EF%BC%9A%E7%BE%8E%E5%9B%BD-AI-LLM-%E6%8A%80%E6%9C%AF%E5%9C%88%E5%AD%90%E4%B8%8E%E5%A4%A7%E4%BD%AC%E8%B5%84%E6%BA%90"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">第八阶段：美国 AI&#x2F;LLM 技术圈子与大佬资源</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%F0%9F%A7%91%E2%80%8D%F0%9F%94%AC-%E9%A1%B6%E7%BA%A7%E7%A0%94%E7%A9%B6%E5%91%98%E4%B8%AA%E4%BA%BA%E4%B8%BB%E9%A1%B5%E4%B8%8E%E5%8D%9A%E5%AE%A2"><span class="toc_mobile_items-number">12.1.</span> <span class="toc_mobile_items-text">🧑‍🔬 顶级研究员个人主页与博客</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#Andrej-Karpathy-%E2%80%94-%E6%9C%80%E9%80%82%E5%90%88%E5%85%A5%E9%97%A8%E7%9A%84%E8%AE%B2%E5%B8%88"><span class="toc_mobile_items-number">12.1.1.</span> <span class="toc_mobile_items-text">Andrej Karpathy — 最适合入门的讲师</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#Lilian-Weng-%E2%80%94-OpenAI-%E5%89%8D%E5%AE%89%E5%85%A8%E7%A0%94%E7%A9%B6%E8%B4%9F%E8%B4%A3%E4%BA%BA%EF%BC%8C%E6%8A%80%E6%9C%AF%E5%86%99%E4%BD%9C%E5%A4%A9%E8%8A%B1%E6%9D%BF"><span class="toc_mobile_items-number">12.1.2.</span> <span class="toc_mobile_items-text">Lilian Weng — OpenAI 前安全研究负责人，技术写作天花板</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#Jay-Alammar-%E2%80%94-%E5%8F%AF%E8%A7%86%E5%8C%96%E8%A7%A3%E9%87%8A-Transformer-%E7%9A%84%E7%AC%AC%E4%B8%80%E4%BA%BA"><span class="toc_mobile_items-number">12.1.3.</span> <span class="toc_mobile_items-text">Jay Alammar — 可视化解释 Transformer 的第一人</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#Sebastian-Raschka-%E2%80%94-LLM-%E6%9E%B6%E6%9E%84%E6%AF%94%E8%BE%83%E4%B8%8E%E4%BB%8E%E9%9B%B6%E6%9E%84%E5%BB%BA%E7%9A%84%E4%B8%93%E5%AE%B6"><span class="toc_mobile_items-number">12.1.4.</span> <span class="toc_mobile_items-text">Sebastian Raschka — LLM 架构比较与从零构建的专家</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#Chip-Huyen-%E2%80%94-MLOps-%E4%B8%8E-AI-%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B%E4%B8%93%E5%AE%B6"><span class="toc_mobile_items-number">12.1.5.</span> <span class="toc_mobile_items-text">Chip Huyen — MLOps 与 AI 系统工程专家</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#Eugene-Yan-%E2%80%94-Anthropic-%E5%B7%A5%E7%A8%8B%E5%B8%88%EF%BC%8CLLM-%E8%90%BD%E5%9C%B0%E5%AE%9E%E8%B7%B5%E4%B8%93%E5%AE%B6"><span class="toc_mobile_items-number">12.1.6.</span> <span class="toc_mobile_items-text">Eugene Yan — Anthropic 工程师，LLM 落地实践专家</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#Nathan-Lambert-%E2%80%94-RLHF-%E5%AF%B9%E9%BD%90%E7%A0%94%E7%A9%B6%E6%9D%83%E5%A8%81"><span class="toc_mobile_items-number">12.1.7.</span> <span class="toc_mobile_items-text">Nathan Lambert — RLHF&#x2F;对齐研究权威</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#Sebastian-Ruder-%E2%80%94-NLP-%E7%A0%94%E7%A9%B6%E7%BB%BC%E8%BF%B0%E4%B8%93%E5%AE%B6"><span class="toc_mobile_items-number">12.1.8.</span> <span class="toc_mobile_items-text">Sebastian Ruder — NLP 研究综述专家</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%F0%9F%93%B0-%E5%BF%85%E5%85%B3%E6%B3%A8%E7%9A%84-Newsletter-Substack"><span class="toc_mobile_items-number">12.2.</span> <span class="toc_mobile_items-text">📰 必关注的 Newsletter &#x2F; Substack</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%F0%9F%92%AC-%E7%A4%BE%E5%8C%BA%E4%B8%8E%E8%AE%BA%E5%9D%9B"><span class="toc_mobile_items-number">12.3.</span> <span class="toc_mobile_items-text">💬 社区与论坛</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%F0%9F%8E%AC-YouTube-%E9%A2%91%E9%81%93%E6%8E%A8%E8%8D%90"><span class="toc_mobile_items-number">12.4.</span> <span class="toc_mobile_items-text">🎬 YouTube 频道推荐</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%F0%9F%90%A6-Twitter-X-%E5%BF%85%E5%85%B3%E6%B3%A8%E5%88%97%E8%A1%A8"><span class="toc_mobile_items-number">12.5.</span> <span class="toc_mobile_items-text">🐦 Twitter&#x2F;X 必关注列表</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%F0%9F%93%8C-%E6%8E%A8%E8%8D%90%E4%BF%A1%E6%81%AF%E8%8E%B7%E5%8F%96%E8%B7%AF%E5%BE%84"><span class="toc_mobile_items-number">12.6.</span> <span class="toc_mobile_items-text">📌 推荐信息获取路径</span></a></li></ol></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E9%98%B6%E6%AE%B5%EF%BC%9A%E6%95%B0%E5%AD%A6%E4%B8%8E%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E5%9F%BA%E7%A1%80%EF%BC%881-3%E4%B8%AA%E6%9C%88%EF%BC%89"><span class="toc-number">1.</span> <span class="toc-text">第一阶段：数学与深度学习基础（1-3个月）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E5%BF%85%E5%A4%87%E6%95%B0%E5%AD%A6%E5%9F%BA%E7%A1%80"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 必备数学基础</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E5%85%A5%E9%97%A8"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 深度学习入门</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E9%98%B6%E6%AE%B5%EF%BC%9ATransformer-%E6%9E%B6%E6%9E%84%E6%B7%B1%E5%85%A5%EF%BC%881-2%E4%B8%AA%E6%9C%88%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">第二阶段：Transformer 架构深入（1-2个月）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%A5%A0%E5%9F%BA%E6%80%A7%E8%AE%BA%E6%96%87%EF%BC%88%E5%BF%85%E8%AF%BB%EF%BC%8C%E6%8C%89%E5%B9%B4%E4%BB%BD%E9%A1%BA%E5%BA%8F%EF%BC%89"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 奠基性论文（必读，按年份顺序）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-Attention-Is-All-You-Need%EF%BC%882017%EF%BC%89"><span class="toc-number">2.1.1.</span> <span class="toc-text">📄 Attention Is All You Need（2017）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-GPT-3-Language-Models-are-Few-Shot-Learners%EF%BC%882020%EF%BC%89"><span class="toc-number">2.1.2.</span> <span class="toc-text">📄 GPT-3: Language Models are Few-Shot Learners（2020）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-Scaling-Laws-for-Neural-Language-Models%EF%BC%882020%EF%BC%89"><span class="toc-number">2.1.3.</span> <span class="toc-text">📄 Scaling Laws for Neural Language Models（2020）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%8A%A8%E6%89%8B%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0%EF%BC%88%E5%BF%85%E5%81%9A%EF%BC%8C%E7%90%86%E8%A7%A3%E6%AF%94%E7%9C%8B%E8%AE%BA%E6%96%87%E6%9B%B4%E6%B7%B1%EF%BC%89"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 动手代码实现（必做，理解比看论文更深）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E7%8E%B0%E4%BB%A3-Transformer-%E6%9E%B6%E6%9E%84%E4%BC%98%E5%8C%96%E8%AE%BA%E6%96%87"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 现代 Transformer 架构优化论文</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-FlashAttention%EF%BC%882022%EF%BC%89"><span class="toc-number">2.3.1.</span> <span class="toc-text">📄 FlashAttention（2022）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-RoFormer%EF%BC%9ARoPE-%E6%97%8B%E8%BD%AC%E4%BD%8D%E7%BD%AE%E7%BC%96%E7%A0%81%EF%BC%882021%EF%BC%89"><span class="toc-number">2.3.2.</span> <span class="toc-text">📄 RoFormer：RoPE 旋转位置编码（2021）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-Switch-Transformers%EF%BC%9A%E9%80%9A%E5%90%91%E4%B8%87%E4%BA%BF%E5%8F%82%E6%95%B0%E7%9A%84%E7%A8%80%E7%96%8F-MoE%EF%BC%882021%EF%BC%89"><span class="toc-number">2.3.3.</span> <span class="toc-text">📄 Switch Transformers：通向万亿参数的稀疏 MoE（2021）</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E9%98%B6%E6%AE%B5%EF%BC%9A%E5%A4%A7%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83%E6%96%B9%E6%B3%95%EF%BC%881-2%E4%B8%AA%E6%9C%88%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">第三阶段：大模型训练方法（1-2个月）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E9%A2%84%E8%AE%AD%E7%BB%83%E5%9F%BA%E7%A1%80"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 预训练基础</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-Chinchilla%EF%BC%9A%E8%AE%AD%E7%BB%83%E8%AE%A1%E7%AE%97%E6%9C%80%E4%BC%98%E5%A4%A7%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%EF%BC%882022%EF%BC%89"><span class="toc-number">3.1.1.</span> <span class="toc-text">📄 Chinchilla：训练计算最优大语言模型（2022）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-LLaMA-1%EF%BC%9A%E5%BC%80%E6%94%BE%E9%AB%98%E6%95%88%E5%9F%BA%E7%A1%80%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%EF%BC%882023%EF%BC%89"><span class="toc-number">3.1.2.</span> <span class="toc-text">📄 LLaMA 1：开放高效基础语言模型（2023）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-The-Llama-3-Herd-of-Models%EF%BC%882024%EF%BC%89"><span class="toc-number">3.1.3.</span> <span class="toc-text">📄 The Llama 3 Herd of Models（2024）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-DeepSeek-V3-Technical-Report%EF%BC%882024%EF%BC%89"><span class="toc-number">3.1.4.</span> <span class="toc-text">📄 DeepSeek-V3 Technical Report（2024）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-Qwen2-5-Technical-Report%EF%BC%882024%EF%BC%89"><span class="toc-number">3.1.5.</span> <span class="toc-text">📄 Qwen2.5 Technical Report（2024）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%AF%B9%E9%BD%90%E8%AE%AD%E7%BB%83%E6%96%B9%E6%B3%95"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 对齐训练方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-InstructGPT%EF%BC%88RLHF%EF%BC%89%EF%BC%882022%EF%BC%89"><span class="toc-number">3.2.1.</span> <span class="toc-text">📄 InstructGPT（RLHF）（2022）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-Constitutional-AI%EF%BC%88CAI%EF%BC%89%EF%BC%882022%EF%BC%89"><span class="toc-number">3.2.2.</span> <span class="toc-text">📄 Constitutional AI（CAI）（2022）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-Direct-Preference-Optimization%EF%BC%88DPO%EF%BC%89%EF%BC%882023%EF%BC%89"><span class="toc-number">3.2.3.</span> <span class="toc-text">📄 Direct Preference Optimization（DPO）（2023）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%8E%A8%E7%90%86%E8%83%BD%E5%8A%9B%EF%BC%88Reasoning-Models%EF%BC%89%E2%80%94%E2%80%94-2025-2026-%E5%B9%B4%E6%9C%80%E6%A0%B8%E5%BF%83%E6%96%B9%E5%90%91"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 推理能力（Reasoning Models）—— 2025-2026 年最核心方向</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-Chain-of-Thought-Prompting%EF%BC%882022%EF%BC%89"><span class="toc-number">3.3.1.</span> <span class="toc-text">📄 Chain-of-Thought Prompting（2022）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-DeepSeek-R1%EF%BC%882025%EF%BC%89%E2%80%94%E2%80%94-%E7%9B%AE%E5%89%8D%E6%9C%80%E5%AE%8C%E6%95%B4%E5%85%AC%E5%BC%80%E7%9A%84-Reasoning-%E6%A8%A1%E5%9E%8B"><span class="toc-number">3.3.2.</span> <span class="toc-text">📄 DeepSeek-R1（2025）—— 目前最完整公开的 Reasoning 模型</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E5%9B%9B%E9%98%B6%E6%AE%B5%EF%BC%9A%E5%B7%A5%E7%A8%8B%E4%B8%8E%E7%B3%BB%E7%BB%9F%EF%BC%88%E5%B9%B6%E8%A1%8C%E5%AD%A6%E4%B9%A0%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">第四阶段：工程与系统（并行学习）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%AD%E7%BB%83"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 分布式训练</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 推理优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E5%AE%9E%E8%B7%B5%E6%A1%86%E6%9E%B6"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 实践框架</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%94%E9%98%B6%E6%AE%B5%EF%BC%9A%E5%89%8D%E6%B2%BF%E6%A8%A1%E5%9E%8B%E6%8A%80%E6%9C%AF%E6%8A%A5%E5%91%8A%EF%BC%88%E7%B2%BE%E8%AF%BB%E6%B8%85%E5%8D%95%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">第五阶段：前沿模型技术报告（精读清单）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-OpenAI-%E7%B3%BB%E5%88%97"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 OpenAI 系列</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-GPT-4-Technical-Report%EF%BC%882023%EF%BC%89"><span class="toc-number">5.1.1.</span> <span class="toc-text">📄 GPT-4 Technical Report（2023）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#o1-o3-%E7%B3%BB%E5%88%97"><span class="toc-number">5.1.2.</span> <span class="toc-text">o1&#x2F;o3 系列</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-Anthropic-Claude-%E7%B3%BB%E5%88%97"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 Anthropic &#x2F; Claude 系列</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-Constitutional-AI%EF%BC%882022%EF%BC%89"><span class="toc-number">5.2.1.</span> <span class="toc-text">📄 Constitutional AI（2022）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Anthropic-%E5%8F%AF%E8%A7%A3%E9%87%8A%E6%80%A7%E7%A0%94%E7%A9%B6%EF%BC%88transformer-circuits-pub%EF%BC%89"><span class="toc-number">5.2.2.</span> <span class="toc-text">Anthropic 可解释性研究（transformer-circuits.pub）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Claude-Model-Cards"><span class="toc-number">5.2.3.</span> <span class="toc-text">Claude Model Cards</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-Google-Gemini-%E7%B3%BB%E5%88%97"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 Google &#x2F; Gemini 系列</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-Gemini-A-Family-of-Highly-Capable-Multimodal-Models%EF%BC%882023%EF%BC%89"><span class="toc-number">5.3.1.</span> <span class="toc-text">📄 Gemini: A Family of Highly Capable Multimodal Models（2023）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-Gemini-1-5-Unlocking-multimodal-understanding-across-millions-of-tokens%EF%BC%882024%EF%BC%89"><span class="toc-number">5.3.2.</span> <span class="toc-text">📄 Gemini 1.5: Unlocking multimodal understanding across millions of tokens（2024）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-DeepSeek-%E7%B3%BB%E5%88%97%EF%BC%88%E6%9E%B6%E6%9E%84%E6%9C%80%E5%AE%8C%E6%95%B4%E5%85%AC%E5%BC%80%EF%BC%89"><span class="toc-number">5.4.</span> <span class="toc-text">5.4 DeepSeek 系列（架构最完整公开）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#DeepSeek-%E6%8A%80%E6%9C%AF%E6%BC%94%E8%BF%9B%E8%B7%AF%E7%BA%BF"><span class="toc-number">5.4.1.</span> <span class="toc-text">DeepSeek 技术演进路线</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-DeepSeek-V2%EF%BC%882024%EF%BC%89"><span class="toc-number">5.4.2.</span> <span class="toc-text">📄 DeepSeek-V2（2024）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-DeepSeek-V3%EF%BC%882024%EF%BC%89"><span class="toc-number">5.4.3.</span> <span class="toc-text">📄 DeepSeek-V3（2024）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%93%84-DeepSeek-R1%EF%BC%882025%EF%BC%89"><span class="toc-number">5.4.4.</span> <span class="toc-text">📄 DeepSeek-R1（2025）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-Meta-LLaMA-%E7%B3%BB%E5%88%97"><span class="toc-number">5.5.</span> <span class="toc-text">5.5 Meta &#x2F; LLaMA 系列</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#LLaMA-%E7%B3%BB%E5%88%97%E6%BC%94%E8%BF%9B"><span class="toc-number">5.5.1.</span> <span class="toc-text">LLaMA 系列演进</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-6-%E9%98%BF%E9%87%8C-Qwen-%E7%B3%BB%E5%88%97"><span class="toc-number">5.6.</span> <span class="toc-text">5.6 阿里 &#x2F; Qwen 系列</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E5%85%AD%E9%98%B6%E6%AE%B5%EF%BC%9A%E5%85%B3%E9%94%AE%E6%8A%80%E6%9C%AF%E7%BB%86%E8%8A%82%E8%AE%BA%E6%96%87%EF%BC%88%E6%B7%B1%E5%85%A5%E7%A0%94%E7%A9%B6%EF%BC%89"><span class="toc-number">6.</span> <span class="toc-text">第六阶段：关键技术细节论文（深入研究）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%9C%BA%E5%88%B6%E4%BC%98%E5%8C%96"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 注意力机制优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E4%BD%8D%E7%BD%AE%E7%BC%96%E7%A0%81"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 位置编码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-FFN-%E5%92%8C%E5%BD%92%E4%B8%80%E5%8C%96"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 FFN 和归一化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-MoE-%E6%9E%B6%E6%9E%84%E6%B7%B1%E5%85%A5"><span class="toc-number">6.4.</span> <span class="toc-text">6.4 MoE 架构深入</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%83%E9%98%B6%E6%AE%B5%EF%BC%9AAnthropic-%E5%8F%AF%E8%A7%A3%E9%87%8A%E6%80%A7%E7%A0%94%E7%A9%B6%EF%BC%88%E7%90%86%E8%A7%A3-AI-%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%EF%BC%89"><span class="toc-number">7.</span> <span class="toc-text">第七阶段：Anthropic 可解释性研究（理解 AI 内部机制）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E7%B3%BB%E5%88%97%EF%BC%88%E6%8C%89%E9%87%8D%E8%A6%81%E6%80%A7%E6%8E%92%E5%BA%8F%EF%BC%89"><span class="toc-number">7.1.</span> <span class="toc-text">核心系列（按重要性排序）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%BA%90%E6%B1%87%E6%80%BB"><span class="toc-number">8.</span> <span class="toc-text">学习资源汇总</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%99%E6%9D%90"><span class="toc-number">8.1.</span> <span class="toc-text">教材</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%86%E9%A2%91%E8%AF%BE%E7%A8%8B%EF%BC%88%E5%85%A8%E9%83%A8%E5%85%8D%E8%B4%B9%EF%BC%89"><span class="toc-number">8.2.</span> <span class="toc-text">视频课程（全部免费）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%AB%98%E8%B4%A8%E9%87%8F%E6%8A%80%E6%9C%AF%E5%8D%9A%E5%AE%A2%EF%BC%88%E5%86%85%E5%AE%B9%E7%BB%8F%E8%BF%87%E9%AA%8C%E8%AF%81%EF%BC%89"><span class="toc-number">8.3.</span> <span class="toc-text">高质量技术博客（内容经过验证）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GitHub-%E9%87%8D%E8%A6%81%E4%BB%93%E5%BA%93%EF%BC%88%E5%B7%B2%E9%AA%8C%E8%AF%81%E5%AD%98%E5%9C%A8%EF%BC%89"><span class="toc-number">8.4.</span> <span class="toc-text">GitHub 重要仓库（已验证存在）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#arXiv-%E8%AE%BA%E6%96%87%E7%B4%A2%E5%BC%95%EF%BC%88%E6%89%80%E6%9C%89%E9%93%BE%E6%8E%A5%E5%B7%B2%E9%AA%8C%E8%AF%81%EF%BC%89"><span class="toc-number">8.5.</span> <span class="toc-text">arXiv 论文索引（所有链接已验证）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A8%E8%8D%90%E5%AD%A6%E4%B9%A0%E9%A1%BA%E5%BA%8F%EF%BC%886%E4%B8%AA%E6%9C%88%E8%AE%A1%E5%88%92%EF%BC%89"><span class="toc-number">9.</span> <span class="toc-text">推荐学习顺序（6个月计划）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E4%BA%8E-Claude-Opus-4-claude-4-%E7%B3%BB%E5%88%97%E7%9A%84%E5%85%B7%E4%BD%93%E9%99%90%E5%88%B6"><span class="toc-number">10.</span> <span class="toc-text">关于 Claude Opus-4 &#x2F; claude-4 系列的具体限制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E6%B4%9E%E8%A7%81%EF%BC%9A%E7%90%86%E8%A7%A3%E2%80%9D%E9%A1%B6%E7%BA%A7%E6%A8%A1%E5%9E%8B%E2%80%9D%E5%B7%AE%E8%B7%9D%E5%9C%A8%E5%93%AA%E9%87%8C"><span class="toc-number">11.</span> <span class="toc-text">关键洞见：理解”顶级模型”差距在哪里</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E5%85%AB%E9%98%B6%E6%AE%B5%EF%BC%9A%E7%BE%8E%E5%9B%BD-AI-LLM-%E6%8A%80%E6%9C%AF%E5%9C%88%E5%AD%90%E4%B8%8E%E5%A4%A7%E4%BD%AC%E8%B5%84%E6%BA%90"><span class="toc-number">12.</span> <span class="toc-text">第八阶段：美国 AI&#x2F;LLM 技术圈子与大佬资源</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%A7%91%E2%80%8D%F0%9F%94%AC-%E9%A1%B6%E7%BA%A7%E7%A0%94%E7%A9%B6%E5%91%98%E4%B8%AA%E4%BA%BA%E4%B8%BB%E9%A1%B5%E4%B8%8E%E5%8D%9A%E5%AE%A2"><span class="toc-number">12.1.</span> <span class="toc-text">🧑‍🔬 顶级研究员个人主页与博客</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Andrej-Karpathy-%E2%80%94-%E6%9C%80%E9%80%82%E5%90%88%E5%85%A5%E9%97%A8%E7%9A%84%E8%AE%B2%E5%B8%88"><span class="toc-number">12.1.1.</span> <span class="toc-text">Andrej Karpathy — 最适合入门的讲师</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Lilian-Weng-%E2%80%94-OpenAI-%E5%89%8D%E5%AE%89%E5%85%A8%E7%A0%94%E7%A9%B6%E8%B4%9F%E8%B4%A3%E4%BA%BA%EF%BC%8C%E6%8A%80%E6%9C%AF%E5%86%99%E4%BD%9C%E5%A4%A9%E8%8A%B1%E6%9D%BF"><span class="toc-number">12.1.2.</span> <span class="toc-text">Lilian Weng — OpenAI 前安全研究负责人，技术写作天花板</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Jay-Alammar-%E2%80%94-%E5%8F%AF%E8%A7%86%E5%8C%96%E8%A7%A3%E9%87%8A-Transformer-%E7%9A%84%E7%AC%AC%E4%B8%80%E4%BA%BA"><span class="toc-number">12.1.3.</span> <span class="toc-text">Jay Alammar — 可视化解释 Transformer 的第一人</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Sebastian-Raschka-%E2%80%94-LLM-%E6%9E%B6%E6%9E%84%E6%AF%94%E8%BE%83%E4%B8%8E%E4%BB%8E%E9%9B%B6%E6%9E%84%E5%BB%BA%E7%9A%84%E4%B8%93%E5%AE%B6"><span class="toc-number">12.1.4.</span> <span class="toc-text">Sebastian Raschka — LLM 架构比较与从零构建的专家</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Chip-Huyen-%E2%80%94-MLOps-%E4%B8%8E-AI-%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B%E4%B8%93%E5%AE%B6"><span class="toc-number">12.1.5.</span> <span class="toc-text">Chip Huyen — MLOps 与 AI 系统工程专家</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Eugene-Yan-%E2%80%94-Anthropic-%E5%B7%A5%E7%A8%8B%E5%B8%88%EF%BC%8CLLM-%E8%90%BD%E5%9C%B0%E5%AE%9E%E8%B7%B5%E4%B8%93%E5%AE%B6"><span class="toc-number">12.1.6.</span> <span class="toc-text">Eugene Yan — Anthropic 工程师，LLM 落地实践专家</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Nathan-Lambert-%E2%80%94-RLHF-%E5%AF%B9%E9%BD%90%E7%A0%94%E7%A9%B6%E6%9D%83%E5%A8%81"><span class="toc-number">12.1.7.</span> <span class="toc-text">Nathan Lambert — RLHF&#x2F;对齐研究权威</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Sebastian-Ruder-%E2%80%94-NLP-%E7%A0%94%E7%A9%B6%E7%BB%BC%E8%BF%B0%E4%B8%93%E5%AE%B6"><span class="toc-number">12.1.8.</span> <span class="toc-text">Sebastian Ruder — NLP 研究综述专家</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%B0-%E5%BF%85%E5%85%B3%E6%B3%A8%E7%9A%84-Newsletter-Substack"><span class="toc-number">12.2.</span> <span class="toc-text">📰 必关注的 Newsletter &#x2F; Substack</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%92%AC-%E7%A4%BE%E5%8C%BA%E4%B8%8E%E8%AE%BA%E5%9D%9B"><span class="toc-number">12.3.</span> <span class="toc-text">💬 社区与论坛</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%8E%AC-YouTube-%E9%A2%91%E9%81%93%E6%8E%A8%E8%8D%90"><span class="toc-number">12.4.</span> <span class="toc-text">🎬 YouTube 频道推荐</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%90%A6-Twitter-X-%E5%BF%85%E5%85%B3%E6%B3%A8%E5%88%97%E8%A1%A8"><span class="toc-number">12.5.</span> <span class="toc-text">🐦 Twitter&#x2F;X 必关注列表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%8C-%E6%8E%A8%E8%8D%90%E4%BF%A1%E6%81%AF%E8%8E%B7%E5%8F%96%E8%B7%AF%E5%BE%84"><span class="toc-number">12.6.</span> <span class="toc-text">📌 推荐信息获取路径</span></a></li></ol></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【Claude Code源码剖析】19-顶级大语言模型学习路径与资料全集</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2026-04-20<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/">大模型</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/Harness/">Harness</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">8.9k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 34 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><script>(function(){  if(!sessionStorage.getItem("_hexo_protect_harness")){    location.href="/harness?r="+encodeURIComponent(location.pathname);  }})();</script><blockquote>
+<p>⚠️ <strong>学习声明</strong>：本文档基于 Claude Code 2.1.88 源码分析整理，仅供个人学习研究使用，不做任何商业用途。</p>
+</blockquote>
+<blockquote>
+<p>目标：从零基础到能读懂 GPT-4&#x2F;Claude&#x2F;Gemini&#x2F;DeepSeek 级别模型的技术报告，理解其架构、训练方法和工程实现。<br>说明：本文档所有 arXiv 链接均已验证有效（2026年4月），所有 GitHub 链接均指向真实存在的仓库。<br><strong>不含任何编造链接。</strong></p>
+</blockquote>
+<hr>
+<h2 id="第一阶段：数学与深度学习基础（1-3个月）"><a href="#第一阶段：数学与深度学习基础（1-3个月）" class="headerlink" title="第一阶段：数学与深度学习基础（1-3个月）"></a>第一阶段：数学与深度学习基础（1-3个月）</h2><h3 id="1-1-必备数学基础"><a href="#1-1-必备数学基础" class="headerlink" title="1.1 必备数学基础"></a>1.1 必备数学基础</h3><table>
+<thead>
+<tr>
+<th>科目</th>
+<th>重点内容</th>
+<th>推荐资料</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>线性代数</td>
+<td>矩阵乘法、特征值、SVD</td>
+<td>Gilbert Strang《Introduction to Linear Algebra》，MIT OCW 18.06</td>
+</tr>
+<tr>
+<td>微积分</td>
+<td>链式法则、梯度、偏导</td>
+<td>《Calculus》Stewart，或 MIT OCW 18.01</td>
+</tr>
+<tr>
+<td>概率统计</td>
+<td>分布、期望、最大似然、贝叶斯</td>
+<td>Stanford CS229 概率复习讲义</td>
+</tr>
+<tr>
+<td>信息论</td>
+<td>熵、KL 散度、交叉熵</td>
+<td>《Elements of Information Theory》第 1-3 章</td>
+</tr>
+<tr>
+<td>最优化</td>
+<td>SGD、Adam、学习率调度</td>
+<td>《Optimization for Machine Learning》综述</td>
+</tr>
+</tbody></table>
+<h3 id="1-2-深度学习入门"><a href="#1-2-深度学习入门" class="headerlink" title="1.2 深度学习入门"></a>1.2 深度学习入门</h3><p><strong>强烈推荐按顺序学，不要跳步：</strong></p>
+<p><strong>1. 3Blue1Brown 神经网络可视化系列（YouTube）</strong></p>
+<p>这是目前可视化效果最好的入门材料，共 4 集：</p>
+<ul>
+<li>第 1 集：”But what is a Neural Network?” — 感知机到多层网络</li>
+<li>第 2 集：”Gradient descent, how neural networks learn” — 反向传播直觉</li>
+<li>第 3 集：”What is backpropagation really doing?” — 数学推导</li>
+<li>第 4 集：”Backpropagation calculus” — 链式法则细节</li>
+</ul>
+<p>频道地址：<a target="_blank" rel="noopener" href="https://www.youtube.com/c/3blue1brown">3Blue1Brown YouTube 频道</a>（搜索”Neural Network”即可找到该系列）</p>
+<p><strong>2. Andrej Karpathy《Neural Networks: Zero to Hero》（YouTube 视频 + GitHub 代码）</strong></p>
+<p>Karpathy 前 Tesla AI 总监、OpenAI 联合创始人，这套视频是他手把手从零构建各类语言模型：</p>
+<ul>
+<li>第 1 集：micrograd — 从标量反向传播开始，实现一个微型自动求导库（84 行 Python）</li>
+<li>第 2-4 集：makemore — 字符级语言模型，N-gram → MLP → RNN</li>
+<li>第 5 集：<strong>Let’s build GPT from scratch</strong> — 最重要，230 行实现 Transformer</li>
+<li>第 6 集：Let’s build the GPT tokenizer — BPE 分词</li>
+</ul>
+<p>配套代码仓库：<a target="_blank" rel="noopener" href="https://github.com/karpathy/ng-video-lecture">karpathy&#x2F;ng-video-lecture</a>（4600+ stars，包含视频中的全部代码）</p>
+<p><strong>3. CS224N（Stanford NLP，最直接相关）</strong></p>
+<p>斯坦福大学自然语言处理课程，每年更新，包含完整 Transformer 讲解：</p>
+<ul>
+<li>涵盖：词向量 → RNN → Attention → Transformer → 预训练 → LLM 对齐</li>
+<li>历年视频可在 YouTube 搜索”Stanford CS224N”</li>
+<li>作业包含实现 Attention、训练 GPT 等</li>
+</ul>
+<p><strong>4. fast.ai《Practical Deep Learning for Coders》</strong></p>
+<p>Jeremy Howard 的自顶向下教学法，先用后理解：</p>
+<ul>
+<li>官网：<a target="_blank" rel="noopener" href="https://course.fast.ai/">fast.ai 免费课程</a>（免费，包含视频+Jupyter Notebook）</li>
+<li>特点：第一课就跑一个图像分类模型，边做边学理论</li>
+</ul>
+<hr>
+<h2 id="第二阶段：Transformer-架构深入（1-2个月）"><a href="#第二阶段：Transformer-架构深入（1-2个月）" class="headerlink" title="第二阶段：Transformer 架构深入（1-2个月）"></a>第二阶段：Transformer 架构深入（1-2个月）</h2><h3 id="2-1-奠基性论文（必读，按年份顺序）"><a href="#2-1-奠基性论文（必读，按年份顺序）" class="headerlink" title="2.1 奠基性论文（必读，按年份顺序）"></a>2.1 奠基性论文（必读，按年份顺序）</h3><h4 id="📄-Attention-Is-All-You-Need（2017）"><a href="#📄-Attention-Is-All-You-Need（2017）" class="headerlink" title="📄 Attention Is All You Need（2017）"></a>📄 Attention Is All You Need（2017）</h4><ul>
+<li><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/1706.03762">1706.03762 - Attention Is All You Need</a>（Vaswani 等，Google Brain）</li>
+<li><strong>核心贡献：</strong> 提出 Transformer 架构，完全抛弃 RNN&#x2F;CNN，仅用注意力机制</li>
+<li><strong>关键技术：</strong><ul>
+<li>Multi-Head Self-Attention：$\text{Attention}(Q,K,V) &#x3D; \text{softmax}!\left(\frac{QK^T}{\sqrt{d_k}}\right)V$</li>
+<li>位置编码（Positional Encoding）：正弦&#x2F;余弦函数</li>
+<li>残差连接 + Layer Normalization</li>
+<li>编码器-解码器结构（用于翻译任务）</li>
+</ul>
+</li>
+<li><strong>为什么重要：</strong> 这是整个 LLM 时代的起点，GPT&#x2F;BERT&#x2F;Claude&#x2F;Gemini 全部基于此</li>
+<li><strong>建议学法：</strong> 先看论文，再看 Karpathy 的”Let’s build GPT”视频，两者配合理解最快</li>
+</ul>
+<h4 id="📄-GPT-3-Language-Models-are-Few-Shot-Learners（2020）"><a href="#📄-GPT-3-Language-Models-are-Few-Shot-Learners（2020）" class="headerlink" title="📄 GPT-3: Language Models are Few-Shot Learners（2020）"></a>📄 GPT-3: Language Models are Few-Shot Learners（2020）</h4><ul>
+<li><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2005.14165">2005.14165 - Language Models are Few-Shot Learners</a>（Brown 等，OpenAI）</li>
+<li><strong>规模：</strong> 175B 参数，在 300B tokens 上训练</li>
+<li><strong>核心贡献：</strong><ul>
+<li>首次大规模证明 in-context learning（few-shot 无需微调）</li>
+<li>展示 emergent abilities（涌现能力）随规模出现</li>
+<li>为 ChatGPT 等产品奠定基础</li>
+</ul>
+</li>
+<li><strong>关键发现：</strong> 随参数量增大，模型无需任何梯度更新即可执行新任务，只需在 prompt 中给几个例子</li>
+<li><strong>局限性：</strong> 没有 RLHF，输出不对齐，后来被 InstructGPT 改进</li>
+</ul>
+<h4 id="📄-Scaling-Laws-for-Neural-Language-Models（2020）"><a href="#📄-Scaling-Laws-for-Neural-Language-Models（2020）" class="headerlink" title="📄 Scaling Laws for Neural Language Models（2020）"></a>📄 Scaling Laws for Neural Language Models（2020）</h4><ul>
+<li><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2001.08361">2001.08361 - Scaling Laws for Neural Language Models</a>（Kaplan 等，OpenAI）</li>
+<li><strong>核心发现：</strong> 语言模型的损失呈<strong>幂律</strong>关系下降：<ul>
+<li>$L(N) \propto N^{-0.076}$（模型参数量）</li>
+<li>$L(D) \propto D^{-0.095}$（训练数据量）</li>
+<li>$L(C) \propto C^{-0.050}$（计算量）</li>
+</ul>
+</li>
+<li><strong>结论：</strong> 在给定计算预算下，应优先扩大模型，数据可以相对少</li>
+<li><strong>被 Chinchilla 推翻：</strong> 2022 年 Chinchilla 论文发现这个结论有误，实际上模型和数据应等比增长（见第三阶段）</li>
+</ul>
+<h3 id="2-2-动手代码实现（必做，理解比看论文更深）"><a href="#2-2-动手代码实现（必做，理解比看论文更深）" class="headerlink" title="2.2 动手代码实现（必做，理解比看论文更深）"></a>2.2 动手代码实现（必做，理解比看论文更深）</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 1. nanoGPT：Karpathy 写的最简洁 GPT 实现（约800行代码）</span></span><br><span class="line"><span class="comment"># 可以用它复现 GPT-2 124M，在单张 A100 上跑通</span></span><br><span class="line">git <span class="built_in">clone</span> https://github.com/karpathy/nanoGPT</span><br><span class="line"><span class="comment"># README 中有完整使用说明，包括 Shakespeare 角色级训练和 GPT-2 复现</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. ng-video-lecture：对应 Zero to Hero 视频的代码</span></span><br><span class="line">git <span class="built_in">clone</span> https://github.com/karpathy/ng-video-lecture</span><br><span class="line"><span class="comment"># 包含 bigram.py 和 gpt.py，是视频中手写的代码</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>注意：</strong> Karpathy 于 2025年11月在 README 中提到 nanoGPT 已不再更新，并推荐了新的 <a target="_blank" rel="noopener" href="https://github.com/karpathy/nanochat">karpathy&#x2F;nanochat</a> 仓库。nanoGPT 依然是学习的最佳资料，代码非常简洁。</p>
+</blockquote>
+<h3 id="2-3-现代-Transformer-架构优化论文"><a href="#2-3-现代-Transformer-架构优化论文" class="headerlink" title="2.3 现代 Transformer 架构优化论文"></a>2.3 现代 Transformer 架构优化论文</h3><p>这些论文解释了为什么现代 LLM（LLaMA&#x2F;DeepSeek&#x2F;Qwen）和原始 Transformer 架构有所不同：</p>
+<h4 id="📄-FlashAttention（2022）"><a href="#📄-FlashAttention（2022）" class="headerlink" title="📄 FlashAttention（2022）"></a>📄 FlashAttention（2022）</h4><ul>
+<li><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2205.14135">2205.14135 - FlashAttention</a>（Dao 等，Stanford）</li>
+<li><strong>解决的问题：</strong> 标准注意力计算复杂度 $O(N^2)$，长序列时 GPU HBM 带宽成为瓶颈</li>
+<li><strong>方法：</strong> IO-aware 计算，将注意力计算分块（tiling），减少 HBM 读写次数</li>
+<li><strong>效果：</strong> BERT 训练快 15%，GPT-2 快 3 倍，同时支持更长上下文</li>
+<li><strong>影响：</strong> 现在几乎所有训练框架都使用 FlashAttention，是工程必读</li>
+</ul>
+<h4 id="📄-RoFormer：RoPE-旋转位置编码（2021）"><a href="#📄-RoFormer：RoPE-旋转位置编码（2021）" class="headerlink" title="📄 RoFormer：RoPE 旋转位置编码（2021）"></a>📄 RoFormer：RoPE 旋转位置编码（2021）</h4><ul>
+<li><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2104.09864">2104.09864 - RoFormer: Enhanced Transformer with Rotary Position Embedding</a>（苏剑林等）</li>
+<li><strong>解决的问题：</strong> 原始 Transformer 的正弦位置编码不能很好地外推到训练时未见过的长度</li>
+<li><strong>方法：</strong> 用旋转矩阵编码绝对位置，自然携带相对位置信息</li>
+<li><strong>数学：</strong> $f(x_m, m) &#x3D; R_m x_m$，其中 $R_m$ 是旋转矩阵</li>
+<li><strong>影响：</strong> LLaMA、DeepSeek、Qwen 等几乎所有现代模型都使用 RoPE，是必须理解的技术</li>
+<li>苏剑林是国内 NLP 研究者，他的博客（<a target="_blank" rel="noopener" href="https://kexue.fm/">kexue.fm</a>）对 RoPE 有详细中文解析</li>
+</ul>
+<h4 id="📄-Switch-Transformers：通向万亿参数的稀疏-MoE（2021）"><a href="#📄-Switch-Transformers：通向万亿参数的稀疏-MoE（2021）" class="headerlink" title="📄 Switch Transformers：通向万亿参数的稀疏 MoE（2021）"></a>📄 Switch Transformers：通向万亿参数的稀疏 MoE（2021）</h4><ul>
+<li><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2101.03961">2101.03961 - Switch Transformers</a>（Fedus, Zoph, Shazeer，Google）</li>
+<li><strong>解决的问题：</strong> 密集模型每次推理都激活全部参数，计算成本随参数量线性增长</li>
+<li><strong>方法：</strong> Mixture-of-Experts（MoE）稀疏激活，每个 token 只路由到部分专家</li>
+<li><strong>核心机制：</strong> Router 网络决定每个 token 发送到哪个专家（FFN 子层），训练 1T 参数模型但每次激活约 1&#x2F;8 的参数</li>
+<li><strong>影响：</strong> DeepSeek-V2&#x2F;V3、Qwen2.5 的 MoE 变体都直接继承自这个方向</li>
+</ul>
+<hr>
+<h2 id="第三阶段：大模型训练方法（1-2个月）"><a href="#第三阶段：大模型训练方法（1-2个月）" class="headerlink" title="第三阶段：大模型训练方法（1-2个月）"></a>第三阶段：大模型训练方法（1-2个月）</h2><h3 id="3-1-预训练基础"><a href="#3-1-预训练基础" class="headerlink" title="3.1 预训练基础"></a>3.1 预训练基础</h3><h4 id="📄-Chinchilla：训练计算最优大语言模型（2022）"><a href="#📄-Chinchilla：训练计算最优大语言模型（2022）" class="headerlink" title="📄 Chinchilla：训练计算最优大语言模型（2022）"></a>📄 Chinchilla：训练计算最优大语言模型（2022）</h4><ul>
+<li><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2203.15556">2203.15556 - Training Compute-Optimal Large Language Models (Chinchilla)</a>（Hoffmann 等，DeepMind）</li>
+<li><strong>核心结论：</strong> 推翻了 Kaplan 2020 年的 Scaling Laws，发现<strong>模型参数量和训练 tokens 数量应等比增长</strong><ul>
+<li>旧结论：固定预算优先扩大模型</li>
+<li>新结论：每个参数应该见到约 20 个 tokens</li>
+<li>公式：$N_{opt} \propto C^{0.5}$，$D_{opt} \propto C^{0.5}$</li>
+</ul>
+</li>
+<li><strong>验证：</strong> 训练了一个 70B 参数 + 1.4T tokens 的 Chinchilla 模型，超越了参数量大 4 倍的 Gopher（280B）</li>
+<li><strong>影响：</strong> LLaMA 系列直接采用 Chinchilla 最优比例，DeepSeek 扩展到更大 token 数</li>
+</ul>
+<h4 id="📄-LLaMA-1：开放高效基础语言模型（2023）"><a href="#📄-LLaMA-1：开放高效基础语言模型（2023）" class="headerlink" title="📄 LLaMA 1：开放高效基础语言模型（2023）"></a>📄 LLaMA 1：开放高效基础语言模型（2023）</h4><ul>
+<li><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2302.13971">2302.13971 - LLaMA: Open and Efficient Foundation Language Models</a>（Touvron 等，Meta）</li>
+<li><strong>规模：</strong> 7B&#x2F;13B&#x2F;33B&#x2F;65B 四个尺寸</li>
+<li><strong>核心贡献：</strong><ul>
+<li>完全使用<strong>公开数据集</strong>（CommonCrawl + C4 + GitHub + Wikipedia 等）训练</li>
+<li>证明了充分训练的小模型能超越参数量更大但训练不足的模型</li>
+<li>LLaMA-13B 超越 GPT-3 175B 在大多数 benchmark 上</li>
+</ul>
+</li>
+<li><strong>架构改进（相对原始 Transformer）：</strong><ul>
+<li>Pre-norm（RMSNorm 代替 LayerNorm）</li>
+<li>SwiGLU 激活函数</li>
+<li>RoPE 位置编码</li>
+<li>取消绝对位置编码</li>
+</ul>
+</li>
+<li><strong>历史意义：</strong> 开启了开源 LLM 时代，Alpaca&#x2F;Vicuna 等大量微调模型基于此</li>
+</ul>
+<h4 id="📄-The-Llama-3-Herd-of-Models（2024）"><a href="#📄-The-Llama-3-Herd-of-Models（2024）" class="headerlink" title="📄 The Llama 3 Herd of Models（2024）"></a>📄 The Llama 3 Herd of Models（2024）</h4><ul>
+<li><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2407.21783">2407.21783 - The Llama 3 Herd of Models</a>（Grattafiori 等，Meta）</li>
+<li><strong>规模：</strong> 8B&#x2F;70B&#x2F;405B 三个尺寸，405B 参数是 Meta 迄今最大开源模型</li>
+<li><strong>训练数据：</strong> 超过 15T tokens（相比 LLaMA 2 的 2T 增加了 7.5 倍）</li>
+<li><strong>上下文长度：</strong> 128K tokens</li>
+<li><strong>架构细节（完整公开）：</strong><ul>
+<li>标准 Dense Transformer（非 MoE）</li>
+<li>Grouped Query Attention（GQA）减少 KV Cache</li>
+<li>RoPE 位置编码，theta&#x3D;500,000（支持更长上下文）</li>
+<li>词汇表扩展到 128K tokens</li>
+</ul>
+</li>
+<li><strong>训练细节：</strong><ul>
+<li>Pre-training：cosine 学习率调度，3.2×10^25 FLOPs</li>
+<li>Post-training：SFT → Rejection Sampling → DPO</li>
+<li>首次大规模使用合成数据做后训练</li>
+</ul>
+</li>
+<li><strong>为什么值得精读：</strong> Meta 是目前披露训练细节最完整的顶级机构，405B 模型与 GPT-4 同级别，报告长达 92 页</li>
+</ul>
+<h4 id="📄-DeepSeek-V3-Technical-Report（2024）"><a href="#📄-DeepSeek-V3-Technical-Report（2024）" class="headerlink" title="📄 DeepSeek-V3 Technical Report（2024）"></a>📄 DeepSeek-V3 Technical Report（2024）</h4><ul>
+<li><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2412.19437">2412.19437 - DeepSeek-V3 Technical Report</a>（DeepSeek-AI）</li>
+<li><strong>规模：</strong> 671B 总参数，每次推理激活 37B</li>
+<li><strong>架构（最详细的顶级 MoE 模型报告）：</strong><ul>
+<li><strong>Multi-head Latent Attention（MLA）</strong>：将 KV Cache 压缩为低秩潜向量，节省 93% KV Cache 内存</li>
+<li><strong>DeepSeekMoE</strong>：将 FFN 层替换为稀疏 MoE，每层 256 个专家，每 token 选 8 个（含 1 个共享专家）</li>
+<li><strong>Auxiliary-loss-free 负载均衡</strong>：不再依赖辅助损失维持路由均衡，而是用 bias 机制</li>
+<li><strong>Multi-Token Prediction</strong>：训练时同时预测多个未来 token，提高训练效率</li>
+</ul>
+</li>
+<li><strong>训练成本：</strong> 2.788M H800 GPU 小时（约 550 万美元），远低于 GPT-4 估计成本</li>
+<li><strong>训练数据：</strong> 14.8T tokens，涵盖中英文及代码</li>
+<li><strong>FP8 混合精度训练</strong>：首次大规模应用于顶级模型训练</li>
+<li><strong>GitHub：</strong> <a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/DeepSeek-V3">deepseek-ai&#x2F;DeepSeek-V3</a>（模型权重公开）</li>
+</ul>
+<h4 id="📄-Qwen2-5-Technical-Report（2024）"><a href="#📄-Qwen2-5-Technical-Report（2024）" class="headerlink" title="📄 Qwen2.5 Technical Report（2024）"></a>📄 Qwen2.5 Technical Report（2024）</h4><ul>
+<li><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2412.15115">2412.15115 - Qwen2.5 Technical Report</a>（Qwen Team，阿里）</li>
+<li><strong>规模：</strong> 0.5B&#x2F;1.5B&#x2F;3B&#x2F;7B&#x2F;14B&#x2F;32B&#x2F;72B 全系列</li>
+<li><strong>训练数据：</strong> 18T tokens（前代 7T 的 2.5 倍）</li>
+<li><strong>后训练：</strong> 超过 100 万条 SFT 样本 + 多阶段 RL</li>
+<li><strong>能力：</strong> 72B 模型在多个 benchmark 超越 LLaMA 3 405B</li>
+<li><strong>为什么值得读：</strong> Alibaba 公开了完整的数据配比、训练超参、评测细节，对工程实践参考价值极高</li>
+</ul>
+<h3 id="3-2-对齐训练方法"><a href="#3-2-对齐训练方法" class="headerlink" title="3.2 对齐训练方法"></a>3.2 对齐训练方法</h3><h4 id="📄-InstructGPT（RLHF）（2022）"><a href="#📄-InstructGPT（RLHF）（2022）" class="headerlink" title="📄 InstructGPT（RLHF）（2022）"></a>📄 InstructGPT（RLHF）（2022）</h4><ul>
+<li><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2203.02155">2203.02155 - Training language models to follow instructions with human feedback (InstructGPT)</a>（Ouyang 等，OpenAI）</li>
+<li><strong>核心问题：</strong> 大语言模型会输出有毒&#x2F;虚假&#x2F;无用内容，如何让它更符合人类意图？</li>
+<li><strong>方法（三步流程）：</strong><ol>
+<li><strong>SFT（监督微调）：</strong> 人工标注员编写理想回答，用它微调 GPT-3</li>
+<li><strong>RM（奖励模型训练）：</strong> 让模型生成多个回答，人工排序，训练奖励模型</li>
+<li><strong>PPO（强化学习）：</strong> 用奖励模型作为信号，用 PPO 算法进一步优化语言模型</li>
+</ol>
+</li>
+<li><strong>关键发现：</strong> 1.3B InstructGPT 比 175B GPT-3 更受人类偏好（100 倍参数差距！）</li>
+<li><strong>历史意义：</strong> 这是 ChatGPT 的直接前身，RLHF 流程被 Anthropic&#x2F;Google&#x2F;Meta 全部采用</li>
+</ul>
+<h4 id="📄-Constitutional-AI（CAI）（2022）"><a href="#📄-Constitutional-AI（CAI）（2022）" class="headerlink" title="📄 Constitutional AI（CAI）（2022）"></a>📄 Constitutional AI（CAI）（2022）</h4><ul>
+<li><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2212.08073">2212.08073 - Constitutional AI: Harmlessness from AI Feedback</a>（Bai 等，Anthropic）</li>
+<li><strong>核心问题：</strong> RLHF 需要大量人工标注有害内容，成本高且对标注员有心理负担</li>
+<li><strong>方法：</strong> 让 AI 自己根据”宪法”（一组原则）来评判和改进回答<ul>
+<li><strong>SL-CAI（监督阶段）：</strong> 模型先给出回答 → 引用宪法原则提出批评 → 修改回答 → 用修改后的回答微调</li>
+<li><strong>RL-CAI（强化阶段）：</strong> 用 AI 偏好反馈（RLAIF）替代人工偏好，训练奖励模型</li>
+</ul>
+</li>
+<li><strong>主要原则类型：</strong> 无害性、诚实性、有帮助性（Helpful, Harmless, Honest）</li>
+<li><strong>历史意义：</strong> Claude 系列所有版本的训练哲学基础，理解 Claude 行为模式的必读文献</li>
+</ul>
+<h4 id="📄-Direct-Preference-Optimization（DPO）（2023）"><a href="#📄-Direct-Preference-Optimization（DPO）（2023）" class="headerlink" title="📄 Direct Preference Optimization（DPO）（2023）"></a>📄 Direct Preference Optimization（DPO）（2023）</h4><ul>
+<li><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2305.18290">2305.18290 - Direct Preference Optimization</a>（Rafailov 等，Stanford）</li>
+<li><strong>解决的问题：</strong> PPO 训练不稳定、超参数敏感、需要同时维护多个模型</li>
+<li><strong>方法：</strong> 将 RL 问题转化为分类问题，直接在偏好数据上优化</li>
+<li><strong>优势：</strong> 训练更稳定，不需要单独的奖励模型</li>
+<li><strong>现状：</strong> LLaMA 3、Qwen2.5 的后训练都使用了 DPO 或其变体</li>
+</ul>
+<h3 id="3-3-推理能力（Reasoning-Models）——-2025-2026-年最核心方向"><a href="#3-3-推理能力（Reasoning-Models）——-2025-2026-年最核心方向" class="headerlink" title="3.3 推理能力（Reasoning Models）—— 2025-2026 年最核心方向"></a>3.3 推理能力（Reasoning Models）—— 2025-2026 年最核心方向</h3><p>这是目前 AI 最前沿的研究方向，claude-opus-4&#x2F;o4 的核心能力所在：</p>
+<h4 id="📄-Chain-of-Thought-Prompting（2022）"><a href="#📄-Chain-of-Thought-Prompting（2022）" class="headerlink" title="📄 Chain-of-Thought Prompting（2022）"></a>📄 Chain-of-Thought Prompting（2022）</h4><ul>
+<li><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2201.11903">2201.11903 - Chain-of-Thought Prompting</a>（Wei 等，Google）</li>
+<li><strong>发现：</strong> 让模型”思考步骤”然后再给答案，可以大幅提升数学&#x2F;逻辑推理能力</li>
+<li><strong>触发方式：</strong> 只需在 few-shot 示例中加入中间推理步骤</li>
+</ul>
+<h4 id="📄-DeepSeek-R1（2025）——-目前最完整公开的-Reasoning-模型"><a href="#📄-DeepSeek-R1（2025）——-目前最完整公开的-Reasoning-模型" class="headerlink" title="📄 DeepSeek-R1（2025）—— 目前最完整公开的 Reasoning 模型"></a>📄 DeepSeek-R1（2025）—— 目前最完整公开的 Reasoning 模型</h4><ul>
+<li><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2501.12948">2501.12948 - DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning</a>（DeepSeek-AI）</li>
+<li><strong>已发表于：</strong> Nature，2025年，645卷 633-638 页（罕见的 AI 论文登上 Nature）</li>
+<li><strong>核心贡献（完整公开了如何训练出 o1 级别的推理模型）：</strong><ol>
+<li><strong>DeepSeek-R1-Zero：</strong> 完全用强化学习（GRPO 算法）训练，不用任何 CoT 示范数据<ul>
+<li>奖励：数学&#x2F;代码答案的对错（0 或 1）</li>
+<li>涌现出”自我反思”、”验证”、”回溯”等推理模式——模型自发习得</li>
+</ul>
+</li>
+<li><strong>DeepSeek-R1：</strong> 在 R1-Zero 基础上加入少量人工 CoT 冷启动数据，改进可读性</li>
+</ol>
+</li>
+<li><strong>关键发现：</strong> 推理能力完全可以通过 RL 涌现，不需要人工标注的推理轨迹</li>
+<li><strong>影响：</strong> 这篇论文让业界意识到 o1&#x2F;o3&#x2F;claude-thinking 的机制，引发大量复现工作</li>
+<li><strong>GitHub：</strong> <a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/DeepSeek-R1">deepseek-ai&#x2F;DeepSeek-R1</a>（包含模型权重和蒸馏版本）</li>
+</ul>
+<hr>
+<h2 id="第四阶段：工程与系统（并行学习）"><a href="#第四阶段：工程与系统（并行学习）" class="headerlink" title="第四阶段：工程与系统（并行学习）"></a>第四阶段：工程与系统（并行学习）</h2><h3 id="4-1-分布式训练"><a href="#4-1-分布式训练" class="headerlink" title="4.1 分布式训练"></a>4.1 分布式训练</h3><p>训练 100B+ 参数的模型需要数千张 GPU，分布式训练是工程核心：</p>
+<table>
+<thead>
+<tr>
+<th>技术</th>
+<th>论文&#x2F;资料</th>
+<th>arXiv</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>张量并行</strong></td>
+<td>Megatron-LM</td>
+<td>1909.08053</td>
+<td>NVIDIA，将单个矩阵分割到多个 GPU</td>
+</tr>
+<tr>
+<td><strong>流水线并行</strong></td>
+<td>GPipe</td>
+<td>1811.06965</td>
+<td>将模型层分到不同 GPU</td>
+</tr>
+<tr>
+<td><strong>ZeRO 显存优化</strong></td>
+<td>ZeRO</td>
+<td>1910.02054</td>
+<td>微软 DeepSpeed，优化器&#x2F;梯度&#x2F;参数分片</td>
+</tr>
+<tr>
+<td><strong>3D 并行</strong></td>
+<td>Megatron-LM v2</td>
+<td>2104.04473</td>
+<td>张量+流水线+数据并行结合</td>
+</tr>
+<tr>
+<td><strong>PyTorch FSDP</strong></td>
+<td>PyTorch 官方文档</td>
+<td>—</td>
+<td>Facebook 的全分片数据并行实现</td>
+</tr>
+</tbody></table>
+<h3 id="4-2-推理优化"><a href="#4-2-推理优化" class="headerlink" title="4.2 推理优化"></a>4.2 推理优化</h3><table>
+<thead>
+<tr>
+<th>技术</th>
+<th>核心思路</th>
+<th>论文&#x2F;资料</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>KV Cache</strong></td>
+<td>缓存已计算的 K&#x2F;V，避免重复计算</td>
+<td>所有 Transformer 教程均涵盖</td>
+</tr>
+<tr>
+<td><strong>Speculative Decoding</strong></td>
+<td>小模型草稿 + 大模型验证，并行化自回归生成</td>
+<td>arXiv 2211.17192</td>
+</tr>
+<tr>
+<td><strong>Continuous Batching</strong></td>
+<td>动态批处理，提高 GPU 利用率</td>
+<td>arXiv 2309.06180（vLLM 论文）</td>
+</tr>
+<tr>
+<td><strong>PagedAttention</strong></td>
+<td>KV Cache 分页管理，解决碎片化</td>
+<td>arXiv 2309.06180</td>
+</tr>
+<tr>
+<td><strong>量化（AWQ&#x2F;GPTQ）</strong></td>
+<td>将权重量化到 4bit，显著减少显存</td>
+<td>arXiv 2306.00978</td>
+</tr>
+<tr>
+<td><strong>GGUF&#x2F;llama.cpp</strong></td>
+<td>CPU 推理，量化格式</td>
+<td><a target="_blank" rel="noopener" href="https://github.com/ggerganov/llama.cpp">ggerganov&#x2F;llama.cpp</a></td>
+</tr>
+</tbody></table>
+<h3 id="4-3-实践框架"><a href="#4-3-实践框架" class="headerlink" title="4.3 实践框架"></a>4.3 实践框架</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 推理框架</span></span><br><span class="line">pip install vllm          <span class="comment"># 高性能推理，支持 PagedAttention</span></span><br><span class="line"><span class="comment"># GitHub: https://github.com/vllm-project/vllm  →  见下方资源汇总</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 本地便捷部署</span></span><br><span class="line"><span class="comment"># Ollama → 见下方资源汇总</span></span><br><span class="line"><span class="comment"># 支持 LLaMA/Qwen/DeepSeek 等，一键运行</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 训练与微调</span></span><br><span class="line">pip install transformers   <span class="comment"># Hugging Face 基础库</span></span><br><span class="line">pip install trl            <span class="comment"># RLHF/DPO/PPO 训练</span></span><br><span class="line">pip install axolotl        <span class="comment"># 简化微调流程</span></span><br><span class="line">pip install unsloth        <span class="comment"># 快速微调，显存减半</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 分布式训练</span></span><br><span class="line">pip install deepspeed      <span class="comment"># 微软 ZeRO</span></span><br><span class="line"><span class="comment"># Megatron-LM → 见下方资源汇总</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="第五阶段：前沿模型技术报告（精读清单）"><a href="#第五阶段：前沿模型技术报告（精读清单）" class="headerlink" title="第五阶段：前沿模型技术报告（精读清单）"></a>第五阶段：前沿模型技术报告（精读清单）</h2><h3 id="5-1-OpenAI-系列"><a href="#5-1-OpenAI-系列" class="headerlink" title="5.1 OpenAI 系列"></a>5.1 OpenAI 系列</h3><p>OpenAI 是 ChatGPT、GPT-4、o1&#x2F;o3 的开发者，但其技术报告<strong>几乎不披露架构细节</strong>，主要是能力评测。</p>
+<h4 id="📄-GPT-4-Technical-Report（2023）"><a href="#📄-GPT-4-Technical-Report（2023）" class="headerlink" title="📄 GPT-4 Technical Report（2023）"></a>📄 GPT-4 Technical Report（2023）</h4><ul>
+<li><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2303.08774">2303.08774 - GPT-4 Technical Report</a>（OpenAI）</li>
+<li><strong>内容摘要：</strong> 100 页报告，主要内容是：<ul>
+<li>各类 benchmark 评测（MMLU&#x2F;HumanEval&#x2F;HellaSwag 等）</li>
+<li>安全性评测（越狱、有害内容）</li>
+<li>多模态能力（接受图像输入）</li>
+<li>通过律师考试 top 10% 等人类水平评测</li>
+</ul>
+</li>
+<li><strong>架构信息：</strong> <strong>几乎为零</strong>。仅说”Transformer-based model”，不透露参数量、架构细节、训练数据</li>
+<li><strong>可预测性研究：</strong> OpenAI 提到他们基于小模型预测了 GPT-4 的性能，这是 scaling law 的核心体现</li>
+<li><strong>阅读价值：</strong> 了解评测方法论和安全评估框架，不适合学习架构</li>
+</ul>
+<blockquote>
+<p>⚠️ <strong>OpenAI 的技术报告定位是”系统卡”而非论文</strong>，隐藏核心架构是其商业策略。真正想学架构请看 LLaMA 3 &#x2F; DeepSeek-V3。</p>
+</blockquote>
+<h4 id="o1-o3-系列"><a href="#o1-o3-系列" class="headerlink" title="o1&#x2F;o3 系列"></a>o1&#x2F;o3 系列</h4><ul>
+<li>OpenAI 官网发布了 <a target="_blank" rel="noopener" href="https://openai.com/index/openai-o1-system-card">o1 System Card</a></li>
+<li>这是能力描述文档，不含训练方法</li>
+<li>训练方法参考 DeepSeek-R1（后者完整公开）</li>
+</ul>
+<h3 id="5-2-Anthropic-Claude-系列"><a href="#5-2-Anthropic-Claude-系列" class="headerlink" title="5.2 Anthropic &#x2F; Claude 系列"></a>5.2 Anthropic &#x2F; Claude 系列</h3><p>Anthropic 的策略与 OpenAI 类似——<strong>从不公开模型架构</strong>，但他们在可解释性研究上投入极大。</p>
+<h4 id="📄-Constitutional-AI（2022）"><a href="#📄-Constitutional-AI（2022）" class="headerlink" title="📄 Constitutional AI（2022）"></a>📄 Constitutional AI（2022）</h4><ul>
+<li><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2212.08073">2212.08073 - Constitutional AI: Harmlessness from AI Feedback</a>（Bai 等，Anthropic）</li>
+<li>详见第三阶段，这是理解 Claude 系列的关键论文</li>
+</ul>
+<h4 id="Anthropic-可解释性研究（transformer-circuits-pub）"><a href="#Anthropic-可解释性研究（transformer-circuits-pub）" class="headerlink" title="Anthropic 可解释性研究（transformer-circuits.pub）"></a>Anthropic 可解释性研究（transformer-circuits.pub）</h4><p>Anthropic 研究团队发表于 <a target="_blank" rel="noopener" href="https://transformer-circuits.pub/">transformer-circuits.pub</a>，这些是公开最接近 Claude 内部机制的资料：</p>
+<p><strong>核心系列（按发表顺序）：</strong></p>
+<ol>
+<li><p><strong>A Mathematical Framework for Transformer Circuits</strong>（2021）</p>
+<ul>
+<li>将 Transformer 分解为”电路”——注意力层的组合</li>
+<li>证明了两层 Transformer 中注意力头的可组合性</li>
+</ul>
+</li>
+<li><p><strong>In-context Learning and Induction Heads</strong>（2022）</p>
+<ul>
+<li>发现”归纳头”（induction head）——模式 [A][B]…[A] → [B]</li>
+<li>这是 LLM 能 few-shot 学习的核心机制</li>
+</ul>
+</li>
+<li><p><strong>Toy Models of Superposition</strong>（2022）</p>
+<ul>
+<li>神经网络如何在有限维度中存储超过维度数量的特征</li>
+<li>“叠加”（superposition）原理：特征用干扰较小的方向编码</li>
+</ul>
+</li>
+<li><p><strong>Scaling Monosemanticity</strong>（2024）</p>
+<ul>
+<li>在 Claude 3 Sonnet 上通过稀疏自编码器（SAE）识别出百万量级的可解释特征</li>
+<li>找到了代表”金门大桥”、”道德困境”等概念的具体神经元</li>
+</ul>
+</li>
+</ol>
+<blockquote>
+<p>这些研究不涉及具体架构参数，但从机制层面解释了 Claude 为何如此”理解”文本。</p>
+</blockquote>
+<h4 id="Claude-Model-Cards"><a href="#Claude-Model-Cards" class="headerlink" title="Claude Model Cards"></a>Claude Model Cards</h4><ul>
+<li><a target="_blank" rel="noopener" href="https://anthropic.com/claude-3-model-card">Claude 3 Model Card</a>（Claude 3 系列能力和安全描述）</li>
+<li>注意：这是产品文档，非学术论文，不含技术细节</li>
+</ul>
+<h3 id="5-3-Google-Gemini-系列"><a href="#5-3-Google-Gemini-系列" class="headerlink" title="5.3 Google &#x2F; Gemini 系列"></a>5.3 Google &#x2F; Gemini 系列</h3><p>Google 在技术报告的透明度上介于 OpenAI 和 Meta 之间：</p>
+<h4 id="📄-Gemini-A-Family-of-Highly-Capable-Multimodal-Models（2023）"><a href="#📄-Gemini-A-Family-of-Highly-Capable-Multimodal-Models（2023）" class="headerlink" title="📄 Gemini: A Family of Highly Capable Multimodal Models（2023）"></a>📄 Gemini: A Family of Highly Capable Multimodal Models（2023）</h4><ul>
+<li><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2312.11805">2312.11805 - Gemini: A Family of Highly Capable Multimodal Models</a>（Gemini Team Google）</li>
+<li><strong>规模：</strong> Ultra、Pro、Nano 三档</li>
+<li><strong>核心亮点：</strong><ul>
+<li>原生多模态：图像、音频、视频、文本统一在一个模型</li>
+<li>MMLU 88.0%，首个超越人类专家水平的模型</li>
+<li>架构基于 Transformer，但细节不完全公开</li>
+</ul>
+</li>
+<li><strong>架构提示：</strong> 使用了 Multi-Query Attention，支持多模态输入的 token 化方案</li>
+</ul>
+<h4 id="📄-Gemini-1-5-Unlocking-multimodal-understanding-across-millions-of-tokens（2024）"><a href="#📄-Gemini-1-5-Unlocking-multimodal-understanding-across-millions-of-tokens（2024）" class="headerlink" title="📄 Gemini 1.5: Unlocking multimodal understanding across millions of tokens（2024）"></a>📄 Gemini 1.5: Unlocking multimodal understanding across millions of tokens（2024）</h4><ul>
+<li><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2403.05530">2403.05530 - Gemini 1.5: Unlocking multimodal understanding across millions of tokens of context</a>（Gemini Team Google）</li>
+<li><strong>核心创新：长上下文处理</strong><ul>
+<li>支持 <strong>1M tokens</strong> 的上下文窗口（当时 GPT-4 Turbo 为 128K，Claude 3 为 200K）</li>
+<li>甚至测试了 <strong>10M tokens</strong> 下的 &gt;99% 召回率</li>
+<li>通过 Mixture-of-Experts 架构实现高效处理</li>
+</ul>
+</li>
+<li><strong>长上下文测试：</strong> 将整部电影（600 页剧本）、1 小时视频、完整代码库放入上下文</li>
+<li><strong>特殊测试：</strong> 给模型一本 Kalamang 语语法书（全球不足 200 名使用者），学会后进行翻译</li>
+</ul>
+<h3 id="5-4-DeepSeek-系列（架构最完整公开）"><a href="#5-4-DeepSeek-系列（架构最完整公开）" class="headerlink" title="5.4 DeepSeek 系列（架构最完整公开）"></a>5.4 DeepSeek 系列（架构最完整公开）</h3><p>DeepSeek 是目前<strong>技术透明度最高</strong>的顶级模型研究机构，每篇报告都包含完整架构和训练细节：</p>
+<h4 id="DeepSeek-技术演进路线"><a href="#DeepSeek-技术演进路线" class="headerlink" title="DeepSeek 技术演进路线"></a>DeepSeek 技术演进路线</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">DeepSeek-V1 (67B, Dense)</span><br><span class="line">    ↓</span><br><span class="line">DeepSeek-V2 (236B MoE, 21B激活) ← 首次提出 MLA + DeepSeekMoE</span><br><span class="line">    arXiv: 2405.04434</span><br><span class="line">    ↓</span><br><span class="line">DeepSeek-V3 (671B MoE, 37B激活) ← 目前最完整的顶级MoE技术报告</span><br><span class="line">    arXiv: 2412.19437</span><br><span class="line">    ↓</span><br><span class="line">DeepSeek-R1 (基于V3的推理模型) ← Reasoning训练方法完整公开</span><br><span class="line">    arXiv: 2501.12948</span><br></pre></td></tr></table></figure>
+
+<h4 id="📄-DeepSeek-V2（2024）"><a href="#📄-DeepSeek-V2（2024）" class="headerlink" title="📄 DeepSeek-V2（2024）"></a>📄 DeepSeek-V2（2024）</h4><ul>
+<li><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2405.04434">2405.04434 - DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model</a></li>
+<li><strong>参数：</strong> 236B 总参数，21B 激活</li>
+<li><strong>核心创新（首次提出，后被 V3 继承）：</strong><ul>
+<li><strong>MLA（Multi-head Latent Attention）：</strong> 将 KV Cache 从 $O(nH d_h)$ 压缩为 $O(n d_c)$，$d_c \ll H d_h$，节省 93.3% KV Cache</li>
+<li><strong>DeepSeekMoE：</strong> 细粒度专家划分，每层设置 1 个共享专家 + 若干路由专家</li>
+</ul>
+</li>
+<li><strong>成本：</strong> 比 DeepSeek 67B 节省 42.5% 训练成本，同时性能更强</li>
+</ul>
+<h4 id="📄-DeepSeek-V3（2024）"><a href="#📄-DeepSeek-V3（2024）" class="headerlink" title="📄 DeepSeek-V3（2024）"></a>📄 DeepSeek-V3（2024）</h4><ul>
+<li>见第三阶段详细介绍</li>
+<li><strong>GitHub：</strong> <a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/DeepSeek-V3">deepseek-ai&#x2F;DeepSeek-V3</a></li>
+<li><strong>Hugging Face：</strong> <code>deepseek-ai/DeepSeek-V3</code>（权重公开下载）</li>
+</ul>
+<h4 id="📄-DeepSeek-R1（2025）"><a href="#📄-DeepSeek-R1（2025）" class="headerlink" title="📄 DeepSeek-R1（2025）"></a>📄 DeepSeek-R1（2025）</h4><ul>
+<li>见第三阶段详细介绍  </li>
+<li><strong>Nature 发表：</strong> Volume 645, 633–638 (2025)，DOI：<code>10.1038/s41586-025-09422-z</code></li>
+<li><strong>GitHub：</strong> <a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/DeepSeek-R1">deepseek-ai&#x2F;DeepSeek-R1</a></li>
+</ul>
+<h3 id="5-5-Meta-LLaMA-系列"><a href="#5-5-Meta-LLaMA-系列" class="headerlink" title="5.5 Meta &#x2F; LLaMA 系列"></a>5.5 Meta &#x2F; LLaMA 系列</h3><p>Meta 是开源 LLM 生态的核心推动力，技术报告透明度极高：</p>
+<h4 id="LLaMA-系列演进"><a href="#LLaMA-系列演进" class="headerlink" title="LLaMA 系列演进"></a>LLaMA 系列演进</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">LLaMA 1 (7B-65B, 2023年2月)   arXiv: 2302.13971</span><br><span class="line">    ↓</span><br><span class="line">LLaMA 2 (7B-70B, 2023年7月)   arXiv: 2307.09288</span><br><span class="line">    + Chat 版本（SFT + RLHF）</span><br><span class="line">    ↓</span><br><span class="line">LLaMA 3 (8B-405B, 2024年7月)  arXiv: 2407.21783</span><br><span class="line">    + 128K 上下文</span><br><span class="line">    + 多模态版本（实验性）</span><br><span class="line">    ↓</span><br><span class="line">LLaMA 3.1 / 3.2 / 3.3</span><br><span class="line">    持续迭代改进</span><br></pre></td></tr></table></figure>
+
+<p>Meta 的 LLaMA 系列是目前<strong>商业级开源模型的事实标准</strong>，大量微调模型（Alpaca、Vicuna、WizardLM 等）基于此。</p>
+<h3 id="5-6-阿里-Qwen-系列"><a href="#5-6-阿里-Qwen-系列" class="headerlink" title="5.6 阿里 &#x2F; Qwen 系列"></a>5.6 阿里 &#x2F; Qwen 系列</h3><p>Qwen 系列是中国发布的最强开源 LLM 家族：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Qwen (7B/14B/72B) → Qwen1.5 → Qwen2 → Qwen2.5 (2024)</span><br><span class="line">                                              arXiv: 2412.15115</span><br><span class="line">专项模型：</span><br><span class="line">Qwen2.5-Coder (代码)</span><br><span class="line">Qwen2.5-Math (数学)</span><br><span class="line">QwQ-32B (推理模型)</span><br><span class="line">Qwen2-VL (视觉-语言)</span><br></pre></td></tr></table></figure>
+
+<p><strong><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2412.15115">Qwen2.5 Technical Report</a></strong> 是其中最完整的报告，18T tokens 训练数据的处理方式值得学习。</p>
+<hr>
+<h2 id="第六阶段：关键技术细节论文（深入研究）"><a href="#第六阶段：关键技术细节论文（深入研究）" class="headerlink" title="第六阶段：关键技术细节论文（深入研究）"></a>第六阶段：关键技术细节论文（深入研究）</h2><h3 id="6-1-注意力机制优化"><a href="#6-1-注意力机制优化" class="headerlink" title="6.1 注意力机制优化"></a>6.1 注意力机制优化</h3><table>
+<thead>
+<tr>
+<th>论文</th>
+<th>arXiv</th>
+<th>核心贡献</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>FlashAttention</td>
+<td>2205.14135</td>
+<td>IO-aware 注意力，减少 HBM 读写</td>
+</tr>
+<tr>
+<td>FlashAttention-2</td>
+<td>2307.08691</td>
+<td>进一步减少非矩阵乘法 FLOPs</td>
+</tr>
+<tr>
+<td>Grouped Query Attention (GQA)</td>
+<td>2305.13245</td>
+<td>多头 Query 但共享 KV，平衡效率和质量</td>
+</tr>
+<tr>
+<td>Multi-Query Attention (MQA)</td>
+<td>1911.02150</td>
+<td>所有 Query 头共享单个 KV</td>
+</tr>
+<tr>
+<td>Multi-head Latent Attention (MLA)</td>
+<td>DeepSeek-V2</td>
+<td>低秩压缩 KV，DeepSeek 原创</td>
+</tr>
+</tbody></table>
+<h3 id="6-2-位置编码"><a href="#6-2-位置编码" class="headerlink" title="6.2 位置编码"></a>6.2 位置编码</h3><table>
+<thead>
+<tr>
+<th>论文</th>
+<th>arXiv</th>
+<th>核心贡献</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RoPE</td>
+<td>2104.09864</td>
+<td>旋转矩阵编码，外推性好</td>
+</tr>
+<tr>
+<td>ALiBi</td>
+<td>2108.12409</td>
+<td>线性 bias，无需修改可外推</td>
+</tr>
+<tr>
+<td>YaRN</td>
+<td>2309.00071</td>
+<td>RoPE 的长度外推改进方案</td>
+</tr>
+</tbody></table>
+<h3 id="6-3-FFN-和归一化"><a href="#6-3-FFN-和归一化" class="headerlink" title="6.3 FFN 和归一化"></a>6.3 FFN 和归一化</h3><table>
+<thead>
+<tr>
+<th>技术</th>
+<th>论文&#x2F;来源</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SwiGLU</td>
+<td>arXiv 2002.05202</td>
+<td>Swish + GLU，LLaMA 系列使用</td>
+</tr>
+<tr>
+<td>RMSNorm</td>
+<td>arXiv 1910.07467</td>
+<td>比 LayerNorm 更高效，Pre-norm</td>
+</tr>
+<tr>
+<td>Pre-norm vs Post-norm</td>
+<td>多篇论文对比</td>
+<td>Pre-norm 训练更稳定，现代模型全用</td>
+</tr>
+</tbody></table>
+<h3 id="6-4-MoE-架构深入"><a href="#6-4-MoE-架构深入" class="headerlink" title="6.4 MoE 架构深入"></a>6.4 MoE 架构深入</h3><table>
+<thead>
+<tr>
+<th>论文</th>
+<th>arXiv</th>
+<th>核心贡献</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Switch Transformer</td>
+<td>2101.03961</td>
+<td>简化 MoE 路由（top-1）</td>
+</tr>
+<tr>
+<td>GLaM</td>
+<td>2112.06905</td>
+<td>Google 1.2T 参数 MoE</td>
+</tr>
+<tr>
+<td>Mixtral 8x7B</td>
+<td>2401.04088</td>
+<td>Mistral 的稀疏 MoE，完整公开</td>
+</tr>
+<tr>
+<td>DeepSeekMoE</td>
+<td>2401.06066</td>
+<td>细粒度专家 + 共享专家架构</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="第七阶段：Anthropic-可解释性研究（理解-AI-内部机制）"><a href="#第七阶段：Anthropic-可解释性研究（理解-AI-内部机制）" class="headerlink" title="第七阶段：Anthropic 可解释性研究（理解 AI 内部机制）"></a>第七阶段：Anthropic 可解释性研究（理解 AI 内部机制）</h2><p><a target="_blank" rel="noopener" href="https://transformer-circuits.pub/">transformer-circuits.pub</a> 是 Anthropic 研究团队发表的机制解析研究，对理解 LLM 为什么能工作有独特价值。</p>
+<h3 id="核心系列（按重要性排序）"><a href="#核心系列（按重要性排序）" class="headerlink" title="核心系列（按重要性排序）"></a>核心系列（按重要性排序）</h3><p><strong>1. A Mathematical Framework for Transformer Circuits（2021）</strong></p>
+<ul>
+<li>方法：将 Transformer 分解为电路（computational graph）</li>
+<li>关键发现：注意力头可以”组合”——两个头串联可以实现复杂操作</li>
+<li>适合：有一定 Transformer 基础后阅读</li>
+</ul>
+<p><strong>2. In-context Learning and Induction Heads（2022）</strong></p>
+<ul>
+<li>关键发现：<strong>归纳头</strong>（induction head）是 in-context learning 的机制</li>
+<li>归纳头功能：在序列 [A][B]…[A] 后预测 [B]</li>
+<li>影响：解释了 LLM 为什么能从少量示例中学习</li>
+</ul>
+<p><strong>3. Toy Models of Superposition（2022）</strong></p>
+<ul>
+<li>问题：模型参数量有限，但能表示的概念远多于维度数</li>
+<li>发现：<strong>叠加</strong>现象——多个特征共享同一方向，用干扰小的角度分离</li>
+<li>影响：解释了为什么神经元不对应单一概念，激发了 SAE 研究</li>
+</ul>
+<p><strong>4. Scaling Monosemanticity（2024）</strong></p>
+<ul>
+<li>方法：在 Claude 3 Sonnet 上训练稀疏自编码器（Sparse Autoencoder）</li>
+<li>成果：识别出 1600 万个可解释特征，包括：<ul>
+<li>代表具体概念的特征（金门大桥、DNA 双螺旋）</li>
+<li>代表抽象概念的特征（欺骗、道德冲突）</li>
+<li>可以通过激活&#x2F;抑制这些特征改变模型行为</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="学习资源汇总"><a href="#学习资源汇总" class="headerlink" title="学习资源汇总"></a>学习资源汇总</h2><h3 id="教材"><a href="#教材" class="headerlink" title="教材"></a>教材</h3><table>
+<thead>
+<tr>
+<th>书名</th>
+<th>作者</th>
+<th>适合阶段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>《Deep Learning》</td>
+<td>Goodfellow, Bengio, Courville</td>
+<td>基础阶段</td>
+<td>深度学习圣经，数学严谨</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://d2l.ai/">《Dive into Deep Learning》</a></td>
+<td>李沐等</td>
+<td>入门+进阶</td>
+<td>中英双语，含代码</td>
+</tr>
+<tr>
+<td>《Natural Language Processing with Transformers》</td>
+<td>HuggingFace</td>
+<td>Transformer 应用</td>
+<td>实践导向，大量代码示例</td>
+</tr>
+<tr>
+<td>《The Hundred-Page Machine Learning Book》</td>
+<td>Andriy Burkov</td>
+<td>快速全览</td>
+<td>100页梳理核心概念</td>
+</tr>
+<tr>
+<td>《Build a Large Language Model (From Scratch)》</td>
+<td>Sebastian Raschka</td>
+<td>LLM 实现</td>
+<td>2024年新书，从零构建</td>
+</tr>
+</tbody></table>
+<h3 id="视频课程（全部免费）"><a href="#视频课程（全部免费）" class="headerlink" title="视频课程（全部免费）"></a>视频课程（全部免费）</h3><table>
+<thead>
+<tr>
+<th>课程名</th>
+<th>来源</th>
+<th>内容</th>
+<th>推荐指数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Neural Networks: Zero to Hero</strong></td>
+<td>Andrej Karpathy (YouTube)</td>
+<td>从零实现 micrograd&#x2F;nanoGPT</td>
+<td>⭐⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>CS224N: Natural Language Processing with Deep Learning</strong></td>
+<td>Stanford (YouTube)</td>
+<td>NLP + Transformer 系统课程</td>
+<td>⭐⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>Practical Deep Learning for Coders</strong></td>
+<td>fast.ai</td>
+<td>自顶向下，注重实践</td>
+<td>⭐⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>李沐读论文系列</strong></td>
+<td>李沐 (B站&#x2F;YouTube)</td>
+<td>逐篇精读经典论文，中文</td>
+<td>⭐⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>Hugging Face NLP Course</strong></td>
+<td>HuggingFace (官网)</td>
+<td>Transformer 实际使用</td>
+<td>⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>DeepLearning.AI Short Courses</strong></td>
+<td>deeplearning.ai</td>
+<td>LLM 各专题短课</td>
+<td>⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>UCBerkeley CS182: Deep Learning</strong></td>
+<td>UC Berkeley (YouTube)</td>
+<td>理论+实践均衡</td>
+<td>⭐⭐⭐⭐</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>李沐读论文</strong> 强烈推荐中文学习者：他逐段精读 GPT、BERT、Transformer、ResNet 等经典论文，在 B 站和 YouTube 均有，共 100+ 集。</p>
+</blockquote>
+<h3 id="高质量技术博客（内容经过验证）"><a href="#高质量技术博客（内容经过验证）" class="headerlink" title="高质量技术博客（内容经过验证）"></a>高质量技术博客（内容经过验证）</h3><table>
+<thead>
+<tr>
+<th>博客 &#x2F; 作者</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><a target="_blank" rel="noopener" href="https://lilianweng.github.io/">Lilian Weng’s Blog</a></strong></td>
+<td>OpenAI 研究员，长篇综述，数学严谨（Attention、RL、Prompt Engineering 等）</td>
+</tr>
+<tr>
+<td><strong><a target="_blank" rel="noopener" href="https://sebastianraschka.com/">Sebastian Raschka</a></strong></td>
+<td>LLM 技术细节，大量代码，每月 newsletter</td>
+</tr>
+<tr>
+<td><strong><a target="_blank" rel="noopener" href="https://jalammar.github.io/">Jay Alammar</a></strong></td>
+<td>用动画解释 Transformer&#x2F;BERT&#x2F;GPT，最直观</td>
+</tr>
+<tr>
+<td><strong><a target="_blank" rel="noopener" href="https://huyenchip.com/">Chip Huyen</a></strong></td>
+<td>ML 系统工程，书籍《Designing ML Systems》作者</td>
+</tr>
+<tr>
+<td><strong><a target="_blank" rel="noopener" href="https://eugeneyan.com/">Eugene Yan</a></strong></td>
+<td>LLM 应用和工程最佳实践</td>
+</tr>
+<tr>
+<td><strong><a target="_blank" rel="noopener" href="https://kexue.fm/">苏剑林 科学空间</a></strong></td>
+<td>国内 NLP 研究者，RoPE 原作者，中文技术深度文章</td>
+</tr>
+</tbody></table>
+<h3 id="GitHub-重要仓库（已验证存在）"><a href="#GitHub-重要仓库（已验证存在）" class="headerlink" title="GitHub 重要仓库（已验证存在）"></a>GitHub 重要仓库（已验证存在）</h3><p><strong>学习类：</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/karpathy/nanoGPT">karpathy&#x2F;nanoGPT</a> — GPT 最简实现（56k stars）</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/karpathy/ng-video-lecture">karpathy&#x2F;ng-video-lecture</a> — Zero to Hero 视频代码（4.6k stars）</li>
+</ul>
+<p><strong>推理框架：</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/vllm-project/vllm">vllm-project&#x2F;vllm</a> — 高性能推理（40k+ stars）</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/ollama/ollama">ollama&#x2F;ollama</a> — 本地运行 LLM（130k+ stars）</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/ggerganov/llama.cpp">ggerganov&#x2F;llama.cpp</a> — CPU 推理（70k+ stars）</li>
+</ul>
+<p><strong>训练框架：</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/huggingface/transformers">huggingface&#x2F;transformers</a> — 最广泛使用的 LLM 库（140k+ stars）</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/huggingface/trl">huggingface&#x2F;trl</a> — RLHF&#x2F;DPO 训练</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/microsoft/DeepSpeed">microsoft&#x2F;DeepSpeed</a> — 分布式训练（35k+ stars）</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/NVIDIA/Megatron-LM">NVIDIA&#x2F;Megatron-LM</a> — 大规模预训练</li>
+</ul>
+<p><strong>模型权重（公开可下载）：</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/DeepSeek-V3">deepseek-ai&#x2F;DeepSeek-V3</a> — DeepSeek-V3 权重</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/DeepSeek-R1">deepseek-ai&#x2F;DeepSeek-R1</a> — DeepSeek-R1 权重</li>
+<li>Meta LLaMA 3：申请后从 <a target="_blank" rel="noopener" href="https://www.meta.ai/">meta.ai</a> 下载</li>
+<li>Qwen2.5：<a target="_blank" rel="noopener" href="https://huggingface.co/Qwen">Qwen on Hugging Face</a></li>
+</ul>
+<h3 id="arXiv-论文索引（所有链接已验证）"><a href="#arXiv-论文索引（所有链接已验证）" class="headerlink" title="arXiv 论文索引（所有链接已验证）"></a>arXiv 论文索引（所有链接已验证）</h3><table>
+<thead>
+<tr>
+<th>论文</th>
+<th>链接</th>
+<th>验证状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Attention Is All You Need</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/1706.03762">arXiv 1706.03762</a></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>GPT-3 (Language Models are Few-Shot Learners)</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2005.14165">arXiv 2005.14165</a></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Scaling Laws for Neural Language Models</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2001.08361">arXiv 2001.08361</a></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>InstructGPT (RLHF)</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2203.02155">arXiv 2203.02155</a></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Constitutional AI</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2212.08073">arXiv 2212.08073</a></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Chinchilla</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2203.15556">arXiv 2203.15556</a></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>LLaMA 1</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2302.13971">arXiv 2302.13971</a></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>The Llama 3 Herd of Models</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2407.21783">arXiv 2407.21783</a></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>GPT-4 Technical Report</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2303.08774">arXiv 2303.08774</a></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Gemini 1.0</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2312.11805">arXiv 2312.11805</a></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Gemini 1.5</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2403.05530">arXiv 2403.05530</a></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>DeepSeek-V2</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2405.04434">arXiv 2405.04434</a></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>DeepSeek-V3</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2412.19437">arXiv 2412.19437</a></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>DeepSeek-R1</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2501.12948">arXiv 2501.12948</a></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Qwen2.5</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2412.15115">arXiv 2412.15115</a></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>FlashAttention</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2205.14135">arXiv 2205.14135</a></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>RoPE (RoFormer)</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2104.09864">arXiv 2104.09864</a></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Switch Transformers</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2101.03961">arXiv 2101.03961</a></td>
+<td>✅</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="推荐学习顺序（6个月计划）"><a href="#推荐学习顺序（6个月计划）" class="headerlink" title="推荐学习顺序（6个月计划）"></a>推荐学习顺序（6个月计划）</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">【月份 1-2：基础建设】</span><br><span class="line">→ 3Blue1Brown 神经网络可视化 4 集</span><br><span class="line">→ Andrej Karpathy &quot;Zero to Hero&quot; 完整系列（6 集视频 + 代码）</span><br><span class="line">→ 实现 nanoGPT，跑通 Shakespeare 字符训练（GPU 3分钟，CPU 30分钟）</span><br><span class="line">→ 目标：能手写 MultiHeadAttention + TransformerBlock</span><br><span class="line"></span><br><span class="line">【月份 3：Transformer 系统理解】</span><br><span class="line">→ 精读 &quot;Attention is All You Need&quot;（arXiv 1706.03762）</span><br><span class="line">→ CS224N 前 8 课（Transformer 相关）</span><br><span class="line">→ 读 LLaMA 1 技术报告（arXiv 2302.13971，架构完整清晰）</span><br><span class="line">→ 了解 RoPE（arXiv 2104.09864）和 FlashAttention（arXiv 2205.14135）</span><br><span class="line">→ 目标：能解释 MHA/RoPE/RMSNorm 各自解决什么问题</span><br><span class="line"></span><br><span class="line">【月份 4：训练方法核心】</span><br><span class="line">→ 精读 InstructGPT（arXiv 2203.02155，RLHF 完整流程）</span><br><span class="line">→ 精读 Constitutional AI（arXiv 2212.08073，Claude 训练哲学）</span><br><span class="line">→ 精读 Chinchilla（arXiv 2203.15556，理解为何要训练更多 tokens）</span><br><span class="line">→ 了解 DPO（arXiv 2305.18290，RLHF 的简化替代）</span><br><span class="line">→ 目标：能解释为什么 ChatGPT/Claude 比原始 GPT-3 更有用</span><br><span class="line"></span><br><span class="line">【月份 5：前沿架构与 Reasoning】</span><br><span class="line">→ 精读 DeepSeek-V3 技术报告（arXiv 2412.19437，最完整的顶级 MoE 报告）</span><br><span class="line">→ 精读 DeepSeek-R1（arXiv 2501.12948，理解 Reasoning 模型如何训练）</span><br><span class="line">→ 读 The Llama 3 Herd（arXiv 2407.21783，Meta 最完整公开报告，92 页）</span><br><span class="line">→ 读 Gemini 1.5（arXiv 2403.05530，长上下文技术）</span><br><span class="line">→ 读 GPT-4 技术报告（arXiv 2303.08774，了解评测方法论）</span><br><span class="line">→ 目标：能对比各模型架构选择，理解 MoE 和 Dense 的工程权衡</span><br><span class="line"></span><br><span class="line">【月份 6：可解释性与系统工程】</span><br><span class="line">→ Anthropic transformer-circuits.pub 系列（优先读 Induction Heads 和 Superposition）</span><br><span class="line">→ FlashAttention-2（arXiv 2307.08691）+ vLLM 论文（arXiv 2309.06180）</span><br><span class="line">→ Switch Transformers（arXiv 2101.03961，MoE 奠基论文）</span><br><span class="line">→ 自选深入方向（可解释性 / 高效推理 / 多模态 / 代码模型）</span><br><span class="line">→ 目标：能阅读并理解新发表的 arXiv 论文</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="关于-Claude-Opus-4-claude-4-系列的具体限制"><a href="#关于-Claude-Opus-4-claude-4-系列的具体限制" class="headerlink" title="关于 Claude Opus-4 &#x2F; claude-4 系列的具体限制"></a>关于 Claude Opus-4 &#x2F; claude-4 系列的具体限制</h2><p><strong>以下信息 Anthropic 从未公开：</strong></p>
+<ul>
+<li>模型参数量</li>
+<li>架构图（是否 MoE、层数、头数）</li>
+<li>训练数据来源和规模</li>
+<li>具体的 CAI 迭代次数和宪法内容</li>
+<li>Thinking 模式（extended thinking）的具体实现机制</li>
+<li>推理优化方案</li>
+</ul>
+<p><strong>能接近理解 Claude 工作原理的公开资料（均已验证）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>资料</th>
+<th>链接</th>
+<th>可获取的信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Constitutional AI 论文</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2212.08073">arXiv 2212.08073</a></td>
+<td>Claude 训练的对齐哲学和自改进流程</td>
+</tr>
+<tr>
+<td>Anthropic 可解释性研究</td>
+<td><a target="_blank" rel="noopener" href="https://transformer-circuits.pub/">transformer-circuits.pub</a></td>
+<td>Claude 3 Sonnet 内部特征的直接分析</td>
+</tr>
+<tr>
+<td>DeepSeek-R1</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2501.12948">arXiv 2501.12948</a></td>
+<td>同类 Reasoning 模型的完整训练方法</td>
+</tr>
+<tr>
+<td>LLaMA 3 报告</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2407.21783">arXiv 2407.21783</a></td>
+<td>同代顶级模型的完整架构参考</td>
+</tr>
+<tr>
+<td>GPT-4 技术报告</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2303.08774">arXiv 2303.08774</a></td>
+<td>同代闭源模型的能力边界和安全评估</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="关键洞见：理解”顶级模型”差距在哪里"><a href="#关键洞见：理解”顶级模型”差距在哪里" class="headerlink" title="关键洞见：理解”顶级模型”差距在哪里"></a>关键洞见：理解”顶级模型”差距在哪里</h2><p>读完以上资料后，你会发现顶级模型和普通模型的差距主要来自：</p>
+<p><strong>1. 训练数据质量（比数量更重要）</strong></p>
+<ul>
+<li>LLaMA 3 在 15T tokens 上训练（包含大量筛选后的高质量数据）</li>
+<li>DeepSeek-V3 用了 14.8T tokens，强调数据多样性和质量过滤</li>
+</ul>
+<p><strong>2. 后训练（Post-training）</strong></p>
+<ul>
+<li>预训练只是基础，RLHF&#x2F;CAI&#x2F;DPO 决定了模型是否”好用”</li>
+<li>Claude 的差异化来自 Constitutional AI 的价值对齐</li>
+</ul>
+<p><strong>3. 架构工程细节</strong></p>
+<ul>
+<li>RoPE 外推（支持更长上下文）</li>
+<li>MLA（DeepSeek 的 KV Cache 压缩）</li>
+<li>FlashAttention（让长序列训练实际可行）</li>
+</ul>
+<p><strong>4. Reasoning（推理能力）</strong></p>
+<ul>
+<li>2025年起的核心竞争力</li>
+<li>DeepSeek-R1 证明：纯 RL 训练即可涌现出自我反思、验证、回溯等推理行为</li>
+<li>这与 claude-opus-4 的 extended thinking 机制高度类似</li>
+</ul>
+<hr>
+<h2 id="第八阶段：美国-AI-LLM-技术圈子与大佬资源"><a href="#第八阶段：美国-AI-LLM-技术圈子与大佬资源" class="headerlink" title="第八阶段：美国 AI&#x2F;LLM 技术圈子与大佬资源"></a>第八阶段：美国 AI&#x2F;LLM 技术圈子与大佬资源</h2><blockquote>
+<p>这是目前美国 AI 技术圈最活跃、信息密度最高的一批人和社区。全部链接均已实际访问确认有效。</p>
+</blockquote>
+<hr>
+<h3 id="🧑‍🔬-顶级研究员个人主页与博客"><a href="#🧑‍🔬-顶级研究员个人主页与博客" class="headerlink" title="🧑‍🔬 顶级研究员个人主页与博客"></a>🧑‍🔬 顶级研究员个人主页与博客</h3><h4 id="Andrej-Karpathy-—-最适合入门的讲师"><a href="#Andrej-Karpathy-—-最适合入门的讲师" class="headerlink" title="Andrej Karpathy — 最适合入门的讲师"></a>Andrej Karpathy — 最适合入门的讲师</h4><ul>
+<li><strong>身份：</strong> OpenAI 创始成员，Tesla AI 前负责人，Eureka Labs 创始人</li>
+<li><strong>主页：</strong> <a target="_blank" rel="noopener" href="https://karpathy.ai/">karpathy.ai</a></li>
+<li><strong>YouTube（最重要）：</strong> <a target="_blank" rel="noopener" href="https://www.youtube.com/@AndrejKarpathy">Andrej Karpathy YouTube 频道</a><ul>
+<li>🎬 <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=7xTGNNLPyMI">Deep Dive into LLMs like ChatGPT</a> — 3小时 LLM 底层原理完全解析</li>
+<li>🎬 <a target="_blank" rel="noopener" href="https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ">Neural Networks: Zero to Hero</a> — 从零手写神经网络到 GPT，代码级教学</li>
+<li>🎬 <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=zjkBMFhNj_g">Intro to Large Language Models</a> — 面向大众的 LLM 入门</li>
+<li>🎬 <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=bZQun8Y4L2A">State of GPT @ Microsoft Build 2023</a> — GPT 训练流程全景图</li>
+</ul>
+</li>
+<li><strong>博客（Bear Blog）：</strong> <a target="_blank" rel="noopener" href="https://karpathy.bearblog.dev/blog/">karpathy.bearblog.dev&#x2F;blog</a><ul>
+<li>名文：<a target="_blank" rel="noopener" href="https://karpathy.github.io/2019/04/25/recipe/">A Recipe for Training Neural Networks</a> — 调参圣经</li>
+<li>名文：<a target="_blank" rel="noopener" href="https://karpathy.medium.com/software-2-0-a64152b37c35">Software 2.0</a> — AI 改变软件工程的预言</li>
+</ul>
+</li>
+<li><strong>GitHub：</strong> <a target="_blank" rel="noopener" href="https://github.com/karpathy">github.com&#x2F;karpathy</a>（nanoGPT &#x2F; micrograd &#x2F; ng-video-lecture 都在这里）</li>
+<li><strong>Twitter&#x2F;X：</strong> <a target="_blank" rel="noopener" href="https://twitter.com/karpathy">@karpathy</a></li>
+</ul>
+<hr>
+<h4 id="Lilian-Weng-—-OpenAI-前安全研究负责人，技术写作天花板"><a href="#Lilian-Weng-—-OpenAI-前安全研究负责人，技术写作天花板" class="headerlink" title="Lilian Weng — OpenAI 前安全研究负责人，技术写作天花板"></a>Lilian Weng — OpenAI 前安全研究负责人，技术写作天花板</h4><ul>
+<li><strong>身份：</strong> OpenAI 前 VP of Safety，深度学习研究员</li>
+<li><strong>博客（Lil’Log）：</strong> <a target="_blank" rel="noopener" href="https://lilianweng.github.io/">lilianweng.github.io</a><ul>
+<li>📄 <a target="_blank" rel="noopener" href="https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/">The Transformer Family v2.0</a> — Transformer 变体大全</li>
+<li>📄 <a target="_blank" rel="noopener" href="https://lilianweng.github.io/posts/2023-03-15-prompt-engineering/">Prompt Engineering</a> — 提示词工程系统综述</li>
+<li>📄 <a target="_blank" rel="noopener" href="https://lilianweng.github.io/posts/2023-06-23-agent/">LLM Powered Autonomous Agents</a> — Agent 系统设计框架</li>
+<li>📄 <a target="_blank" rel="noopener" href="https://lilianweng.github.io/posts/2025-05-01-thinking/">Why We Think</a> — 推理模型的数学思考（2025 最新）</li>
+<li>📄 <a target="_blank" rel="noopener" href="https://lilianweng.github.io/posts/2024-11-28-reward-hacking/">Reward Hacking in RL</a> — RLHF 训练中的奖励攻击</li>
+<li>📄 <a target="_blank" rel="noopener" href="https://lilianweng.github.io/posts/2023-01-10-inference-optimization/">Large Transformer Model Inference Optimization</a> — 推理加速系统综述</li>
+</ul>
+</li>
+<li><strong>Twitter&#x2F;X：</strong> <a target="_blank" rel="noopener" href="https://twitter.com/lilianweng">@lilianweng</a></li>
+</ul>
+<hr>
+<h4 id="Jay-Alammar-—-可视化解释-Transformer-的第一人"><a href="#Jay-Alammar-—-可视化解释-Transformer-的第一人" class="headerlink" title="Jay Alammar — 可视化解释 Transformer 的第一人"></a>Jay Alammar — 可视化解释 Transformer 的第一人</h4><ul>
+<li><strong>身份：</strong> Cohere 研究员，LLM 科普创作者，著有《Hands-On Large Language Models》</li>
+<li><strong>博客（旧文章）：</strong> <a target="_blank" rel="noopener" href="https://jalammar.github.io/">jalammar.github.io</a><ul>
+<li>📄 <a target="_blank" rel="noopener" href="https://jalammar.github.io/illustrated-transformer/">The Illustrated Transformer</a> — 世界上转发最多的 Transformer 图解</li>
+<li>📄 <a target="_blank" rel="noopener" href="https://jalammar.github.io/illustrated-gpt2/">The Illustrated GPT-2</a> — GPT-2 可视化分解</li>
+<li>📄 <a target="_blank" rel="noopener" href="https://jalammar.github.io/how-gpt3-works-visualizations-animations/">How GPT3 Works - Visualizations and Animations</a></li>
+<li>📄 <a target="_blank" rel="noopener" href="https://jalammar.github.io/illustrated-bert/">The Illustrated BERT</a></li>
+</ul>
+</li>
+<li><strong>Substack（新文章都在这里）：</strong> <a target="_blank" rel="noopener" href="https://newsletter.languagemodels.co/">Language Models &amp; Co.</a> — 32,000+ 订阅者<ul>
+<li>近期名文：<a target="_blank" rel="noopener" href="https://newsletter.languagemodels.co/p/the-illustrated-deepseek-r1">The Illustrated DeepSeek R-1</a></li>
+</ul>
+</li>
+<li><strong>YouTube：</strong> <a target="_blank" rel="noopener" href="https://www.youtube.com/channel/UCmOwsoHty5PrmE-3QhUBfPQ">Jay Alammar YouTube</a></li>
+<li><strong>Twitter&#x2F;X：</strong> <a target="_blank" rel="noopener" href="https://twitter.com/JayAlammar">@JayAlammar</a></li>
+</ul>
+<hr>
+<h4 id="Sebastian-Raschka-—-LLM-架构比较与从零构建的专家"><a href="#Sebastian-Raschka-—-LLM-架构比较与从零构建的专家" class="headerlink" title="Sebastian Raschka — LLM 架构比较与从零构建的专家"></a>Sebastian Raschka — LLM 架构比较与从零构建的专家</h4><ul>
+<li><strong>身份：</strong> Lightning AI 研究员，《Build a Large Language Model from Scratch》作者</li>
+<li><strong>博客：</strong> <a target="_blank" rel="noopener" href="https://sebastianraschka.com/blog/">sebastianraschka.com&#x2F;blog</a><ul>
+<li>📄 <a target="_blank" rel="noopener" href="https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison">The Big LLM Architecture Comparison</a> — DeepSeek 到 GLM-5 的架构全对比（2025）</li>
+<li>📄 <a target="_blank" rel="noopener" href="https://magazine.sebastianraschka.com/p/understanding-reasoning-llms">Understanding Reasoning LLMs</a> — Reasoning 模型训练方法四大路径</li>
+<li>📄 <a target="_blank" rel="noopener" href="https://magazine.sebastianraschka.com/p/llm-research-papers-2025-list-one">LLM Research Papers: The 2025 List</a> — 200+ 篇精选论文手工整理</li>
+<li>📄 <a target="_blank" rel="noopener" href="https://magazine.sebastianraschka.com/p/visual-attention-variants">A Visual Guide to Attention Variants</a> — MHA&#x2F;GQA&#x2F;MLA&#x2F;稀疏注意力全对比</li>
+<li>📄 <a target="_blank" rel="noopener" href="https://magazine.sebastianraschka.com/p/building-llms-from-the-ground-up">Building LLMs from the Ground Up: 3-hour Workshop</a> — 3小时编程课</li>
+</ul>
+</li>
+<li><strong>Newsletter（Ahead of AI）：</strong> <a target="_blank" rel="noopener" href="https://magazine.sebastianraschka.com/">magazine.sebastianraschka.com</a> — 179,000+ 订阅者</li>
+<li><strong>YouTube：</strong> <a target="_blank" rel="noopener" href="https://youtube.com/c/SebastianRaschka">Sebastian Raschka YouTube</a></li>
+<li><strong>Twitter&#x2F;X：</strong> <a target="_blank" rel="noopener" href="https://twitter.com/rasbt">@rasbt</a></li>
+</ul>
+<hr>
+<h4 id="Chip-Huyen-—-MLOps-与-AI-系统工程专家"><a href="#Chip-Huyen-—-MLOps-与-AI-系统工程专家" class="headerlink" title="Chip Huyen — MLOps 与 AI 系统工程专家"></a>Chip Huyen — MLOps 与 AI 系统工程专家</h4><ul>
+<li><strong>身份：</strong> Stanford 讲师，AI 系统设计专家，《Designing Machine Learning Systems》作者</li>
+<li><strong>博客：</strong> <a target="_blank" rel="noopener" href="https://huyenchip.com/blog/">huyenchip.com&#x2F;blog</a><ul>
+<li>📄 <a target="_blank" rel="noopener" href="https://huyenchip.com/2023/05/02/rlhf.html">RLHF: Reinforcement Learning from Human Feedback</a> — RLHF 完整技术指南</li>
+<li>📄 <a target="_blank" rel="noopener" href="https://huyenchip.com/2023/04/11/llm-engineering.html">Building LLM applications for production</a> — LLM 落地工程难点</li>
+<li>📄 <a target="_blank" rel="noopener" href="https://huyenchip.com/2025/01/07/agents.html">Agents</a> — 智能体系统设计（2025 最新）</li>
+<li>📄 <a target="_blank" rel="noopener" href="https://huyenchip.com/2023/08/16/llm-research-open-challenges.html">Open challenges in LLM research</a> — LLM 研究未解难题</li>
+<li>📄 <a target="_blank" rel="noopener" href="https://huyenchip.com/2024/07/25/genai-platform.html">Building A Generative AI Platform</a> — GenAI 平台架构设计</li>
+</ul>
+</li>
+<li><strong>Twitter&#x2F;X：</strong> <a target="_blank" rel="noopener" href="https://twitter.com/chipro">@chipro</a></li>
+</ul>
+<hr>
+<h4 id="Eugene-Yan-—-Anthropic-工程师，LLM-落地实践专家"><a href="#Eugene-Yan-—-Anthropic-工程师，LLM-落地实践专家" class="headerlink" title="Eugene Yan — Anthropic 工程师，LLM 落地实践专家"></a>Eugene Yan — Anthropic 工程师，LLM 落地实践专家</h4><ul>
+<li><strong>身份：</strong> Anthropic MTS，曾在 Amazon&#x2F;Alibaba 领导 ML 团队</li>
+<li><strong>博客：</strong> <a target="_blank" rel="noopener" href="https://eugeneyan.com/">eugeneyan.com</a><ul>
+<li>📄 <a target="_blank" rel="noopener" href="https://eugeneyan.com/writing/llm-lessons/">What We’ve Learned From A Year of Building with LLMs</a> — 工程师视角的 LLM 落地经验</li>
+<li>📄 <a target="_blank" rel="noopener" href="https://eugeneyan.com/writing/llm-patterns/">Patterns for Building LLM-based Systems &amp; Products</a> — LLM 系统设计模式大全</li>
+<li>📄 <a target="_blank" rel="noopener" href="https://eugeneyan.com/writing/llm-evaluators/">Evaluating the Effectiveness of LLM-Evaluators</a> — LLM-as-Judge 评估方法</li>
+<li>📄 <a target="_blank" rel="noopener" href="https://eugeneyan.com/writing/prompting/">Prompting Fundamentals and How to Apply them Effectively</a></li>
+</ul>
+</li>
+<li><strong>Twitter&#x2F;X：</strong> <a target="_blank" rel="noopener" href="https://twitter.com/eugeneyan">@eugeneyan</a></li>
+</ul>
+<hr>
+<h4 id="Nathan-Lambert-—-RLHF-对齐研究权威"><a href="#Nathan-Lambert-—-RLHF-对齐研究权威" class="headerlink" title="Nathan Lambert — RLHF&#x2F;对齐研究权威"></a>Nathan Lambert — RLHF&#x2F;对齐研究权威</h4><ul>
+<li><strong>身份：</strong> AllenAI 研究员，RLHF 核心贡献者</li>
+<li><strong>Newsletter（Interconnects）：</strong> <a target="_blank" rel="noopener" href="https://www.interconnects.ai/">interconnects.ai</a> — 64,000+ 订阅者，AI 前沿研究评论，去除炒作</li>
+</ul>
+<hr>
+<h4 id="Sebastian-Ruder-—-NLP-研究综述专家"><a href="#Sebastian-Ruder-—-NLP-研究综述专家" class="headerlink" title="Sebastian Ruder — NLP 研究综述专家"></a>Sebastian Ruder — NLP 研究综述专家</h4><ul>
+<li><strong>身份：</strong> Google DeepMind 研究员，NLP 综述写作知名人物</li>
+<li><strong>Newsletter（NLP News）：</strong> <a target="_blank" rel="noopener" href="https://newsletter.ruder.io/">newsletter.ruder.io</a> — 29,000+ 订阅者，每期追踪 NLP 重要进展</li>
+</ul>
+<hr>
+<h3 id="📰-必关注的-Newsletter-Substack"><a href="#📰-必关注的-Newsletter-Substack" class="headerlink" title="📰 必关注的 Newsletter &#x2F; Substack"></a>📰 必关注的 Newsletter &#x2F; Substack</h3><table>
+<thead>
+<tr>
+<th>名称</th>
+<th>链接</th>
+<th>作者</th>
+<th>订阅量</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Ahead of AI</td>
+<td><a target="_blank" rel="noopener" href="https://magazine.sebastianraschka.com/">magazine.sebastianraschka.com</a></td>
+<td>Sebastian Raschka</td>
+<td>179k+</td>
+<td>LLM 论文精读 + 架构解析</td>
+</tr>
+<tr>
+<td>Language Models &amp; Co.</td>
+<td><a target="_blank" rel="noopener" href="https://newsletter.languagemodels.co/">newsletter.languagemodels.co</a></td>
+<td>Jay Alammar</td>
+<td>32k+</td>
+<td>可视化图解新模型</td>
+</tr>
+<tr>
+<td>Interconnects</td>
+<td><a target="_blank" rel="noopener" href="https://www.interconnects.ai/">interconnects.ai</a></td>
+<td>Nathan Lambert</td>
+<td>64k+</td>
+<td>对齐&#x2F;RLHF 前沿，无废话</td>
+</tr>
+<tr>
+<td>NLP News</td>
+<td><a target="_blank" rel="noopener" href="https://newsletter.ruder.io/">newsletter.ruder.io</a></td>
+<td>Sebastian Ruder</td>
+<td>29k+</td>
+<td>NLP 月报，论文追踪</td>
+</tr>
+<tr>
+<td>Lil’Log</td>
+<td><a target="_blank" rel="noopener" href="https://lilianweng.github.io/">lilianweng.github.io</a></td>
+<td>Lilian Weng</td>
+<td>—</td>
+<td>深度技术博客，综述质量极高</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="💬-社区与论坛"><a href="#💬-社区与论坛" class="headerlink" title="💬 社区与论坛"></a>💬 社区与论坛</h3><table>
+<thead>
+<tr>
+<th>社区</th>
+<th>链接</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>r&#x2F;MachineLearning</td>
+<td><a target="_blank" rel="noopener" href="https://www.reddit.com/r/MachineLearning/">reddit.com&#x2F;r&#x2F;MachineLearning</a></td>
+<td>Reddit 最大 ML 学术社区，论文讨论 &#x2F; AMA（问答）</td>
+</tr>
+<tr>
+<td>r&#x2F;LocalLLaMA</td>
+<td><a target="_blank" rel="noopener" href="https://www.reddit.com/r/LocalLLaMA/">reddit.com&#x2F;r&#x2F;LocalLLaMA</a></td>
+<td>本地部署 LLM 爱好者聚集地，量化&#x2F;fine-tune 实践</td>
+</tr>
+<tr>
+<td>Hugging Face Forums</td>
+<td><a target="_blank" rel="noopener" href="https://discuss.huggingface.co/">discuss.huggingface.co</a></td>
+<td>模型使用&#x2F;微调技术问题，官方开发者参与</td>
+</tr>
+<tr>
+<td>EleutherAI Discord</td>
+<td><a target="_blank" rel="noopener" href="https://discord.gg/eleutherai">discord.gg&#x2F;eleutherai</a></td>
+<td>开源 LLM 研究社区，Pythia&#x2F;RWKV 等项目发源地</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="🎬-YouTube-频道推荐"><a href="#🎬-YouTube-频道推荐" class="headerlink" title="🎬 YouTube 频道推荐"></a>🎬 YouTube 频道推荐</h3><table>
+<thead>
+<tr>
+<th>频道</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://www.youtube.com/@AndrejKarpathy">Andrej Karpathy</a></td>
+<td>最权威的从零构建 LLM 视频教程，代码级讲解</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://www.youtube.com/@YannicKilcher">Yannic Kilcher</a></td>
+<td>每周精读热门论文，讲解清晰，有技术深度</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://www.youtube.com/@umarjamilai">Umar Jamil</a></td>
+<td>手写实现 LLaMA&#x2F;Mistral&#x2F;Stable Diffusion，代码精讲</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://youtube.com/c/SebastianRaschka">Sebastian Raschka</a></td>
+<td>LLM 编程课，学术风格，配套代码</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://www.youtube.com/c/3blue1brown">3Blue1Brown</a></td>
+<td>数学可视化，Transformer&#x2F;神经网络原理动画解释</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="🐦-Twitter-X-必关注列表"><a href="#🐦-Twitter-X-必关注列表" class="headerlink" title="🐦 Twitter&#x2F;X 必关注列表"></a>🐦 Twitter&#x2F;X 必关注列表</h3><p>以下均为真实账号，可直接在 X 上搜索：</p>
+<table>
+<thead>
+<tr>
+<th>账号</th>
+<th>身份</th>
+<th>关注理由</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://twitter.com/karpathy">@karpathy</a></td>
+<td>Eureka Labs &#x2F; ex-OpenAI &#x2F; ex-Tesla AI</td>
+<td>频繁分享技术洞察，LLM 教育内容</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://twitter.com/lilianweng">@lilianweng</a></td>
+<td>ex-OpenAI VP Safety</td>
+<td>发布研究结果和技术评论</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://twitter.com/JayAlammar">@JayAlammar</a></td>
+<td>Cohere &#x2F; 科普作家</td>
+<td>最新模型图解，第一手发布</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://twitter.com/rasbt">@rasbt</a></td>
+<td>Lightning AI</td>
+<td>LLM 论文速评，每月论文整理</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://twitter.com/chipro">@chipro</a></td>
+<td>Stanford &#x2F; AI Systems</td>
+<td>MLOps 和系统工程视角</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://twitter.com/eugeneyan">@eugeneyan</a></td>
+<td>Anthropic</td>
+<td>LLM 工程落地实践分享</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://twitter.com/ylecun">@ylecun</a></td>
+<td>Meta Chief AI Scientist &#x2F; 图灵奖</td>
+<td>学术权威，反对过度炒作的声音</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://twitter.com/goodfellow_ian">@goodfellow_ian</a></td>
+<td>Apple &#x2F; GAN 发明者</td>
+<td>深度学习基础研究，学术视角</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://twitter.com/GaryMarcus">@GaryMarcus</a></td>
+<td>NYU 教授</td>
+<td>AI 批评视角，保持对行业清醒认知</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://twitter.com/hardmaru">@hardmaru</a></td>
+<td>Google Brain</td>
+<td>创意 AI 研究，分享有趣论文</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="📌-推荐信息获取路径"><a href="#📌-推荐信息获取路径" class="headerlink" title="📌 推荐信息获取路径"></a>📌 推荐信息获取路径</h3><p>如果只能选一个起点，按此顺序走：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">① Andrej Karpathy &quot;Neural Networks: Zero to Hero&quot; 系列视频（YouTube）</span><br><span class="line">   ↓ 打好代码基础后</span><br><span class="line">② Sebastian Raschka &quot;Ahead of AI&quot; Newsletter（每月订阅）</span><br><span class="line">   ↓ 跟上论文前沿后</span><br><span class="line">③ Lilian Weng 博客深度阅读（Transformer/Agent/Prompt/Alignment）</span><br><span class="line">   ↓ 建立系统理解后</span><br><span class="line">④ 关注 Twitter：@karpathy / @rasbt / @lilianweng / @JayAlammar</span><br><span class="line">   ↓ 加入社区讨论</span><br><span class="line">⑤ r/MachineLearning + r/LocalLLaMA（Reddit）</span><br></pre></td></tr></table></figure>
+
+<p>这条路径覆盖：<strong>代码基础 → 论文追踪 → 深度理解 → 实时动态 → 社区实践</strong>，是美国 AI 工程师&#x2F;研究员的主流信息获取路径。</p>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析    </a><a class="post-meta__tags" href="/tags/Claude-Code/">Claude Code    </a><a class="post-meta__tags" href="/tags/Agent/">Agent    </a><a class="post-meta__tags" href="/tags/LLM/">LLM    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2026/04/26/%E3%80%90Claude%20Code%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E3%80%9120-Swarm%E5%A4%9AAgent%E5%8D%8F%E8%B0%83%E7%B3%BB%E7%BB%9F/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【Claude Code源码剖析】20-Swarm 多 Agent 协调系统</span></div></a></div><div class="next-post pull_right"><a href="/2026/04/19/%E3%80%90Claude%20Code%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E3%80%9118-%E5%8E%9F%E7%89%88%E6%9C%AC%E5%9C%B0%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2%E6%8C%87%E5%8D%97/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【Claude Code源码剖析】18-API 请求链路与本地模型部署</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2026/05/25/【Claude Code源码剖析】29-UserHooks用户钩子系统/" title="【Claude Code源码剖析】29-User Hooks 用户钩子系统"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】29-User Hooks 用户钩子系统</div></a></div><div class="relatedPosts_item"><a href="/2026/05/18/【Claude Code源码剖析】27-VCR测试基础设施/" title="【Claude Code源码剖析】27-VCR 测试基础设施"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】27-VCR 测试基础设施</div></a></div><div class="relatedPosts_item"><a href="/2026/05/17/【Claude Code源码剖析】26-PlanModeV2规划模式/" title="【Claude Code源码剖析】26-多 Agent 规划系统"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】26-多 Agent 规划系统</div></a></div><div class="relatedPosts_item"><a href="/2026/05/11/【Claude Code源码剖析】25-LSP集成与IDE能力/" title="【Claude Code源码剖析】25-LSP 集成与 IDE 能力"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】25-LSP 集成与 IDE 能力</div></a></div><div class="relatedPosts_item"><a href="/2026/05/10/【Claude Code源码剖析】24-ComputerUse桌面自动化系统/" title="【Claude Code源码剖析】24-桌面自动化子系统"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】24-桌面自动化子系统</div></a></div><div class="relatedPosts_item"><a href="/2026/05/03/【Claude Code源码剖析】23-MemDir自动记忆系统/" title="【Claude Code源码剖析】23-MemDir 自动记忆系统"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】23-MemDir 自动记忆系统</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

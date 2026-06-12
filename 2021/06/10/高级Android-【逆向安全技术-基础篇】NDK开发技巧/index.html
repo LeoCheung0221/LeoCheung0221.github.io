@@ -1,0 +1,420 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【逆向安全技术-基础篇】NDK开发技巧 | ONE·PIECE</title><meta name="description" content="【逆向安全技术-基础篇】NDK开发技巧"><meta name="keywords" content="JNI,NDK,逆向安全"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【逆向安全技术-基础篇】NDK开发技巧"><meta name="twitter:description" content="【逆向安全技术-基础篇】NDK开发技巧"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【逆向安全技术-基础篇】NDK开发技巧"><meta property="og:url" content="http://tufusi.com/2021/06/10/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%9F%BA%E7%A1%80%E7%AF%87%E3%80%91NDK%E5%BC%80%E5%8F%91%E6%8A%80%E5%B7%A7/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【逆向安全技术-基础篇】NDK开发技巧"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2021/06/10/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%9F%BA%E7%A1%80%E7%AF%87%E3%80%91NDK%E5%BC%80%E5%8F%91%E6%8A%80%E5%B7%A7/"><link rel="prev" title="【逆向安全技术-基础篇】逆向开发常用命令" href="http://tufusi.com/2021/06/15/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%9F%BA%E7%A1%80%E7%AF%87%E3%80%91%E9%80%86%E5%90%91%E5%BC%80%E5%8F%91%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/"><link rel="next" title="【逆向安全技术-基础篇】锁屏密码加密算法分析" href="http://tufusi.com/2021/06/05/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%9F%BA%E7%A1%80%E7%AF%87%E3%80%91%E9%94%81%E5%B1%8F%E5%AF%86%E7%A0%81%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E5%88%86%E6%9E%90/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%89%8D%E8%A8%80"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">前言</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#JNI-%E5%87%BD%E6%95%B0%E5%91%BD%E5%90%8D%E8%A7%84%E5%88%99"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">JNI 函数命名规则</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E9%9D%99%E6%80%81%E6%B3%A8%E5%86%8C%EF%BC%88Static-Registration%EF%BC%89"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">静态注册（Static Registration）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%8A%A8%E6%80%81%E6%B3%A8%E5%86%8C%EF%BC%88Dynamic-Registration%EF%BC%89"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">动态注册（Dynamic Registration）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%B3%E9%94%AE-JNI-API-%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">关键 JNI API 详解</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#FindClass-%E2%80%94-%E8%8E%B7%E5%8F%96%E7%B1%BB%E5%BC%95%E7%94%A8"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">FindClass — 获取类引用</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#GetMethodID-GetStaticMethodID-%E2%80%94-%E8%8E%B7%E5%8F%96%E6%96%B9%E6%B3%95-ID"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">GetMethodID &#x2F; GetStaticMethodID — 获取方法 ID</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#CallStaticMethod-CallMethod-%E2%80%94-%E8%B0%83%E7%94%A8%E6%96%B9%E6%B3%95"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">CallStaticMethod &#x2F; CallMethod — 调用方法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#GetFieldID-SetFieldID-%E2%80%94-%E5%AD%97%E6%AE%B5%E6%93%8D%E4%BD%9C"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">GetFieldID &#x2F; SetFieldID — 字段操作</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#NewGlobalRef-DeleteGlobalRef-%E2%80%94-%E5%BC%95%E7%94%A8%E7%AE%A1%E7%90%86"><span class="toc_mobile_items-number">3.5.</span> <span class="toc_mobile_items-text">NewGlobalRef &#x2F; DeleteGlobalRef — 引用管理</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#JNI-%E6%96%B9%E6%B3%95%E7%AD%BE%E5%90%8D%E7%94%9F%E6%88%90%E5%B7%A5%E5%85%B7"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">JNI 方法签名生成工具</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#Native-%E5%B4%A9%E6%BA%83%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">Native 崩溃分析</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Tombstone-%E6%96%87%E4%BB%B6"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">Tombstone 文件</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#addr2line-%E2%80%94-%E5%9C%B0%E5%9D%80%E8%BD%AC%E8%A1%8C%E5%8F%B7"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">addr2line — 地址转行号</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#ndk-stack-%E2%80%94-%E4%B8%80%E9%94%AE%E8%BF%98%E5%8E%9F%E8%B0%83%E7%94%A8%E6%A0%88"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">ndk-stack — 一键还原调用栈</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E5%B4%A9%E6%BA%83%E5%A4%84%E7%90%86%E5%99%A8%EF%BC%88%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86%EF%BC%89"><span class="toc_mobile_items-number">5.4.</span> <span class="toc_mobile_items-text">自定义崩溃处理器（信号处理）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%B3%E9%94%AE-NDK-%E6%9E%84%E5%BB%BA%E5%8F%98%E9%87%8F"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">关键 NDK 构建变量</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%AB%98%E7%BA%A7-JNI-%E6%8A%80%E6%9C%AF%EF%BC%9A%E5%86%85%E8%81%94-Hook-%E4%B8%8E-Native-%E6%8F%92%E6%A1%A9"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">高级 JNI 技术：内联 Hook 与 Native 插桩</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#PLT-GOT-Hook-%E5%8E%9F%E7%90%86"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">PLT&#x2F;GOT Hook 原理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Inline-Hook-%E5%8E%9F%E7%90%86"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">Inline Hook 原理</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%80%83%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">面试常考问题</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JNI-%E5%87%BD%E6%95%B0%E5%91%BD%E5%90%8D%E8%A7%84%E5%88%99"><span class="toc-number">2.</span> <span class="toc-text">JNI 函数命名规则</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%99%E6%80%81%E6%B3%A8%E5%86%8C%EF%BC%88Static-Registration%EF%BC%89"><span class="toc-number">2.1.</span> <span class="toc-text">静态注册（Static Registration）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E6%B3%A8%E5%86%8C%EF%BC%88Dynamic-Registration%EF%BC%89"><span class="toc-number">2.2.</span> <span class="toc-text">动态注册（Dynamic Registration）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E9%94%AE-JNI-API-%E8%AF%A6%E8%A7%A3"><span class="toc-number">3.</span> <span class="toc-text">关键 JNI API 详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#FindClass-%E2%80%94-%E8%8E%B7%E5%8F%96%E7%B1%BB%E5%BC%95%E7%94%A8"><span class="toc-number">3.1.</span> <span class="toc-text">FindClass — 获取类引用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GetMethodID-GetStaticMethodID-%E2%80%94-%E8%8E%B7%E5%8F%96%E6%96%B9%E6%B3%95-ID"><span class="toc-number">3.2.</span> <span class="toc-text">GetMethodID &#x2F; GetStaticMethodID — 获取方法 ID</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CallStaticMethod-CallMethod-%E2%80%94-%E8%B0%83%E7%94%A8%E6%96%B9%E6%B3%95"><span class="toc-number">3.3.</span> <span class="toc-text">CallStaticMethod &#x2F; CallMethod — 调用方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GetFieldID-SetFieldID-%E2%80%94-%E5%AD%97%E6%AE%B5%E6%93%8D%E4%BD%9C"><span class="toc-number">3.4.</span> <span class="toc-text">GetFieldID &#x2F; SetFieldID — 字段操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#NewGlobalRef-DeleteGlobalRef-%E2%80%94-%E5%BC%95%E7%94%A8%E7%AE%A1%E7%90%86"><span class="toc-number">3.5.</span> <span class="toc-text">NewGlobalRef &#x2F; DeleteGlobalRef — 引用管理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JNI-%E6%96%B9%E6%B3%95%E7%AD%BE%E5%90%8D%E7%94%9F%E6%88%90%E5%B7%A5%E5%85%B7"><span class="toc-number">4.</span> <span class="toc-text">JNI 方法签名生成工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Native-%E5%B4%A9%E6%BA%83%E5%88%86%E6%9E%90"><span class="toc-number">5.</span> <span class="toc-text">Native 崩溃分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Tombstone-%E6%96%87%E4%BB%B6"><span class="toc-number">5.1.</span> <span class="toc-text">Tombstone 文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#addr2line-%E2%80%94-%E5%9C%B0%E5%9D%80%E8%BD%AC%E8%A1%8C%E5%8F%B7"><span class="toc-number">5.2.</span> <span class="toc-text">addr2line — 地址转行号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ndk-stack-%E2%80%94-%E4%B8%80%E9%94%AE%E8%BF%98%E5%8E%9F%E8%B0%83%E7%94%A8%E6%A0%88"><span class="toc-number">5.3.</span> <span class="toc-text">ndk-stack — 一键还原调用栈</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E5%B4%A9%E6%BA%83%E5%A4%84%E7%90%86%E5%99%A8%EF%BC%88%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86%EF%BC%89"><span class="toc-number">5.4.</span> <span class="toc-text">自定义崩溃处理器（信号处理）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E9%94%AE-NDK-%E6%9E%84%E5%BB%BA%E5%8F%98%E9%87%8F"><span class="toc-number">6.</span> <span class="toc-text">关键 NDK 构建变量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%AB%98%E7%BA%A7-JNI-%E6%8A%80%E6%9C%AF%EF%BC%9A%E5%86%85%E8%81%94-Hook-%E4%B8%8E-Native-%E6%8F%92%E6%A1%A9"><span class="toc-number">7.</span> <span class="toc-text">高级 JNI 技术：内联 Hook 与 Native 插桩</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#PLT-GOT-Hook-%E5%8E%9F%E7%90%86"><span class="toc-number">7.1.</span> <span class="toc-text">PLT&#x2F;GOT Hook 原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Inline-Hook-%E5%8E%9F%E7%90%86"><span class="toc-number">7.2.</span> <span class="toc-text">Inline Hook 原理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%80%83%E9%97%AE%E9%A2%98"><span class="toc-number">8.</span> <span class="toc-text">面试常考问题</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【逆向安全技术-基础篇】NDK开发技巧</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-06-10<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">4.7k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 19 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Android NDK（Native Development Kit）允许开发者使用 C&#x2F;C++ 编写高性能代码，并通过 JNI 与 Java 层交互。对于逆向工程师而言，掌握 NDK 开发不仅是分析 Native 层代码的基础，也是在 Frida Hook、Xposed 模块开发等场景中编写 Native 代码的必备技能。本文聚焦逆向领域中常用的 NDK 开发技巧和关键知识点。</p>
+<h2 id="JNI-函数命名规则"><a href="#JNI-函数命名规则" class="headerlink" title="JNI 函数命名规则"></a>JNI 函数命名规则</h2><p>JNI 函数命名是逆向分析中第一个要掌握的技能。当你在 IDA 中打开一个 <code>.so</code> 文件，看到一个名为 <code>Java_com_example_app_MainActivity_stringFromJNI</code> 的函数时，如何解读它的结构？</p>
+<p>JNI 函数命名规则分为两种模式：</p>
+<h3 id="静态注册（Static-Registration）"><a href="#静态注册（Static-Registration）" class="headerlink" title="静态注册（Static Registration）"></a>静态注册（Static Registration）</h3><p>格式为：<code>Java_&lt;包名&gt;_&lt;类名&gt;_&lt;方法名&gt;</code></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Java + 包名(点号替换为下划线) + 类名 + 方法名</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Java 方法声明: package com.example.app 中的 MainActivity.stringFromJNI()</span></span><br><span class="line"><span class="comment">// 对应的 JNI 函数:</span></span><br><span class="line">JNIEXPORT jstring JNICALL</span><br><span class="line"><span class="title function_">Java_com_example_app_MainActivity_stringFromJNI</span><span class="params">(JNIEnv *env, jobject thiz)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>如果包名或方法名中包含下划线，需用 <code>_1</code> 转义；如果包含 <code>_</code> 本身再加下划线，则用 <code>_2</code> 等规则处理。</p>
+<p><strong>静态注册的完整签名规则：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">包名规则：com.example.my_app.internal</span><br><span class="line">  → com_example_my_1app_1internal</span><br><span class="line">  （下划线前加 _1 转义，连续的 _ 用 _2、_3 等）</span><br><span class="line"></span><br><span class="line">内部类规则：com.example.MainActivity$InnerClass</span><br><span class="line">  → com_example_MainActivity_00024InnerClass</span><br><span class="line">  （$ 替换为 _00024）</span><br><span class="line"></span><br><span class="line">函数重载规则（关键！）：</span><br><span class="line">  void foo(int a)         → Java_..._foo__I</span><br><span class="line">  void foo(String s)      → Java_..._foo__Ljava_lang_String_2</span><br><span class="line">  void foo(int a, String s) → Java_..._foo__ILjava_lang_String_2</span><br><span class="line">  （参数签名用双下划线 __ 分隔，防止方法名与参数签名混淆）</span><br></pre></td></tr></table></figure>
+
+<p><strong>ART 中的静态注册查找流程：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Java 层调用 native 方法</span><br><span class="line">  → art::ArtMethod::Invoke()</span><br><span class="line">    → 检查入口点是否为 JNI 存根</span><br><span class="line">      → 若为 JNI 存根，调用 art::JniEntryPoints::FindNativeMethod()</span><br><span class="line">        → 在 so 的符号表中按 &quot;Java_&lt;包名&gt;_&lt;类名&gt;_&lt;方法名&gt;&quot; 格式查找</span><br><span class="line">          → 找到：调用该函数</span><br><span class="line">          → 未找到：抛出 UnsatisfiedLinkError</span><br></pre></td></tr></table></figure>
+
+<p>这个流程揭示了三个重要事实：</p>
+<ol>
+<li>静态注册的函数必须被导出（在 ELF 的 <code>.dynsym</code> 表中可见）</li>
+<li>延迟解析：native 方法首次调用时才执行符号查找，而非 so 加载时</li>
+<li>可以利用 <code>dlsym(RTLD_DEFAULT, &quot;Java_...&quot;)</code> 模拟 ART 的查找过程</li>
+</ol>
+<h3 id="动态注册（Dynamic-Registration）"><a href="#动态注册（Dynamic-Registration）" class="headerlink" title="动态注册（Dynamic Registration）"></a>动态注册（Dynamic Registration）</h3><p>通过 <code>JNI_OnLoad</code> 中调用 <code>RegisterNatives</code> 注册，函数名可以是任意合法的 C 函数名：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">JNIEXPORT jint JNICALL <span class="title function_">JNI_OnLoad</span><span class="params">(JavaVM *vm, <span class="type">void</span> *reserved)</span> &#123;</span><br><span class="line">    JNIEnv *env;</span><br><span class="line">    <span class="keyword">if</span> ((*vm)-&gt;GetEnv(vm, (<span class="type">void</span>**)&amp;env, JNI_VERSION_1_6) != JNI_OK) &#123;</span><br><span class="line">        <span class="keyword">return</span> JNI_ERR;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    JNINativeMethod methods[] = &#123;</span><br><span class="line">        &#123;<span class="string">&quot;stringFromJNI&quot;</span>, <span class="string">&quot;()Ljava/lang/String;&quot;</span>, (<span class="type">void</span>*)my_custom_native_func&#125;,</span><br><span class="line">        &#123;<span class="string">&quot;calculateHash&quot;</span>, <span class="string">&quot;(Ljava/lang/String;)Ljava/lang/String;&quot;</span>, (<span class="type">void</span>*)calc_hash&#125;,</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    jclass clazz = (*env)-&gt;FindClass(env, <span class="string">&quot;com/example/app/MainActivity&quot;</span>);</span><br><span class="line">    (*env)-&gt;RegisterNatives(env, clazz, methods, <span class="keyword">sizeof</span>(methods) / <span class="keyword">sizeof</span>(methods[<span class="number">0</span>]));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> JNI_VERSION_1_6;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>动态注册的好处是函数名不会被轻易猜到，有一定隐蔽性。逆向分析时，如果找不到符合静态注册命名规则的函数，应重点检查 <code>JNI_OnLoad</code> 中的 <code>RegisterNatives</code> 调用。</p>
+<p><strong>动态注册的高级用法——延迟注册与条件注册：</strong></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 混淆加固中常见的模式：在运行时动态构建 JNINativeMethod 数组</span></span><br><span class="line"><span class="comment">// 使得静态分析无法直接获取 Java-Native 映射关系</span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">decrypt_and_register_natives</span><span class="params">(JNIEnv *env)</span> &#123;</span><br><span class="line">    <span class="comment">// 1. 从加密段读取方法表</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span>* encrypted_data = get_encrypted_section();</span><br><span class="line">    <span class="type">size_t</span> data_len = get_section_size();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. 动态解密（密钥可能来自设备指纹）</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> key[<span class="number">32</span>];</span><br><span class="line">    derive_key_from_device_id(key, <span class="keyword">sizeof</span>(key));</span><br><span class="line">    aes_decrypt(encrypted_data, data_len, key);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 3. 解析解密后的数据结构</span></span><br><span class="line">    <span class="type">int</span> method_count = *(<span class="type">int</span>*)encrypted_data; <span class="comment">// 前 4 字节是方法数</span></span><br><span class="line">    JNINativeMethod* methods = (JNINativeMethod*)(encrypted_data + <span class="number">4</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 4. 批量注册</span></span><br><span class="line">    jclass clazz = (*env)-&gt;FindClass(env, <span class="string">&quot;com/example/app/MainActivity&quot;</span>);</span><br><span class="line">    (*env)-&gt;RegisterNatives(env, clazz, methods, method_count);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">JNIEXPORT jint JNICALL <span class="title function_">JNI_OnLoad</span><span class="params">(JavaVM *vm, <span class="type">void</span> *reserved)</span> &#123;</span><br><span class="line">    JNIEnv *env;</span><br><span class="line">    (*vm)-&gt;GetEnv(vm, (<span class="type">void</span>**)&amp;env, JNI_VERSION_1_6);</span><br><span class="line">    decrypt_and_register_natives(env);</span><br><span class="line">    <span class="keyword">return</span> JNI_VERSION_1_6;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>逆向定位动态注册函数的策略：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. 静态分析: IDA 中查找 JNI_OnLoad 函数</span><br><span class="line">   → 查找对 RegisterNatives 的调用</span><br><span class="line">   → 回溯第三个参数（JNINativeMethod* methods）的来源</span><br><span class="line">   → 解析 JNINativeMethod 结构体获得函数指针</span><br><span class="line"></span><br><span class="line">2. 动态分析: Frida Hook RegisterNatives</span><br><span class="line">   → 打印 name、signature、fnPtr 三个字段</span><br><span class="line">   → 获得完整的 Java 方法与 Native 函数的映射表</span><br><span class="line"></span><br><span class="line">3. 辅助分析: 在 IDA 中搜索 JNINativeMethod 的特征字节序列</span><br><span class="line">   → 结构体通常位于 .rodata 或 .data.rel.ro 段</span><br><span class="line">   → 前两个字段是指向字符串的指针，第三个是函数指针</span><br></pre></td></tr></table></figure>
+
+<h2 id="关键-JNI-API-详解"><a href="#关键-JNI-API-详解" class="headerlink" title="关键 JNI API 详解"></a>关键 JNI API 详解</h2><p>逆向工程中经常需要从 Native 层调用 Java 方法（例如 Hook 场景），以下是核心 API：</p>
+<h3 id="FindClass-—-获取类引用"><a href="#FindClass-—-获取类引用" class="headerlink" title="FindClass — 获取类引用"></a>FindClass — 获取类引用</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 获取 Java 类的 jclass 引用</span></span><br><span class="line">jclass clazz = (*env)-&gt;FindClass(env, <span class="string">&quot;com/example/app/Utils&quot;</span>);</span><br><span class="line"><span class="keyword">if</span> (clazz == <span class="literal">NULL</span>) &#123;</span><br><span class="line">    <span class="comment">// 类未找到，检查类名是否正确，以及是否存在 ClassNotFoundException</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意：在非主线程中使用 <code>FindClass</code> 时，类加载器可能不同。如果是 native 线程（通过 <code>pthread_create</code> 创建），需要先获取 Application 的 ClassLoader：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 在 native 线程中查找类</span></span><br><span class="line">jclass app_class = (*env)-&gt;FindClass(env, <span class="string">&quot;android/app/Application&quot;</span>);</span><br><span class="line">jmethodID get_classloader = (*env)-&gt;GetMethodID(env, app_class, <span class="string">&quot;getClassLoader&quot;</span>,</span><br><span class="line">                                                 <span class="string">&quot;()Ljava/lang/ClassLoader;&quot;</span>);</span><br><span class="line">jobject classloader = (*env)-&gt;CallObjectMethod(env, app_instance, get_classloader);</span><br><span class="line">jclass clz_classloader = (*env)-&gt;FindClass(env, <span class="string">&quot;java/lang/ClassLoader&quot;</span>);</span><br><span class="line">jmethodID loadclass = (*env)-&gt;GetMethodID(env, clz_classloader, <span class="string">&quot;loadClass&quot;</span>,</span><br><span class="line">                                           <span class="string">&quot;(Ljava/lang/String;)Ljava/lang/Class;&quot;</span>);</span><br><span class="line">jclass target_clazz = (*env)-&gt;CallObjectMethod(env, classloader, loadclass,</span><br><span class="line">                                                (*env)-&gt;NewStringUTF(env, <span class="string">&quot;com/example/Utils&quot;</span>));</span><br></pre></td></tr></table></figure>
+
+<p><strong>FindClass 在 ART 中的内部实现路径：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">JNI FindClass(&quot;com/example/Foo&quot;)</span><br><span class="line">  → ClassLinker::FindClass()</span><br><span class="line">    → 查找 ClassTable（当前 ClassLoader 的已加载类缓存）</span><br><span class="line">      → 命中：直接返回</span><br><span class="line">      → 未命中：</span><br><span class="line">        → 获取当前线程的 ClassLoader</span><br><span class="line">        → ClassLoader.loadClass(&quot;com.example.Foo&quot;)</span><br><span class="line">          → 这可能会触发 DEX 文件加载（首次使用时）</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>关键提示：FindClass 返回的 jclass 是局部引用（local reference），在 JNI 函数返回后自动释放。如果需要跨函数使用，必须用 <code>NewGlobalRef</code> 转为全局引用。</p>
+</blockquote>
+<h3 id="GetMethodID-GetStaticMethodID-—-获取方法-ID"><a href="#GetMethodID-GetStaticMethodID-—-获取方法-ID" class="headerlink" title="GetMethodID &#x2F; GetStaticMethodID — 获取方法 ID"></a>GetMethodID &#x2F; GetStaticMethodID — 获取方法 ID</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 实例方法</span></span><br><span class="line">jmethodID method = (*env)-&gt;GetMethodID(env, clazz, <span class="string">&quot;encrypt&quot;</span>,</span><br><span class="line">                                        <span class="string">&quot;(Ljava/lang/String;)Ljava/lang/String;&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 静态方法</span></span><br><span class="line">jmethodID static_method = (*env)-&gt;GetStaticMethodID(env, clazz, <span class="string">&quot;init&quot;</span>,</span><br><span class="line">                                                     <span class="string">&quot;(Landroid/content/Context;)V&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>方法签名的 JNI 表示法（Type Descriptor）：</p>
+<table>
+<thead>
+<tr>
+<th>Java 类型</th>
+<th>签名</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>void</td>
+<td>V</td>
+</tr>
+<tr>
+<td>boolean</td>
+<td>Z</td>
+</tr>
+<tr>
+<td>byte</td>
+<td>B</td>
+</tr>
+<tr>
+<td>char</td>
+<td>C</td>
+</tr>
+<tr>
+<td>short</td>
+<td>S</td>
+</tr>
+<tr>
+<td>int</td>
+<td>I</td>
+</tr>
+<tr>
+<td>long</td>
+<td>J</td>
+</tr>
+<tr>
+<td>float</td>
+<td>F</td>
+</tr>
+<tr>
+<td>double</td>
+<td>D</td>
+</tr>
+<tr>
+<td>String</td>
+<td>Ljava&#x2F;lang&#x2F;String;</td>
+</tr>
+<tr>
+<td>Object</td>
+<td>L全限定类名;</td>
+</tr>
+<tr>
+<td>数组</td>
+<td>[元素类型，如 [B &#x3D; byte[]，[[I &#x3D; int[][]</td>
+</tr>
+<tr>
+<td>方法</td>
+<td>(参数签名)返回类型签名</td>
+</tr>
+</tbody></table>
+<p><strong>方法签名的完整构成规则：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">整体格式:   (参数1签名 参数2签名 ... )返回类型签名</span><br><span class="line"></span><br><span class="line">示例：</span><br><span class="line">  void foo()                          → ()V</span><br><span class="line">  String toString()                   → ()Ljava/lang/String;</span><br><span class="line">  int hashCode(String input)          → (Ljava/lang/String;)I</span><br><span class="line">  byte[] encrypt(byte[] data, int len)→ ([BI)[B</span><br><span class="line">  boolean equals(Object obj)          → (Ljava/lang/Object;)Z</span><br></pre></td></tr></table></figure>
+
+<h3 id="CallStaticMethod-CallMethod-—-调用方法"><a href="#CallStaticMethod-CallMethod-—-调用方法" class="headerlink" title="CallStaticMethod &#x2F; CallMethod — 调用方法"></a>CallStaticMethod &#x2F; CallMethod — 调用方法</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 调用静态方法：Class.method(String) -&gt; String</span></span><br><span class="line">jstring input = (*env)-&gt;NewStringUTF(env, <span class="string">&quot;hello&quot;</span>);</span><br><span class="line">jstring result = (*env)-&gt;CallStaticObjectMethod(env, clazz, static_method, input);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 调用实例方法：obj.method(int, String) -&gt; boolean</span></span><br><span class="line">jboolean flag = (*env)-&gt;CallBooleanMethod(env, obj, method, <span class="number">42</span>, input);</span><br></pre></td></tr></table></figure>
+
+<p>根据返回值类型选择对应的 CallXxxMethod 函数：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CallVoidMethod     → void</span><br><span class="line">CallBooleanMethod  → jboolean</span><br><span class="line">CallByteMethod     → jbyte</span><br><span class="line">CallCharMethod     → jchar</span><br><span class="line">CallShortMethod    → jshort</span><br><span class="line">CallIntMethod      → jint</span><br><span class="line">CallLongMethod     → jlong</span><br><span class="line">CallFloatMethod    → jfloat</span><br><span class="line">CallDoubleMethod   → jdouble</span><br><span class="line">CallObjectMethod   → jobject (String、数组、自定义对象)</span><br></pre></td></tr></table></figure>
+
+<h3 id="GetFieldID-SetFieldID-—-字段操作"><a href="#GetFieldID-SetFieldID-—-字段操作" class="headerlink" title="GetFieldID &#x2F; SetFieldID — 字段操作"></a>GetFieldID &#x2F; SetFieldID — 字段操作</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 获取字段 ID</span></span><br><span class="line">jfieldID field_id = (*env)-&gt;GetFieldID(env, clazz, <span class="string">&quot;secretKey&quot;</span>,</span><br><span class="line">                                        <span class="string">&quot;Ljava/lang/String;&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 读取实例字段</span></span><br><span class="line">jstring key = (*env)-&gt;GetObjectField(env, obj, field_id);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 修改实例字段（用于 Patch 运行时状态）</span></span><br><span class="line">jstring fake_key = (*env)-&gt;NewStringUTF(env, <span class="string">&quot;bypassed&quot;</span>);</span><br><span class="line">(*env)-&gt;SetObjectField(env, obj, field_id, fake_key);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 静态字段操作</span></span><br><span class="line">jfieldID static_field = (*env)-&gt;GetStaticFieldID(env, clazz, <span class="string">&quot;isDebug&quot;</span>,</span><br><span class="line">                                                  <span class="string">&quot;Z&quot;</span>);</span><br><span class="line">jboolean is_debug = (*env)-&gt;GetStaticBooleanField(env, clazz, static_field);</span><br><span class="line">(*env)-&gt;SetStaticBooleanField(env, clazz, static_field, JNI_TRUE);</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>逆向实战：通过 Frida 调用 <code>SetStaticBooleanField</code> 可以强制开启应用的 Debug 模式，绕过 <code>BuildConfig.DEBUG</code> 检查。</p>
+</blockquote>
+<h3 id="NewGlobalRef-DeleteGlobalRef-—-引用管理"><a href="#NewGlobalRef-DeleteGlobalRef-—-引用管理" class="headerlink" title="NewGlobalRef &#x2F; DeleteGlobalRef — 引用管理"></a>NewGlobalRef &#x2F; DeleteGlobalRef — 引用管理</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 局部引用 → 全局引用（跨线程、跨函数使用）</span></span><br><span class="line">jobject global_classloader = (*env)-&gt;NewGlobalRef(env, classloader);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 弱全局引用（允许 GC 回收）</span></span><br><span class="line">jweak weak_ref = (*env)-&gt;NewWeakGlobalRef(env, obj);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 释放引用</span></span><br><span class="line">(*env)-&gt;DeleteGlobalRef(env, global_classloader);</span><br><span class="line">(*env)-&gt;DeleteWeakGlobalRef(env, weak_ref);</span><br></pre></td></tr></table></figure>
+
+<p><strong>JNI 引用类型对比：</strong></p>
+<table>
+<thead>
+<tr>
+<th>引用类型</th>
+<th>作用域</th>
+<th>GC 行为</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Local Reference</td>
+<td>当前 JNI 调用帧，返回即失效</td>
+<td>不会被 GC</td>
+<td>临时操作</td>
+</tr>
+<tr>
+<td>Global Reference</td>
+<td>手动释放前一直有效</td>
+<td>不会被 GC</td>
+<td>缓存对象</td>
+</tr>
+<tr>
+<td>Weak Global Reference</td>
+<td>手动释放前一直有效</td>
+<td>可被 GC 回收</td>
+<td>监听对象生命周期</td>
+</tr>
+</tbody></table>
+<p><strong>JNI 局部引用的容量限制（重要！）：</strong></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// ART 默认每个 JNI 调用帧最多 512 个局部引用</span></span><br><span class="line"><span class="comment">// 在循环中创建大量局部引用而不释放会导致崩溃</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 错误示例：</span></span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10000</span>; i++) &#123;</span><br><span class="line">    jobject item = (*env)-&gt;GetObjectArrayElement(env, <span class="built_in">array</span>, i);</span><br><span class="line">    <span class="comment">// item 作为局部引用在循环结束后才释放！</span></span><br><span class="line">    <span class="comment">// 超过 512 个时触发 JNI 错误</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 正确写法 1：使用 PushLocalFrame/PopLocalFrame</span></span><br><span class="line">(*env)-&gt;PushLocalFrame(env, <span class="number">512</span>);  <span class="comment">// 创建新的局部引用帧</span></span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10000</span>; i++) &#123;</span><br><span class="line">    jobject item = (*env)-&gt;GetObjectArrayElement(env, <span class="built_in">array</span>, i);</span><br><span class="line">    <span class="comment">// ... 处理 item ...</span></span><br><span class="line">    <span class="keyword">if</span> (i % <span class="number">512</span> == <span class="number">0</span>) &#123;</span><br><span class="line">        (*env)-&gt;PopLocalFrame(env, <span class="literal">NULL</span>);</span><br><span class="line">        (*env)-&gt;PushLocalFrame(env, <span class="number">512</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">(*env)-&gt;PopLocalFrame(env, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 正确写法 2：及时释放</span></span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10000</span>; i++) &#123;</span><br><span class="line">    jobject item = (*env)-&gt;GetObjectArrayElement(env, <span class="built_in">array</span>, i);</span><br><span class="line">    <span class="comment">// ... 处理 item ...</span></span><br><span class="line">    (*env)-&gt;DeleteLocalRef(env, item);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="JNI-方法签名生成工具"><a href="#JNI-方法签名生成工具" class="headerlink" title="JNI 方法签名生成工具"></a>JNI 方法签名生成工具</h2><p>手动写 JNI 方法签名容易出错，使用 <code>javap</code> 快速生成：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 生成类中所有 native 方法的 JNI 签名</span></span><br><span class="line">javap -s com.example.app.MainActivity</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出示例：</span></span><br><span class="line"><span class="comment"># public native java.lang.String stringFromJNI();</span></span><br><span class="line"><span class="comment">#   descriptor: ()Ljava/lang/String;</span></span><br><span class="line"><span class="comment"># public native static int calculate(int, java.lang.String);</span></span><br><span class="line"><span class="comment">#   descriptor: (ILjava/lang/String;)I</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Native-崩溃分析"><a href="#Native-崩溃分析" class="headerlink" title="Native 崩溃分析"></a>Native 崩溃分析</h2><p>Native 层崩溃比 Java 层更难以排查。以下是核心分析工具和流程：</p>
+<h3 id="Tombstone-文件"><a href="#Tombstone-文件" class="headerlink" title="Tombstone 文件"></a>Tombstone 文件</h3><p>Native 崩溃时，Android 系统会生成 tombstone 文件（位于 <code>/data/tombstones/</code>），包含崩溃时的寄存器状态、调用栈、内存映射等。</p>
+<p><strong>Tombstone 文件结构详解：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***</span><br><span class="line">Build fingerprint: &#x27;google/sunfish/sunfish:12/...&#x27;</span><br><span class="line">Revision: &#x27;0&#x27;</span><br><span class="line">ABI: &#x27;arm64&#x27;</span><br><span class="line">Timestamp: 2020-10-12 20:43:40.123456789+0800</span><br><span class="line">Process uptime: 123s</span><br><span class="line">Cmdline: com.example.app</span><br><span class="line">pid: 12345, tid: 12346, name: Thread-2  &gt;&gt;&gt; com.example.app &lt;&lt;&lt;</span><br><span class="line">uid: 10123</span><br><span class="line">signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x0000000000000000</span><br><span class="line">    x0  0000000000000000  x1  0000007f12345678  x2  0000000000000001</span><br><span class="line">    x3  0000000000000002  x4  0000007f87654321  x5  0000000000000000</span><br><span class="line">    ...</span><br><span class="line">    lr  0000007f12345678  sp  0000007fc1234560  pc  0000007f12345670</span><br><span class="line">    pstate 0000000060000000</span><br><span class="line"></span><br><span class="line">backtrace:</span><br><span class="line">    #00 pc 0000000000001670  /data/app/.../libnative.so (encrypt+48)</span><br><span class="line">    #01 pc 0000000000001824  /data/app/.../libnative.so (process+128)</span><br><span class="line">    #02 pc 0000000000001a00  /data/app/.../libnative.so (Java_com_example_MainActivity_encrypt+32)</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<p><strong>Tombstone 中的关键字段含义：</strong></p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+<th>逆向分析用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>signal</code></td>
+<td>崩溃信号类型</td>
+<td>SIGSEGV(11)&#x3D;段错误, SIGABRT(6)&#x3D;断言失败, SIGILL(4)&#x3D;非法指令</td>
+</tr>
+<tr>
+<td><code>fault addr</code></td>
+<td>访问的非法地址</td>
+<td>0x0 通常为空指针解引用</td>
+</tr>
+<tr>
+<td><code>pc</code></td>
+<td>程序计数器（崩溃指令地址）</td>
+<td>在 so 中的偏移 &#x3D; pc - so 基址</td>
+</tr>
+<tr>
+<td><code>lr</code></td>
+<td>链接寄存器（返回地址）</td>
+<td>定位调用者的函数</td>
+</tr>
+<tr>
+<td><code>sp</code></td>
+<td>栈指针</td>
+<td>结合栈回溯重建调用链</td>
+</tr>
+<tr>
+<td><code>backtrace</code></td>
+<td>调用栈帧列表</td>
+<td>每帧的 pc 值通过 addr2line 转换为源码行</td>
+</tr>
+</tbody></table>
+<p>提取 tombstone：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">adb shell <span class="built_in">ls</span> /data/tombstones/</span><br><span class="line">adb pull /data/tombstones/tombstone_00</span><br></pre></td></tr></table></figure>
+
+<h3 id="addr2line-—-地址转行号"><a href="#addr2line-—-地址转行号" class="headerlink" title="addr2line — 地址转行号"></a>addr2line — 地址转行号</h3><p>从 tombstone 中提取崩溃地址后，使用 NDK 自带的 addr2line 定位源码行号：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 路径根据 ABI 选择</span></span><br><span class="line"><span class="variable">$NDK_HOME</span>/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-addr2line \</span><br><span class="line">    -e obj/local/arm64-v8a/libnative.so \</span><br><span class="line">    -f -C 0x0000000000001a34</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出：</span></span><br><span class="line"><span class="comment"># my_crash_function</span></span><br><span class="line"><span class="comment"># /path/to/source/native-lib.cpp:42</span></span><br></pre></td></tr></table></figure>
+
+<p>注意：必须使用带符号表的 <code>.so</code>（即 <code>obj/local/</code> 下的未 strip 版本，而非 <code>libs/</code> 目录下 strip 过的版本）。</p>
+<p><strong>addr2line 参数说明：</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">-f  显示函数名</span><br><span class="line">-C  对 C++ 符号进行 demangle（将 _Z3foo ... 还原为 foo()）</span><br><span class="line">-e  指定包含调试信息的 ELF 文件</span><br><span class="line">-p  以紧凑格式输出（一行显示文件名:行号）</span><br><span class="line">-i  显示内联函数调用链</span><br></pre></td></tr></table></figure>
+
+<h3 id="ndk-stack-—-一键还原调用栈"><a href="#ndk-stack-—-一键还原调用栈" class="headerlink" title="ndk-stack — 一键还原调用栈"></a>ndk-stack — 一键还原调用栈</h3><p>ndk-stack 可以直接将 tombstone 中的地址批量还原为可读的调用栈：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">adb logcat | <span class="variable">$NDK_HOME</span>/ndk-stack -sym obj/local/arm64-v8a/</span><br></pre></td></tr></table></figure>
+
+<p>或者直接对 tombstone 文件处理：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="variable">$NDK_HOME</span>/ndk-stack -sym obj/local/arm64-v8a/ -dump tombstone_00</span><br></pre></td></tr></table></figure>
+
+<p><strong>ndk-stack 工作原理：</strong></p>
+<p>ndk-stack 本质上是一个 Python 脚本，它读取 logcat 或 tombstone 中的地址行，匹配形如 <code>#00 pc 00001670 libnative.so</code> 的模式，提取出 <code>libnative.so</code> 名称和偏移量 <code>00001670</code>，然后在 <code>-sym</code> 指定的目录中查找对应的未 strip 的 so 文件，调用 <code>addr2line</code> 完成地址转换。</p>
+<h3 id="自定义崩溃处理器（信号处理）"><a href="#自定义崩溃处理器（信号处理）" class="headerlink" title="自定义崩溃处理器（信号处理）"></a>自定义崩溃处理器（信号处理）</h3><p>在逆向工程中，有时需要自定义崩溃处理来捕获调用栈信息：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;signal.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unwind.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;dlfcn.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用 libunwind 获取调用栈（比 backtrace() 更可靠）</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">BacktraceState</span> &#123;</span></span><br><span class="line">    <span class="type">void</span>** current;</span><br><span class="line">    <span class="type">void</span>** end;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> _Unwind_Reason_Code <span class="title function_">unwind_callback</span><span class="params">(<span class="keyword">struct</span> _Unwind_Context* context, <span class="type">void</span>* arg)</span> &#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">BacktraceState</span>* <span class="title">state</span> =</span> (<span class="keyword">struct</span> BacktraceState*)arg;</span><br><span class="line">    <span class="type">uintptr_t</span> pc = _Unwind_GetIP(context);</span><br><span class="line">    <span class="keyword">if</span> (pc) &#123;</span><br><span class="line">        <span class="keyword">if</span> (state-&gt;current == state-&gt;end) &#123;</span><br><span class="line">            <span class="keyword">return</span> _URC_END_OF_STACK;</span><br><span class="line">        &#125;</span><br><span class="line">        *state-&gt;current++ = (<span class="type">void</span>*)pc;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> _URC_NO_REASON;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">size_t</span> <span class="title function_">capture_backtrace</span><span class="params">(<span class="type">void</span>** buffer, <span class="type">size_t</span> max)</span> &#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">BacktraceState</span> <span class="title">state</span> =</span> &#123;buffer, buffer + max&#125;;</span><br><span class="line">    _Unwind_Backtrace(unwind_callback, &amp;state);</span><br><span class="line">    <span class="keyword">return</span> state.current - buffer;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">crash_handler</span><span class="params">(<span class="type">int</span> sig, <span class="type">siginfo_t</span>* info, <span class="type">void</span>* ucontext)</span> &#123;</span><br><span class="line">    <span class="type">void</span>* buffer[<span class="number">128</span>];</span><br><span class="line">    <span class="type">size_t</span> count = capture_backtrace(buffer, <span class="number">128</span>);</span><br><span class="line"></span><br><span class="line">    __android_log_print(ANDROID_LOG_ERROR, <span class="string">&quot;CrashHandler&quot;</span>,</span><br><span class="line">                        <span class="string">&quot;Signal %d at address %p&quot;</span>, sig, info-&gt;si_addr);</span><br><span class="line"></span><br><span class="line">    Dl_info dl_info;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">size_t</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (dladdr(buffer[i], &amp;dl_info) &amp;&amp; dl_info.dli_fname) &#123;</span><br><span class="line">            <span class="type">uintptr_t</span> offset = (<span class="type">uintptr_t</span>)buffer[i] - (<span class="type">uintptr_t</span>)dl_info.dli_fbase;</span><br><span class="line">            <span class="type">const</span> <span class="type">char</span>* sym_name = dl_info.dli_sname ? dl_info.dli_sname : <span class="string">&quot;???&quot;</span>;</span><br><span class="line">            __android_log_print(ANDROID_LOG_ERROR, <span class="string">&quot;CrashHandler&quot;</span>,</span><br><span class="line">                                <span class="string">&quot;  #%zu  %s (%s+0x%lx)&quot;</span>, i,</span><br><span class="line">                                dl_info.dli_fname, sym_name, offset);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 恢复默认处理器重新触发信号，生成 tombstone</span></span><br><span class="line">    signal(sig, SIG_DFL);</span><br><span class="line">    raise(sig);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">install_crash_handler</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sigaction</span> <span class="title">sa</span>;</span></span><br><span class="line">    <span class="built_in">memset</span>(&amp;sa, <span class="number">0</span>, <span class="keyword">sizeof</span>(sa));</span><br><span class="line">    sa.sa_sigaction = crash_handler;</span><br><span class="line">    sa.sa_flags = SA_SIGINFO | SA_ONSTACK;</span><br><span class="line">    sigaction(SIGSEGV, &amp;sa, <span class="literal">NULL</span>);</span><br><span class="line">    sigaction(SIGBUS, &amp;sa, <span class="literal">NULL</span>);</span><br><span class="line">    sigaction(SIGABRT, &amp;sa, <span class="literal">NULL</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="关键-NDK-构建变量"><a href="#关键-NDK-构建变量" class="headerlink" title="关键 NDK 构建变量"></a>关键 NDK 构建变量</h2><p>在 <code>Android.mk</code> 或 <code>CMakeLists.txt</code> 中常用的构建配置：</p>
+<figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="comment"># CMakeLists.txt 示例</span></span><br><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.4</span>.<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">add_library</span>(native-lib SHARED</span><br><span class="line">    src/main/cpp/native-lib.cpp</span><br><span class="line">    src/main/cpp/crypto.cpp</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">target_include_directories</span>(native-lib PRIVATE</span><br><span class="line">    <span class="variable">$&#123;CMAKE_SOURCE_DIR&#125;</span>/src/main/cpp/<span class="keyword">include</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">target_link_libraries</span>(native-lib</span><br><span class="line">    android     <span class="comment"># libandroid.so — Android 原生 API</span></span><br><span class="line">    log         <span class="comment"># liblog.so — __android_log_print</span></span><br><span class="line">    dl          <span class="comment"># libdl.so — dlopen / dlsym</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p><code>Android.mk</code> 关键变量：</p>
+<figure class="highlight makefile"><table><tr><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line">LOCAL_MODULE    := native-lib</span><br><span class="line">LOCAL_SRC_FILES := native-lib.cpp crypto.cpp</span><br><span class="line">LOCAL_LDLIBS    := -llog -ldl -landroid</span><br><span class="line">LOCAL_CFLAGS    := -fvisibility=hidden    <span class="comment"># 隐藏所有非 JNI 导出符号</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_SHARED_LIBRARY)</span></span><br></pre></td></tr></table></figure>
+
+<p>设置 <code>-fvisibility=hidden</code> 可隐藏内部符号，只导出 <code>JNI_OnLoad</code> 和显式标记 <code>__attribute__((visibility(&quot;default&quot;)))</code> 的函数，增强安全性并减小编译产物体积。</p>
+<p><strong>逆向相关的高级编译选项：</strong></p>
+<figure class="highlight makefile"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 反调试：启用栈保护</span></span><br><span class="line">LOCAL_CFLAGS += -fstack-protector-strong</span><br><span class="line"></span><br><span class="line"><span class="comment"># 反逆向：禁用异常展开信息（使 backtrace 工具失效）</span></span><br><span class="line">LOCAL_CFLAGS += -fno-unwind-tables -fno-asynchronous-unwind-tables</span><br><span class="line"></span><br><span class="line"><span class="comment"># 反篡改：链接时生成哈希校验值</span></span><br><span class="line">LOCAL_LDFLAGS += -Wl,--hash-style=gnu</span><br><span class="line"></span><br><span class="line"><span class="comment"># 代码混淆：启用 LTO（链接时优化，改变代码结构）</span></span><br><span class="line">LOCAL_CFLAGS += -flto</span><br><span class="line"></span><br><span class="line"><span class="comment"># 防 GOT 劫持：使用 RELRO</span></span><br><span class="line">LOCAL_LDFLAGS += -Wl,-z,relro -Wl,-z,now</span><br><span class="line"><span class="comment"># -z relro: 将 GOT 中已解析部分设为只读</span></span><br><span class="line"><span class="comment"># -z now:   立即绑定（启动时解析所有符号，而非延迟解析）</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 移除无用代码（减小体积，改变函数布局）</span></span><br><span class="line">LOCAL_CFLAGS += -ffunction-sections -fdata-sections</span><br><span class="line">LOCAL_LDFLAGS += -Wl,--gc-sections</span><br><span class="line"></span><br><span class="line"><span class="comment"># PIE 编译（Android 5.0+ 强制要求）</span></span><br><span class="line">LOCAL_CFLAGS += -fPIE</span><br><span class="line">LOCAL_LDFLAGS += -fPIE -pie</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="高级-JNI-技术：内联-Hook-与-Native-插桩"><a href="#高级-JNI-技术：内联-Hook-与-Native-插桩" class="headerlink" title="高级 JNI 技术：内联 Hook 与 Native 插桩"></a>高级 JNI 技术：内联 Hook 与 Native 插桩</h2><p>在逆向分析中，了解以下 JNI 层面的 Hook 技术原理有助于理解加固应用的反调试机制：</p>
+<h3 id="PLT-GOT-Hook-原理"><a href="#PLT-GOT-Hook-原理" class="headerlink" title="PLT&#x2F;GOT Hook 原理"></a>PLT&#x2F;GOT Hook 原理</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 通过修改 GOT 表项劫持 libc 函数调用</span></span><br><span class="line"><span class="type">void</span>* <span class="title function_">get_got_entry</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* lib_path, <span class="type">const</span> <span class="type">char</span>* func_name)</span> &#123;</span><br><span class="line">    <span class="type">void</span>* handle = dlopen(lib_path, RTLD_NOLOAD);</span><br><span class="line">    <span class="keyword">if</span> (!handle) <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 在进程内存中定位 .got.plt 段</span></span><br><span class="line">    <span class="comment">// 计算目标 func_name 对应的 GOT 表项地址</span></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> got_entry;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">install_got_hook</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* lib_path, <span class="type">const</span> <span class="type">char</span>* func_name,</span></span><br><span class="line"><span class="params">                      <span class="type">void</span>* hook_func, <span class="type">void</span>** original_func)</span> &#123;</span><br><span class="line">    <span class="type">void</span>* got_entry = get_got_entry(lib_path, func_name);</span><br><span class="line">    <span class="keyword">if</span> (!got_entry) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 保存原始函数地址</span></span><br><span class="line">    *original_func = *(<span class="type">void</span>**)got_entry;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 修改 GOT 表项指向 Hook 函数</span></span><br><span class="line">    <span class="comment">// 需要先 mprotect 修改内存权限</span></span><br><span class="line">    mprotect((<span class="type">void</span>*)((<span class="type">uintptr_t</span>)got_entry &amp; ~(PAGE_SIZE - <span class="number">1</span>)),</span><br><span class="line">             PAGE_SIZE, PROT_READ | PROT_WRITE);</span><br><span class="line">    *(<span class="type">void</span>**)got_entry = hook_func;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Inline-Hook-原理"><a href="#Inline-Hook-原理" class="headerlink" title="Inline Hook 原理"></a>Inline Hook 原理</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 修改目标函数的前几条指令，跳转到 Hook 函数</span></span><br><span class="line"><span class="comment">// ARM64 示例：用 B 指令替换函数入口</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">install_inline_hook</span><span class="params">(<span class="type">void</span>* target_func, <span class="type">void</span>* hook_func,</span></span><br><span class="line"><span class="params">                         <span class="type">void</span>** trampoline)</span> &#123;</span><br><span class="line">    <span class="comment">// 1. 修改目标函数所在内存页为可写</span></span><br><span class="line">    <span class="type">uintptr_t</span> page_start = (<span class="type">uintptr_t</span>)target_func &amp; ~(PAGE_SIZE - <span class="number">1</span>);</span><br><span class="line">    mprotect((<span class="type">void</span>*)page_start, PAGE_SIZE * <span class="number">2</span>,</span><br><span class="line">             PROT_READ | PROT_WRITE | PROT_EXEC);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. 保存原始指令（用于 trampoline）</span></span><br><span class="line">    <span class="type">uint32_t</span> original_instrs[<span class="number">4</span>];</span><br><span class="line">    <span class="built_in">memcpy</span>(original_instrs, target_func, <span class="keyword">sizeof</span>(original_instrs));</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 3. 分配 trampoline 内存并构造</span></span><br><span class="line">    <span class="comment">// trampoline = 原始指令 + 跳转回 target_func + offset</span></span><br><span class="line">    *trampoline = mmap(<span class="literal">NULL</span>, PAGE_SIZE, PROT_READ | PROT_WRITE | PROT_EXEC,</span><br><span class="line">                       MAP_PRIVATE | MAP_ANONYMOUS, <span class="number">-1</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="comment">// 写入原始指令 + B target_func_offset</span></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 4. 修改 target_func 入口为 B hook_func</span></span><br><span class="line">    <span class="type">uint32_t</span> jump_instr = <span class="number">0x14000000</span>; <span class="comment">// ARM64 B 指令</span></span><br><span class="line">    <span class="comment">// 计算偏移并编码...</span></span><br><span class="line">    *(<span class="type">uint32_t</span>*)target_func = jump_instr;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 5. 刷新指令缓存（关键步骤！）</span></span><br><span class="line">    __builtin___clear_cache((<span class="type">char</span>*)target_func,</span><br><span class="line">                            (<span class="type">char</span>*)target_func + <span class="keyword">sizeof</span>(<span class="type">uint32_t</span>));</span><br><span class="line">    __builtin___clear_cache((<span class="type">char</span>*)*trampoline,</span><br><span class="line">                            (<span class="type">char</span>*)*trampoline + <span class="keyword">sizeof</span>(original_instrs));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="面试常考问题"><a href="#面试常考问题" class="headerlink" title="面试常考问题"></a>面试常考问题</h2><p><strong>Q1: JNI 静态注册和动态注册的区别？各自优缺点？</strong></p>
+<p>A: 静态注册遵循 <code>Java_包名_类名_方法名</code> 的命名规则，javah 自动生成头文件，开发简单但函数名暴露，容易被逆向分析定位。动态注册在 <code>JNI_OnLoad</code> 中通过 <code>RegisterNatives</code> 手动映射，函数名可以自定义，有一定隐蔽性，且不需要为每个 native 方法生成单独的头文件。逆向分析时，静态注册可通过函数名直接定位，动态注册需要在 <code>JNI_OnLoad</code> 中找到 <code>RegisterNatives</code> 调用，从其 <code>JNINativeMethod</code> 数组参数中获取映射关系。</p>
+<p><strong>Q2: Native 崩溃后如何定位崩溃代码位置？</strong></p>
+<p>A: (1) 从 <code>/data/tombstones/</code> 获取 tombstone 文件，找到崩溃的 PC 寄存器值和崩溃 so 的基址偏移；(2) 使用 <code>addr2line</code> 将偏移地址转换为源文件和行号，或使用 <code>ndk-stack</code> 工具批量还原整个调用栈；(3) 关键的注意点是必须使用未 strip 的包含调试符号的 <code>.so</code> 文件（位于 <code>obj/local/&lt;abi&gt;/</code> 目录下），而非 APK 中的 strip 后的版本。(4) 在无法获取原始符号文件的情况下，可以通过崩溃 so 在 IDA 中加载，定位到偏移地址对应的反汇编代码，结合寄存器状态（x0-x30 的值）和栈回溯（backtrace 中的 LR 值）手动分析崩溃时执行到了哪条指令、参数值为多少。</p>
+<p><strong>Q3: 如何在 Native 线程中安全地调用 Java 方法？</strong></p>
+<p>A: 通过 <code>pthread_create</code> 或 <code>std::thread</code> 创建的 native 线程没有 JNIEnv，需要先调用 <code>JavaVM-&gt;AttachCurrentThread()</code> 获取 JNIEnv 指针。此外，native 线程默认使用系统 ClassLoader，无法直接通过 <code>FindClass</code> 找到应用类。需要先获取应用的 ClassLoader 对象（在 <code>JNI_OnLoad</code> 中缓存为全局引用），再通过该 ClassLoader 的 <code>loadClass</code> 方法加载目标类。使用完毕后应调用 <code>JavaVM-&gt;DetachCurrentThread()</code> 释放资源。注意：每个线程只能 Attach 一次，重复 Attach 是无操作（no-op），而忘记 Detach 会导致线程退出时资源泄露。</p>
+<p><strong>Q4: JNI 局部引用的生命周期是怎样的？为什么在长循环中会导致崩溃？</strong></p>
+<p>A: JNI 局部引用（Local Reference）的生命周期仅限于创建它的 JNI 调用帧。当 native 方法返回 Java 层时，所有在该方法中创建的局部引用会被自动释放。然而，ART 对每个 JNI 调用帧的局部引用数量有上限（通常为 512 个，定义在 <code>art/runtime/jni_internal.cc</code> 的 <code>kLocalsDefault</code> 中）。如果在一个循环中创建大量局部引用而不显式释放（<code>DeleteLocalRef</code>），一旦超过 512 个，ART 会触发 “JNI ERROR (app bug): local reference table overflow” 并 abort 进程。解决方法是使用 <code>PushLocalFrame</code>&#x2F;<code>PopLocalFrame</code> 创建临时引用帧，或及时调用 <code>DeleteLocalRef</code>。</p>
+<p><strong>Q5: 什么是 PLT&#x2F;GOT Hook？它在 Android 逆向中有什么应用？</strong></p>
+<p>A: PLT（Procedure Linkage Table）和 GOT（Global Offset Table）是 ELF 动态链接的核心机制。当 so 调用外部函数（如 libc 的 <code>open</code>、<code>strcmp</code>）时，实际调用流程是 <code>代码 → PLT 存根 → GOT 表项 → 真实函数地址</code>。GOT 表项在首次调用时被动态链接器（linker）填充为函数在内存中的实际地址。PLT&#x2F;GOT Hook 的原理就是修改 GOT 表项，将其指向自定义的 Hook 函数，从而拦截对该外部函数的所有调用。在逆向中的应用包括：(1) 绕过反调试检测（Hook <code>ptrace</code>、<code>fopen</code> 读取 <code>/proc/self/status</code>）；(2) 修改加密逻辑（Hook <code>AES_set_encrypt_key</code> 记录密钥）；(3) 绕过 SSL 证书校验（Hook <code>SSL_get_verify_result</code> 返回成功）。与 Inline Hook 相比，PLT&#x2F;GOT Hook 更稳定但只能拦截通过 PLT 调用的函数。</p>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/JNI/">JNI    </a><a class="post-meta__tags" href="/tags/NDK/">NDK    </a><a class="post-meta__tags" href="/tags/%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8/">逆向安全    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/06/15/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%9F%BA%E7%A1%80%E7%AF%87%E3%80%91%E9%80%86%E5%90%91%E5%BC%80%E5%8F%91%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【逆向安全技术-基础篇】逆向开发常用命令</span></div></a></div><div class="next-post pull_right"><a href="/2021/06/05/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%9F%BA%E7%A1%80%E7%AF%87%E3%80%91%E9%94%81%E5%B1%8F%E5%AF%86%E7%A0%81%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E5%88%86%E6%9E%90/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【逆向安全技术-基础篇】锁屏密码加密算法分析</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2022/05/20/高级Android-【实战开发系列】哈夫曼解析/" title="哈夫曼解析"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/339.jpg"><div class="relatedPosts_title">哈夫曼解析</div></a></div><div class="relatedPosts_item"><a href="/2022/05/15/高级Android-【实战开发系列】NDK实现播放器内核/" title="NDK实现播放器内核"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/334.jpg"><div class="relatedPosts_title">NDK实现播放器内核</div></a></div><div class="relatedPosts_item"><a href="/2022/05/10/高级Android-【实战开发系列】NDK文件拆分加密处理/" title="NDK文件拆分加密处理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/325.jpg"><div class="relatedPosts_title">NDK文件拆分加密处理</div></a></div><div class="relatedPosts_item"><a href="/2022/05/05/高级Android-【实战开发系列】NDK实现图像识别/" title="NDK实现图像识别"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/333.jpg"><div class="relatedPosts_title">NDK实现图像识别</div></a></div><div class="relatedPosts_item"><a href="/2022/05/01/高级Android-【实战开发系列】NDK实现增量更新/" title="NDK实现增量更新"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/331.jpg"><div class="relatedPosts_title">NDK实现增量更新</div></a></div><div class="relatedPosts_item"><a href="/2022/04/15/高级Android-【C C++理论实战技术】JNI基础实战/" title="【C/C++理论实战技术】JNI基础实战"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/308.jpg"><div class="relatedPosts_title">【C/C++理论实战技术】JNI基础实战</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

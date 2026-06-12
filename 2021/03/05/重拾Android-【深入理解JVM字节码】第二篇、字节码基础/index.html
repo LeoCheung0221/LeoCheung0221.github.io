@@ -1,0 +1,1064 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【深入理解JVM字节码】第二篇、字节码基础 | ONE·PIECE</title><meta name="description" content="【深入理解JVM字节码】第二篇、字节码基础"><meta name="keywords" content="字节码"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【深入理解JVM字节码】第二篇、字节码基础"><meta name="twitter:description" content="【深入理解JVM字节码】第二篇、字节码基础"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/240.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【深入理解JVM字节码】第二篇、字节码基础"><meta property="og:url" content="http://tufusi.com/2021/03/05/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E4%BA%8C%E7%AF%87%E3%80%81%E5%AD%97%E8%8A%82%E7%A0%81%E5%9F%BA%E7%A1%80/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【深入理解JVM字节码】第二篇、字节码基础"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/240.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2021/03/05/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E4%BA%8C%E7%AF%87%E3%80%81%E5%AD%97%E8%8A%82%E7%A0%81%E5%9F%BA%E7%A1%80/"><link rel="prev" title="【深入理解JVM字节码】第三篇、Lambda表达式原理" href="http://tufusi.com/2021/03/10/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E4%B8%89%E7%AF%87%E3%80%81Lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%8E%9F%E7%90%86/"><link rel="next" title="【深入理解JVM字节码】第一篇、class文件结构" href="http://tufusi.com/2021/03/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E4%B8%80%E7%AF%87%E3%80%81class%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81JVM-%E6%8C%87%E4%BB%A4%E9%9B%86%E6%9E%B6%E6%9E%84%EF%BC%9A%E4%B8%BA%E4%BD%95%E9%80%89%E6%8B%A9%E6%A0%88%E5%BC%8F"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、JVM 指令集架构：为何选择栈式</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81JVM-%E6%8C%87%E4%BB%A4%E9%9B%86%E5%AE%8C%E6%95%B4%E5%88%86%E7%B1%BB%E4%B8%8E%E6%93%8D%E4%BD%9C%E7%A0%81%E8%A1%A8"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、JVM 指令集完整分类与操作码表</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-0-%E6%93%8D%E4%BD%9C%E7%A0%81%E5%8C%BA%E9%97%B4%E5%BF%AB%E9%80%9F%E7%B4%A2%E5%BC%95"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.0 操作码区间快速索引</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-0-1-%E5%B8%B8%E9%87%8F%E5%8E%8B%E6%A0%88%E6%8C%87%E4%BB%A4%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.0.1 常量压栈指令详解</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81%E5%8A%A0%E8%BD%BD%E4%B8%8E%E5%AD%98%E5%82%A8%E6%8C%87%E4%BB%A4%EF%BC%88Load-Store%EF%BC%89"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、加载与存储指令（Load&#x2F;Store）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E5%9F%BA%E7%A1%80%E5%8A%A0%E8%BD%BD%E6%8C%87%E4%BB%A4"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 基础加载指令</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-wide-%E5%89%8D%E7%BC%80%EF%BC%9A%E7%AA%81%E7%A0%B4-255-%E4%B8%AA%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F%E7%9A%84%E9%99%90%E5%88%B6"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 wide 前缀：突破 255 个局部变量的限制</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-%E5%9F%BA%E7%A1%80%E5%AD%98%E5%82%A8%E6%8C%87%E4%BB%A4"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 基础存储指令</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-%E6%95%B0%E7%BB%84%E5%85%83%E7%B4%A0%E5%8A%A0%E8%BD%BD%E4%B8%8E%E5%AD%98%E5%82%A8"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">3.4 数组元素加载与存储</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E7%AE%97%E6%9C%AF%E6%8C%87%E4%BB%A4%EF%BC%88Arithmetic%EF%BC%89"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、算术指令（Arithmetic）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E5%9B%9B%E5%88%99%E8%BF%90%E7%AE%97"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 四则运算</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E4%BD%8D%E8%BF%90%E7%AE%97%E4%B8%8E%E7%A7%BB%E4%BD%8D"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 位运算与移位</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-iinc-%E6%8C%87%E4%BB%A4%EF%BC%9A%E9%AB%98%E6%95%88%E7%9A%84%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F%E8%87%AA%E5%A2%9E"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 iinc 指令：高效的局部变量自增</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E6%8C%87%E4%BB%A4%EF%BC%88Type-Conversion%EF%BC%89"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、类型转换指令（Type Conversion）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E6%8B%93%E5%AE%BD%E8%BD%AC%E6%8D%A2%EF%BC%88Widening-Conversions%EF%BC%89"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 拓宽转换（Widening Conversions）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-%E7%AA%84%E5%8C%96%E8%BD%AC%E6%8D%A2%EF%BC%88Narrowing-Conversions%EF%BC%89"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 窄化转换（Narrowing Conversions）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E5%AF%B9%E8%B1%A1%E5%88%9B%E5%BB%BA%E4%B8%8E%E6%93%8D%E4%BD%9C%E6%8C%87%E4%BB%A4"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、对象创建与操作指令</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E5%AF%B9%E8%B1%A1%E5%88%9B%E5%BB%BA"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 对象创建</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-%E5%AD%97%E6%AE%B5%E8%AE%BF%E9%97%AE"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 字段访问</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-%E5%AF%B9%E8%B1%A1%E6%A3%80%E6%9F%A5%E6%8C%87%E4%BB%A4"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">6.3 对象检查指令</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-4-%E6%93%8D%E4%BD%9C%E6%95%B0%E6%A0%88%E7%AE%A1%E7%90%86%E6%8C%87%E4%BB%A4"><span class="toc_mobile_items-number">6.4.</span> <span class="toc_mobile_items-text">6.4 操作数栈管理指令</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E6%8E%A7%E5%88%B6%E8%BD%AC%E7%A7%BB%E6%8C%87%E4%BB%A4"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、控制转移指令</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-%E6%9D%A1%E4%BB%B6%E8%B7%B3%E8%BD%AC%EF%BC%88Conditional-Branch%EF%BC%89"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">7.1 条件跳转（Conditional Branch）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-%E6%97%A0%E6%9D%A1%E4%BB%B6%E8%B7%B3%E8%BD%AC"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">7.2 无条件跳转</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-3-%E8%A1%A8%E8%B7%B3%E8%BD%AC%EF%BC%9Atableswitch-%E4%B8%8E-lookupswitch"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">7.3 表跳转：tableswitch 与 lookupswitch</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81%E6%96%B9%E6%B3%95%E8%B0%83%E7%94%A8%E4%B8%8E%E8%BF%94%E5%9B%9E%E6%8C%87%E4%BB%A4"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、方法调用与返回指令</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-%E4%BA%94%E5%A4%A7%E8%B0%83%E7%94%A8%E6%8C%87%E4%BB%A4%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">8.1 五大调用指令对比</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-%E8%BF%94%E5%9B%9E%E6%8C%87%E4%BB%A4"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">8.2 返回指令</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E6%A0%88%E5%B8%A7%E7%BB%93%E6%9E%84%E4%B8%8E%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、栈帧结构与运行时数据区</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-1-%E6%A0%88%E5%B8%A7%E7%9A%84%E6%9E%84%E6%88%90"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">9.1 栈帧的构成</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-2-max-stack-%E4%B8%8E-max-locals-%E7%9A%84%E7%A1%AE%E5%AE%9A"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">9.2 max_stack 与 max_locals 的确定</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81StackMapTable-%E4%B8%8E%E5%AD%97%E8%8A%82%E7%A0%81%E9%AA%8C%E8%AF%81"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">十、StackMapTable 与字节码验证</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-1-%E9%AA%8C%E8%AF%81%E6%96%B9%E5%BC%8F%E7%9A%84%E6%BC%94%E8%BF%9B"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">10.1 验证方式的演进</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-2-StackMapTable-%E7%9A%84%E5%B8%A7%E7%B1%BB%E5%9E%8B"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">10.2 StackMapTable 的帧类型</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%80%E3%80%81ART-%E4%B8%AD%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81%E6%89%A7%E8%A1%8C%E4%BC%98%E5%8C%96"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">十一、ART 中的字节码执行优化</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-1-Quickening%EF%BC%88%E5%BF%AB%E9%80%9F%E5%8C%96%EF%BC%89"><span class="toc_mobile_items-number">11.1.</span> <span class="toc_mobile_items-text">11.1 Quickening（快速化）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-2-JIT-%E7%BC%96%E8%AF%91%E4%BC%98%E5%8C%96"><span class="toc_mobile_items-number">11.2.</span> <span class="toc_mobile_items-text">11.2 JIT 编译优化</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E5%B8%B8%E9%87%8F%E6%B1%A0%EF%BC%9A%E5%AD%97%E8%8A%82%E7%A0%81%E7%9A%84%E7%AC%A6%E5%8F%B7%E5%BC%95%E7%94%A8%E6%9E%A2%E7%BA%BD"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">十二、常量池：字节码的符号引用枢纽</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%89%E3%80%81%E5%AE%9E%E6%88%98%EF%BC%9A%E4%BB%8E-Java-%E6%BA%90%E7%A0%81%E5%88%B0%E5%AD%97%E8%8A%82%E7%A0%81%E7%9A%84%E5%AE%8C%E6%95%B4%E8%A7%A3%E8%AF%BB"><span class="toc_mobile_items-number">13.</span> <span class="toc_mobile_items-text">十三、实战：从 Java 源码到字节码的完整解读</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E5%9B%9B%E3%80%81%E5%AE%9E%E6%88%98%E4%BA%8C%EF%BC%9A%E5%A4%8D%E6%9D%82%E6%8E%A7%E5%88%B6%E6%B5%81%E7%A4%BA%E4%BE%8B"><span class="toc_mobile_items-number">14.</span> <span class="toc_mobile_items-text">十四、实战二：复杂控制流示例</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%9D%A2%E8%AF%95%E9%97%AE%E7%AD%94"><span class="toc_mobile_items-number">15.</span> <span class="toc_mobile_items-text">面试问答</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81JVM-%E6%8C%87%E4%BB%A4%E9%9B%86%E6%9E%B6%E6%9E%84%EF%BC%9A%E4%B8%BA%E4%BD%95%E9%80%89%E6%8B%A9%E6%A0%88%E5%BC%8F"><span class="toc-number">1.</span> <span class="toc-text">一、JVM 指令集架构：为何选择栈式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81JVM-%E6%8C%87%E4%BB%A4%E9%9B%86%E5%AE%8C%E6%95%B4%E5%88%86%E7%B1%BB%E4%B8%8E%E6%93%8D%E4%BD%9C%E7%A0%81%E8%A1%A8"><span class="toc-number">2.</span> <span class="toc-text">二、JVM 指令集完整分类与操作码表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-0-%E6%93%8D%E4%BD%9C%E7%A0%81%E5%8C%BA%E9%97%B4%E5%BF%AB%E9%80%9F%E7%B4%A2%E5%BC%95"><span class="toc-number">2.1.</span> <span class="toc-text">2.0 操作码区间快速索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-0-1-%E5%B8%B8%E9%87%8F%E5%8E%8B%E6%A0%88%E6%8C%87%E4%BB%A4%E8%AF%A6%E8%A7%A3"><span class="toc-number">2.2.</span> <span class="toc-text">2.0.1 常量压栈指令详解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%8A%A0%E8%BD%BD%E4%B8%8E%E5%AD%98%E5%82%A8%E6%8C%87%E4%BB%A4%EF%BC%88Load-Store%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">三、加载与存储指令（Load&#x2F;Store）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%9F%BA%E7%A1%80%E5%8A%A0%E8%BD%BD%E6%8C%87%E4%BB%A4"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 基础加载指令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-wide-%E5%89%8D%E7%BC%80%EF%BC%9A%E7%AA%81%E7%A0%B4-255-%E4%B8%AA%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F%E7%9A%84%E9%99%90%E5%88%B6"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 wide 前缀：突破 255 个局部变量的限制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%9F%BA%E7%A1%80%E5%AD%98%E5%82%A8%E6%8C%87%E4%BB%A4"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 基础存储指令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E6%95%B0%E7%BB%84%E5%85%83%E7%B4%A0%E5%8A%A0%E8%BD%BD%E4%B8%8E%E5%AD%98%E5%82%A8"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 数组元素加载与存储</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E7%AE%97%E6%9C%AF%E6%8C%87%E4%BB%A4%EF%BC%88Arithmetic%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">四、算术指令（Arithmetic）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%9B%9B%E5%88%99%E8%BF%90%E7%AE%97"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 四则运算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E4%BD%8D%E8%BF%90%E7%AE%97%E4%B8%8E%E7%A7%BB%E4%BD%8D"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 位运算与移位</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-iinc-%E6%8C%87%E4%BB%A4%EF%BC%9A%E9%AB%98%E6%95%88%E7%9A%84%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F%E8%87%AA%E5%A2%9E"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 iinc 指令：高效的局部变量自增</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E6%8C%87%E4%BB%A4%EF%BC%88Type-Conversion%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">五、类型转换指令（Type Conversion）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%8B%93%E5%AE%BD%E8%BD%AC%E6%8D%A2%EF%BC%88Widening-Conversions%EF%BC%89"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 拓宽转换（Widening Conversions）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E7%AA%84%E5%8C%96%E8%BD%AC%E6%8D%A2%EF%BC%88Narrowing-Conversions%EF%BC%89"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 窄化转换（Narrowing Conversions）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%AF%B9%E8%B1%A1%E5%88%9B%E5%BB%BA%E4%B8%8E%E6%93%8D%E4%BD%9C%E6%8C%87%E4%BB%A4"><span class="toc-number">6.</span> <span class="toc-text">六、对象创建与操作指令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%AF%B9%E8%B1%A1%E5%88%9B%E5%BB%BA"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 对象创建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%AD%97%E6%AE%B5%E8%AE%BF%E9%97%AE"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 字段访问</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E5%AF%B9%E8%B1%A1%E6%A3%80%E6%9F%A5%E6%8C%87%E4%BB%A4"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 对象检查指令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E6%93%8D%E4%BD%9C%E6%95%B0%E6%A0%88%E7%AE%A1%E7%90%86%E6%8C%87%E4%BB%A4"><span class="toc-number">6.4.</span> <span class="toc-text">6.4 操作数栈管理指令</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E6%8E%A7%E5%88%B6%E8%BD%AC%E7%A7%BB%E6%8C%87%E4%BB%A4"><span class="toc-number">7.</span> <span class="toc-text">七、控制转移指令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E6%9D%A1%E4%BB%B6%E8%B7%B3%E8%BD%AC%EF%BC%88Conditional-Branch%EF%BC%89"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 条件跳转（Conditional Branch）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E6%97%A0%E6%9D%A1%E4%BB%B6%E8%B7%B3%E8%BD%AC"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 无条件跳转</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E8%A1%A8%E8%B7%B3%E8%BD%AC%EF%BC%9Atableswitch-%E4%B8%8E-lookupswitch"><span class="toc-number">7.3.</span> <span class="toc-text">7.3 表跳转：tableswitch 与 lookupswitch</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E6%96%B9%E6%B3%95%E8%B0%83%E7%94%A8%E4%B8%8E%E8%BF%94%E5%9B%9E%E6%8C%87%E4%BB%A4"><span class="toc-number">8.</span> <span class="toc-text">八、方法调用与返回指令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E4%BA%94%E5%A4%A7%E8%B0%83%E7%94%A8%E6%8C%87%E4%BB%A4%E5%AF%B9%E6%AF%94"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 五大调用指令对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E8%BF%94%E5%9B%9E%E6%8C%87%E4%BB%A4"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 返回指令</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E6%A0%88%E5%B8%A7%E7%BB%93%E6%9E%84%E4%B8%8E%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA"><span class="toc-number">9.</span> <span class="toc-text">九、栈帧结构与运行时数据区</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E6%A0%88%E5%B8%A7%E7%9A%84%E6%9E%84%E6%88%90"><span class="toc-number">9.1.</span> <span class="toc-text">9.1 栈帧的构成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-max-stack-%E4%B8%8E-max-locals-%E7%9A%84%E7%A1%AE%E5%AE%9A"><span class="toc-number">9.2.</span> <span class="toc-text">9.2 max_stack 与 max_locals 的确定</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81StackMapTable-%E4%B8%8E%E5%AD%97%E8%8A%82%E7%A0%81%E9%AA%8C%E8%AF%81"><span class="toc-number">10.</span> <span class="toc-text">十、StackMapTable 与字节码验证</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-%E9%AA%8C%E8%AF%81%E6%96%B9%E5%BC%8F%E7%9A%84%E6%BC%94%E8%BF%9B"><span class="toc-number">10.1.</span> <span class="toc-text">10.1 验证方式的演进</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-StackMapTable-%E7%9A%84%E5%B8%A7%E7%B1%BB%E5%9E%8B"><span class="toc-number">10.2.</span> <span class="toc-text">10.2 StackMapTable 的帧类型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81ART-%E4%B8%AD%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81%E6%89%A7%E8%A1%8C%E4%BC%98%E5%8C%96"><span class="toc-number">11.</span> <span class="toc-text">十一、ART 中的字节码执行优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-1-Quickening%EF%BC%88%E5%BF%AB%E9%80%9F%E5%8C%96%EF%BC%89"><span class="toc-number">11.1.</span> <span class="toc-text">11.1 Quickening（快速化）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-2-JIT-%E7%BC%96%E8%AF%91%E4%BC%98%E5%8C%96"><span class="toc-number">11.2.</span> <span class="toc-text">11.2 JIT 编译优化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E5%B8%B8%E9%87%8F%E6%B1%A0%EF%BC%9A%E5%AD%97%E8%8A%82%E7%A0%81%E7%9A%84%E7%AC%A6%E5%8F%B7%E5%BC%95%E7%94%A8%E6%9E%A2%E7%BA%BD"><span class="toc-number">12.</span> <span class="toc-text">十二、常量池：字节码的符号引用枢纽</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%89%E3%80%81%E5%AE%9E%E6%88%98%EF%BC%9A%E4%BB%8E-Java-%E6%BA%90%E7%A0%81%E5%88%B0%E5%AD%97%E8%8A%82%E7%A0%81%E7%9A%84%E5%AE%8C%E6%95%B4%E8%A7%A3%E8%AF%BB"><span class="toc-number">13.</span> <span class="toc-text">十三、实战：从 Java 源码到字节码的完整解读</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E5%9B%9B%E3%80%81%E5%AE%9E%E6%88%98%E4%BA%8C%EF%BC%9A%E5%A4%8D%E6%9D%82%E6%8E%A7%E5%88%B6%E6%B5%81%E7%A4%BA%E4%BE%8B"><span class="toc-number">14.</span> <span class="toc-text">十四、实战二：复杂控制流示例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E9%97%AE%E7%AD%94"><span class="toc-number">15.</span> <span class="toc-text">面试问答</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/240.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【深入理解JVM字节码】第二篇、字节码基础</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-03-05<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">9.1k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 33 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、JVM-指令集架构：为何选择栈式"><a href="#一、JVM-指令集架构：为何选择栈式" class="headerlink" title="一、JVM 指令集架构：为何选择栈式"></a>一、JVM 指令集架构：为何选择栈式</h2><p>JVM 采用的是<strong>基于操作数栈（operand stack）的指令集架构</strong>，而非 x86&#x2F;ARM 那种基于寄存器的架构。这个设计决策直接影响字节码的形态和运行时的执行模型。</p>
+<p>栈式架构的核心优势在于<strong>平台无关性</strong>。寄存器架构强依赖于物理 CPU 的寄存器数量和命名——x86-64 有 16 个通用寄存器，ARM64 有 31 个，RISC-V 有 32 个。如果字节码要引用寄存器号，那么从字节码到机器码的映射就会变得非常耦合于目标架构。而操作数栈是抽象的，不依赖任何物理寄存器，由 JIT 编译器（如 ART 的 optimizing compiler）在运行时根据目标架构分配合适的物理寄存器。</p>
+<p>在 ART 的实现中，栈式字节码首先被转换为中间表示（HGraph），然后再进行寄存器分配。源码路径 <code>art/compiler/optimizing/</code> 下的 <code>ssa_builder.cc</code> 负责从字节码构建 SSA（Static Single Assignment）形式的 HGraph。在这个过程中，操作数栈上的临时值被映射为 SSA 的 phi 节点和虚拟寄存器，然后由 <code>register_allocator.cc</code> 完成物理寄存器分配。</p>
+<p>AOSP 中栈帧的执行入口在 <code>art/runtime/interpreter/interpreter_common.h</code> 中。解释器通过 <code>ExecuteSwitchImpl</code> 或 <code>ExecuteGotoImpl</code> 实现字节码分派（dispatch），核心是一个巨大的 switch-case 或 computed goto 表，每条字节码指令对应一个处理分支。在 <code>art/runtime/interpreter/interpreter_common.cc</code> 中可以看到每条指令从栈帧的操作数栈中取操作数、执行、再将结果压栈的完整流程。</p>
+<h2 id="二、JVM-指令集完整分类与操作码表"><a href="#二、JVM-指令集完整分类与操作码表" class="headerlink" title="二、JVM 指令集完整分类与操作码表"></a>二、JVM 指令集完整分类与操作码表</h2><p>JVM 规范（Java Virtual Machine Specification, Java SE 21 Edition, Chapter 6）定义了约 205 条字节码指令，每条指令由一个操作码（opcode）字节和可选的若干操作数字节组成。操作码按功能划分为多个区间：</p>
+<h3 id="2-0-操作码区间快速索引"><a href="#2-0-操作码区间快速索引" class="headerlink" title="2.0 操作码区间快速索引"></a>2.0 操作码区间快速索引</h3><table>
+<thead>
+<tr>
+<th>操作码范围</th>
+<th>类别</th>
+<th>代表性指令</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x00 - 0x0F</td>
+<td>常量与基础操作</td>
+<td>nop, aconst_null, iconst_m1~5, lconst_0&#x2F;1, fconst_0&#x2F;1&#x2F;2, dconst_0&#x2F;1, bipush, sipush</td>
+</tr>
+<tr>
+<td>0x10 - 0x14</td>
+<td>常量加载</td>
+<td>bipush, sipush, ldc, ldc_w, ldc2_w</td>
+</tr>
+<tr>
+<td>0x15 - 0x19</td>
+<td>局部变量加载</td>
+<td>iload, lload, fload, dload, aload</td>
+</tr>
+<tr>
+<td>0x1A - 0x2D</td>
+<td>局部变量加载(快捷)</td>
+<td>iload_0<del>3, lload_0</del>3, fload_0<del>3, dload_0</del>3, aload_0~3</td>
+</tr>
+<tr>
+<td>0x2E - 0x35</td>
+<td>栈管理(加载)</td>
+<td>iaload, laload, faload, daload, aaload, baload, caload, saload</td>
+</tr>
+<tr>
+<td>0x36 - 0x3E</td>
+<td>局部变量存储</td>
+<td>istore, lstore, fstore, dstore, astore (及快捷变体 _0~3)</td>
+</tr>
+<tr>
+<td>0x3F - 0x53</td>
+<td>栈管理(存储)</td>
+<td>iastore, lastore, fastore, dastore, aastore, bastore, castore, sastore</td>
+</tr>
+<tr>
+<td>0x54 - 0x58</td>
+<td>栈管理(弹出)</td>
+<td>pop, pop2, dup, dup_x1, dup_x2, dup2, dup2_x1, dup2_x2, swap</td>
+</tr>
+<tr>
+<td>0x59 - 0x5F</td>
+<td>栈复制</td>
+<td>dup, dup_x1, dup_x2, dup2, dup2_x1, dup2_x2, swap</td>
+</tr>
+<tr>
+<td>0x60 - 0x63</td>
+<td>算术(int)</td>
+<td>iadd, ladd, fadd, dadd</td>
+</tr>
+<tr>
+<td>0x64 - 0x67</td>
+<td>算术(long)</td>
+<td>isub, lsub, fsub, dsub</td>
+</tr>
+<tr>
+<td>0x68 - 0x6B</td>
+<td>算术(float)</td>
+<td>imul, lmul, fmul, dmul</td>
+</tr>
+<tr>
+<td>0x6C - 0x6F</td>
+<td>算术(double)</td>
+<td>idiv, ldiv, fdiv, ddiv</td>
+</tr>
+<tr>
+<td>0x70 - 0x73</td>
+<td>取余</td>
+<td>irem, lrem, frem, drem</td>
+</tr>
+<tr>
+<td>0x74 - 0x77</td>
+<td>取负</td>
+<td>ineg, lneg, fneg, dneg</td>
+</tr>
+<tr>
+<td>0x78 - 0x79</td>
+<td>移位(int)</td>
+<td>ishl, lshl, ishr, lshr, iushr, lushr</td>
+</tr>
+<tr>
+<td>0x7A - 0x7D</td>
+<td>移位(long)</td>
+<td>iand, land, ior, lor, ixor, lxor</td>
+</tr>
+<tr>
+<td>0x7E - 0x81</td>
+<td>位运算</td>
+<td>iand, land, ior, lor, ixor, lxor</td>
+</tr>
+<tr>
+<td>0x84</td>
+<td>局部变量自增</td>
+<td>iinc</td>
+</tr>
+<tr>
+<td>0x85 - 0x93</td>
+<td>类型转换</td>
+<td>i2l, i2f, i2d, l2i, l2f, l2d, f2i, f2l, f2d, d2i, d2l, d2f, i2b, i2c, i2s</td>
+</tr>
+<tr>
+<td>0x94 - 0x98</td>
+<td>比较(long)</td>
+<td>lcmp, fcmpl, fcmpg, dcmpl, dcmpg</td>
+</tr>
+<tr>
+<td>0x99 - 0x9E</td>
+<td>条件跳转(零值)</td>
+<td>ifeq, ifne, iflt, ifge, ifgt, ifle</td>
+</tr>
+<tr>
+<td>0x9F - 0xA4</td>
+<td>条件跳转(比较)</td>
+<td>if_icmpeq, if_icmpne, if_icmplt, if_icmpge, if_icmpgt, if_icmple</td>
+</tr>
+<tr>
+<td>0xA5 - 0xA6</td>
+<td>条件跳转(引用)</td>
+<td>if_acmpeq, if_acmpne</td>
+</tr>
+<tr>
+<td>0xA7 - 0xA8</td>
+<td>无条件跳转</td>
+<td>goto, goto_w, jsr, jsr_w, ret</td>
+</tr>
+<tr>
+<td>0xA9 - 0xAB</td>
+<td>跳转表</td>
+<td>tableswitch, lookupswitch</td>
+</tr>
+<tr>
+<td>0xAC - 0xB1</td>
+<td>返回</td>
+<td>ireturn, lreturn, freturn, dreturn, areturn, return</td>
+</tr>
+<tr>
+<td>0xB2 - 0xB5</td>
+<td>字段访问</td>
+<td>getstatic, putstatic, getfield, putfield</td>
+</tr>
+<tr>
+<td>0xB6 - 0xBA</td>
+<td>方法调用</td>
+<td>invokevirtual, invokespecial, invokestatic, invokeinterface, invokedynamic</td>
+</tr>
+<tr>
+<td>0xBB - 0xC3</td>
+<td>对象与数组操作</td>
+<td>new, newarray, anewarray, arraylength, athrow, checkcast, instanceof</td>
+</tr>
+<tr>
+<td>0xC4</td>
+<td>扩展前缀</td>
+<td>wide</td>
+</tr>
+<tr>
+<td>0xC5 - 0xC6</td>
+<td>多数组</td>
+<td>multianewarray, ifnull, ifnonnull</td>
+</tr>
+<tr>
+<td>0xC7 - 0xC8</td>
+<td>跳转扩展</td>
+<td>goto_w, jsr_w</td>
+</tr>
+</tbody></table>
+<h3 id="2-0-1-常量压栈指令详解"><a href="#2-0-1-常量压栈指令详解" class="headerlink" title="2.0.1 常量压栈指令详解"></a>2.0.1 常量压栈指令详解</h3><p><strong>0x00 nop</strong>：什么也不做。用于调试占位或对齐填充。</p>
+<p><strong>0x01 aconst_null</strong>：将 null 引用压栈。</p>
+<p><strong>0x02 iconst_m1</strong>：将 int -1 压栈。<br><strong>0x03 iconst_0 ~ 0x08 iconst_5</strong>：将 int 0~5 压栈。这些单字节指令非常紧凑——对于最常见的常量值（尤其是 0），避免了 bipush 所需的额外操作数字节。</p>
+<p><strong>0x09 lconst_0, 0x0A lconst_1</strong>：将 long 0 或 1 压栈（占 2 个字）。<br><strong>0x0B fconst_0, 0x0C fconst_1, 0x0D fconst_2</strong>：将 float 0.0、1.0、2.0 压栈。<br><strong>0x0E dconst_0, 0x0F dconst_1</strong>：将 double 0.0、1.0 压栈。</p>
+<p><strong>0x10 bipush</strong>（byte immediate push）：将一个 byte 值符号扩展为 int 后压栈。操作数 1 字节，范围 -128~127。</p>
+<p><strong>0x11 sipush</strong>（short immediate push）：将一个 short 值符号扩展为 int 后压栈。操作数 2 字节（大端序），范围 -32768~32767。</p>
+<p><strong>0x12 ldc</strong>（load constant）：将常量池中指定索引的单字常量（int&#x2F;float&#x2F;String&#x2F;Class）压栈。操作数 1 字节，索引范围 0~255。</p>
+<p><strong>0x13 ldc_w</strong>（load constant wide）：同上但操作数为 2 字节，支持索引范围 0~65535，用于常量池很大的 class 文件。</p>
+<p><strong>0x14 ldc2_w</strong>：将常量池中的 long 或 double 常量压栈（2 字）。操作数 2 字节。用途是加载 64 位常量，因为 long 和 double 无法用 ldc 加载。</p>
+<h2 id="三、加载与存储指令（Load-Store）"><a href="#三、加载与存储指令（Load-Store）" class="headerlink" title="三、加载与存储指令（Load&#x2F;Store）"></a>三、加载与存储指令（Load&#x2F;Store）</h2><p>这类指令负责在局部变量表（local variable array）和操作数栈之间搬运数据。</p>
+<h3 id="3-1-基础加载指令"><a href="#3-1-基础加载指令" class="headerlink" title="3.1 基础加载指令"></a>3.1 基础加载指令</h3><ul>
+<li>**<code>iload n</code> &#x2F; <code>lload n</code> &#x2F; <code>fload n</code> &#x2F; <code>dload n</code> &#x2F; <code>aload n</code>**：将第 n 个局部变量压入栈顶。操作数 n 为 1 字节（0~255）。</li>
+<li>**<code>iload_&lt;n&gt;</code> (<code>iload_0</code> ~ <code>iload_3</code>)**：1 字节快捷指令，专门用于前 4 个 int 局部变量。同系列：<code>lload_0</code><del><code>lload_3</code>、<code>fload_0</code></del><code>fload_3</code>、<code>dload_0</code><del><code>dload_3</code>、<code>aload_0</code></del><code>aload_3</code>。因为绝大多数方法的参数和局部变量都在前 4 个槽位（this 在 0，参数依次在 1、2、3），这些快捷指令显著缩短了字节码长度。</li>
+</ul>
+<h3 id="3-2-wide-前缀：突破-255-个局部变量的限制"><a href="#3-2-wide-前缀：突破-255-个局部变量的限制" class="headerlink" title="3.2 wide 前缀：突破 255 个局部变量的限制"></a>3.2 wide 前缀：突破 255 个局部变量的限制</h3><p>当局部变量数量超过 255 个时，需要用 <code>wide</code> 指令（操作码 0xC4）扩展下一指令的索引操作数为 2 字节。<strong>wide 自身不是一个独立指令，而是一个前缀修饰符</strong>——它修改紧跟着的那条指令的操作数宽度。</p>
+<p><strong>编码示例：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">iload 5        → 0x15 0x05           （2 字节，索引 1 字节）</span><br><span class="line">wide iload 257 → 0xC4 0x15 0x01 0x01 （4 字节，索引 2 字节大端序）</span><br></pre></td></tr></table></figure>
+
+<p><code>wide</code> 前缀可以与以下指令配合使用：<code>iload</code>、<code>lload</code>、<code>fload</code>、<code>dload</code>、<code>aload</code>、<code>istore</code>、<code>lstore</code>、<code>fstore</code>、<code>dstore</code>、<code>astore</code>、<code>ret</code>、<code>iinc</code>。<strong>注意：此模式下 <code>wide</code> + <code>iinc</code> 使用 4 字节操作数（局部变量索引 2 字节 + 常量值 2 字节），而非普通 <code>iinc</code> 的 2 字节</strong>。</p>
+<p>在 ART 的解释器中，<code>wide</code> 的处理在 <code>art/runtime/interpreter/interpreter_common.cc</code> 中通过 <code>OP_WIDE</code> 宏实现。解释器先读取 wide 指令，然后将下一条指令的操作码和操作数（扩展为 2 字节）分发到对应的处理逻辑。这种”读取-修改-分发”的两阶段处理确保了 wide 前缀的透明性——其余指令处理代码无需感知 wide 的存在。</p>
+<h3 id="3-3-基础存储指令"><a href="#3-3-基础存储指令" class="headerlink" title="3.3 基础存储指令"></a>3.3 基础存储指令</h3><ul>
+<li>**<code>istore n</code> &#x2F; <code>lstore n</code> &#x2F; <code>fstore n</code> &#x2F; <code>dstore n</code> &#x2F; <code>astore n</code>**：弹出栈顶值并存入第 n 个局部变量。</li>
+<li>**<code>istore_&lt;n&gt;</code>**（<code>istore_0</code> ~ <code>istore_3</code>）：1 字节快捷存储指令。同系列有 <code>lstore_0</code>~&#96;lstore_3&#96; 等。</li>
+</ul>
+<p>以如下 Java 代码为例：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compute</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">sum</span> <span class="operator">=</span> a + b;</span><br><span class="line">    <span class="keyword">return</span> sum * <span class="number">2</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用 <code>javap -c -v</code> 反编译后得到：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public int compute(int, int);</span><br><span class="line">  descriptor: (II)I</span><br><span class="line">  flags: (0x0001) ACC_PUBLIC</span><br><span class="line">  Code:</span><br><span class="line">    stack=2, locals=4, args_size=3</span><br><span class="line">       0: iload_1</span><br><span class="line">       1: iload_2</span><br><span class="line">       2: iadd</span><br><span class="line">       3: istore_3</span><br><span class="line">       4: iload_3</span><br><span class="line">       5: iconst_2</span><br><span class="line">       6: imul</span><br><span class="line">       7: ireturn</span><br></pre></td></tr></table></figure>
+
+<p>逐条解释：</p>
+<ul>
+<li><strong>偏移 0-1</strong>：<code>iload_1</code> 和 <code>iload_2</code> 分别将参数 a（局部变量槽位 1）和 b（槽位 2）压入栈。槽位 0 被隐含的 this 占用。</li>
+<li><strong>偏移 2</strong>：<code>iadd</code> 弹出栈顶两个 int，相加后将结果压栈。</li>
+<li><strong>偏移 3</strong>：<code>istore_3</code> 弹出栈顶结果，存入局部变量槽位 3（即 sum）。</li>
+<li><strong>偏移 4</strong>：<code>iload_3</code> 将 sum 重新压栈（因为后续要参与乘法）。</li>
+<li><strong>偏移 5</strong>：<code>iconst_2</code> 将常量 2 压栈。</li>
+<li><strong>偏移 6</strong>：<code>imul</code> 弹出两个 int，相乘后压栈。</li>
+<li><strong>偏移 7</strong>：<code>ireturn</code> 弹出栈顶 int 作为返回值。</li>
+</ul>
+<p>这里可以看到 Code 属性中的 <code>stack=2</code> 表示该方法执行过程中操作数栈的最大深度为 2，<code>locals=4</code> 表示局部变量表有 4 个槽位（this + a + b + sum）。这些信息由编译期的栈映射（stack map）分析产生，用于运行时验证字节码的安全性。</p>
+<h3 id="3-4-数组元素加载与存储"><a href="#3-4-数组元素加载与存储" class="headerlink" title="3.4 数组元素加载与存储"></a>3.4 数组元素加载与存储</h3><p>数组元素通过类型特定的指令访问（操作数栈上先压入数组引用和索引）：</p>
+<ul>
+<li>**<code>iaload</code> &#x2F; <code>laload</code> &#x2F; <code>faload</code> &#x2F; <code>daload</code> &#x2F; <code>aaload</code> &#x2F; <code>baload</code> &#x2F; <code>caload</code> &#x2F; <code>saload</code>**：弹出数组索引和数组引用，将数组[index]压栈。</li>
+<li>**<code>iastore</code> &#x2F; <code>lastore</code> &#x2F; <code>fastore</code> &#x2F; <code>dastore</code> &#x2F; <code>aastore</code> &#x2F; <code>bastore</code> &#x2F; <code>castore</code> &#x2F; <code>sastore</code>**：弹出值、索引和数组引用，执行数组[index] &#x3D; 值。</li>
+</ul>
+<h2 id="四、算术指令（Arithmetic）"><a href="#四、算术指令（Arithmetic）" class="headerlink" title="四、算术指令（Arithmetic）"></a>四、算术指令（Arithmetic）</h2><p>算术指令全部从操作数栈取操作数，运算后将结果压回栈。针对每种类型（int、long、float、double）都有对应前缀：</p>
+<h3 id="4-1-四则运算"><a href="#4-1-四则运算" class="headerlink" title="4.1 四则运算"></a>4.1 四则运算</h3><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>int</th>
+<th>long</th>
+<th>float</th>
+<th>double</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>加法</td>
+<td>iadd (0x60)</td>
+<td>ladd (0x61)</td>
+<td>fadd (0x62)</td>
+<td>dadd (0x63)</td>
+</tr>
+<tr>
+<td>减法</td>
+<td>isub (0x64)</td>
+<td>lsub (0x65)</td>
+<td>fsub (0x66)</td>
+<td>dsub (0x67)</td>
+</tr>
+<tr>
+<td>乘法</td>
+<td>imul (0x68)</td>
+<td>lmul (0x69)</td>
+<td>fmul (0x6A)</td>
+<td>dmul (0x6B)</td>
+</tr>
+<tr>
+<td>除法</td>
+<td>idiv (0x6C)</td>
+<td>ldiv (0x6D)</td>
+<td>fdiv (0x6E)</td>
+<td>ddiv (0x6F)</td>
+</tr>
+<tr>
+<td>取余</td>
+<td>irem (0x70)</td>
+<td>lrem (0x71)</td>
+<td>frem (0x72)</td>
+<td>drem (0x73)</td>
+</tr>
+<tr>
+<td>取负</td>
+<td>ineg (0x74)</td>
+<td>lneg (0x75)</td>
+<td>fneg (0x76)</td>
+<td>dneg (0x77)</td>
+</tr>
+</tbody></table>
+<h3 id="4-2-位运算与移位"><a href="#4-2-位运算与移位" class="headerlink" title="4.2 位运算与移位"></a>4.2 位运算与移位</h3><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>int</th>
+<th>long</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>按位与</td>
+<td>iand (0x7E)</td>
+<td>land (0x7F)</td>
+</tr>
+<tr>
+<td>按位或</td>
+<td>ior (0x80)</td>
+<td>lor (0x81)</td>
+</tr>
+<tr>
+<td>按位异或</td>
+<td>ixor (0x82)</td>
+<td>lxor (0x83)</td>
+</tr>
+<tr>
+<td>左移</td>
+<td>ishl (0x78)</td>
+<td>lshl (0x79)</td>
+</tr>
+<tr>
+<td>算术右移</td>
+<td>ishr (0x7A)</td>
+<td>lshr (0x7B)</td>
+</tr>
+<tr>
+<td>逻辑右移</td>
+<td>iushr (0x7C)</td>
+<td>lushr (0x7D)</td>
+</tr>
+</tbody></table>
+<p><strong>算术右移 vs 逻辑右移：</strong> 算术右移（<code>ishr</code>&#x2F;<code>lshr</code>）保留符号位，最高位用原符号位填充；逻辑右移（<code>iushr</code>&#x2F;<code>lushr</code>）最高位填 0。例如 <code>-8 &gt;&gt; 2</code>（算术右移）结果为 <code>-2</code>，<code>-8 &gt;&gt;&gt; 2</code>（逻辑右移）结果为 <code>0x3FFFFFFE</code>。</p>
+<h3 id="4-3-iinc-指令：高效的局部变量自增"><a href="#4-3-iinc-指令：高效的局部变量自增" class="headerlink" title="4.3 iinc 指令：高效的局部变量自增"></a>4.3 iinc 指令：高效的局部变量自增</h3><p><code>iinc</code>（操作码 0x84）是唯一可以直接修改局部变量表中的 int 值而不通过操作数栈的指令。格式：<code>iinc index const</code>，其中 index 为 1 字节（局部变量索引），const 为 1 字节有符号常量（-128~127）。与 wide 联合使用时，index 和 const 各扩展为 2 字节。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">iinc 3, 1   → 0x84 0x03 0x01   (局部变量 3 加 1)</span><br><span class="line">iinc 1, -1  → 0x84 0x01 0xFF   (局部变量 1 减 1，0xFF 作为有符号 byte = -1)</span><br></pre></td></tr></table></figure>
+
+<p><strong>设计优势：</strong> 如果没有 iinc，每次 <code>i++</code> 需要三条指令：<code>iload i</code> + <code>iconst_1</code> + <code>iadd</code> + <code>istore i</code>（4 个字节），而 <code>iinc i, 1</code> 仅需 3 个字节。对于方法体中的循环计数器自增场景，这种紧凑性影响显著。</p>
+<p>值得注意的设计细节：对于 byte、short、char 这类小于 32 位的类型，JVM 在运算前会自动用 <code>i2b</code>、<code>i2s</code>、<code>i2c</code> 等指令截断，且这些类型在局部变量表和操作数栈上实际上都占用 32 位（作为 int 处理）。这与 JVM 规范中”boolean、byte、short、char 在栈帧中均按 int 处理”的规定一致。</p>
+<h2 id="五、类型转换指令（Type-Conversion）"><a href="#五、类型转换指令（Type-Conversion）" class="headerlink" title="五、类型转换指令（Type Conversion）"></a>五、类型转换指令（Type Conversion）</h2><p>JVM 规范定义了严格的拓宽&#x2F;窄化转换规则：</p>
+<h3 id="5-1-拓宽转换（Widening-Conversions）"><a href="#5-1-拓宽转换（Widening-Conversions）" class="headerlink" title="5.1 拓宽转换（Widening Conversions）"></a>5.1 拓宽转换（Widening Conversions）</h3><p>拓宽转换从较小或较低精度的类型转向较大或较高精度的类型，理论上不丢失信息（但 int→float 和 long→double 可能丢失最低有效位）：</p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>转换</th>
+<th>操作码</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>i2l</td>
+<td>int → long</td>
+<td>0x85</td>
+<td>符号扩展</td>
+</tr>
+<tr>
+<td>i2f</td>
+<td>int → float</td>
+<td>0x86</td>
+<td>可能丢失精度（23 位尾数 vs 31 位有效位）</td>
+</tr>
+<tr>
+<td>i2d</td>
+<td>int → double</td>
+<td>0x87</td>
+<td>精确（52 位尾数）</td>
+</tr>
+<tr>
+<td>l2f</td>
+<td>long → float</td>
+<td>0x89</td>
+<td>可能丢失精度</td>
+</tr>
+<tr>
+<td>l2d</td>
+<td>long → double</td>
+<td>0x8A</td>
+<td>可能丢失精度（52 位尾数 vs 63 位有效位）</td>
+</tr>
+<tr>
+<td>f2d</td>
+<td>float → double</td>
+<td>0x8D</td>
+<td>精确扩展</td>
+</tr>
+</tbody></table>
+<h3 id="5-2-窄化转换（Narrowing-Conversions）"><a href="#5-2-窄化转换（Narrowing-Conversions）" class="headerlink" title="5.2 窄化转换（Narrowing Conversions）"></a>5.2 窄化转换（Narrowing Conversions）</h3><p>窄化转换可能导致数据丢失或符号变化：</p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>转换</th>
+<th>操作码</th>
+<th>截断规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>i2b</td>
+<td>int → byte</td>
+<td>0x91</td>
+<td>截取低 8 位，然后符号扩展为 int</td>
+</tr>
+<tr>
+<td>i2c</td>
+<td>int → char</td>
+<td>0x92</td>
+<td>截取低 16 位，无符号（0x0000FFFF 掩码）</td>
+</tr>
+<tr>
+<td>i2s</td>
+<td>int → short</td>
+<td>0x93</td>
+<td>截取低 16 位，然后符号扩展为 int</td>
+</tr>
+<tr>
+<td>l2i</td>
+<td>long → int</td>
+<td>0x88</td>
+<td>截取低 32 位</td>
+</tr>
+<tr>
+<td>f2i</td>
+<td>float → int</td>
+<td>0x8B</td>
+<td>IEEE 754 向零舍入（truncate）；若 NaN 则结果为 0；若超出 int 范围则结果为 Integer.MAX_VALUE 或 Integer.MIN_VALUE</td>
+</tr>
+<tr>
+<td>f2l</td>
+<td>float → long</td>
+<td>0x8C</td>
+<td>同上，向零舍入，范围变为 long 的区间</td>
+</tr>
+<tr>
+<td>d2i</td>
+<td>double → int</td>
+<td>0x8E</td>
+<td>同上（f2i 的 double 版）</td>
+</tr>
+<tr>
+<td>d2l</td>
+<td>double → long</td>
+<td>0x8F</td>
+<td>同上（f2l 的 double 版）</td>
+</tr>
+<tr>
+<td>d2f</td>
+<td>double → float</td>
+<td>0x90</td>
+<td>IEEE 754 舍入到最近偶数</td>
+</tr>
+</tbody></table>
+<p><strong>浮点 → 整数的特殊规则：</strong> JVM 使用”向零舍入”（round toward zero）模式，这与 Java 强制类型转换的语义一致。例如 <code>(int) 3.9</code> 结果为 3，<code>(int) -3.9</code> 结果为 -3。而如果浮点数为 NaN，转换结果为 0（int&#x2F;long）——这是 JVM 规范的特殊规定。</p>
+<p>在 AOSP 的实现中，这些转换指令在解释器中对应的是简单的 C 风格类型转换。<code>art/runtime/interpreter/interpreter_common.cc</code> 中 <code>OP_I2L</code> 等宏直接使用 C++ 的 <code>static_cast</code> 或隐式转换。</p>
+<h2 id="六、对象创建与操作指令"><a href="#六、对象创建与操作指令" class="headerlink" title="六、对象创建与操作指令"></a>六、对象创建与操作指令</h2><h3 id="6-1-对象创建"><a href="#6-1-对象创建" class="headerlink" title="6.1 对象创建"></a>6.1 对象创建</h3><ul>
+<li><p>**<code>new</code>**：创建对象实例。操作数是常量池索引，指向一个 <code>CONSTANT_Class_info</code>。该指令分配堆内存但不调用构造方法。</p>
+</li>
+<li><p>**<code>newarray</code>**：创建基本类型数组。操作数 1 字节的 atype 码，数组长度从栈顶弹出。</p>
+<p>atype 类型编码：</p>
+<table>
+<thead>
+<tr>
+<th>atype</th>
+<th>类型</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>4</td>
+<td>T_BOOLEAN</td>
+</tr>
+<tr>
+<td>5</td>
+<td>T_CHAR</td>
+</tr>
+<tr>
+<td>6</td>
+<td>T_FLOAT</td>
+</tr>
+<tr>
+<td>7</td>
+<td>T_DOUBLE</td>
+</tr>
+<tr>
+<td>8</td>
+<td>T_BYTE</td>
+</tr>
+<tr>
+<td>9</td>
+<td>T_SHORT</td>
+</tr>
+<tr>
+<td>10</td>
+<td>T_INT</td>
+</tr>
+<tr>
+<td>11</td>
+<td>T_LONG</td>
+</tr>
+</tbody></table>
+</li>
+<li><p>**<code>anewarray</code>**：创建引用类型数组。操作数 2 字节常量池索引，数组长度从栈顶弹出。</p>
+</li>
+<li><p>**<code>multianewarray</code>**：创建多维数组。操作数 2 字节常量池索引和 1 字节维度数，各维长度从栈顶依次弹出。</p>
+</li>
+</ul>
+<p>在 ART 中，<code>new</code> 指令的执行路径值得关注。解释器入口在 <code>art/runtime/interpreter/interpreter_common.cc</code> 中调用 <code>ArtMethod::AllocObject</code>，最终进入堆分配器。ART 的堆分配器（<code>art/runtime/gc/heap.cc</code>）针对小对象使用 TLAB（Thread-Local Allocation Buffer），避免了全局锁竞争。TLAB 的实现在 <code>art/runtime/gc/allocator/rosalloc.h</code> 中，采用了基于运行大小分类（runs-of-slots）的分配策略。</p>
+<h3 id="6-2-字段访问"><a href="#6-2-字段访问" class="headerlink" title="6.2 字段访问"></a>6.2 字段访问</h3><ul>
+<li>**<code>getfield</code> &#x2F; <code>putfield</code>**：实例字段的读写。操作数 2 字节常量池索引（指向 CONSTANT_Fieldref）。getfield 弹出对象引用，压入字段值；putfield 弹出值及对象引用，将值写入字段。</li>
+<li>**<code>getstatic</code> &#x2F; <code>putstatic</code>**：类&#x2F;静态字段的读写。无需对象引用，直接从类中读写。</li>
+</ul>
+<p>字段访问的符号引用解析：class_index → 类名 → 加载类（若未加载），name_and_type_index → 字段名 + 描述符 → 在类中匹配字段。ART 中解析逻辑在 <code>art/runtime/class_linker.cc</code> 的 <code>ResolveField</code> 和 <code>ResolveFieldJLS</code> 方法中。解析成功后 ART 执行 quickening，将 <code>ArtField*</code> 缓存以减少后续解析开销。</p>
+<h3 id="6-3-对象检查指令"><a href="#6-3-对象检查指令" class="headerlink" title="6.3 对象检查指令"></a>6.3 对象检查指令</h3><ul>
+<li>**<code>checkcast</code>**：类型检查，弹出对象引用，检查是否可转换为指定类型，失败时抛出 <code>ClassCastException</code>。</li>
+<li>**<code>instanceof</code>**：实例判断，弹出对象引用，结果（int 0 或 1）压入栈。注意对 null 执行 instanceof 永远返回 0（false）。</li>
+<li>**<code>arraylength</code>**：弹出数组引用，压入数组长度（int）。</li>
+</ul>
+<h3 id="6-4-操作数栈管理指令"><a href="#6-4-操作数栈管理指令" class="headerlink" title="6.4 操作数栈管理指令"></a>6.4 操作数栈管理指令</h3><ul>
+<li>**<code>pop</code> &#x2F; <code>pop2</code>**：弹出栈顶 1 个或 2 个字。</li>
+<li>**<code>dup</code>**：复制栈顶的 1 个字并压栈。即将 […, a] 变为 […, a, a]。</li>
+<li>**<code>dup_x1</code>**：复制栈顶 1 个字并插入到栈顶以下第 2 项之后。即将 […, b, a] 变为 […, a, b, a]。</li>
+<li>**<code>dup_x2</code>**：复制栈顶 1 个字并插入到栈顶以下第 2 或第 3 项之后（取决于该项占 1 字还是 2 字）。</li>
+<li>**<code>dup2</code>**：复制栈顶 2 个字并压栈（处理 long&#x2F;double 或两个单字值）。</li>
+<li>**<code>swap</code>**：交换栈顶的两个单字值。</li>
+</ul>
+<p><code>dup</code> 系列指令在构造方法中非常常见。例如 <code>new Object()</code> 编译后会出现：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">new #2      // 分配内存</span><br><span class="line">dup         // 复制引用（一份给 invokespecial，一份留给后面使用）</span><br><span class="line">invokespecial #3  // 调用 Object.&lt;init&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这里的 <code>dup</code> 是因为 <code>invokespecial</code> 会消费栈顶的引用，而表达式需要保留新对象的引用供后续赋值——如果不用 <code>dup</code> 复制一份，<code>invokespecial</code> 之后就丢失了对象引用。</p>
+<h2 id="七、控制转移指令"><a href="#七、控制转移指令" class="headerlink" title="七、控制转移指令"></a>七、控制转移指令</h2><h3 id="7-1-条件跳转（Conditional-Branch）"><a href="#7-1-条件跳转（Conditional-Branch）" class="headerlink" title="7.1 条件跳转（Conditional Branch）"></a>7.1 条件跳转（Conditional Branch）</h3><p>条件跳转指令读取栈顶值并进行比较，根据结果决定是否跳转。跳转偏移量是一个 2 字节有符号值，从当前指令的操作码位置算起。</p>
+<p><strong>与零比较：</strong></p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>操作码</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ifeq</td>
+<td>0x99</td>
+<td>if (value &#x3D;&#x3D; 0) 跳转</td>
+</tr>
+<tr>
+<td>ifne</td>
+<td>0x9A</td>
+<td>if (value !&#x3D; 0) 跳转</td>
+</tr>
+<tr>
+<td>iflt</td>
+<td>0x9B</td>
+<td>if (value &lt; 0) 跳转</td>
+</tr>
+<tr>
+<td>ifge</td>
+<td>0x9C</td>
+<td>if (value &gt;&#x3D; 0) 跳转</td>
+</tr>
+<tr>
+<td>ifgt</td>
+<td>0x9D</td>
+<td>if (value &gt; 0) 跳转</td>
+</tr>
+<tr>
+<td>ifle</td>
+<td>0x9E</td>
+<td>if (value &lt;&#x3D; 0) 跳转</td>
+</tr>
+</tbody></table>
+<p><strong>两值比较：</strong></p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>操作码</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>if_icmpeq</td>
+<td>0x9F</td>
+<td>if (val1 &#x3D;&#x3D; val2) 跳转</td>
+</tr>
+<tr>
+<td>if_icmpne</td>
+<td>0xA0</td>
+<td>if (val1 !&#x3D; val2) 跳转</td>
+</tr>
+<tr>
+<td>if_icmplt</td>
+<td>0xA1</td>
+<td>if (val1 &lt; val2) 跳转</td>
+</tr>
+<tr>
+<td>if_icmpge</td>
+<td>0xA2</td>
+<td>if (val1 &gt;&#x3D; val2) 跳转</td>
+</tr>
+<tr>
+<td>if_icmpgt</td>
+<td>0xA3</td>
+<td>if (val1 &gt; val2) 跳转</td>
+</tr>
+<tr>
+<td>if_icmple</td>
+<td>0xA4</td>
+<td>if (val1 &lt;&#x3D; val2) 跳转</td>
+</tr>
+</tbody></table>
+<p><strong>引用比较与空值检查：</strong></p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>操作码</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>if_acmpeq</td>
+<td>0xA5</td>
+<td>if (ref1 &#x3D;&#x3D; ref2) 跳转（引用相等性）</td>
+</tr>
+<tr>
+<td>if_acmpne</td>
+<td>0xA6</td>
+<td>if (ref1 !&#x3D; ref2) 跳转</td>
+</tr>
+<tr>
+<td>ifnull</td>
+<td>0xC6</td>
+<td>if (ref &#x3D;&#x3D; null) 跳转</td>
+</tr>
+<tr>
+<td>ifnonnull</td>
+<td>0xC7</td>
+<td>if (ref !&#x3D; null) 跳转</td>
+</tr>
+</tbody></table>
+<h3 id="7-2-无条件跳转"><a href="#7-2-无条件跳转" class="headerlink" title="7.2 无条件跳转"></a>7.2 无条件跳转</h3><ul>
+<li>**<code>goto</code> (0xA7)**：2 字节有符号分支偏移量。范围 -32768 ~ 32767 字节。</li>
+<li>**<code>goto_w</code> (0xC8)**：4 字节有符号分支偏移量。当方法体很大导致 goto 的偏移量不足时使用。</li>
+</ul>
+<h3 id="7-3-表跳转：tableswitch-与-lookupswitch"><a href="#7-3-表跳转：tableswitch-与-lookupswitch" class="headerlink" title="7.3 表跳转：tableswitch 与 lookupswitch"></a>7.3 表跳转：tableswitch 与 lookupswitch</h3><p>Java 的 <code>switch</code> 语句由编译器根据 case 值的分布特征编译为两种不同的字节码结构：</p>
+<p><strong>tableswitch (0xAA)<strong>：适用于 case 值</strong>连续</strong>的场景（如 1, 2, 3, 4, 5）。使用跳转表实现 O(1) 分派。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tableswitch 指令格式：</span><br><span class="line">  opcode (0xAA)</span><br><span class="line">  0-3 字节 padding 字节（保证 default 偏移量在 4 字节对齐位置开始）</span><br><span class="line">  default 分支偏移量 (4 字节有符号)</span><br><span class="line">  low 值 (4 字节有符号)</span><br><span class="line">  high 值 (4 字节有符号)</span><br><span class="line">  jump_offsets[high - low + 1] (每个 4 字节有符号)</span><br></pre></td></tr></table></figure>
+
+<p>执行逻辑：栈顶的 int 值为 key。如果 <code>low &lt;= key &lt;= high</code>，计算 <code>index = key - low</code>，跳转到 <code>jump_offsets[index]</code>；否则跳转到 default 分支。</p>
+<p><strong>lookupswitch (0xAB)<strong>：适用于 case 值</strong>稀疏</strong>的场景（如 1, 100, 1000）。使用二分查找匹配，时间复杂度 O(log n)。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">lookupswitch 指令格式：</span><br><span class="line">  opcode (0xAB)</span><br><span class="line">  0-3 字节 padding</span><br><span class="line">  default 分支偏移量 (4 字节有符号)</span><br><span class="line">  npairs (4 字节，匹配对数量)</span><br><span class="line">  匹配对数组（每对 8 字节，按 key 升序排列）：</span><br><span class="line">    match_key (4 字节有符号)</span><br><span class="line">    offset (4 字节有符号)</span><br></pre></td></tr></table></figure>
+
+<p>执行逻辑：在 match_key 数组中二分查找栈顶的 key 值。找到则跳转到对应 offset；否则跳转到 default。</p>
+<p><strong>编译器的选择策略：</strong> javac 在 <code>com.sun.tools.javac.jvm.Gen</code> 中根据 case 的紧密度进行决策。以 case 值数量为 N，范围为 R &#x3D; high - low。当 R &#x2F; N 的比值较小时（case 密集），选择 tableswitch；当比值很大时（case 稀疏），选择 lookupswitch。这个阈值大约在 2~3 倍之间——即如果空槽位是有效 case 的 2 倍以上，就倾向使用 lookupswitch。</p>
+<p><strong>padding 字节的设计原因：</strong> 4 字节对齐确保了 jums 偏移量在支持非对齐访问的处理器上仍能高效读取。在现代处理器上这个对齐要求已经不那么关键，但规范出于兼容性保留了这个设计。</p>
+<h2 id="八、方法调用与返回指令"><a href="#八、方法调用与返回指令" class="headerlink" title="八、方法调用与返回指令"></a>八、方法调用与返回指令</h2><p>调用指令是字节码中最复杂的部分，直接关联 JVM 的方法分派机制：</p>
+<h3 id="8-1-五大调用指令对比"><a href="#8-1-五大调用指令对比" class="headerlink" title="8.1 五大调用指令对比"></a>8.1 五大调用指令对比</h3><table>
+<thead>
+<tr>
+<th>指令</th>
+<th>操作码</th>
+<th>分派方式</th>
+<th>典型场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>invokevirtual</td>
+<td>0xB6</td>
+<td>虚分派（vtable）</td>
+<td>普通实例方法</td>
+</tr>
+<tr>
+<td>invokespecial</td>
+<td>0xB7</td>
+<td>静态绑定</td>
+<td>构造方法、私有方法、父类方法</td>
+</tr>
+<tr>
+<td>invokestatic</td>
+<td>0xB8</td>
+<td>静态绑定</td>
+<td>静态方法</td>
+</tr>
+<tr>
+<td>invokeinterface</td>
+<td>0xB9</td>
+<td>虚分派（itable）</td>
+<td>接口方法</td>
+</tr>
+<tr>
+<td>invokedynamic</td>
+<td>0xBA</td>
+<td>动态解析（bootstrap）</td>
+<td>Lambda、字符串拼接</td>
+</tr>
+</tbody></table>
+<p><strong>invokevirtual vs invokespecial 的本质区别：</strong></p>
+<ul>
+<li><p><strong><code>invokevirtual</code></strong> 是虚方法调用，根据接收者对象的实际运行时类型进行动态分派，需要查 vtable。在 ART 中，vtable（虚方法表）由 <code>ClassLinker::LinkVirtualMethods</code>（<code>art/runtime/class_linker.cc</code>）在类链接阶段构建，每个类持有一份虚方法表，记录了继承和重写关系。调用时通过对象头的 class 指针找到 vtable，按方法索引查表得到 <code>ArtMethod*</code>。</p>
+</li>
+<li><p><strong><code>invokespecial</code></strong> 是精确调用，用于构造方法（<code>&lt;init&gt;</code>）、私有方法和父类方法（通过 <code>super.method()</code> 调用）。采用静态绑定——编译器已经确定了目标方法在常量池中的符号引用，运行时不查 vtable，直接使用该引用。</p>
+</li>
+</ul>
+<p><strong>invokeinterface 的特殊性：</strong> 与 invokevirtual 不同，invokeinterface 的操作数包含两个额外字节：<code>count</code> 字段指定了方法参数在栈上占用的槽位数（协助验证），第 4 个字节固定为 0（保留）。ART 中通过 iftable（接口方法表）查找目标方法，解析过程在 <code>ClassLinker::LinkInterfaceMethods</code> 中。</p>
+<p><strong>invokedynamic：</strong> 不依赖常量池中预定义的符号引用，而是在首次执行时调用引导方法（bootstrap method）动态计算调用目标。详见第三篇《Lambda 表达式原理》。</p>
+<h3 id="8-2-返回指令"><a href="#8-2-返回指令" class="headerlink" title="8.2 返回指令"></a>8.2 返回指令</h3><table>
+<thead>
+<tr>
+<th>指令</th>
+<th>操作码</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ireturn</td>
+<td>0xAC</td>
+<td>返回 int（弹出栈顶 int）</td>
+</tr>
+<tr>
+<td>lreturn</td>
+<td>0xAD</td>
+<td>返回 long（弹出栈顶 2 字）</td>
+</tr>
+<tr>
+<td>freturn</td>
+<td>0xAE</td>
+<td>返回 float</td>
+</tr>
+<tr>
+<td>dreturn</td>
+<td>0xAF</td>
+<td>返回 double</td>
+</tr>
+<tr>
+<td>areturn</td>
+<td>0xB0</td>
+<td>返回对象引用</td>
+</tr>
+<tr>
+<td>return</td>
+<td>0xB1</td>
+<td>返回 void（无返回值）</td>
+</tr>
+</tbody></table>
+<h2 id="九、栈帧结构与运行时数据区"><a href="#九、栈帧结构与运行时数据区" class="headerlink" title="九、栈帧结构与运行时数据区"></a>九、栈帧结构与运行时数据区</h2><h3 id="9-1-栈帧的构成"><a href="#9-1-栈帧的构成" class="headerlink" title="9.1 栈帧的构成"></a>9.1 栈帧的构成</h3><p>每个方法调用都会在 JVM 栈上创建一个新的栈帧（Stack Frame）。每个栈帧包含三个核心组件：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">栈帧结构：</span><br><span class="line">  ┌─────────────────────────┐</span><br><span class="line">  │    局部变量表               │  ← 包含 this + 方法参数 + 局部变量</span><br><span class="line">  │    (Local Variable Array) │     long/double 占 2 个槽位，其余占 1 个</span><br><span class="line">  ├─────────────────────────┤</span><br><span class="line">  │    操作数栈                │  ← 最大深度由 Code 属性的 max_stack 指定</span><br><span class="line">  │    (Operand Stack)       │     当前深度随指令执行变化</span><br><span class="line">  ├─────────────────────────┤</span><br><span class="line">  │    运行时常量池引用          │  ← 指向当前方法所属类的常量池</span><br><span class="line">  │    (Const Pool Reference) │</span><br><span class="line">  └─────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>局部变量表</strong>：一个以 slot（槽位）为单位的数组，从 0 开始索引。实例方法的槽位 0 固定为 <code>this</code>。long 和 double 占用两个连续槽位。</li>
+<li><strong>操作数栈</strong>：一个后进先出的栈，字节码指令在此取出操作数并将结果压回。最大深度在编译期确定的 <code>max_stack</code>。</li>
+<li><strong>运行时常量池引用</strong>：指向当前方法所属类的 <code>mirror::Class</code> 对象，进而访问运行时常量池。在 ART 中，这个引用存储在 <code>ArtMethod</code> 结构中。</li>
+</ul>
+<h3 id="9-2-max-stack-与-max-locals-的确定"><a href="#9-2-max-stack-与-max-locals-的确定" class="headerlink" title="9.2 max_stack 与 max_locals 的确定"></a>9.2 max_stack 与 max_locals 的确定</h3><p>这两个值在 javac 生成字节码时由栈映射分析（Stack Map Analysis）确定。编译器模拟每条可能的执行路径上操作数栈的深度变化，记录最大值作为 <code>max_stack</code>；统计方法参数的槽位数和局部变量声明，计算最大槽位使用量作为 <code>max_locals</code>。这些值被写入 Code 属性供 JVM 验证器使用。</p>
+<h2 id="十、StackMapTable-与字节码验证"><a href="#十、StackMapTable-与字节码验证" class="headerlink" title="十、StackMapTable 与字节码验证"></a>十、StackMapTable 与字节码验证</h2><h3 id="10-1-验证方式的演进"><a href="#10-1-验证方式的演进" class="headerlink" title="10.1 验证方式的演进"></a>10.1 验证方式的演进</h3><p>Java 6（class 文件版本 50.0）引入了一项重大改进：将字节码验证从”类型推导验证”（Type Inference Verification）改为”类型检查验证”（Type Checking Verification）。前者需要在类加载时进行完整的数据流分析，开销较大（尤其是对于大型方法）；后者将验证信息预先编码在 StackMapTable 属性中，验证时只需逐条检查。</p>
+<h3 id="10-2-StackMapTable-的帧类型"><a href="#10-2-StackMapTable-的帧类型" class="headerlink" title="10.2 StackMapTable 的帧类型"></a>10.2 StackMapTable 的帧类型</h3><p>StackMapTable 记录方法中某些关键位置（如跳转目标、异常处理器入口）的栈和局部变量类型状态。它使用一种紧凑的帧编码格式：</p>
+<table>
+<thead>
+<tr>
+<th>frame_type 范围</th>
+<th>帧类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0-63</td>
+<td>same_frame</td>
+<td>栈为空，局部变量与上一帧相同。frame_type 本身即为 offset_delta</td>
+</tr>
+<tr>
+<td>64-127</td>
+<td>same_locals_1_stack_item_frame</td>
+<td>offset_delta &#x3D; frame_type - 64，栈上有 1 个值（类型跟随）</td>
+</tr>
+<tr>
+<td>128-246</td>
+<td>（保留）</td>
+<td>留给 future use</td>
+</tr>
+<tr>
+<td>247</td>
+<td>same_locals_1_stack_item_frame_extended</td>
+<td>offset_delta 由后续 u2 指定</td>
+</tr>
+<tr>
+<td>248-250</td>
+<td>chop_frame</td>
+<td>offset_delta &#x3D; 251 - frame_type，局部变量表裁剪了 k 个槽位</td>
+</tr>
+<tr>
+<td>251</td>
+<td>same_frame_extended</td>
+<td>offset_delta 由后续 u2 指定</td>
+</tr>
+<tr>
+<td>252-254</td>
+<td>append_frame</td>
+<td>offset_delta &#x3D; frame_type - 251，局部变量表追加了 k 个类型</td>
+</tr>
+<tr>
+<td>255</td>
+<td>full_frame</td>
+<td>完整描述 offset_delta、所有局部变量类型和所有栈类型</td>
+</tr>
+</tbody></table>
+<p><strong>验证类型（verification_type_info）编码：</strong></p>
+<table>
+<thead>
+<tr>
+<th>tag</th>
+<th>类型</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>Top（无类型，用于 long&#x2F;double 占用的第二个槽位）</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Integer</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Float</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Double</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Long</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Null</td>
+</tr>
+<tr>
+<td>6</td>
+<td>UninitializedThis</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Object（后跟 u2 指向 CONSTANT_Class）</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Uninitialized（后跟 u2 offset 指向创建该对象的 new 指令）</td>
+</tr>
+</tbody></table>
+<p>StackMapTable 的存在使得现代 JVM（包括 ART）可以在类加载时以 O(n) 的复杂度完成类型验证，而不需要回溯搜索控制流图。这是 Java 启动时间优化的关键组成部分。</p>
+<h2 id="十一、ART-中的字节码执行优化"><a href="#十一、ART-中的字节码执行优化" class="headerlink" title="十一、ART 中的字节码执行优化"></a>十一、ART 中的字节码执行优化</h2><h3 id="11-1-Quickening（快速化）"><a href="#11-1-Quickening（快速化）" class="headerlink" title="11.1 Quickening（快速化）"></a>11.1 Quickening（快速化）</h3><p>ART 在运行时会对 DEX 字节码进行 quickening——将某些指令替换为优化变体。例如：</p>
+<ul>
+<li><code>invoke-virtual</code> → <code>invoke-virtual-quick</code>：替换时已经在操作数中嵌入了 vtable 索引，避免了常量池解析。</li>
+<li><code>iget</code> &#x2F; <code>iput</code> → <code>iget-quick</code> &#x2F; <code>iput-quick</code>：操作数直接变成了字段字节偏移（而非常量池索引），避免了字段解析。</li>
+</ul>
+<p>这些 quickening 指令仅在内存中的 DEX 副本上修改（非持久化），并且仅在解释器模式下生效。当方法被 JIT 编译为本机代码后，quickening 的收益则被编译优化所替代。</p>
+<p><strong>Quickening 的执行时机：</strong> ART 解释器在首次执行到某条指令时执行 lazy resolution（懒解析），解析成功后将指令原地替换为 quickened 版本。这种”首次慢、后续快”的策略在大多数应用场景中很有效——因为大部分方法会被调用多次。</p>
+<h3 id="11-2-JIT-编译优化"><a href="#11-2-JIT-编译优化" class="headerlink" title="11.2 JIT 编译优化"></a>11.2 JIT 编译优化</h3><p>ART 的 JIT 编译器（<code>art/compiler/jit/</code>）通过 profiling 识别热点方法。当某个方法被执行超过一定次数（约 500-1000 次，具体受运行时参数影响），JIT 将其编译为 ARM&#x2F;x86 本机代码。在编译过程中：</p>
+<ol>
+<li><code>ssa_builder.cc</code> 将栈式字节码转换为 HGraph（一种 SSA 形式的中间表示）。</li>
+<li>各种优化 pass 在 HGraph 上执行：常量折叠、死代码消除、内联、循环优化等。</li>
+<li><code>register_allocator.cc</code> 为 SSA 的虚拟寄存器分配合适的物理寄存器。</li>
+<li><code>code_generator_arm64.cc</code>（或对应的架构模块）生成本机汇编代码。</li>
+</ol>
+<p>栈式字节码在这个 pipeline 中只是一个”传输格式”——一旦进入优化阶段，栈的概念就被 SSA 形式完全取代。</p>
+<h2 id="十二、常量池：字节码的符号引用枢纽"><a href="#十二、常量池：字节码的符号引用枢纽" class="headerlink" title="十二、常量池：字节码的符号引用枢纽"></a>十二、常量池：字节码的符号引用枢纽</h2><p>常量池（Constant Pool）是 class 文件中最重要的数据结构之一，位于紧随版本号之后，由 <code>CONSTANT_Utf8_info</code>、<code>CONSTANT_Class_info</code>、<code>CONSTANT_Fieldref_info</code>、<code>CONSTANT_Methodref_info</code>、<code>CONSTANT_String_info</code> 等 17 种（Java SE 17 新增 <code>CONSTANT_Dynamic_info</code>）表项组成。</p>
+<p>以 <code>getstatic #5</code> 为例，#5 指向常量池中第 5 项，它是一个 <code>CONSTANT_Fieldref_info</code>，包含 <code>class_index</code>（指向一个 <code>CONSTANT_Class_info</code>）和 <code>name_and_type_index</code>（指向一个 <code>CONSTANT_NameAndType_info</code>）。最终可以解析出”某个类的某个字段”。这个解析过程在 ART 中由 <code>art/runtime/class_linker.cc</code> 中的 <code>ResolveFieldJLS</code> 和 <code>ResolveMethod</code> 等方法完成，涉及类加载、链接和初始化。</p>
+<p>常量池的存在使得字节码指令可以保持紧凑：指令本身只携带索引号而非完整字符串，大大减少字节码的体积。此外，常量池的符号引用延迟解析（lazy resolution）特性允许类在首次使用时才真正链接，这是 JVM 动态性的基石之一。</p>
+<p>在具体的 class 文件格式层面，常量池项的描述符（descriptor）遵循严格的编码规则。例如方法 <code>Object foo(int, String[])</code> 的描述符为 <code>(I[Ljava/lang/String;)Ljava/lang/Object;</code>。解析描述符的代码在 ART 的 <code>art/runtime/mirror/class.cc</code> 中，<code>ArtField::IsPrimitiveType</code> 等函数用于判断字段是否为基本类型。</p>
+<h2 id="十三、实战：从-Java-源码到字节码的完整解读"><a href="#十三、实战：从-Java-源码到字节码的完整解读" class="headerlink" title="十三、实战：从 Java 源码到字节码的完整解读"></a>十三、实战：从 Java 源码到字节码的完整解读</h2><p>以下是一个包含多种指令的 Java 类：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BytecodeDemo</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">TAG</span> <span class="operator">=</span> <span class="string">&quot;Demo&quot;</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">greet</span><span class="params">(String name, <span class="type">int</span> times)</span> &#123;</span><br><span class="line">        <span class="type">StringBuilder</span> <span class="variable">sb</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; times; i++) &#123;</span><br><span class="line">            sb.append(<span class="string">&quot;Hello &quot;</span>).append(name).append(<span class="string">&quot;!&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> sb.toString();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>执行 <code>javac BytecodeDemo.java &amp;&amp; javap -c -v BytecodeDemo</code> 得到关键字节码（greet 方法）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public static java.lang.String greet(java.lang.String, int);</span><br><span class="line">  descriptor: (Ljava/lang/String;I)Ljava/lang/String;</span><br><span class="line">  Code:</span><br><span class="line">    stack=2, locals=4, args_size=2</span><br><span class="line">       0: new           #2    // class StringBuilder</span><br><span class="line">       3: dup</span><br><span class="line">       4: invokespecial #3    // StringBuilder.&lt;init&gt;</span><br><span class="line">       7: astore_2</span><br><span class="line">       8: iconst_0</span><br><span class="line">       9: istore_3</span><br><span class="line">      10: iload_3</span><br><span class="line">      11: iload_1</span><br><span class="line">      12: if_icmpge     36</span><br><span class="line">      15: aload_2</span><br><span class="line">      16: ldc           #4    // String &quot;Hello &quot;</span><br><span class="line">      18: invokevirtual #5    // StringBuilder.append</span><br><span class="line">      21: aload_0</span><br><span class="line">      22: invokevirtual #5</span><br><span class="line">      25: ldc           #6    // String &quot;!&quot;</span><br><span class="line">      27: invokevirtual #5</span><br><span class="line">      30: pop</span><br><span class="line">      31: iinc          3, 1</span><br><span class="line">      34: goto          10</span><br><span class="line">      36: aload_2</span><br><span class="line">      37: invokevirtual #7    // StringBuilder.toString</span><br><span class="line">      40: areturn</span><br></pre></td></tr></table></figure>
+
+<p>逐段分析：</p>
+<ul>
+<li><strong>偏移 0-7</strong>：<code>new</code> + <code>dup</code> + <code>invokespecial</code> 的标准对象创建模式。<code>new #2</code> 在堆上分配 StringBuilder 对象，<code>dup</code> 复制引用，<code>invokespecial #3</code> 调用 <code>&lt;init&gt;</code> 构造方法。</li>
+<li><strong>偏移 8-9</strong>：<code>iconst_0</code> + <code>istore_3</code> 初始化 for 循环变量 i 为 0。槽位 0 是 name（参数），槽位 1 是 times（参数），槽位 2 是 sb（局部变量），槽位 3 是 i（局部变量）。</li>
+<li><strong>偏移 10-12</strong>：循环条件判断。<code>iload_3</code> 加载 i，<code>iload_1</code> 加载 times，<code>if_icmpge</code> 比较（如果 i &gt;&#x3D; times 则跳转到偏移 36 即返回）。</li>
+<li><strong>偏移 15-30</strong>：循环体。链式调用 <code>sb.append(&quot;Hello &quot;).append(name).append(&quot;!&quot;)</code>。每次 <code>invokevirtual #5</code> 后栈顶都留下一个 StringBuilder 引用（因为 append 返回 this），最后的 <code>pop</code> 丢弃不再需要的引用。</li>
+<li><strong>偏移 31-34</strong>：<code>iinc 3, 1</code> 将局部变量 3（i）增加 1，然后 <code>goto 10</code> 回到循环条件判断处。</li>
+<li><strong>偏移 36-40</strong>：加载 sb 引用，调用 toString()，返回结果。</li>
+</ul>
+<p>从这个例子可以清晰看到操作数栈的工作方式：每次方法调用前将参数和接收者压栈，调用后结果留在栈顶，中间不需要显式管理临时变量的生命周期——这是栈式架构最大的简洁性优势。</p>
+<h2 id="十四、实战二：复杂控制流示例"><a href="#十四、实战二：复杂控制流示例" class="headerlink" title="十四、实战二：复杂控制流示例"></a>十四、实战二：复杂控制流示例</h2><p>以下示例展示 tableswitch 和 lookupswitch 的差异：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SwitchDemo</span> &#123;</span><br><span class="line">    <span class="comment">// case 值连续：1, 2, 3, 4, 5 → tableswitch</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">denseSwitch</span><span class="params">(<span class="type">int</span> n)</span> &#123;</span><br><span class="line">        <span class="keyword">switch</span> (n) &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">1</span>: <span class="keyword">return</span> <span class="string">&quot;One&quot;</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">2</span>: <span class="keyword">return</span> <span class="string">&quot;Two&quot;</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">3</span>: <span class="keyword">return</span> <span class="string">&quot;Three&quot;</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">4</span>: <span class="keyword">return</span> <span class="string">&quot;Four&quot;</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">5</span>: <span class="keyword">return</span> <span class="string">&quot;Five&quot;</span>;</span><br><span class="line">            <span class="keyword">default</span>: <span class="keyword">return</span> <span class="string">&quot;Other&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// case 值稀疏：1, 100, 1000 → lookupswitch</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">sparseSwitch</span><span class="params">(<span class="type">int</span> n)</span> &#123;</span><br><span class="line">        <span class="keyword">switch</span> (n) &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">1</span>:    <span class="keyword">return</span> <span class="string">&quot;One&quot;</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">100</span>:  <span class="keyword">return</span> <span class="string">&quot;Hundred&quot;</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">1000</span>: <span class="keyword">return</span> <span class="string">&quot;Thousand&quot;</span>;</span><br><span class="line">            <span class="keyword">default</span>:   <span class="keyword">return</span> <span class="string">&quot;Other&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译后 denseSwitch (tableswitch) 的字节码：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"> 0: iload_0</span><br><span class="line"> 1: tableswitch   &#123;</span><br><span class="line">         1: 28</span><br><span class="line">         2: 32</span><br><span class="line">         3: 36</span><br><span class="line">         4: 40</span><br><span class="line">         5: 44</span><br><span class="line">     default: 48</span><br><span class="line"> &#125;</span><br><span class="line">28: ldc #2  // String &quot;One&quot;</span><br><span class="line">30: areturn</span><br><span class="line">32: ldc #3  // String &quot;Two&quot;</span><br><span class="line">34: areturn</span><br><span class="line">36: ldc #4  // String &quot;Three&quot;</span><br><span class="line">38: areturn</span><br><span class="line">40: ldc #5  // String &quot;Four&quot;</span><br><span class="line">42: areturn</span><br><span class="line">44: ldc #6  // String &quot;Five&quot;</span><br><span class="line">46: areturn</span><br><span class="line">48: ldc #7  // String &quot;Other&quot;</span><br><span class="line">50: areturn</span><br></pre></td></tr></table></figure>
+
+<p>sparseSwitch (lookupswitch) 的字节码：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"> 0: iload_0</span><br><span class="line"> 1: lookupswitch  &#123;</span><br><span class="line">         1: 28</span><br><span class="line">       100: 32</span><br><span class="line">      1000: 36</span><br><span class="line">     default: 40</span><br><span class="line"> &#125;</span><br><span class="line">28: ldc #2  // String &quot;One&quot;</span><br><span class="line">30: areturn</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>当 n&#x3D;3 时，tableswitch 直接计算 offset &#x3D; jump_offsets[3 - 1] &#x3D; jump_offsets[2] → O(1)；lookupswitch 在 [1, 100, 1000] 中二分搜索 3 → 未找到 → default → O(log n)。对于更大的 switch（如十数个 case），tableswitch 的优势更加明显。</p>
+<hr>
+<h2 id="面试问答"><a href="#面试问答" class="headerlink" title="面试问答"></a>面试问答</h2><p><strong>Q1：JVM 为什么采用栈式架构而不是寄存器架构？</strong></p>
+<p>A：核心原因是平台无关性。寄存器架构的指令需要引用具体寄存器编号，如果字节码直接指定寄存器，则从字节码到不同 CPU 架构（x86&#x2F;ARM&#x2F;RISC-V）的映射将极其复杂。栈式架构通过抽象的操作数栈隐藏了寄存器细节，JIT 编译器在运行时根据目标架构进行寄存器分配。此外，栈式指令编码紧凑（大部分指令不需要操作数字段），生成的 class 文件体积更小。在 ART 的 optimizing compiler 中，栈式字节码首先转换为 HGraph（源码 <code>art/compiler/optimizing/ssa_builder.cc</code>），然后通过 SSA 构建和寄存器分配（<code>art/compiler/optimizing/register_allocator.cc</code>）映射到物理寄存器。DEX 格式虽然改用寄存器式指令集，但它是在 class 文件生成之后由 d8 编译工具转换的——这相当于把”从栈式到寄存器的转换”从 JIT 阶段提前到了编译期，使得移动端在加载时免去了这一转换开销。</p>
+<p><strong>Q2：<code>invokevirtual</code> 和 <code>invokespecial</code> 的本质区别是什么？在 ART 中如何实现？</strong></p>
+<p>A：<code>invokevirtual</code> 是虚方法调用，根据接收者对象的实际运行时类型进行动态分派，需要查 vtable。<code>invokespecial</code> 是精确调用，用于构造方法（<code>&lt;init&gt;</code>）、私有方法和父类方法，采用静态绑定。在 ART 中，vtable 由 <code>ClassLinker::LinkVirtualMethods</code>（<code>art/runtime/class_linker.cc</code>）在类链接阶段构建，每个类持有一份虚方法表，记录了继承和重写关系。调用 <code>invokevirtual</code> 时，通过对象头的 class 指针找到对应类的 vtable，按方法索引查表得到具体 <code>ArtMethod</code>，然后执行。而 <code>invokespecial</code> 直接使用字节码中的常量池引用解析出目标方法，不查 vtable。</p>
+<p><strong>Q3：常量池中的符号引用是如何解析为直接引用的？</strong></p>
+<p>A：这个过程称为常量池解析（constant pool resolution），在 ART 中由 <code>ClassLinker</code> 负责。以 <code>CONSTANT_Methodref_info</code> 为例：首先通过 class_index 找到目标类名，加载该类（如果尚未加载）；然后通过 name_and_type_index 找到方法名和描述符；最后在目标类及其父类的 vtable 中匹配方法。首次解析成功后，ART 会将该常量池槽位替换为解析后的直接引用（如 <code>ArtMethod*</code> 指针），实现所谓的”常量池缓存”（quickening），后续执行直接使用缓存结果，避免重复解析。详细代码见 <code>art/runtime/class_linker.cc</code> 的 <code>ResolveMethod</code> 系列函数。</p>
+<p><strong>Q4：字节码中的 <code>stack</code> 属性（如 <code>stack=2</code>）是如何确定的？为什么需要它？</strong></p>
+<p>A：<code>stack</code>（即 max_stack）表示方法执行过程中操作数栈的最大深度（以字为单位），由编译器在栈映射分析（stack map analysis）阶段计算得出。javac 的 <code>com.sun.tools.javac.jvm.Gen</code> 类在生成字节码的同时跟踪每种可能的执行路径上的栈深度，取最大值。这个值是 class 文件验证（verification）的关键输入：JVM 在加载类时会进行字节码验证（<code>art/runtime/verifier/</code>），检查每条指令前后的栈深度是否一致，确保字节码不会导致栈溢出或栈下溢（underflow），从而保证类型安全和内存安全。在 StackMapTable 的配合下，该验证可以高效完成（O(n) 复杂度）。</p>
+<p><strong>Q5：tableswitch 和 lookupswitch 有什么区别？编译器按什么标准选择？</strong></p>
+<p>A：tableswitch 通过跳转表实现 O(1) 分派，适用于 case 值连续（或接近连续）的场景。它需要 high - low + 1 个 4 字节的跳转偏移量，当区间很大但有效 case 很少时（如 case 1, case 10000），会产生大量冗余表项（未填充区域都指向 default）。lookupswitch 通过二分查找实现 O(log n) 分派，每个 case 存储匹配值 + 偏移量对（8 字节），适用于稀疏 case。javac 的选择策略基于”填充率”：如果 (high - low + 1) &#x2F; case_count &lt;&#x3D; 3（大致阈值），即空槽不超过有效 case 的 2 倍，使用 tableswitch，否则使用 lookupswitch。这个阈值在 javac 源码 <code>com.sun.tools.javac.jvm.Gen</code> 中实现。</p>
+<p><strong>Q6：什么是 ART 的 quickening？它的作用是什么？</strong></p>
+<p>A：ART 的 quickening 是在运行时对 DEX 字节码执行的一种轻量优化。当解释器首次执行到某条需要符号引用的指令（如 invoke-virtual）时，它会解析常量池中的符号引用（查找目标类和方法），然后将解析结果（如 vtable 索引）嵌入指令的操作数中，并将指令替换为对应的 quick 变体（如 invoke-virtual-quick）。后续执行该指令时，直接使用嵌入的索引值，不再重复解析常量池。这种”首次慢、后续快”的 lazy optimization 策略，使得 ART 在保持解释器启动速度的同时，在热身阶段逐步达到较高的稳态性能。Quickening 只修改内存中的 DEX 副本，不修改磁盘文件。</p>
+<p><strong>Q7：StackMapTable 的作用是什么？为什么它对启动性能很重要？</strong></p>
+<p>A：StackMapTable 是方法 Code 属性的子属性，记录了方法中跳转目标和异常处理器入口处的操作数栈和局部变量类型快照。它用于”类型检查验证”——替代了 Java 6 之前使用的”类型推导验证”。类型推导验证需要在类加载时对方法的控制流图进行完整的数据流分析来推断每个位置的类型状态，开销很大（对于大型方法可能导致类加载显著变慢）。StackMapTable 将类型状态以紧凑的帧编码预先存储在 class 文件中，验证器只需逐帧检查一致性即可，将验证复杂度从控制流分析降为简单的帧匹配，显著加快了类加载速度。这是 Java 6&#x2F;7 在类加载和启动性能方面取得重大进展的关键技术之一。</p>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%AD%97%E8%8A%82%E7%A0%81/">字节码    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/240.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/03/10/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E4%B8%89%E7%AF%87%E3%80%81Lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%8E%9F%E7%90%86/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/267.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【深入理解JVM字节码】第三篇、Lambda表达式原理</span></div></a></div><div class="next-post pull_right"><a href="/2021/03/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E4%B8%80%E7%AF%87%E3%80%81class%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/247.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【深入理解JVM字节码】第一篇、class文件结构</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2022/07/05/重拾Android-【全埋点方案系列】AppClick全埋点之ASM处理/" title="【全埋点方案系列】AppClick全埋点之ASM处理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【全埋点方案系列】AppClick全埋点之ASM处理</div></a></div><div class="relatedPosts_item"><a href="/2021/06/01/高级Android-【逆向安全技术-基础篇】dex文件格式解析/" title="【逆向安全技术-基础篇】dex文件格式解析"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【逆向安全技术-基础篇】dex文件格式解析</div></a></div><div class="relatedPosts_item"><a href="/2021/05/01/重拾Android-【深入理解JVM字节码】第十三篇、应用破解Vs防破解/" title="【深入理解JVM字节码】第十三篇、应用破解Vs防破解"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/253.jpg"><div class="relatedPosts_title">【深入理解JVM字节码】第十三篇、应用破解Vs防破解</div></a></div><div class="relatedPosts_item"><a href="/2021/04/20/重拾Android-【深入理解JVM字节码】第十一篇、JSR-269插件化注解处理原理/" title="【深入理解JVM字节码】第十一篇、JSR-269插件化注解处理原理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/261.jpg"><div class="relatedPosts_title">【深入理解JVM字节码】第十一篇、JSR-269插件化注解处理原理</div></a></div><div class="relatedPosts_item"><a href="/2021/04/05/重拾Android-【深入理解JVM字节码】第八篇、Kotlin字节码原理/" title="【深入理解JVM字节码】第八篇、Kotlin字节码原理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/265.jpg"><div class="relatedPosts_title">【深入理解JVM字节码】第八篇、Kotlin字节码原理</div></a></div><div class="relatedPosts_item"><a href="/2021/03/25/重拾Android-【深入理解JVM字节码】第六篇、反射实现原理/" title="【深入理解JVM字节码】第六篇、反射实现原理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/270.jpg"><div class="relatedPosts_title">【深入理解JVM字节码】第六篇、反射实现原理</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/240.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

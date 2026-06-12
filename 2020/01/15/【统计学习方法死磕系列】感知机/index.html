@@ -1,0 +1,596 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【统计学习方法死磕系列】感知机 | ONE·PIECE</title><meta name="description" content="【统计学习方法死磕系列】感知机"><meta name="keywords" content="读书笔记"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【统计学习方法死磕系列】感知机"><meta name="twitter:description" content="【统计学习方法死磕系列】感知机"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nareeta-martin-wM59pRQYbhs-unsplash.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【统计学习方法死磕系列】感知机"><meta property="og:url" content="http://tufusi.com/2020/01/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%84%9F%E7%9F%A5%E6%9C%BA/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【统计学习方法死磕系列】感知机"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nareeta-martin-wM59pRQYbhs-unsplash.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2020/01/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%84%9F%E7%9F%A5%E6%9C%BA/"><link rel="prev" title="【Python系列】Numpy使用详解" href="http://tufusi.com/2020/02/01/%E3%80%90Python%E7%B3%BB%E5%88%97%E3%80%91Numpy%E4%BD%BF%E7%94%A8%E8%AF%A6%E8%A7%A3/"><link rel="next" title="【统计学习方法死磕系列】写在19年尾巴" href="http://tufusi.com/2019/12/28/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E5%86%99%E5%9C%A819%E5%B9%B4%E5%B0%BE%E5%B7%B4/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E6%A8%A1%E5%9E%8B%E5%BC%95%E5%85%A5"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">模型引入</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E6%84%9F%E7%9F%A5%E6%9C%BA%E7%9A%84%E6%95%B0%E5%AD%A6%E5%BD%A2%E5%BC%8F"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">一、感知机的数学形式</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-%E5%AE%9A%E4%B9%89"><span class="toc_mobile_items-number">1.1.1.</span> <span class="toc_mobile_items-text">1.1 定义</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-2-%E5%87%A0%E4%BD%95%E8%A7%A3%E9%87%8A"><span class="toc_mobile_items-number">1.1.2.</span> <span class="toc_mobile_items-text">1.2 几何解释</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-3-%E6%95%B0%E6%8D%AE%E9%9B%86%E7%BA%BF%E6%80%A7%E5%8F%AF%E5%88%86"><span class="toc_mobile_items-number">1.1.3.</span> <span class="toc_mobile_items-text">1.3 数据集线性可分</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81%E6%84%9F%E7%9F%A5%E6%9C%BA%E5%AD%A6%E4%B9%A0%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">二、感知机学习策略</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0%E7%9A%84%E6%8E%A8%E5%AF%BC"><span class="toc_mobile_items-number">1.2.1.</span> <span class="toc_mobile_items-text">2.1 损失函数的推导</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0%E7%9A%84%E6%80%A7%E8%B4%A8"><span class="toc_mobile_items-number">1.2.2.</span> <span class="toc_mobile_items-text">2.2 损失函数的性质</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81%E6%84%9F%E7%9F%A5%E6%9C%BA%E5%AD%A6%E4%B9%A0%E7%AE%97%E6%B3%95%EF%BC%9A%E9%9A%8F%E6%9C%BA%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D%EF%BC%88SGD%EF%BC%89"><span class="toc_mobile_items-number">1.3.</span> <span class="toc_mobile_items-text">三、感知机学习算法：随机梯度下降（SGD）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E6%A2%AF%E5%BA%A6%E8%AE%A1%E7%AE%97"><span class="toc_mobile_items-number">1.3.1.</span> <span class="toc_mobile_items-text">3.1 梯度计算</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B"><span class="toc_mobile_items-number">1.3.2.</span> <span class="toc_mobile_items-text">3.2 算法流程</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-%E6%9B%B4%E6%96%B0%E8%A7%84%E5%88%99%E7%9A%84%E7%9B%B4%E8%A7%82%E7%90%86%E8%A7%A3"><span class="toc_mobile_items-number">1.3.3.</span> <span class="toc_mobile_items-text">3.3 更新规则的直观理解</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">1.3.4.</span> <span class="toc_mobile_items-text">3.4 从零实现</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81Novikoff-%E5%AE%9A%E7%90%86%EF%BC%9A%E6%94%B6%E6%95%9B%E6%80%A7%E8%AF%81%E6%98%8E"><span class="toc_mobile_items-number">1.4.</span> <span class="toc_mobile_items-text">四、Novikoff 定理：收敛性证明</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E5%AE%9A%E7%90%86%E9%99%88%E8%BF%B0"><span class="toc_mobile_items-number">1.4.1.</span> <span class="toc_mobile_items-text">4.1 定理陈述</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E8%AF%81%E6%98%8E"><span class="toc_mobile_items-number">1.4.2.</span> <span class="toc_mobile_items-text">4.2 证明</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-%E5%AE%9A%E7%90%86%E7%9A%84%E6%84%8F%E4%B9%89"><span class="toc_mobile_items-number">1.4.3.</span> <span class="toc_mobile_items-text">4.3 定理的意义</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81%E6%84%9F%E7%9F%A5%E6%9C%BA%E7%9A%84%E5%AF%B9%E5%81%B6%E5%BD%A2%E5%BC%8F"><span class="toc_mobile_items-number">1.5.</span> <span class="toc_mobile_items-text">五、感知机的对偶形式</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E5%AF%B9%E5%81%B6%E5%BD%A2%E5%BC%8F%E7%9A%84%E5%8A%A8%E6%9C%BA"><span class="toc_mobile_items-number">1.5.1.</span> <span class="toc_mobile_items-text">5.1 对偶形式的动机</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-%E5%AF%B9%E5%81%B6%E5%BD%A2%E5%BC%8F%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">1.5.2.</span> <span class="toc_mobile_items-text">5.2 对偶形式算法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-Gram-%E7%9F%A9%E9%98%B5"><span class="toc_mobile_items-number">1.5.3.</span> <span class="toc_mobile_items-text">5.3 Gram 矩阵</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-4-%E5%AF%B9%E5%81%B6%E5%BD%A2%E5%BC%8F%E7%9A%84-Python-%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">1.5.4.</span> <span class="toc_mobile_items-text">5.4 对偶形式的 Python 实现</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E6%A0%B8%E6%84%9F%E7%9F%A5%E6%9C%BA"><span class="toc_mobile_items-number">1.6.</span> <span class="toc_mobile_items-text">六、核感知机</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E6%A0%B8%E5%87%BD%E6%95%B0"><span class="toc_mobile_items-number">1.6.1.</span> <span class="toc_mobile_items-text">6.1 核函数</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-%E6%A0%B8%E6%84%9F%E7%9F%A5%E6%9C%BA%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">1.6.2.</span> <span class="toc_mobile_items-text">6.2 核感知机实现</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81XOR-%E9%97%AE%E9%A2%98%E4%B8%8E%E6%84%9F%E7%9F%A5%E6%9C%BA%E7%9A%84%E5%B1%80%E9%99%90"><span class="toc_mobile_items-number">1.7.</span> <span class="toc_mobile_items-text">七、XOR 问题与感知机的局限</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-XOR-%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">1.7.1.</span> <span class="toc_mobile_items-text">7.1 XOR 问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc_mobile_items-number">1.7.2.</span> <span class="toc_mobile_items-text">7.2 解决方案</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81%E4%BB%8E%E6%84%9F%E7%9F%A5%E6%9C%BA%E5%88%B0%E7%8E%B0%E4%BB%A3%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C"><span class="toc_mobile_items-number">1.8.</span> <span class="toc_mobile_items-text">八、从感知机到现代神经网络</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E7%AE%97%E6%B3%95%E5%8E%9F%E7%90%86%E5%9B%9E%E9%A1%BE"><span class="toc_mobile_items-number">1.9.</span> <span class="toc_mobile_items-text">九、算法原理回顾</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">1.10.</span> <span class="toc_mobile_items-text">十、面试高频问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc_mobile_items-number">1.11.</span> <span class="toc_mobile_items-text">十一、总结</span></a></li></ol></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A8%A1%E5%9E%8B%E5%BC%95%E5%85%A5"><span class="toc-number">1.</span> <span class="toc-text">模型引入</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%84%9F%E7%9F%A5%E6%9C%BA%E7%9A%84%E6%95%B0%E5%AD%A6%E5%BD%A2%E5%BC%8F"><span class="toc-number">1.1.</span> <span class="toc-text">一、感知机的数学形式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E5%AE%9A%E4%B9%89"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.1 定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E5%87%A0%E4%BD%95%E8%A7%A3%E9%87%8A"><span class="toc-number">1.1.2.</span> <span class="toc-text">1.2 几何解释</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E6%95%B0%E6%8D%AE%E9%9B%86%E7%BA%BF%E6%80%A7%E5%8F%AF%E5%88%86"><span class="toc-number">1.1.3.</span> <span class="toc-text">1.3 数据集线性可分</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%84%9F%E7%9F%A5%E6%9C%BA%E5%AD%A6%E4%B9%A0%E7%AD%96%E7%95%A5"><span class="toc-number">1.2.</span> <span class="toc-text">二、感知机学习策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0%E7%9A%84%E6%8E%A8%E5%AF%BC"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1 损失函数的推导</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0%E7%9A%84%E6%80%A7%E8%B4%A8"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2 损失函数的性质</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%84%9F%E7%9F%A5%E6%9C%BA%E5%AD%A6%E4%B9%A0%E7%AE%97%E6%B3%95%EF%BC%9A%E9%9A%8F%E6%9C%BA%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D%EF%BC%88SGD%EF%BC%89"><span class="toc-number">1.3.</span> <span class="toc-text">三、感知机学习算法：随机梯度下降（SGD）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%A2%AF%E5%BA%A6%E8%AE%A1%E7%AE%97"><span class="toc-number">1.3.1.</span> <span class="toc-text">3.1 梯度计算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B"><span class="toc-number">1.3.2.</span> <span class="toc-text">3.2 算法流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%9B%B4%E6%96%B0%E8%A7%84%E5%88%99%E7%9A%84%E7%9B%B4%E8%A7%82%E7%90%86%E8%A7%A3"><span class="toc-number">1.3.3.</span> <span class="toc-text">3.3 更新规则的直观理解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.3.4.</span> <span class="toc-text">3.4 从零实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Novikoff-%E5%AE%9A%E7%90%86%EF%BC%9A%E6%94%B6%E6%95%9B%E6%80%A7%E8%AF%81%E6%98%8E"><span class="toc-number">1.4.</span> <span class="toc-text">四、Novikoff 定理：收敛性证明</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%AE%9A%E7%90%86%E9%99%88%E8%BF%B0"><span class="toc-number">1.4.1.</span> <span class="toc-text">4.1 定理陈述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E8%AF%81%E6%98%8E"><span class="toc-number">1.4.2.</span> <span class="toc-text">4.2 证明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E5%AE%9A%E7%90%86%E7%9A%84%E6%84%8F%E4%B9%89"><span class="toc-number">1.4.3.</span> <span class="toc-text">4.3 定理的意义</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%84%9F%E7%9F%A5%E6%9C%BA%E7%9A%84%E5%AF%B9%E5%81%B6%E5%BD%A2%E5%BC%8F"><span class="toc-number">1.5.</span> <span class="toc-text">五、感知机的对偶形式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E5%AF%B9%E5%81%B6%E5%BD%A2%E5%BC%8F%E7%9A%84%E5%8A%A8%E6%9C%BA"><span class="toc-number">1.5.1.</span> <span class="toc-text">5.1 对偶形式的动机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E5%AF%B9%E5%81%B6%E5%BD%A2%E5%BC%8F%E7%AE%97%E6%B3%95"><span class="toc-number">1.5.2.</span> <span class="toc-text">5.2 对偶形式算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-Gram-%E7%9F%A9%E9%98%B5"><span class="toc-number">1.5.3.</span> <span class="toc-text">5.3 Gram 矩阵</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E5%AF%B9%E5%81%B6%E5%BD%A2%E5%BC%8F%E7%9A%84-Python-%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.5.4.</span> <span class="toc-text">5.4 对偶形式的 Python 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E6%A0%B8%E6%84%9F%E7%9F%A5%E6%9C%BA"><span class="toc-number">1.6.</span> <span class="toc-text">六、核感知机</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E6%A0%B8%E5%87%BD%E6%95%B0"><span class="toc-number">1.6.1.</span> <span class="toc-text">6.1 核函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E6%A0%B8%E6%84%9F%E7%9F%A5%E6%9C%BA%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.6.2.</span> <span class="toc-text">6.2 核感知机实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81XOR-%E9%97%AE%E9%A2%98%E4%B8%8E%E6%84%9F%E7%9F%A5%E6%9C%BA%E7%9A%84%E5%B1%80%E9%99%90"><span class="toc-number">1.7.</span> <span class="toc-text">七、XOR 问题与感知机的局限</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-XOR-%E9%97%AE%E9%A2%98"><span class="toc-number">1.7.1.</span> <span class="toc-text">7.1 XOR 问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">1.7.2.</span> <span class="toc-text">7.2 解决方案</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E4%BB%8E%E6%84%9F%E7%9F%A5%E6%9C%BA%E5%88%B0%E7%8E%B0%E4%BB%A3%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C"><span class="toc-number">1.8.</span> <span class="toc-text">八、从感知机到现代神经网络</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E7%AE%97%E6%B3%95%E5%8E%9F%E7%90%86%E5%9B%9E%E9%A1%BE"><span class="toc-number">1.9.</span> <span class="toc-text">九、算法原理回顾</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E9%A2%98"><span class="toc-number">1.10.</span> <span class="toc-text">十、面试高频问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-number">1.11.</span> <span class="toc-text">十一、总结</span></a></li></ol></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nareeta-martin-wM59pRQYbhs-unsplash.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【统计学习方法死磕系列】感知机</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2020-01-15<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0/">统计学习</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">6.8k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 25 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>感知是人类的一种本能，更确切的说是一切对外界有意识的动物的本能。它是对外界信息作出察觉、感觉、注意、知觉的一系列过程。因此,『感知机（Perceptron）』即是会感知的机器，它是机器学习中最最基础的模型，我们可以把它叫做人工神经元，是神经网络（深度学习）的起源算法。感知机在上世纪5、60年代，由科学家Frank Rosenblatt在受到其他科学家学术成果启发上而提出发展起来的。</p>
+<p>如今，使用人工神经元的模型很常见，在许多有关神经网络的现代工作领域中，使用的主要神经元模型，其中之一的就是**$sigmoid$神经元**，在了解该神经元之前，先把聚焦点放在感知机上吧。</p>
+<h1 id="模型引入"><a href="#模型引入" class="headerlink" title="模型引入"></a>模型引入</h1><p>感知机作为单层神经网络，其模型引入最初是为解决是否线性可分问题而提出的，一个感知机接收若干个二进制流输入，经过隐藏层的处理，最后产生一个二进制的输出。大致如下所示：</p>
+<p><img alt="tikz0.png" data-src="https://i.loli.net/2019/12/26/n6rl5J9jDHkUZEv.png" class="lazyload"></p>
+<p>上图所示的感知机有三个输入，当然这个输入是任意的。Rosenblatt在这个模型上提出了一个条简单计算法则来计算输出值。即引入权重。通过权重来表示各自的输入对输出的重要程度。神经元输出值是二进制的，因此只会返回 0 或者 1 ，它的取值是由输入值加权和是否小于或者大于某个阈值来决定的。表示如下：</p>
+<p>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;$output &#x3D; \left{\begin{matrix}0<br> &amp; if&ensp;\sum_{j}w_jx_j \leq threshold<br> \1<br> &amp; if&ensp;\sum_{j}w_jx_j &gt; threshold<br>\end{matrix}\right.$</p>
+<p>以上就是感知机的基本数学模型。也可以这样理解，感知机就是一个通过权衡证据来做决定的机器。这里举一个简单的例子。假设周末你所在的城市即将举行环市马拉松比赛。你是马拉松热爱者，正在决定是否周末参加比赛。</p>
+<p>于是你可以通过以下三个因素来决定是否参加：</p>
+<blockquote>
+<p>1、周末我是否有空？</p>
+<p>2、周末天气好不好？</p>
+<p>3、有朋友跟我一起参加么？</p>
+</blockquote>
+<p>在不考虑权重情况下，我们有这三个输入变量，分别为 </p>
+<blockquote>
+<p>$x_1 &#x3D; { 有空：1; 没空：0 }$</p>
+<p>$x_2 &#x3D; { 天气好：1; 天气坏：0 }$</p>
+<p>$x_3 &#x3D; { 有朋友：1; 没朋友：0 }$</p>
+</blockquote>
+<p>现在假设，即使没有朋友去参加也不怎么影响你去参加马拉松（只因你是狂热爱好者），那么分配给第三个因素权重 $w_3$ &#x3D; 2，但是如果天气不好，连活动是否举办都受影响的话，就很无奈了，所以这里分配第二个因素权重 $w_2$ &#x3D; 6，然后对于周末有没有空，除去工作突遇重大安排都能抽出时间参加，给予权重 $w_1$ &#x3D; 2 影响也不是很大。最后，假设感知器的阈值为5.通过这些选择，感知机实现了所需的决策模型，天气好的时候输出为1，天气不好输出为0。无论是否有朋友一起参加，或者周末有其他事情安排，输出结果都一样，只会跟天气有关。(注：1 * 6 + 0 * 4 恒大于5)</p>
+<p>通过改变权重和阈值，我们可以得到很多不同的决策模型。比如我们的阈值设为3，那么感知机就会做出只有天气好的时候你才可以去参加马拉松，或者当有朋友一起参加，并且周末也有空，那么就会去参加比赛。也就是说，这其实是另一种决策模式了。降低阈值，意味着降低了参加马拉松比赛的阻拦因素了。</p>
+<p>显然，感知机并不是人类做出决策的一个完整模型。只是这个例子解释了感知机是如何通过权衡不同类型的证据来做出决定的。而一个复杂的感知器网络可以做出非常微妙的决定。见下图：</p>
+<p><img alt="tikz1.png" data-src="https://i.loli.net/2019/12/26/k5AJt4joElIyXgi.png" class="lazyload"></p>
+<p>在这个网络中，感知机的第一层 —— 通过权衡输入的证据，做出三个非常简单的决定。那么第二层的感知器呢？每一个感知器都是通过权衡第一层决策的结果来做决定的。这样，第二层的感知器可以在比第一层感知器更复杂、更抽象的层次上做出决定。第三层的感知器甚至可以做出更复杂的决定，依次递进，这样一个多层感知器网络就可以进行复杂的决策程序了。</p>
+<p>顺便说一下，当定义感知机时，我们说过的感知机只有一个输出。但在上面这样的感知器网络里，似乎有多个输出。实际上，这些仍然可以看做是单个输出。多个输出箭头仅仅是一种看起来比较分明的方式，用它来指示一个感知器的输出被用作其他几个感知器的输入。它比仅仅画一条输出线然后分割来的更为方便。</p>
+<p>接下来简化一下描述感知机的方式，条件 $\sum_{j} w_jx_j &gt; threshold$ 看起来比较繁琐，我们可以通过两个符号变化来简化它。第一个变化，使用点积来表示加权和 $\vec{w}⋅\vec{x} ≡ \sum_{j} w_jx_j$，$\vec{w}$ 和 $\vec{x}$分别表示权重向量的分量和输入；第二个变化是将阈值移到不等式的另一边，并将其替换为所谓的感知器偏差 $b ≡ 阈值$。也就是使用偏差而不是阈值。因此，感知机规则重写如下：</p>
+<p>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;$output &#x3D; \left{\begin{matrix}0<br> &amp; if&ensp;\vec{w}⋅\vec{x} + b \leq 0<br> \1<br> &amp; if&ensp;\vec{w}⋅\vec{x} + b &gt; 0<br>\end{matrix}\right.$</p>
+<p>很显然，对于一个有很大偏差的感知器，感知器越容易输出1，因此我们可以把偏差看作是感知器输出1的容易程度的度量。但其实偏差就是用来衡量感知器触发的难易程度的，但如果偏差非常小，可以想象，感知器就很难输出1。引入偏差只是我们描述感知机的一个小变化，后面也不再使用阈值来描述了，将直接使用偏差。</p>
+<p>上面我们一直将感知机描述为一种衡量证据以做出决定的方法。但其实它还有另一种用法，即我们可以使用感知机来计算我们通常认为是基础计算的基本逻辑函数，比如 与门（AND）、或门（OR）、与非门（AND NAND）。例如，假设我们有一个有两个输入的感知机，每个输入的权值均为-2，总体偏差为3，这时我们的感知机：</p>
+<p><img alt="tikz2.png" data-src="https://i.loli.net/2019/12/26/cuMvGe9IiAqBP38.png" class="lazyload"></p>
+<p>然后我们看到当输入00时，输出值为1（注：(−2) ∗ 0 + (−2) ∗ 0 + 3 &#x3D; 3 &gt; 0），类似的输入01和10产生的输出值同样是1，但是当输入11，却生成了0，如果对二进制计算熟悉的话，就能很明显的看出这实现了一个与非门（NAND）计算。</p>
+<p>NAND的例子表明我们可以使用感知器来计算简单的逻辑函数。事实上，我们可以使用感知器网络来计算任何逻辑函数。因为NAND门对于计算来说是通用的，也就是说，我们可以用与非门构建任何计算。例如，我们可以使用NAND门来构建一个两位元（$x_1$ 和 $x_2$）相加的电路，这就需要计算位和，即 $x_1⊕x_2$，以及一个进位，当 $x_1$ 和 $x_2$ 都是1时，进位为1，也即进位就是按位积 $x_1·x_2$，见下图：</p>
+<p><img alt="tikz3.png" data-src="https://i.loli.net/2019/12/26/92nuLrDvfwaT8ZB.png" class="lazyload"></p>
+<p>为了得到一个等效的感知机网络，我们将所有的NAND门替换为感知机的两个输入，每个输入的权值均设为-2，总体偏差为3。下图是最终的网络：</p>
+<p><img alt="tikz4.png" data-src="https://i.loli.net/2019/12/26/F1CzemjqlKhSMcE.png" class="lazyload"></p>
+<p>这个感知器网络一个值得注意的方面是，最左边的感知器的输出被用在了最下面感知器的两次输入了。当定义感知器模型时，我们并没有规定这种双输出到同一个地方是违规的。实际上，这并不重要。如果我们不希望出现这种情况，那么可以简单的将这两条线合并成一条，并将其权重由-2改成-4（这里是否等价可以尝试证明一下），而有了这个变化，现在网络看起来如下（注：未标记的权重均为-2，所有的偏差都等于3）：</p>
+<p><img alt="tikz5.png" data-src="https://i.loli.net/2019/12/26/hlgn2XBmTJWrDiQ.png" class="lazyload"></p>
+<p>到目前为止，我一直把像 $x_1$ 和 $x_2$ 这样的输入当作浮动在感知器网络左侧的变量。事实上，传统的做法是绘制一个额外的感知器层 —— 输入层 —— 来编码输入：</p>
+<p><img alt="tikz6.png" data-src="https://i.loli.net/2019/12/26/MqCKsQkFGYDP3gc.png" class="lazyload"></p>
+<p>这个符号表示输入感知机，我们有输出，但是没有输入，</p>
+<p><img alt="tikz7.png" data-src="https://i.loli.net/2019/12/26/At3ZMl2THRvsqCE.png" class="lazyload"></p>
+<p>这是一种速记法，但并不意味着这是一个没有输入的感知器。假设我们有一个没有输入的感知器，那么，$\sum_{j} w_jx_j$ 的加权和就会始终为0。因此，如果 $b &gt; 0$，感知器输出1；反之输出0。也就是说，感知器只输出一个固定的值，而不是期望的值（$x_1$）。所以最好的理解就是把输入的感知机想成根本不是感知机，而是一些特殊的单位，它们被简单地定义为想要输出的值，</p>
+<p>$x_1, x_2, \cdots$</p>
+<h2 id="一、感知机的数学形式"><a href="#一、感知机的数学形式" class="headerlink" title="一、感知机的数学形式"></a>一、感知机的数学形式</h2><h3 id="1-1-定义"><a href="#1-1-定义" class="headerlink" title="1.1 定义"></a>1.1 定义</h3><p>感知机（perceptron）是二类分类的<strong>线性分类模型</strong>，属于<strong>判别模型</strong>。其输入为实例的特征向量，输出为实例的类别，取值为 $+1$ 和 $-1$。</p>
+<p>从输入空间到输出空间的函数为：</p>
+<p>$$
+f(x) = \text{sign}(w \cdot x + b)
+$$</p>
+<p>其中：</p>
+<ul>
+<li>$w \in \mathbb{R}^n$：<strong>权值向量</strong>（weight vector）</li>
+<li>$b \in \mathbb{R}$：<strong>偏置</strong>（bias）</li>
+<li>$w \cdot x$：权值向量和特征向量的内积</li>
+<li>$\text{sign}$ 是符号函数：</li>
+</ul>
+<p>$$
+\text{sign}(z) = \begin{cases}
++1 & \text{if } z \geq 0 \\
+-1 & \text{if } z < 0
+\end{cases}
+$$</p>
+<h3 id="1-2-几何解释"><a href="#1-2-几何解释" class="headerlink" title="1.2 几何解释"></a>1.2 几何解释</h3><p>在特征空间 $\mathbb{R}^n$ 中，方程 $w \cdot x + b &#x3D; 0$ 定义了一个<strong>超平面</strong>（hyperplane），它将特征空间划分为两个半空间：</p>
+<ul>
+<li>超平面法向量为 $w$</li>
+<li>$w$ 指向的一侧为正类（$+1$）</li>
+<li>背向的一侧为负类（$-1$）</li>
+<li>$-\frac{b}{|w|}$ 是原点到超平面的距离</li>
+</ul>
+<h3 id="1-3-数据集线性可分"><a href="#1-3-数据集线性可分" class="headerlink" title="1.3 数据集线性可分"></a>1.3 数据集线性可分</h3><p>如果存在某个超平面 $w \cdot x + b &#x3D; 0$ 能够将数据集的正实例和负实例完全正确地分开，则称该数据集为<strong>线性可分数据集</strong>（linearly separable data set）。感知机算法只能处理线性可分的数据。</p>
+<h2 id="二、感知机学习策略"><a href="#二、感知机学习策略" class="headerlink" title="二、感知机学习策略"></a>二、感知机学习策略</h2><h3 id="2-1-损失函数的推导"><a href="#2-1-损失函数的推导" class="headerlink" title="2.1 损失函数的推导"></a>2.1 损失函数的推导</h3><p>感知机的学习目标：找到一个超平面，能正确划分所有训练样本。</p>
+<p>自然的想法是：<strong>最小化误分类点的总数</strong>。但这个损失函数不是 $w$ 和 $b$ 的连续可导函数，不便于优化。</p>
+<p>因此，感知机采用另一种损失函数：<strong>误分类点到超平面的总距离</strong>。</p>
+<p>对于任意一点 $x_i$，它到超平面的距离为：</p>
+<p>$$
+d_i = \frac{1}{\|w\|} |w \cdot x_i + b|
+$$</p>
+<p>对于误分类点 $(x_i, y_i)$，有：</p>
+<p>$$
+-y_i (w \cdot x_i + b) > 0
+$$</p>
+<p>这是因为：</p>
+<ul>
+<li>如果 $y_i &#x3D; +1$ 但 $w \cdot x_i + b &lt; 0$（被误分为负），则 $-y_i(w \cdot x_i + b) &#x3D; -(w \cdot x_i + b) &gt; 0$</li>
+<li>如果 $y_i &#x3D; -1$ 但 $w \cdot x_i + b \geq 0$（被误分为正），则 $-y_i(w \cdot x_i + b) &#x3D; +(w \cdot x_i + b) &gt; 0$</li>
+</ul>
+<p>因此，误分类点 $x_i$ 到超平面的距离可以统一写为：</p>
+<p>$$
+-\frac{1}{\|w\|} y_i (w \cdot x_i + b)
+$$</p>
+<p>忽略常数 $\frac{1}{|w|}$（它不影响梯度下降的方向），感知机的损失函数定义为：</p>
+<p>$$
+L(w, b) = -\sum_{x_i \in M} y_i (w \cdot x_i + b)
+$$</p>
+<p>其中 $M$ 是所有误分类点的集合。</p>
+<h3 id="2-2-损失函数的性质"><a href="#2-2-损失函数的性质" class="headerlink" title="2.2 损失函数的性质"></a>2.2 损失函数的性质</h3><ul>
+<li><strong>非负性</strong>：$L(w, b) \geq 0$（因为对误分类点，$-y_i(w \cdot x_i + b) &gt; 0$）</li>
+<li><strong>正确分类时为零</strong>：没有误分类点时，$M &#x3D; \emptyset$，$L(w, b) &#x3D; 0$</li>
+<li><strong>连续可导</strong>：$L(w, b)$ 关于 $w$ 和 $b$ 是连续可导的</li>
+</ul>
+<h2 id="三、感知机学习算法：随机梯度下降（SGD）"><a href="#三、感知机学习算法：随机梯度下降（SGD）" class="headerlink" title="三、感知机学习算法：随机梯度下降（SGD）"></a>三、感知机学习算法：随机梯度下降（SGD）</h2><h3 id="3-1-梯度计算"><a href="#3-1-梯度计算" class="headerlink" title="3.1 梯度计算"></a>3.1 梯度计算</h3><p>损失函数 $L(w, b)$ 关于 $w$ 和 $b$ 的梯度为：</p>
+<p>$$
+\nabla_w L(w, b) = -\sum_{x_i \in M} y_i x_i
+$$<br>$$
+\nabla_b L(w, b) = -\sum_{x_i \in M} y_i
+$$</p>
+<h3 id="3-2-算法流程"><a href="#3-2-算法流程" class="headerlink" title="3.2 算法流程"></a>3.2 算法流程</h3><p>感知机学习算法采用<strong>随机梯度下降法</strong>（Stochastic Gradient Descent, SGD）：每次<strong>随机选取一个误分类点</strong>进行更新，而非使用全部误分类点。</p>
+<p><strong>算法：感知机学习算法的原始形式</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">输入：训练集 T = &#123;(x_1, y_1), ..., (x_N, y_N)&#125;，学习率 η ∈ (0, 1]</span><br><span class="line">输出：w, b</span><br><span class="line"></span><br><span class="line">1. 初始化 w ← 0, b ← 0</span><br><span class="line">2. 在训练集中选取数据 (x_i, y_i)</span><br><span class="line">3. 如果 y_i (w · x_i + b) ≤ 0（即该点被误分类）：</span><br><span class="line">       w ← w + η · y_i · x_i</span><br><span class="line">       b ← b + η · y_i</span><br><span class="line">4. 转到步骤 2，直到训练集中没有误分类点</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-更新规则的直观理解"><a href="#3-3-更新规则的直观理解" class="headerlink" title="3.3 更新规则的直观理解"></a>3.3 更新规则的直观理解</h3><p>当一个点被误分类时（实际为正但被分为负，或实际为负但被分为正），权重更新：</p>
+<p>$$
+w \leftarrow w + \eta \cdot y_i \cdot x_i
+$$</p>
+<p>几何上：</p>
+<ul>
+<li>若 $y_i &#x3D; +1$，更新使 $w$ 向 $x_i$ 方向移动——使超平面转向以正确分类 $x_i$</li>
+<li>若 $y_i &#x3D; -1$，更新使 $w$ 背离 $x_i$ 方向移动</li>
+</ul>
+<h3 id="3-4-从零实现"><a href="#3-4-从零实现" class="headerlink" title="3.4 从零实现"></a>3.4 从零实现</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Perceptron</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, learning_rate=<span class="number">0.1</span>, max_epochs=<span class="number">1000</span></span>):</span><br><span class="line">        <span class="variable language_">self</span>.lr = learning_rate</span><br><span class="line">        <span class="variable language_">self</span>.max_epochs = max_epochs</span><br><span class="line">        <span class="variable language_">self</span>.w = <span class="literal">None</span></span><br><span class="line">        <span class="variable language_">self</span>.b = <span class="literal">None</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">fit</span>(<span class="params">self, X, y</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        X: shape (n_samples, n_features)</span></span><br><span class="line"><span class="string">        y: shape (n_samples,), values in &#123;+1, -1&#125;</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        n_samples, n_features = X.shape</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 初始化</span></span><br><span class="line">        <span class="variable language_">self</span>.w = np.zeros(n_features)</span><br><span class="line">        <span class="variable language_">self</span>.b = <span class="number">0</span></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="variable language_">self</span>.max_epochs):</span><br><span class="line">            n_errors = <span class="number">0</span>  <span class="comment"># 本轮的误分类点数</span></span><br><span class="line">            </span><br><span class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(n_samples):</span><br><span class="line">                <span class="comment"># 判断是否误分类</span></span><br><span class="line">                margin = y[i] * (np.dot(<span class="variable language_">self</span>.w, X[i]) + <span class="variable language_">self</span>.b)</span><br><span class="line">                </span><br><span class="line">                <span class="keyword">if</span> margin &lt;= <span class="number">0</span>:  <span class="comment"># 误分类</span></span><br><span class="line">                    <span class="comment"># 随机梯度下降更新</span></span><br><span class="line">                    <span class="variable language_">self</span>.w += <span class="variable language_">self</span>.lr * y[i] * X[i]</span><br><span class="line">                    <span class="variable language_">self</span>.b += <span class="variable language_">self</span>.lr * y[i]</span><br><span class="line">                    n_errors += <span class="number">1</span></span><br><span class="line">            </span><br><span class="line">            <span class="comment"># 完全分类正确，提前结束</span></span><br><span class="line">            <span class="keyword">if</span> n_errors == <span class="number">0</span>:</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">f&quot;Converged at epoch <span class="subst">&#123;epoch&#125;</span>&quot;</span>)</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">self</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">predict</span>(<span class="params">self, X</span>):</span><br><span class="line">        <span class="keyword">return</span> np.sign(np.dot(X, <span class="variable language_">self</span>.w) + <span class="variable language_">self</span>.b)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">decision_function</span>(<span class="params">self, X</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;返回决策函数值&quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">return</span> np.dot(X, <span class="variable language_">self</span>.w) + <span class="variable language_">self</span>.b</span><br></pre></td></tr></table></figure>
+
+<h2 id="四、Novikoff-定理：收敛性证明"><a href="#四、Novikoff-定理：收敛性证明" class="headerlink" title="四、Novikoff 定理：收敛性证明"></a>四、Novikoff 定理：收敛性证明</h2><h3 id="4-1-定理陈述"><a href="#4-1-定理陈述" class="headerlink" title="4.1 定理陈述"></a>4.1 定理陈述</h3><p><strong>Novikoff 定理</strong>：设训练数据集 $T &#x3D; {(x_1, y_1), \dots, (x_N, y_N)}$ 是线性可分的，其中 $x_i \in \mathbb{R}^n$，$y_i \in {-1, +1}$。则：</p>
+<ol>
+<li><p>存在满足 $|\hat{w}<em>{\text{opt}}| &#x3D; 1$ 的超平面 $\hat{w}</em>{\text{opt}} \cdot \hat{x} &#x3D; 0$ 将数据集完全正确分开，且存在 $\gamma &gt; 0$，对所有 $i$ 有：<br>$$
+   y_i (\hat{w}_{\text{opt}} \cdot \hat{x}_i) \geq \gamma
+   $$</p>
+</li>
+<li><p>令 $R &#x3D; \max_i |\hat{x}_i|$，则感知机学习算法在训练集上的误分类次数 $k$ 满足：<br>$$
+   k \leq \left(\frac{R}{\gamma}\right)^2
+   $$</p>
+</li>
+</ol>
+<h3 id="4-2-证明"><a href="#4-2-证明" class="headerlink" title="4.2 证明"></a>4.2 证明</h3><p>为了简化，将 $b$ 吸收到 $w$ 中：定义 $\hat{w} &#x3D; (w^T, b)^T$，$\hat{x} &#x3D; (x^T, 1)^T$，则 $w \cdot x + b &#x3D; \hat{w} \cdot \hat{x}$。</p>
+<p><strong>证明思路</strong>：</p>
+<p>令 $\hat{w}_k$ 是第 $k$ 次误分类后的扩展权值向量（初始 $\hat{w}_0 &#x3D; 0$）。</p>
+<p><strong>下界</strong>：每次更新使 $\hat{w}<em>k$ 向 $\hat{w}</em>{\text{opt}}$ 的投影至少增加一个常数：</p>
+<p>$$
+\hat{w}_k \cdot \hat{w}_{\text{opt}} \geq k \eta \gamma
+$$</p>
+<p>因为：当对 $(x_i, y_i)$ 进行第 $k$ 次误分类更新时，<br>$$
+\begin{aligned}
+\hat{w}_k \cdot \hat{w}_{\text{opt}} &= (\hat{w}_{k-1} + \eta y_i \hat{x}_i) \cdot \hat{w}_{\text{opt}} \\
+&= \hat{w}_{k-1} \cdot \hat{w}_{\text{opt}} + \eta y_i (\hat{x}_i \cdot \hat{w}_{\text{opt}}) \\
+&\geq \hat{w}_{k-1} \cdot \hat{w}_{\text{opt}} + \eta \gamma
+\end{aligned}
+$$</p>
+<p>由递推，得 $\hat{w}<em>k \cdot \hat{w}</em>{\text{opt}} \geq k \eta \gamma$。</p>
+<p><strong>上界</strong>：第 $k$ 次误分类更新时，$|\hat{w}_k|^2$ 的增长有界：</p>
+<p>$$
+\|\hat{w}_k\|^2 \leq k \eta^2 R^2
+$$</p>
+<p>因为：<br>$$
+\begin{aligned}
+\|\hat{w}_k\|^2 &= \|\hat{w}_{k-1} + \eta y_i \hat{x}_i\|^2 \\
+&= \|\hat{w}_{k-1}\|^2 + 2\eta y_i \hat{w}_{k-1} \cdot \hat{x}_i + \eta^2 \|\hat{x}_i\|^2 \\
+&\leq \|\hat{w}_{k-1}\|^2 + \eta^2 R^2
+\end{aligned}
+$$</p>
+<p>（注意：$2\eta y_i \hat{w}_{k-1} \cdot \hat{x}<em>i \leq 0$ 因为 $(x_i, y_i)$ 在 $\hat{w}</em>{k-1}$ 下是误分类的）</p>
+<p><strong>结合上下界</strong>：</p>
+<p>由 Cauchy-Schwarz 不等式：<br>$$
+k \eta \gamma \leq \hat{w}_k \cdot \hat{w}_{\text{opt}} \leq \|\hat{w}_k\| \|\hat{w}_{\text{opt}}\| \leq \sqrt{k} \eta R \cdot 1
+$$</p>
+<p>从而：<br>$$
+k \gamma \leq \sqrt{k} R \implies \sqrt{k} \leq \frac{R}{\gamma} \implies k \leq \left(\frac{R}{\gamma}\right)^2
+$$</p>
+<p>证毕。</p>
+<h3 id="4-3-定理的意义"><a href="#4-3-定理的意义" class="headerlink" title="4.3 定理的意义"></a>4.3 定理的意义</h3><ol>
+<li><strong>有限步收敛</strong>：当数据线性可分时，感知机算法一定在有限步内收敛</li>
+<li><strong>误分类次数的上界</strong>：与初始值和学习率 $\eta$ 无关（$\eta$ 被约掉了）</li>
+<li><strong>间隔的重要性</strong>：$\gamma$ 越大（线性可分越”容易”），收敛越快</li>
+<li>**数据的”难度”**：$R&#x2F;\gamma$ 刻画了问题的难度——间隔越小或数据越分散，需要的迭代次数越多</li>
+</ol>
+<h2 id="五、感知机的对偶形式"><a href="#五、感知机的对偶形式" class="headerlink" title="五、感知机的对偶形式"></a>五、感知机的对偶形式</h2><h3 id="5-1-对偶形式的动机"><a href="#5-1-对偶形式的动机" class="headerlink" title="5.1 对偶形式的动机"></a>5.1 对偶形式的动机</h3><p>从原始形式的更新规则可以看出，最终的 $w$ 和 $b$ 可以表示为训练样本的线性组合：</p>
+<p>$$
+w = \sum_{i=1}^{N} \alpha_i y_i x_i
+$$<br>$$
+b = \sum_{i=1}^{N} \alpha_i y_i
+$$</p>
+<p>其中 $\alpha_i &#x3D; n_i \eta$，$n_i$ 是样本 $i$ 在训练过程中被误分类的次数。</p>
+<p>这个形式的优势在于：<strong>训练样本仅以内积形式出现</strong>，为核技巧的应用打开了大门。</p>
+<h3 id="5-2-对偶形式算法"><a href="#5-2-对偶形式算法" class="headerlink" title="5.2 对偶形式算法"></a>5.2 对偶形式算法</h3><p><strong>算法：感知机学习算法的对偶形式</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">输入：训练集 T，学习率 η ∈ (0, 1]</span><br><span class="line">输出：α, b</span><br><span class="line"></span><br><span class="line">1. 初始化 α ← 0 (N维零向量), b ← 0</span><br><span class="line">2. 在训练集中选取数据 (x_i, y_i)</span><br><span class="line">3. 如果分错，即在当前参数下：</span><br><span class="line">       y_i ( Σ_j α_j y_j (x_j · x_i) + b ) ≤ 0</span><br><span class="line">   则更新：</span><br><span class="line">       α_i ← α_i + η</span><br><span class="line">       b   ← b + η · y_i</span><br><span class="line">4. 转到步骤 2，直到训练集中没有误分类点</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-3-Gram-矩阵"><a href="#5-3-Gram-矩阵" class="headerlink" title="5.3 Gram 矩阵"></a>5.3 Gram 矩阵</h3><p>在对偶形式中，训练样本之间的内积被反复使用。我们可以预先计算好<strong>Gram 矩阵</strong>来加速：</p>
+<p>$$
+G = [x_i \cdot x_j]_{N \times N}
+$$</p>
+<p>Gram 矩阵存储了所有训练样本对之间的内积，是一个 $N \times N$ 的对称矩阵。</p>
+<h3 id="5-4-对偶形式的-Python-实现"><a href="#5-4-对偶形式的-Python-实现" class="headerlink" title="5.4 对偶形式的 Python 实现"></a>5.4 对偶形式的 Python 实现</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">PerceptronDual</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, learning_rate=<span class="number">0.1</span>, max_epochs=<span class="number">1000</span></span>):</span><br><span class="line">        <span class="variable language_">self</span>.lr = learning_rate</span><br><span class="line">        <span class="variable language_">self</span>.max_epochs = max_epochs</span><br><span class="line">        <span class="variable language_">self</span>.alpha = <span class="literal">None</span></span><br><span class="line">        <span class="variable language_">self</span>.b = <span class="literal">None</span></span><br><span class="line">        <span class="variable language_">self</span>.Gram = <span class="literal">None</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">fit</span>(<span class="params">self, X, y</span>):</span><br><span class="line">        n_samples, n_features = X.shape</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 初始化</span></span><br><span class="line">        <span class="variable language_">self</span>.alpha = np.zeros(n_samples)</span><br><span class="line">        <span class="variable language_">self</span>.b = <span class="number">0</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 预计算 Gram 矩阵</span></span><br><span class="line">        <span class="variable language_">self</span>.Gram = np.dot(X, X.T)</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="variable language_">self</span>.max_epochs):</span><br><span class="line">            n_errors = <span class="number">0</span></span><br><span class="line">            </span><br><span class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(n_samples):</span><br><span class="line">                <span class="comment"># 计算决策函数值 sum_j α_j y_j K(x_j, x_i) + b</span></span><br><span class="line">                decision = np.<span class="built_in">sum</span>(</span><br><span class="line">                    <span class="variable language_">self</span>.alpha * y * <span class="variable language_">self</span>.Gram[:, i]</span><br><span class="line">                ) + <span class="variable language_">self</span>.b</span><br><span class="line">                </span><br><span class="line">                <span class="keyword">if</span> y[i] * decision &lt;= <span class="number">0</span>:  <span class="comment"># 误分类</span></span><br><span class="line">                    <span class="variable language_">self</span>.alpha[i] += <span class="variable language_">self</span>.lr</span><br><span class="line">                    <span class="variable language_">self</span>.b += <span class="variable language_">self</span>.lr * y[i]</span><br><span class="line">                    n_errors += <span class="number">1</span></span><br><span class="line">            </span><br><span class="line">            <span class="keyword">if</span> n_errors == <span class="number">0</span>:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 从对偶变量恢复 w</span></span><br><span class="line">        <span class="variable language_">self</span>.w = np.<span class="built_in">sum</span>(</span><br><span class="line">            (<span class="variable language_">self</span>.alpha * y)[:, np.newaxis] * X, axis=<span class="number">0</span></span><br><span class="line">        )</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">self</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">predict</span>(<span class="params">self, X</span>):</span><br><span class="line">        <span class="keyword">return</span> np.sign(np.dot(X, <span class="variable language_">self</span>.w) + <span class="variable language_">self</span>.b)</span><br></pre></td></tr></table></figure>
+
+<h2 id="六、核感知机"><a href="#六、核感知机" class="headerlink" title="六、核感知机"></a>六、核感知机</h2><p>当数据不是线性可分的时候，标准的感知机永远无法收敛。一个解决方案是使用<strong>核技巧</strong>（kernel trick）将数据映射到高维空间。</p>
+<h3 id="6-1-核函数"><a href="#6-1-核函数" class="headerlink" title="6.1 核函数"></a>6.1 核函数</h3><p>用核函数 $K(x, z) &#x3D; \phi(x) \cdot \phi(z)$ 替换 Gram 矩阵中的内积，而不需要显式地计算映射 $\phi$。</p>
+<p>常用的核函数：</p>
+<table>
+<thead>
+<tr>
+<th>核函数</th>
+<th>表达式</th>
+<th>参数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>线性核</td>
+<td>$K(x, z) &#x3D; x \cdot z$</td>
+<td>无</td>
+</tr>
+<tr>
+<td>多项式核</td>
+<td>$K(x, z) &#x3D; (x \cdot z + c)^d$</td>
+<td>$c \geq 0, d \geq 1$</td>
+</tr>
+<tr>
+<td>高斯核（RBF）</td>
+<td>$K(x, z) &#x3D; \exp(-\gamma|x-z|^2)$</td>
+<td>$\gamma &gt; 0$</td>
+</tr>
+<tr>
+<td>Sigmoid 核</td>
+<td>$K(x, z) &#x3D; \tanh(\alpha x \cdot z + \beta)$</td>
+<td>$\alpha, \beta$</td>
+</tr>
+</tbody></table>
+<h3 id="6-2-核感知机实现"><a href="#6-2-核感知机实现" class="headerlink" title="6.2 核感知机实现"></a>6.2 核感知机实现</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">KernelPerceptron</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, kernel=<span class="string">&#x27;rbf&#x27;</span>, gamma=<span class="number">1.0</span>, degree=<span class="number">3</span>, </span></span><br><span class="line"><span class="params">                 coef0=<span class="number">1.0</span>, max_epochs=<span class="number">100</span></span>):</span><br><span class="line">        <span class="variable language_">self</span>.kernel = kernel</span><br><span class="line">        <span class="variable language_">self</span>.gamma = gamma</span><br><span class="line">        <span class="variable language_">self</span>.degree = degree</span><br><span class="line">        <span class="variable language_">self</span>.coef0 = coef0</span><br><span class="line">        <span class="variable language_">self</span>.max_epochs = max_epochs</span><br><span class="line">        <span class="variable language_">self</span>.alpha = <span class="literal">None</span></span><br><span class="line">        <span class="variable language_">self</span>.support_X = <span class="literal">None</span></span><br><span class="line">        <span class="variable language_">self</span>.support_y = <span class="literal">None</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_kernel</span>(<span class="params">self, x, z</span>):</span><br><span class="line">        <span class="keyword">if</span> <span class="variable language_">self</span>.kernel == <span class="string">&#x27;linear&#x27;</span>:</span><br><span class="line">            <span class="keyword">return</span> np.dot(x, z)</span><br><span class="line">        <span class="keyword">elif</span> <span class="variable language_">self</span>.kernel == <span class="string">&#x27;poly&#x27;</span>:</span><br><span class="line">            <span class="keyword">return</span> (np.dot(x, z) + <span class="variable language_">self</span>.coef0) ** <span class="variable language_">self</span>.degree</span><br><span class="line">        <span class="keyword">elif</span> <span class="variable language_">self</span>.kernel == <span class="string">&#x27;rbf&#x27;</span>:</span><br><span class="line">            diff = x - z</span><br><span class="line">            <span class="keyword">return</span> np.exp(-<span class="variable language_">self</span>.gamma * np.dot(diff, diff))</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">f&quot;Unknown kernel: <span class="subst">&#123;self.kernel&#125;</span>&quot;</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">fit</span>(<span class="params">self, X, y</span>):</span><br><span class="line">        n_samples = <span class="built_in">len</span>(X)</span><br><span class="line">        alpha = np.zeros(n_samples)</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 计算核矩阵</span></span><br><span class="line">        K = np.zeros((n_samples, n_samples))</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(n_samples):</span><br><span class="line">            <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(n_samples):</span><br><span class="line">                K[i, j] = <span class="variable language_">self</span>._kernel(X[i], X[j])</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="variable language_">self</span>.max_epochs):</span><br><span class="line">            n_errors = <span class="number">0</span></span><br><span class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(n_samples):</span><br><span class="line">                decision = np.<span class="built_in">sum</span>(alpha * y * K[:, i])</span><br><span class="line">                <span class="keyword">if</span> y[i] * decision &lt;= <span class="number">0</span>:</span><br><span class="line">                    alpha[i] += <span class="number">1</span></span><br><span class="line">                    n_errors += <span class="number">1</span></span><br><span class="line">            <span class="keyword">if</span> n_errors == <span class="number">0</span>:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 只保留支持向量（alpha &gt; 0）</span></span><br><span class="line">        sv = alpha &gt; <span class="number">0</span></span><br><span class="line">        <span class="variable language_">self</span>.alpha = alpha[sv]</span><br><span class="line">        <span class="variable language_">self</span>.support_X = X[sv]</span><br><span class="line">        <span class="variable language_">self</span>.support_y = y[sv]</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">self</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">predict</span>(<span class="params">self, X</span>):</span><br><span class="line">        preds = []</span><br><span class="line">        <span class="keyword">for</span> x <span class="keyword">in</span> X:</span><br><span class="line">            decision = <span class="number">0</span></span><br><span class="line">            <span class="keyword">for</span> alpha_i, sv_x, sv_y <span class="keyword">in</span> <span class="built_in">zip</span>(</span><br><span class="line">                <span class="variable language_">self</span>.alpha, <span class="variable language_">self</span>.support_X, <span class="variable language_">self</span>.support_y</span><br><span class="line">            ):</span><br><span class="line">                decision += alpha_i * sv_y * <span class="variable language_">self</span>._kernel(sv_x, x)</span><br><span class="line">            preds.append(np.sign(decision))</span><br><span class="line">        <span class="keyword">return</span> np.array(preds)</span><br></pre></td></tr></table></figure>
+
+<h2 id="七、XOR-问题与感知机的局限"><a href="#七、XOR-问题与感知机的局限" class="headerlink" title="七、XOR 问题与感知机的局限"></a>七、XOR 问题与感知机的局限</h2><h3 id="7-1-XOR-问题"><a href="#7-1-XOR-问题" class="headerlink" title="7.1 XOR 问题"></a>7.1 XOR 问题</h3><p>1969 年，Minsky 和 Papert 在《Perceptrons》一书中证明了单层感知机无法解决 XOR（异或）问题，这一结论直接导致了神经网络研究的第一次”寒冬”。</p>
+<p>XOR 的真值表：</p>
+<table>
+<thead>
+<tr>
+<th>$x_1$</th>
+<th>$x_2$</th>
+<th>XOR 输出</th>
+<th>类别</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>-1</td>
+</tr>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>+1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>+1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>-1</td>
+</tr>
+</tbody></table>
+<p>在二维平面上，这 4 个点是线性不可分的——不存在一条直线能将两类分开。这个简单的反例揭示了感知机根本性的局限。</p>
+<h3 id="7-2-解决方案"><a href="#7-2-解决方案" class="headerlink" title="7.2 解决方案"></a>7.2 解决方案</h3><p><strong>多层感知机（MLP）</strong>：XOR 可以通过两层感知机解决：</p>
+<ul>
+<li>第一层：$h_1 &#x3D; x_1 \text{ NAND } x_2$，$h_2 &#x3D; x_1 \text{ OR } x_2$</li>
+<li>第二层：$y &#x3D; h_1 \text{ AND } h_2$</li>
+</ul>
+<p>这等价于 XOR 的布尔分解：$x_1 \oplus x_2 &#x3D; (x_1 \text{ NAND } x_2) \text{ AND } (x_1 \text{ OR } x_2)$</p>
+<p><strong>核方法</strong>：将 $(x_1, x_2)$ 映射到高维特征空间，如 $\phi(x_1, x_2) &#x3D; (x_1, x_2, x_1 x_2)$，则 XOR 问题在这个三维空间中变得线性可分。</p>
+<h2 id="八、从感知机到现代神经网络"><a href="#八、从感知机到现代神经网络" class="headerlink" title="八、从感知机到现代神经网络"></a>八、从感知机到现代神经网络</h2><table>
+<thead>
+<tr>
+<th>年代</th>
+<th>里程碑</th>
+<th>作者</th>
+<th>意义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1958</td>
+<td>感知机</td>
+<td>Rosenblatt</td>
+<td>第一个可学习的神经网络</td>
+</tr>
+<tr>
+<td>1969</td>
+<td>《Perceptrons》</td>
+<td>Minsky &amp; Papert</td>
+<td>揭示单层感知机的局限</td>
+</tr>
+<tr>
+<td>1986</td>
+<td>反向传播</td>
+<td>Rumelhart, Hinton, et al.</td>
+<td>训练多层网络成为可能</td>
+</tr>
+<tr>
+<td>1995</td>
+<td>SVM</td>
+<td>Vapnik</td>
+<td>核方法的兴起，替代神经网络</td>
+</tr>
+<tr>
+<td>2006</td>
+<td>深度信念网络</td>
+<td>Hinton et al.</td>
+<td>深度学习复兴</td>
+</tr>
+<tr>
+<td>2012</td>
+<td>AlexNet</td>
+<td>Krizhevsky et al.</td>
+<td>CNN 在 ImageNet 上的突破</td>
+</tr>
+</tbody></table>
+<p>感知机作为神经网络的种子，其核心思想——加权和、阈值激活、误差驱动的权重更新——至今仍然是所有神经网络的基础。理解感知机，就是在理解深度学习的”祖先”。</p>
+<h2 id="九、算法原理回顾"><a href="#九、算法原理回顾" class="headerlink" title="九、算法原理回顾"></a>九、算法原理回顾</h2><p><strong>感知机算法原理：</strong></p>
+<blockquote>
+<ol>
+<li>对于每一个输入，乘以它的权重值；</li>
+<li>把所有加权的输入相加</li>
+<li>通过求和函数求得的和计算感知机的输出</li>
+</ol>
+</blockquote>
+<h2 id="十、面试高频问题"><a href="#十、面试高频问题" class="headerlink" title="十、面试高频问题"></a>十、面试高频问题</h2><p><strong>Q1：感知机的损失函数为什么要忽略 $\frac{1}{|w|}$？</strong></p>
+<p>两个原因：</p>
+<ol>
+<li>$\frac{1}{|w|}$ 不影响误分类点的集合（当 $y_i(w \cdot x_i + b) &lt; 0$ 时，除以任何正数还是 &lt; 0）</li>
+<li>去掉 $\frac{1}{|w|}$ 后损失函数是 $w, b$ 的线性函数（实际上是分段线性的），梯度简洁</li>
+</ol>
+<p>注意这导致了一个副作用：感知机最小化的不是”误分类点到超平面的几何距离之和”，而是”函数距离之和”。这两个量不一定等价，但在算法收敛的意义上是等效的。</p>
+<p><strong>Q2：原始形式和对偶形式有什么区别？什么时候用哪一个？</strong></p>
+<table>
+<thead>
+<tr>
+<th>方面</th>
+<th>原始形式</th>
+<th>对偶形式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>参数量</td>
+<td>$n$ ($w$) + 1 ($b$)</td>
+<td>$N$ ($\alpha$) + 1 ($b$)</td>
+</tr>
+<tr>
+<td>计算模式</td>
+<td>每次更新计算内积 $w \cdot x$</td>
+<td>查 Gram 矩阵</td>
+</tr>
+<tr>
+<td>适合场景</td>
+<td>$n \ll N$（特征少样本多）</td>
+<td>$n \gg N$（特征多样本少）</td>
+</tr>
+<tr>
+<td>可核化</td>
+<td>不直接</td>
+<td>直接（替换 Gram 矩阵为核矩阵）</td>
+</tr>
+</tbody></table>
+<p>实际中，如果 $N$ 很大（百万样本），对偶形式因为要存储 $N \times N$ 的 Gram 矩阵而变得不可行。对偶形式在样本数适中但特征维数极高（如文本数据）时很有用。</p>
+<p><strong>Q3：Novikoff 定理中 $\gamma$ 和 $R$ 的几何含义是什么？</strong></p>
+<ul>
+<li>$\gamma$ 是所有样本到最优超平面的<strong>最小几何间隔</strong>。$\gamma$ 越大，数据集线性可分的”程度”越好，分类越容易。</li>
+<li>$R$ 是所有样本的<strong>最大范数</strong>（即所有样本到原点的最远距离）。$R$ 越大，数据分布越分散。</li>
+</ul>
+<p>因此，$R&#x2F;\gamma$ 刻画了问题的”条件数”——数据越分散（$R$ 大）且可分间隔越小（$\gamma$ 小），算法需要越多次迭代。这与数值分析中条件数的概念类似。</p>
+<p><strong>Q4：感知机与逻辑回归的区别是什么？</strong></p>
+<table>
+<thead>
+<tr>
+<th>方面</th>
+<th>感知机</th>
+<th>逻辑回归</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>激活函数</td>
+<td>$\text{sign}(w \cdot x)$</td>
+<td>$\sigma(w \cdot x) &#x3D; \frac{1}{1+e^{-w \cdot x}}$</td>
+</tr>
+<tr>
+<td>损失函数</td>
+<td>Hinge loss 的简化版</td>
+<td>交叉熵（log loss）</td>
+</tr>
+<tr>
+<td>输出</td>
+<td>硬分类 ${\pm 1}$</td>
+<td>概率 $[0, 1]$</td>
+</tr>
+<tr>
+<td>数据要求</td>
+<td>必须线性可分</td>
+<td>不需要线性可分</td>
+</tr>
+<tr>
+<td>收敛保证</td>
+<td>Novikoff 定理（线性可分下）</td>
+<td>梯度下降收敛</td>
+</tr>
+<tr>
+<td>对离群点</td>
+<td>非常敏感</td>
+<td>相对鲁棒</td>
+</tr>
+</tbody></table>
+<p><strong>Q5：感知机神经网络和现代深度网络在训练上的核心区别是什么？</strong></p>
+<p>三个关键区别：</p>
+<ol>
+<li><strong>激活函数</strong>：感知机用阶跃函数（step function），不可导；现代网络用 sigmoid、ReLU、GELU 等可导函数</li>
+<li><strong>训练算法</strong>：感知机用朴素 SGD（误差驱动的权重更新），层级之间没有梯度传递；现代网络用反向传播（backpropagation）逐层传递梯度</li>
+<li><strong>深度</strong>：单层 vs 数百上千层；深度的增加使得网络能学习层次化的特征表示</li>
+</ol>
+<p>然而，感知机的核心思想（加权和 -&gt; 非线性 -&gt; 输出）仍然是所有深度网络的基础构件。</p>
+<h2 id="十一、总结"><a href="#十一、总结" class="headerlink" title="十一、总结"></a>十一、总结</h2><p>感知机是机器学习历史上的一座里程碑，它是神经网络的起源，也是统计学习理论发展的催化剂。虽然单层感知机只能解决线性可分问题（XOR 就是其”阿克琉斯之踵”），但它的思想——用简单的计算单元组合成复杂的决策系统——直接孕育了多层感知机和现代深度学习。</p>
+<p>本文从感知机的直观引入出发，系统讨论了其数学模型、损失函数推导、SGD 优化算法、Novikoff 收敛定理、对偶形式以及核感知机。理解感知机不仅是学习《统计学习方法》的要求，更是理解所有基于梯度优化的学习算法的起点。</p>
+<p>在下一章中，我们将继续探索线性分类器家族中更强大的成员——支持向量机（SVM），看它如何优雅地解决感知机”随缘分类”的问题，通过最大化分类间隔来获得更好的泛化能力。</p>
+<p><strong>参考文献</strong>：</p>
+<ol>
+<li>Rosenblatt, F. (1958). The perceptron: A probabilistic model for information storage and organization in the brain. <em>Psychological Review</em>, 65(6), 386-408.</li>
+<li>Novikoff, A. B. (1962). On convergence proofs for perceptrons. <em>Symposium on the Mathematical Theory of Automata</em>.</li>
+<li>Minsky, M., &amp; Papert, S. (1969). <em>Perceptrons: An Introduction to Computational Geometry</em>.</li>
+<li>李航. (2019). 《统计学习方法》（第2版）. 第2章.</li>
+<li>Freund, Y., &amp; Schapire, R. E. (1999). Large margin classification using the perceptron algorithm. <em>Machine Learning</em>, 37(3), 277-296.</li>
+</ol>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2020/01/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%84%9F%E7%9F%A5%E6%9C%BA/">http://tufusi.com/2020/01/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%84%9F%E7%9F%A5%E6%9C%BA/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">读书笔记    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nareeta-martin-wM59pRQYbhs-unsplash.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2020/02/01/%E3%80%90Python%E7%B3%BB%E5%88%97%E3%80%91Numpy%E4%BD%BF%E7%94%A8%E8%AF%A6%E8%A7%A3/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/rizky-subagja-ZfVEWZTHs8M-unsplash.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【Python系列】Numpy使用详解</span></div></a></div><div class="next-post pull_right"><a href="/2019/12/28/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E5%86%99%E5%9C%A819%E5%B9%B4%E5%B0%BE%E5%B7%B4/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nicolas-j-leclercq-YG20AZCeklo-unsplash.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【统计学习方法死磕系列】写在19年尾巴</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2020/04/15/【统计学习方法死磕系列】决策树/" title="【统计学习方法死磕系列】决策树"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nareeta-martin-wM59pRQYbhs-unsplash.jpg"><div class="relatedPosts_title">【统计学习方法死磕系列】决策树</div></a></div><div class="relatedPosts_item"><a href="/2020/02/15/【统计学习方法死磕系列】k近邻法/" title="【统计学习方法死磕系列】k近邻法"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nicolas-j-leclercq-cmV9xe6sqfQ-unsplash.jpg"><div class="relatedPosts_title">【统计学习方法死磕系列】k近邻法</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nareeta-martin-wM59pRQYbhs-unsplash.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

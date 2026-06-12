@@ -1,0 +1,802 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【统计学习方法死磕系列】写在19年尾巴 | ONE·PIECE</title><meta name="description" content="【统计学习方法死磕系列】写在19年尾巴"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【统计学习方法死磕系列】写在19年尾巴"><meta name="twitter:description" content="【统计学习方法死磕系列】写在19年尾巴"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nicolas-j-leclercq-YG20AZCeklo-unsplash.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【统计学习方法死磕系列】写在19年尾巴"><meta property="og:url" content="http://tufusi.com/2019/12/28/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E5%86%99%E5%9C%A819%E5%B9%B4%E5%B0%BE%E5%B7%B4/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【统计学习方法死磕系列】写在19年尾巴"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nicolas-j-leclercq-YG20AZCeklo-unsplash.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2019/12/28/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E5%86%99%E5%9C%A819%E5%B9%B4%E5%B0%BE%E5%B7%B4/"><link rel="prev" title="【统计学习方法死磕系列】感知机" href="http://tufusi.com/2020/01/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%84%9F%E7%9F%A5%E6%9C%BA/"><link rel="next" title="【论文笔记】Kernel Logistic Regression and the Import Vector Machine" href="http://tufusi.com/2019/12/10/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91Kernel-Logistic-Regression-and-the-Import-Vector-Machine/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E5%9B%9E%E6%9C%9B-2019%EF%BC%9A%E4%B8%80%E4%B8%AA-ML-%E6%96%B0%E6%89%8B%E7%9A%84%E8%87%AA%E7%99%BD"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、回望 2019：一个 ML 新手的自白</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-%E8%B8%A9%E8%BF%87%E7%9A%84%E5%9D%91"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">1.1 踩过的坑</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-2-%E4%B8%80%E7%82%B9%E4%BD%93%E4%BC%9A"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">1.2 一点体会</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9F%A5%E8%AF%86%E4%BD%93%E7%B3%BB%E5%85%A8%E6%99%AF%E5%9B%BE"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、机器学习知识体系全景图</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E6%9D%BF%E5%9D%97%E4%B8%80%EF%BC%9A%E6%95%B0%E5%AD%A6%E5%9F%BA%E7%A1%80"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 板块一：数学基础</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E6%9D%BF%E5%9D%97%E4%BA%8C%EF%BC%9A%E7%BB%8F%E5%85%B8%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 板块二：经典机器学习算法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-%E6%9D%BF%E5%9D%97%E4%B8%89%EF%BC%9A%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 板块三：深度学习</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-4-%E6%9D%BF%E5%9D%97%E5%9B%9B%EF%BC%9A%E5%B7%A5%E7%A8%8B%E4%B8%8E%E5%AE%9E%E8%B7%B5"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">2.4 板块四：工程与实践</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81%E5%9B%9B%E9%98%B6%E6%AE%B5%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、四阶段学习路线</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E9%98%B6%E6%AE%B5%E4%B8%80%EF%BC%9A%E5%85%A5%E9%97%A8%EF%BC%881-2-%E4%B8%AA%E6%9C%88%EF%BC%89"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">阶段一：入门（1-2 个月）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E9%98%B6%E6%AE%B5%E4%BA%8C%EF%BC%9A%E7%90%86%E8%AE%BA%E6%B7%B1%E5%8C%96%EF%BC%883-5-%E4%B8%AA%E6%9C%88%EF%BC%89"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">阶段二：理论深化（3-5 个月）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E9%98%B6%E6%AE%B5%E4%B8%89%EF%BC%9A%E5%AE%9E%E6%88%98%E4%B8%8E%E6%8B%93%E5%B1%95%EF%BC%883-4-%E4%B8%AA%E6%9C%88%EF%BC%89"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">阶段三：实战与拓展（3-4 个月）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E9%98%B6%E6%AE%B5%E5%9B%9B%EF%BC%9A%E4%B8%93%E4%B8%9A%E5%8C%96%EF%BC%88%E6%8C%81%E7%BB%AD%E8%BF%9B%E8%A1%8C%EF%BC%89"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">阶段四：专业化（持续进行）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E6%8E%A8%E8%8D%90%E4%B9%A6%E5%8D%95%E4%B8%8E%E9%98%85%E8%AF%BB%E9%A1%BA%E5%BA%8F"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、推荐书单与阅读顺序</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E5%85%A5%E9%97%A8%E5%BF%85%E8%AF%BB"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 入门必读</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E8%BF%9B%E9%98%B6%E5%BF%85%E8%AF%BB"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 进阶必读</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-%E5%AE%9E%E6%88%98%E4%B8%8E%E4%B8%93%E9%A2%98"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 实战与专题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-4-%E9%98%85%E8%AF%BB%E5%BB%BA%E8%AE%AE"><span class="toc_mobile_items-number">4.4.</span> <span class="toc_mobile_items-text">4.4 阅读建议</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%812019-%E5%B9%B4%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E9%A2%86%E5%9F%9F%E5%9B%9E%E9%A1%BE"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、2019 年机器学习领域回顾</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%EF%BC%9ABERT-%E4%B9%8B%E5%B9%B4"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 自然语言处理：BERT 之年</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89%EF%BC%9AEfficientNet-%E5%92%8C%E8%87%AA%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 计算机视觉：EfficientNet 和自监督学习</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%EF%BC%9AAlphaStar-%E5%92%8C-OpenAI-Five"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 强化学习：AlphaStar 和 OpenAI Five</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-4-%E6%A1%86%E6%9E%B6%E7%94%9F%E6%80%81%EF%BC%9APyTorch-%E5%B4%9B%E8%B5%B7%EF%BC%8CTensorFlow-2-0-%E5%8F%91%E5%B8%83"><span class="toc_mobile_items-number">5.4.</span> <span class="toc_mobile_items-text">5.4 框架生态：PyTorch 崛起，TensorFlow 2.0 发布</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-5-%E5%80%BC%E5%BE%97%E5%85%B3%E6%B3%A8%E7%9A%84-SOTA-%E8%AE%BA%E6%96%87%EF%BC%882019%EF%BC%89"><span class="toc_mobile_items-number">5.5.</span> <span class="toc_mobile_items-text">5.5 值得关注的 SOTA 论文（2019）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E9%9D%A2%E8%AF%95%E5%87%86%E5%A4%87%E8%B7%AF%E7%BA%BF%E5%9B%BE"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、机器学习面试准备路线图</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E7%AE%97%E6%B3%95%E7%90%86%E8%AE%BA%EF%BC%88%E5%BF%85%E9%A1%BB%E8%83%BD%E6%89%8B%E6%8E%A8%EF%BC%89"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 算法理论（必须能手推）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-%E7%BC%96%E7%A8%8B%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 编程实现</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-%E5%9C%BA%E6%99%AF%E9%A2%98"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">6.3 场景题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-4-%E9%A1%B9%E7%9B%AE%E7%BB%8F%E5%8E%86"><span class="toc_mobile_items-number">6.4.</span> <span class="toc_mobile_items-text">6.4 项目经历</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81FLAG-for-2020"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、FLAG for 2020</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81%E7%BB%99%E5%90%8C%E6%A0%B7%E5%9C%A8%E8%87%AA%E5%AD%A6-ML-%E7%9A%84%E5%90%8C%E5%AD%A6%E7%9A%84%E4%B8%80%E5%B0%81%E4%BF%A1"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、给同样在自学 ML 的同学的一封信</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E7%82%B9%E4%BA%94%E3%80%81%E5%A6%82%E4%BD%95%E9%AB%98%E6%95%88%E9%98%85%E8%AF%BB-ML-%E8%AE%BA%E6%96%87"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">八点五、如何高效阅读 ML 论文</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB%E7%9A%84%E4%B8%89%E9%81%8D%E6%B3%95"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">论文阅读的三遍法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E6%A8%A1%E6%9D%BF"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">论文笔记模板</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2019-%E5%B9%B4%E5%80%BC%E5%BE%97%E6%B7%B1%E8%AF%BB%E7%9A%84%E8%AE%BA%E6%96%87%E6%8E%A8%E8%8D%90"><span class="toc_mobile_items-number">9.3.</span> <span class="toc_mobile_items-text">2019 年值得深读的论文推荐</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E8%AE%BA%E6%96%87%E4%B8%8E%E4%B9%A6%E6%9C%AC%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc_mobile_items-number">9.4.</span> <span class="toc_mobile_items-text">论文与书本的关系</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E9%A2%98%EF%BC%88%E5%85%B3%E4%BA%8E%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%EF%BC%89"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">九、面试高频问题（关于学习方法）</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%9B%9E%E6%9C%9B-2019%EF%BC%9A%E4%B8%80%E4%B8%AA-ML-%E6%96%B0%E6%89%8B%E7%9A%84%E8%87%AA%E7%99%BD"><span class="toc-number">1.</span> <span class="toc-text">一、回望 2019：一个 ML 新手的自白</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E8%B8%A9%E8%BF%87%E7%9A%84%E5%9D%91"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 踩过的坑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E4%B8%80%E7%82%B9%E4%BD%93%E4%BC%9A"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 一点体会</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9F%A5%E8%AF%86%E4%BD%93%E7%B3%BB%E5%85%A8%E6%99%AF%E5%9B%BE"><span class="toc-number">2.</span> <span class="toc-text">二、机器学习知识体系全景图</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E6%9D%BF%E5%9D%97%E4%B8%80%EF%BC%9A%E6%95%B0%E5%AD%A6%E5%9F%BA%E7%A1%80"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 板块一：数学基础</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%9D%BF%E5%9D%97%E4%BA%8C%EF%BC%9A%E7%BB%8F%E5%85%B8%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%AE%97%E6%B3%95"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 板块二：经典机器学习算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E6%9D%BF%E5%9D%97%E4%B8%89%EF%BC%9A%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 板块三：深度学习</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E6%9D%BF%E5%9D%97%E5%9B%9B%EF%BC%9A%E5%B7%A5%E7%A8%8B%E4%B8%8E%E5%AE%9E%E8%B7%B5"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 板块四：工程与实践</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%9B%9B%E9%98%B6%E6%AE%B5%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF"><span class="toc-number">3.</span> <span class="toc-text">三、四阶段学习路线</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E4%B8%80%EF%BC%9A%E5%85%A5%E9%97%A8%EF%BC%881-2-%E4%B8%AA%E6%9C%88%EF%BC%89"><span class="toc-number">3.1.</span> <span class="toc-text">阶段一：入门（1-2 个月）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E4%BA%8C%EF%BC%9A%E7%90%86%E8%AE%BA%E6%B7%B1%E5%8C%96%EF%BC%883-5-%E4%B8%AA%E6%9C%88%EF%BC%89"><span class="toc-number">3.2.</span> <span class="toc-text">阶段二：理论深化（3-5 个月）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E4%B8%89%EF%BC%9A%E5%AE%9E%E6%88%98%E4%B8%8E%E6%8B%93%E5%B1%95%EF%BC%883-4-%E4%B8%AA%E6%9C%88%EF%BC%89"><span class="toc-number">3.3.</span> <span class="toc-text">阶段三：实战与拓展（3-4 个月）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E5%9B%9B%EF%BC%9A%E4%B8%93%E4%B8%9A%E5%8C%96%EF%BC%88%E6%8C%81%E7%BB%AD%E8%BF%9B%E8%A1%8C%EF%BC%89"><span class="toc-number">3.4.</span> <span class="toc-text">阶段四：专业化（持续进行）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%8E%A8%E8%8D%90%E4%B9%A6%E5%8D%95%E4%B8%8E%E9%98%85%E8%AF%BB%E9%A1%BA%E5%BA%8F"><span class="toc-number">4.</span> <span class="toc-text">四、推荐书单与阅读顺序</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%85%A5%E9%97%A8%E5%BF%85%E8%AF%BB"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 入门必读</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E8%BF%9B%E9%98%B6%E5%BF%85%E8%AF%BB"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 进阶必读</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E5%AE%9E%E6%88%98%E4%B8%8E%E4%B8%93%E9%A2%98"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 实战与专题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E9%98%85%E8%AF%BB%E5%BB%BA%E8%AE%AE"><span class="toc-number">4.4.</span> <span class="toc-text">4.4 阅读建议</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%812019-%E5%B9%B4%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E9%A2%86%E5%9F%9F%E5%9B%9E%E9%A1%BE"><span class="toc-number">5.</span> <span class="toc-text">五、2019 年机器学习领域回顾</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%EF%BC%9ABERT-%E4%B9%8B%E5%B9%B4"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 自然语言处理：BERT 之年</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89%EF%BC%9AEfficientNet-%E5%92%8C%E8%87%AA%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 计算机视觉：EfficientNet 和自监督学习</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%EF%BC%9AAlphaStar-%E5%92%8C-OpenAI-Five"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 强化学习：AlphaStar 和 OpenAI Five</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E6%A1%86%E6%9E%B6%E7%94%9F%E6%80%81%EF%BC%9APyTorch-%E5%B4%9B%E8%B5%B7%EF%BC%8CTensorFlow-2-0-%E5%8F%91%E5%B8%83"><span class="toc-number">5.4.</span> <span class="toc-text">5.4 框架生态：PyTorch 崛起，TensorFlow 2.0 发布</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-%E5%80%BC%E5%BE%97%E5%85%B3%E6%B3%A8%E7%9A%84-SOTA-%E8%AE%BA%E6%96%87%EF%BC%882019%EF%BC%89"><span class="toc-number">5.5.</span> <span class="toc-text">5.5 值得关注的 SOTA 论文（2019）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E9%9D%A2%E8%AF%95%E5%87%86%E5%A4%87%E8%B7%AF%E7%BA%BF%E5%9B%BE"><span class="toc-number">6.</span> <span class="toc-text">六、机器学习面试准备路线图</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E7%AE%97%E6%B3%95%E7%90%86%E8%AE%BA%EF%BC%88%E5%BF%85%E9%A1%BB%E8%83%BD%E6%89%8B%E6%8E%A8%EF%BC%89"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 算法理论（必须能手推）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E7%BC%96%E7%A8%8B%E5%AE%9E%E7%8E%B0"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 编程实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E5%9C%BA%E6%99%AF%E9%A2%98"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 场景题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E9%A1%B9%E7%9B%AE%E7%BB%8F%E5%8E%86"><span class="toc-number">6.4.</span> <span class="toc-text">6.4 项目经历</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81FLAG-for-2020"><span class="toc-number">7.</span> <span class="toc-text">七、FLAG for 2020</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E7%BB%99%E5%90%8C%E6%A0%B7%E5%9C%A8%E8%87%AA%E5%AD%A6-ML-%E7%9A%84%E5%90%8C%E5%AD%A6%E7%9A%84%E4%B8%80%E5%B0%81%E4%BF%A1"><span class="toc-number">8.</span> <span class="toc-text">八、给同样在自学 ML 的同学的一封信</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E7%82%B9%E4%BA%94%E3%80%81%E5%A6%82%E4%BD%95%E9%AB%98%E6%95%88%E9%98%85%E8%AF%BB-ML-%E8%AE%BA%E6%96%87"><span class="toc-number">9.</span> <span class="toc-text">八点五、如何高效阅读 ML 论文</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB%E7%9A%84%E4%B8%89%E9%81%8D%E6%B3%95"><span class="toc-number">9.1.</span> <span class="toc-text">论文阅读的三遍法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E6%A8%A1%E6%9D%BF"><span class="toc-number">9.2.</span> <span class="toc-text">论文笔记模板</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2019-%E5%B9%B4%E5%80%BC%E5%BE%97%E6%B7%B1%E8%AF%BB%E7%9A%84%E8%AE%BA%E6%96%87%E6%8E%A8%E8%8D%90"><span class="toc-number">9.3.</span> <span class="toc-text">2019 年值得深读的论文推荐</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BA%E6%96%87%E4%B8%8E%E4%B9%A6%E6%9C%AC%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">9.4.</span> <span class="toc-text">论文与书本的关系</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E9%A2%98%EF%BC%88%E5%85%B3%E4%BA%8E%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%EF%BC%89"><span class="toc-number">10.</span> <span class="toc-text">九、面试高频问题（关于学习方法）</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nicolas-j-leclercq-YG20AZCeklo-unsplash.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【统计学习方法死磕系列】写在19年尾巴</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2019-12-28<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0/">统计学习</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">7.1k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 22 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>最近写论文笔记是各种疯（捉）狂（襟）百（见）度（肘）啊，对于自身的技术能力个人感觉实在是”太下饭”了。算算从五月份自学到现在也半年有余，买过书上过课，从最开始接触 Andrew Ng 的 Coursera上的机器学习课程到入手第一本西瓜书之后，又陆陆续续买了《机器学习实战》、《统计学习方法（第2版）》、《百面机器学习》等等，其实我的想法是很简单，跟着书后面死磕，总会培养出感情，无奈这几个月非但没看得到进步，反而越发觉得这门技术并非单单凭兴趣就能攻克的，它所需要的知识脉络是全面的，容不得一丝侥幸，因此既然这样，干脆来个二次入门。再加上临近年末也需要个人总结一下这一年的得与失，是时候给自己立个FLAG。</p>
+<p>这次死磕系列结合《统计学习方法》，这本书涵盖了机器学习领域涉及到的各种核心技术研究，包括自然语言处理、信息检索、文本数据挖掘等。我也会尝试融合西瓜书一起，从零开始，做到手推算法重理解，尽量直观展示备注说明，并在每章最后附上经典面试题，或者是一个案例实战（数据竞赛题之类），以期可以系统性的掌握一套方法论应对未来数据之战。</p>
+<p><strong>系列目录如下</strong></p>
+<p><a href="#1">一. 【统计学习方法死磕系列】感知机</a></p>
+<p><a href="#2">二. 【统计学习方法死磕系列】k 近邻法</a></p>
+<p><a href="#3">三. 【统计学习方法死磕系列】朴素贝叶斯法</a></p>
+<p><a href="#4">四. 【统计学习方法死磕系列】决策树</a></p>
+<p><a href="#5">五. 【统计学习方法死磕系列】逻辑回归与最大熵模型</a></p>
+<p><a href="#6">六. 【统计学习方法死磕系列】支持向量机</a></p>
+<p><a href="#7">七. 【统计学习方法死磕系列】提升方法</a></p>
+<p><a href="#8">八. 【统计学习方法死磕系列】EM算法</a></p>
+<p><a href="#9">九. 【统计学习方法死磕系列】隐马尔可夫模型</a></p>
+<p><a href="#10">十. 【统计学习方法死磕系列】条件随机场</a></p>
+<p>继《统计学习方法》一书之后，接下来着手的是有着”AI圣经”之称的《模式识别和机器学习》，业界普遍称其为PRML，相信任何一个搞机器学习、深度学习的人都应该听说过甚至看过，它共有14章节的内容，且每一章都是干货满满。整体目录如下：</p>
+<p><strong>系列目录如下</strong></p>
+<pre><code>第一章 介绍
+
+第二章 概率分布
+
+第三章 线性回归模型
+
+第四章 线性分类模型
+
+第五章 神经网络
+
+第六章 内核方法：双重表征、构造内核、径向基函数网络、高斯过程
+
+第七章 稀疏内核机器：最大边距分类器、相关向量机
+
+第八章 图形模型：贝叶斯网络、条件独立、马尔科夫随机场、图形模型中的推理
+
+第九章 混合模型和EM：K-means聚类、高斯混合、EM算法
+
+第十章 近似推断
+
+第十一章 采样方法
+
+第十二章 连续潜在变量
+
+第十三章 顺序数据
+
+第十四章 组合模型
+</code></pre>
+<p>更令人兴奋地是，目前PRML已经被微软”开源”啦</p>
+<p><strong>传送门</strong></p>
+<p><a target="_blank" rel="noopener" href="https://www.microsoft.com/en-us/research/people/cmbishop/#!prml-book">下载页</a><br><a target="_blank" rel="noopener" href="https://www.microsoft.com/en-us/research/uploads/prod/2006/01/Bishop-Pattern-Recognition-and-Machine-Learning-2006.pdf">全书链接（758页）</a><br><a target="_blank" rel="noopener" href="http://prml.github.io/">Matlab实现</a></p>
+<p><strong>附上学习路线图</strong></p>
+<p><img alt="机器学习脑图.jpg" data-src="https://i.loli.net/2019/12/20/qMxPbg3GTROIorf.png" class="lazyload"></p>
+<h2 id="一、回望-2019：一个-ML-新手的自白"><a href="#一、回望-2019：一个-ML-新手的自白" class="headerlink" title="一、回望 2019：一个 ML 新手的自白"></a>一、回望 2019：一个 ML 新手的自白</h2><p>半年时间，从对机器学习只有模糊概念到能动手推导 SVM 的 KKT 条件、能读懂 LDA 的 Gibbs 采样，回头看来，这段自学之路走得磕磕绊绊但收获满满。整理一下这一路的经验和踩过的坑，也许能帮到同样在自学路上挣扎的同学。</p>
+<h3 id="1-1-踩过的坑"><a href="#1-1-踩过的坑" class="headerlink" title="1.1 踩过的坑"></a>1.1 踩过的坑</h3><p><strong>坑一：眼高手低，只看不写。</strong></p>
+<p>最初看 Andrew Ng 的课程时，觉得”这个简单啊，梯度下降不就是求导后下坡吗”，于是一路刷完视频，连课后作业都没做。结果一遇到真实数据就傻眼——学习率设多少？特征要不要归一化？训练不收敛怎么办？这些问题在视频里没有标准答案，只有亲自写代码才会遇到。<strong>代码一行不写，等于没学。</strong></p>
+<p><strong>坑二：贪多嚼不烂，同时看多本书。</strong></p>
+<p>西瓜书、统计学习方法、PRML、花书、深度学习……每一本都翻了几十页，每一本都没读完。东一榔头西一棒槌，知识不成体系。后来悟到一个道理：<strong>在同一阶段专心啃完一本书，胜过同时读十本书的前两章。</strong></p>
+<p><strong>坑三：忽视数学基础，急于上模型。</strong></p>
+<p>一开始看到 SVM 的对偶问题就跳过去，觉得”反正 sklearn 里有现成的”。后来发现在面试中，面试官最喜欢刨根问底——“为什么用对偶？核函数是怎么引入的？KKT 条件在这个问题里扮演什么角色？”这些问题的答案不在一行 <code>fit()</code> 调用里，而在凸优化和泛函分析的理论中。</p>
+<p><strong>坑四：只有输入没有输出，学了就忘。</strong></p>
+<p>看了再多的推导，如果不自己写出来、讲出来，三天就忘了。后来养成了一个习惯：每学完一个算法，就写一篇博客，包含手推公式、数值例子和代码。虽然费时间，但写完之后这个算法基本就”焊”在脑子里了。<strong>费曼学习法的核心就是：以教促学。</strong></p>
+<h3 id="1-2-一点体会"><a href="#1-2-一点体会" class="headerlink" title="1.2 一点体会"></a>1.2 一点体会</h3><p>机器学习的学习曲线不是线性的——它更像台阶式的。开始很长一段时间你感觉自己原地踏步，然后某一天突然”通”了，之前分散的知识点串联起来了。这个顿悟时刻通常发生在你把某个算法从头到尾完整推导一遍之后。</p>
+<p>所以，耐心。给自己时间。</p>
+<h2 id="二、机器学习知识体系全景图"><a href="#二、机器学习知识体系全景图" class="headerlink" title="二、机器学习知识体系全景图"></a>二、机器学习知识体系全景图</h2><p>经过半年的学习，我逐渐梳理出一张 ML 知识地图。它将机器学习需要掌握的内容分为四大板块，每个板块有其核心主题和关键知识点。</p>
+<h3 id="2-1-板块一：数学基础"><a href="#2-1-板块一：数学基础" class="headerlink" title="2.1 板块一：数学基础"></a>2.1 板块一：数学基础</h3><table>
+<thead>
+<tr>
+<th>主题</th>
+<th>核心内容</th>
+<th>重要程度</th>
+<th>推荐资源</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>线性代数</td>
+<td>矩阵运算、特征值与特征向量、SVD、矩阵微积分</td>
+<td>★★★★★</td>
+<td>Gilbert Strang MIT 18.06</td>
+</tr>
+<tr>
+<td>概率论</td>
+<td>条件概率、贝叶斯定理、常见分布族、大数定律</td>
+<td>★★★★★</td>
+<td>《概率论与数理统计》浙大版</td>
+</tr>
+<tr>
+<td>信息论</td>
+<td>熵、交叉熵、KL 散度、互信息</td>
+<td>★★★★</td>
+<td>Cover &amp; Thomas 前几章</td>
+</tr>
+<tr>
+<td>最优化</td>
+<td>梯度下降、拉格朗日对偶、KKT 条件、凸优化基础</td>
+<td>★★★★★</td>
+<td>Boyd &amp; Vandenberghe（选读）</td>
+</tr>
+<tr>
+<td>统计推断</td>
+<td>极大似然、贝叶斯推断、假设检验</td>
+<td>★★★★</td>
+<td>Casella &amp; Berger</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-板块二：经典机器学习算法"><a href="#2-2-板块二：经典机器学习算法" class="headerlink" title="2.2 板块二：经典机器学习算法"></a>2.2 板块二：经典机器学习算法</h3><p>按”是否适用于 80% 的问题”排序：</p>
+<table>
+<thead>
+<tr>
+<th>优先级</th>
+<th>算法</th>
+<th>核心概念</th>
+<th>为什么重要</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>P0</td>
+<td>线性回归 &#x2F; 逻辑回归</td>
+<td>线性模型、梯度下降、正则化</td>
+<td>所有模型的基础，面试必考</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>决策树 &#x2F; 随机森林 &#x2F; GBDT &#x2F; XGBoost</td>
+<td>树模型、集成学习</td>
+<td>竞赛利器，工业界最常用</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>SVM</td>
+<td>最大间隔、对偶、核技巧</td>
+<td>理论深度的试金石</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>朴素贝叶斯</td>
+<td>贝叶斯定理、条件独立</td>
+<td>文本分类、简单但有效</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>k-NN</td>
+<td>距离度量、懒惰学习</td>
+<td>理解距离与相似度</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>K-means &#x2F; GMM &#x2F; DBSCAN</td>
+<td>聚类、密度估计、EM 算法</td>
+<td>无监督学习的基石</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>PCA &#x2F; LDA</td>
+<td>降维、特征分解</td>
+<td>数据预处理和高维可视化</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>EM 算法</td>
+<td>隐变量、Jensen 不等式</td>
+<td>理解更复杂模型的基础</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>HMM &#x2F; CRF</td>
+<td>序列模型、动态规划</td>
+<td>NLP 和时序模型</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>PageRank &#x2F; LSA &#x2F; LDA</td>
+<td>图算法、主题模型</td>
+<td>理解机器学习的广度</td>
+</tr>
+</tbody></table>
+<h3 id="2-3-板块三：深度学习"><a href="#2-3-板块三：深度学习" class="headerlink" title="2.3 板块三：深度学习"></a>2.3 板块三：深度学习</h3><table>
+<thead>
+<tr>
+<th>主题</th>
+<th>核心内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>前馈网络</td>
+<td>MLP、反向传播、激活函数、初始化、归一化</td>
+</tr>
+<tr>
+<td>CNN</td>
+<td>卷积、池化、经典架构（ResNet, Inception, MobileNet）</td>
+</tr>
+<tr>
+<td>RNN &#x2F; LSTM &#x2F; GRU</td>
+<td>序列建模、门控机制、Attention</td>
+</tr>
+<tr>
+<td>Transformer</td>
+<td>Self-Attention、Multi-Head Attention、Positional Encoding</td>
+</tr>
+<tr>
+<td>生成模型</td>
+<td>VAE、GAN、扩散模型基础</td>
+</tr>
+<tr>
+<td>训练技巧</td>
+<td>学习率调度、正则化（Dropout, BN）、迁移学习</td>
+</tr>
+</tbody></table>
+<h3 id="2-4-板块四：工程与实践"><a href="#2-4-板块四：工程与实践" class="headerlink" title="2.4 板块四：工程与实践"></a>2.4 板块四：工程与实践</h3><table>
+<thead>
+<tr>
+<th>主题</th>
+<th>核心内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>特征工程</td>
+<td>特征构造、选择、编码、时间特征、文本特征</td>
+</tr>
+<tr>
+<td>模型评估</td>
+<td>交叉验证、AUC-ROC、混淆矩阵、偏差-方差分解</td>
+</tr>
+<tr>
+<td>调参与 AutoML</td>
+<td>网格搜索、贝叶斯优化、Optuna</td>
+</tr>
+<tr>
+<td>工程部署</td>
+<td>Flask&#x2F;FastAPI 部署、TensorRT、ONNX、模型量化</td>
+</tr>
+<tr>
+<td>大数据工具</td>
+<td>Spark MLlib、Ray、Dask</td>
+</tr>
+<tr>
+<td>MLOps</td>
+<td>实验追踪、模型版本管理、CI&#x2F;CD for ML</td>
+</tr>
+</tbody></table>
+<h2 id="三、四阶段学习路线"><a href="#三、四阶段学习路线" class="headerlink" title="三、四阶段学习路线"></a>三、四阶段学习路线</h2><p>基于以上知识体系，我规划了一个四阶段学习路线。</p>
+<h3 id="阶段一：入门（1-2-个月）"><a href="#阶段一：入门（1-2-个月）" class="headerlink" title="阶段一：入门（1-2 个月）"></a>阶段一：入门（1-2 个月）</h3><p><strong>目标</strong>：建立对机器学习的整体认知，能独立完成端到端的 ML 项目。</p>
+<p><strong>学习内容</strong>：</p>
+<ul>
+<li>Andrew Ng《Machine Learning》Coursera 课程（完成所有编程作业）</li>
+<li>用 sklearn 跑通 iris、titanic、boston housing 等经典数据集</li>
+<li>学习 pandas、numpy、matplotlib 基础</li>
+</ul>
+<p><strong>检验标准</strong>：能在 Kaggle 上独立完成 Titanic 和 House Prices 两个入门赛，提交并看懂 leaderboard。</p>
+<h3 id="阶段二：理论深化（3-5-个月）"><a href="#阶段二：理论深化（3-5-个月）" class="headerlink" title="阶段二：理论深化（3-5 个月）"></a>阶段二：理论深化（3-5 个月）</h3><p><strong>目标</strong>：深入理解经典 ML 算法的数学原理，能手动推导核心公式。</p>
+<p><strong>学习内容</strong>：</p>
+<ul>
+<li>精读《统计学习方法》（李航）+ 《机器学习》（周志华，西瓜书）</li>
+<li>每个算法完成：手推公式 + 从零实现 + 博客总结</li>
+<li>补充线性代数和概率论的知识盲区</li>
+</ul>
+<p><strong>检验标准</strong>：李航《统计学习方法》中每一个算法都能：</p>
+<ol>
+<li>不看书写出数学推导</li>
+<li>不用 sklearn 实现一遍</li>
+<li>讲清楚它为什么有效、什么时候会失效</li>
+</ol>
+<h3 id="阶段三：实战与拓展（3-4-个月）"><a href="#阶段三：实战与拓展（3-4-个月）" class="headerlink" title="阶段三：实战与拓展（3-4 个月）"></a>阶段三：实战与拓展（3-4 个月）</h3><p><strong>目标</strong>：将在 Kaggle&#x2F;天池竞赛中锻炼实战能力，拓宽算法视野。</p>
+<p><strong>学习内容</strong>：</p>
+<ul>
+<li>参加 3-5 个 Kaggle 竞赛（至少一个拿银牌）</li>
+<li>深入学习 GBDT&#x2F;XGBoost&#x2F;LightGBM&#x2F;CatBoost</li>
+<li>学习特征工程的系统方法论</li>
+<li>PRML 选读（重点章节：3-5, 8-9, 11-12）</li>
+</ul>
+<p><strong>检验标准</strong>：Kaggle 至少一枚银牌；能总结出自己的竞赛方法论。</p>
+<h3 id="阶段四：专业化（持续进行）"><a href="#阶段四：专业化（持续进行）" class="headerlink" title="阶段四：专业化（持续进行）"></a>阶段四：专业化（持续进行）</h3><p><strong>目标</strong>：选择一个方向深挖，建立领域专长。</p>
+<p><strong>可选项</strong>：</p>
+<ul>
+<li><strong>NLP 方向</strong>：CS224n + Transformers + BERT&#x2F;GPT 家族</li>
+<li><strong>CV 方向</strong>：CS231n + 目标检测 + 图像分割</li>
+<li><strong>推荐系统</strong>：协同过滤 + 深度学习推荐 + 实时推荐架构</li>
+<li><strong>强化学习</strong>：MDP + Q-Learning + Policy Gradient + PPO</li>
+</ul>
+<h2 id="四、推荐书单与阅读顺序"><a href="#四、推荐书单与阅读顺序" class="headerlink" title="四、推荐书单与阅读顺序"></a>四、推荐书单与阅读顺序</h2><p>基于半年踩坑经验，我推荐以下阅读顺序。</p>
+<h3 id="4-1-入门必读"><a href="#4-1-入门必读" class="headerlink" title="4.1 入门必读"></a>4.1 入门必读</h3><table>
+<thead>
+<tr>
+<th>序号</th>
+<th>书名</th>
+<th>理由</th>
+<th>难度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>《机器学习》（周志华，西瓜书）</td>
+<td>中文最佳入门，覆盖面广</td>
+<td>★★★</td>
+</tr>
+<tr>
+<td>2</td>
+<td>《统计学习方法》（李航）</td>
+<td>算法推导最详尽，面试必备</td>
+<td>★★★★</td>
+</tr>
+<tr>
+<td>3</td>
+<td>《机器学习实战》</td>
+<td>代码驱动，建立直觉</td>
+<td>★★</td>
+</tr>
+</tbody></table>
+<h3 id="4-2-进阶必读"><a href="#4-2-进阶必读" class="headerlink" title="4.2 进阶必读"></a>4.2 进阶必读</h3><table>
+<thead>
+<tr>
+<th>序号</th>
+<th>书名</th>
+<th>理由</th>
+<th>难度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>4</td>
+<td>《Pattern Recognition and Machine Learning》（Bishop）</td>
+<td>贝叶斯视角，理论深厚</td>
+<td>★★★★★</td>
+</tr>
+<tr>
+<td>5</td>
+<td>《The Elements of Statistical Learning》（ESL）</td>
+<td>统计学习圣经</td>
+<td>★★★★★</td>
+</tr>
+<tr>
+<td>6</td>
+<td>《Deep Learning》（花书，Goodfellow 等）</td>
+<td>深度学习理论奠基之作</td>
+<td>★★★★★</td>
+</tr>
+</tbody></table>
+<h3 id="4-3-实战与专题"><a href="#4-3-实战与专题" class="headerlink" title="4.3 实战与专题"></a>4.3 实战与专题</h3><table>
+<thead>
+<tr>
+<th>书名</th>
+<th>主题</th>
+<th>适合阶段</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>《百面机器学习》</td>
+<td>面试题解</td>
+<td>阶段二&#x2F;三</td>
+</tr>
+<tr>
+<td>《Approaching (Almost) Any ML Problem》</td>
+<td>Kaggle 实战</td>
+<td>阶段三</td>
+</tr>
+<tr>
+<td>《Feature Engineering for ML》</td>
+<td>特征工程</td>
+<td>阶段三</td>
+</tr>
+<tr>
+<td>《Designing Machine Learning Systems》</td>
+<td>ML 系统设计</td>
+<td>阶段四</td>
+</tr>
+</tbody></table>
+<h3 id="4-4-阅读建议"><a href="#4-4-阅读建议" class="headerlink" title="4.4 阅读建议"></a>4.4 阅读建议</h3><ol>
+<li><strong>不要跳跃</strong>：先读完西瓜书，再读李航《统计学习方法》，再读 PRML&#x2F;ESL。每本书都有自己的体系，混读只会一片混乱。</li>
+<li><strong>交叉阅读</strong>：遇到某个概念看不懂，不要死磕。换另一本书看同一章节，不同作者的表述常常能互相补充。</li>
+<li><strong>以代码检验理解</strong>：每读一章理论，就找相应的数据集写代码验证。</li>
+<li><strong>做好笔记</strong>：建立自己的 ML 知识库（Notion&#x2F;博客均可），方便随时查阅和面试前复习。</li>
+</ol>
+<h2 id="五、2019-年机器学习领域回顾"><a href="#五、2019-年机器学习领域回顾" class="headerlink" title="五、2019 年机器学习领域回顾"></a>五、2019 年机器学习领域回顾</h2><p>站在 2019 年末回望，这一年 ML 领域发生了许多里程碑式的事件。</p>
+<h3 id="5-1-自然语言处理：BERT-之年"><a href="#5-1-自然语言处理：BERT-之年" class="headerlink" title="5.1 自然语言处理：BERT 之年"></a>5.1 自然语言处理：BERT 之年</h3><p>2018 年底 BERT 发布，2019 年是 BERT 全面统治的一年。从 GLUE 到 SQuAD，BERT 及其变体（RoBERTa, ALBERT, DistilBERT, XLNet）刷新了几乎所有 NLP 基准。</p>
+<p>关键趋势：</p>
+<ul>
+<li><strong>预训练 + 微调</strong> 成为 NLP 的标配范式</li>
+<li>模型越做越大：从 BERT-base（110M 参数）到 GPT-2（1.5B 参数）</li>
+<li>出现了专注于高效推理的轻量模型（DistilBERT, TinyBERT）</li>
+</ul>
+<h3 id="5-2-计算机视觉：EfficientNet-和自监督学习"><a href="#5-2-计算机视觉：EfficientNet-和自监督学习" class="headerlink" title="5.2 计算机视觉：EfficientNet 和自监督学习"></a>5.2 计算机视觉：EfficientNet 和自监督学习</h3><ul>
+<li>EfficientNet 用神经架构搜索（NAS）找到了一族在精度和效率之间平衡最佳的模型</li>
+<li>自监督学习（MoCo, SimCLR）开始崭露头角——不用标签也能学出好的视觉表示</li>
+<li>StyleGAN 和 StyleGAN2 将图像生成的质量推到了以假乱真的新高度</li>
+</ul>
+<h3 id="5-3-强化学习：AlphaStar-和-OpenAI-Five"><a href="#5-3-强化学习：AlphaStar-和-OpenAI-Five" class="headerlink" title="5.3 强化学习：AlphaStar 和 OpenAI Five"></a>5.3 强化学习：AlphaStar 和 OpenAI Five</h3><ul>
+<li>DeepMind 的 AlphaStar 在《星际争霸II》中击败了 99.8% 的人类玩家</li>
+<li>OpenAI Five 在 Dota 2 中击败了世界冠军 OG 战队</li>
+<li>这些里程碑展示了 RL 在不完全信息、长期规划问题上的潜力</li>
+</ul>
+<h3 id="5-4-框架生态：PyTorch-崛起，TensorFlow-2-0-发布"><a href="#5-4-框架生态：PyTorch-崛起，TensorFlow-2-0-发布" class="headerlink" title="5.4 框架生态：PyTorch 崛起，TensorFlow 2.0 发布"></a>5.4 框架生态：PyTorch 崛起，TensorFlow 2.0 发布</h3><ul>
+<li>PyTorch 凭借动态图和 Pythonic 的 API 在学术界份额大幅增长</li>
+<li>TensorFlow 2.0 转向 eager execution 默认模式，并集成了 Keras</li>
+<li>两大框架的竞争推动了整个生态的成熟</li>
+</ul>
+<h3 id="5-5-值得关注的-SOTA-论文（2019）"><a href="#5-5-值得关注的-SOTA-论文（2019）" class="headerlink" title="5.5 值得关注的 SOTA 论文（2019）"></a>5.5 值得关注的 SOTA 论文（2019）</h3><table>
+<thead>
+<tr>
+<th>论文</th>
+<th>领域</th>
+<th>贡献</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>BERT</td>
+<td>NLP</td>
+<td>Transformer 双向预训练</td>
+</tr>
+<tr>
+<td>EfficientNet</td>
+<td>CV</td>
+<td>NAS + 复合缩放</td>
+</tr>
+<tr>
+<td>MoCo</td>
+<td>CV</td>
+<td>动量对比自监督学习</td>
+</tr>
+<tr>
+<td>XLNet</td>
+<td>NLP</td>
+<td>排列语言模型</td>
+</tr>
+<tr>
+<td>StyleGAN2</td>
+<td>CV</td>
+<td>高质量图像生成</td>
+</tr>
+<tr>
+<td>GPT-2</td>
+<td>NLP</td>
+<td>大规模语言模型的 zero-shot 能力</td>
+</tr>
+</tbody></table>
+<h2 id="六、机器学习面试准备路线图"><a href="#六、机器学习面试准备路线图" class="headerlink" title="六、机器学习面试准备路线图"></a>六、机器学习面试准备路线图</h2><p>打算找 ML 相关工作的同学，面试准备可以从以下几个方面着手。</p>
+<h3 id="6-1-算法理论（必须能手推）"><a href="#6-1-算法理论（必须能手推）" class="headerlink" title="6.1 算法理论（必须能手推）"></a>6.1 算法理论（必须能手推）</h3><p>面试官最喜欢让你在白板上推导的 10 个知识点：</p>
+<ol>
+<li><strong>逻辑回归</strong>：损失函数推导、梯度计算、为什么用交叉熵而不用 MSE</li>
+<li><strong>SVM</strong>：硬间隔&#x2F;软间隔的推导、对偶问题、KKT 条件、为什么引入核函数</li>
+<li><strong>决策树</strong>：信息增益、基尼指数、剪枝策略</li>
+<li><strong>GBDT&#x2F;XGBoost</strong>：梯度提升的原理、XGBoost 与 GBDT 的区别、二阶泰勒展开</li>
+<li><strong>EM 算法</strong>：Jensen 不等式、Q 函数、GMM 推导</li>
+<li><strong>PCA</strong>：两种等价推导、特征分解与 SVD</li>
+<li><strong>L1 vs L2 正则化</strong>：几何解释、为什么 L1 产生稀疏解</li>
+<li><strong>偏差-方差分解</strong>：公式推导、Bias-Variance Tradeoff</li>
+<li><strong>梯度消失&#x2F;爆炸</strong>：原因、解决方法（BN, 残差连接）</li>
+<li><strong>Batch Normalization</strong>：训练与推理的区别、为什么有效</li>
+</ol>
+<h3 id="6-2-编程实现"><a href="#6-2-编程实现" class="headerlink" title="6.2 编程实现"></a>6.2 编程实现</h3><p>以下模型必须能从零写出来（只用 numpy）：</p>
+<ul>
+<li>线性回归（含梯度下降）</li>
+<li>逻辑回归（含 SGD）</li>
+<li>k-means</li>
+<li>决策树（CART）</li>
+<li>多层感知机（含反向传播）</li>
+<li>至少一种 boosting（AdaBoost 或简单 GBDT）</li>
+</ul>
+<h3 id="6-3-场景题"><a href="#6-3-场景题" class="headerlink" title="6.3 场景题"></a>6.3 场景题</h3><p>常见的 ML 系统设计题：</p>
+<ul>
+<li>“设计一个推荐系统”</li>
+<li>“如何检测信用卡欺诈？”</li>
+<li>“如何做广告点击率预估？”</li>
+<li>“设计一个文本分类系统”</li>
+<li>“如何应对样本不平衡问题？”</li>
+</ul>
+<p>回答框架：数据 -&gt; 特征 -&gt; 模型 -&gt; 评估 -&gt; 上线 -&gt; 监控</p>
+<h3 id="6-4-项目经历"><a href="#6-4-项目经历" class="headerlink" title="6.4 项目经历"></a>6.4 项目经历</h3><ul>
+<li>至少 1-2 个完整的 ML 项目（Kaggle 竞赛或实际业务项目）</li>
+<li>能够讲清楚：问题的业务背景、数据特点、为什么选这个模型、评估指标的选择、遇到了什么问题、怎么解决的</li>
+</ul>
+<h2 id="七、FLAG-for-2020"><a href="#七、FLAG-for-2020" class="headerlink" title="七、FLAG for 2020"></a>七、FLAG for 2020</h2><p>借着年终总结的机会，立下 2020 年的学习 Flag：</p>
+<ol>
+<li><strong>完成【统计学习方法死磕系列】全部文章</strong>（本篇正是起点）</li>
+<li><strong>完成 PRML 重点章节的精读笔记</strong>（至少第 3, 4, 6, 8, 9, 11, 12 章）</li>
+<li><strong>Kaggle 拿至少一块银牌</strong></li>
+<li><strong>LeetCode 刷 100+ 题</strong>（ML 工程师同样需要 coding 基本功）</li>
+<li><strong>写 50 篇博客</strong>（以输出倒逼输入）</li>
+<li><strong>系统学习推荐系统</strong>，做一个端到端的推荐项目</li>
+</ol>
+<p>flag 已经立在这里了，明年的这个时候再来复盘。希望到时候能对自己说一句：你做到了。</p>
+<h2 id="八、给同样在自学-ML-的同学的一封信"><a href="#八、给同样在自学-ML-的同学的一封信" class="headerlink" title="八、给同样在自学 ML 的同学的一封信"></a>八、给同样在自学 ML 的同学的一封信</h2><p>如果你也在自学机器学习，以下几点是我用半年踩坑换来的经验，送给你：</p>
+<ol>
+<li><p><strong>打好数学基础再上模型</strong>。把线性代数中的特征值、矩阵分解、概率论中的贝叶斯定理和常见分布、最优化中的梯度下降搞懂，后面的路会好走很多。</p>
+</li>
+<li><p><strong>理论和代码并重</strong>。不要只看视频不写代码，也不要只调 sklearn 不推导。每天分配固定比例的时间给理论和实践。</p>
+</li>
+<li><p><strong>找同伴一起学</strong>。一个人自学太容易放弃。加入学习社群、组队打 Kaggle、在论坛上回答问题，这些都能帮你坚持下去。</p>
+</li>
+<li><p><strong>承认学习的非线性</strong>。有时你觉得自己一点都没进步，但实际上你正在从”能调 API”到”能改模型”的质变点上。坚持住。</p>
+</li>
+<li><p><strong>面试是你的阶段性检验</strong>。即使不急着找工作，也可以定期看看面试题。它们能告诉你业界真正看重什么、你的知识体系还缺什么。</p>
+</li>
+<li><p><strong>不要被大牛的履历吓到</strong>。每个大牛都是从”连梯度下降都不懂”的起点走出来的。接纳自己的学习节奏。</p>
+</li>
+</ol>
+<p>学 ML 是一场马拉松，不是百米冲刺。2019 年我迈出了第一步，2020 年继续死磕。</p>
+<p>与所有在路上的自学者共勉。</p>
+<h2 id="八点五、如何高效阅读-ML-论文"><a href="#八点五、如何高效阅读-ML-论文" class="headerlink" title="八点五、如何高效阅读 ML 论文"></a>八点五、如何高效阅读 ML 论文</h2><p>死磕书本固然重要，但机器学习是一个快速演进的领域，很多关键知识只存在于论文中。以下是我总结的论文阅读方法论。</p>
+<h3 id="论文阅读的三遍法"><a href="#论文阅读的三遍法" class="headerlink" title="论文阅读的三遍法"></a>论文阅读的三遍法</h3><table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>时间</th>
+<th>做什么</th>
+<th>目标</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>第一遍</td>
+<td>5-10 分钟</td>
+<td>读标题、摘要、introduction 最后一段、结论、所有图表</td>
+<td>判断是否值得深读</td>
+</tr>
+<tr>
+<td>第二遍</td>
+<td>30-60 分钟</td>
+<td>通读全文，跳过复杂证明，理解方法核心和实验设计</td>
+<td>理解”做了什么、效果如何”</td>
+</tr>
+<tr>
+<td>第三遍</td>
+<td>2-4 小时</td>
+<td>精读，推敲每个公式，在脑海里”复现”算法</td>
+<td>能给别人讲清楚</td>
+</tr>
+</tbody></table>
+<h3 id="论文笔记模板"><a href="#论文笔记模板" class="headerlink" title="论文笔记模板"></a>论文笔记模板</h3><p>每读完一篇重要论文，用以下模板做笔记：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">【论文信息】标题、作者、年份、会议/期刊</span><br><span class="line">【核心问题】这篇论文要解决什么问题？</span><br><span class="line">【关键洞见】为什么之前的方法不行？这篇的核心 insight 是什么？</span><br><span class="line">【方法概览】用 3-5 句话描述方法主干</span><br><span class="line">【关键技术】详细的算法/数学推导</span><br><span class="line">【实验结论】在哪些数据集上、对比了哪些方法、好了多少</span><br><span class="line">【局限性】作者指出的局限 + 你自己发现的</span><br><span class="line">【启发】对你的研究/工作有什么启发</span><br></pre></td></tr></table></figure>
+
+<h3 id="2019-年值得深读的论文推荐"><a href="#2019-年值得深读的论文推荐" class="headerlink" title="2019 年值得深读的论文推荐"></a>2019 年值得深读的论文推荐</h3><p>除了上文提到的年度 SOTA 论文，以下论文的”方法论”价值极高，建议精读：</p>
+<table>
+<thead>
+<tr>
+<th>论文</th>
+<th>为什么值得精读</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Attention Is All You Need (Vaswani et al., 2017)</td>
+<td>Transformer 架构的开山之作，论文写作和论证堪称典范</td>
+</tr>
+<tr>
+<td>Deep Residual Learning (He et al., 2016)</td>
+<td>残差连接的 insight 和 ablation study 极为缜密</td>
+</tr>
+<tr>
+<td>Adam (Kingma &amp; Ba, 2015)</td>
+<td>优化器设计的标杆论文，偏理论和偏实验的平衡极好</td>
+</tr>
+<tr>
+<td>Dropout (Srivastava et al., 2014)</td>
+<td>正则化方法的经典，写 regularization 论文的范本</td>
+</tr>
+<tr>
+<td>Batch Normalization (Ioffe &amp; Szegedy, 2015)</td>
+<td>如何将一个 trick 做到极致、论证到无可反驳</td>
+</tr>
+</tbody></table>
+<h3 id="论文与书本的关系"><a href="#论文与书本的关系" class="headerlink" title="论文与书本的关系"></a>论文与书本的关系</h3><p>不要把论文和书本对立起来。书本给你体系化的知识骨架，论文给你前沿的血肉。建议的学习方式是：</p>
+<ol>
+<li>先用书本（西瓜书&#x2F;统计学习方法&#x2F;PRML）建立对该领域的系统认知</li>
+<li>在读的过程中，如果某个方法被频繁引用（如 BERT, ResNet, Adam），就去找原论文精读</li>
+<li>精读时重点关注”为什么之前的方法不行”——这个动机往往比方法本身更有价值</li>
+<li>读完论文后回到书本，看能否用书本中的理论框架解释论文的创新点</li>
+</ol>
+<p>记住：读论文不是为了”知道 SOTA 是什么”，而是为了理解”为什么这样做能 work”。后者需要你同时站在理论和实践的交叉点上思考。</p>
+<h2 id="九、面试高频问题（关于学习方法）"><a href="#九、面试高频问题（关于学习方法）" class="headerlink" title="九、面试高频问题（关于学习方法）"></a>九、面试高频问题（关于学习方法）</h2><p><strong>Q1：自学 ML 应该先看哪本书？西瓜书还是统计学习方法？</strong></p>
+<p>如果你数学基础较好：先看《统计学习方法》。它对单个算法的推导非常详尽，全书条理清晰，适合建立”推导习惯”。但它的缺点是不包含决策树和神经网络等内容。</p>
+<p>如果你数学基础一般：先看《机器学习》（西瓜书）。它的覆盖面更广，包含了决策树、神经网络、聚类等，且每个算法都有直观解释。缺点是某些推导不够详尽。</p>
+<p>我的建议：两本书交叉看。看完统计学习方法的感知机、k-NN、朴素贝叶斯后，翻翻西瓜书同章节做补充。然后回来看统计学习方法的决策树（西瓜书的第 4 章）。</p>
+<p><strong>Q2：需要把所有算法的数学推导都背下来吗？</strong></p>
+<p>不需要”背”，但需要”能推”。区别在于：背是机械记忆，推导是理解因果链条。面试官让你推 SVM 的对偶，他不是想看你能默写公式，而是想看你能不能讲清楚”为什么要引入对偶”——这个问题的答案是：为了引入核函数（对偶形式中数据只以内积出现）和减少变量数（当特征维数 &gt; 样本数时）。</p>
+<p>理解了”为什么”，推导自然水到渠成。</p>
+<p><strong>Q3：什么时候开始打 Kaggle 比较合适？</strong></p>
+<p>学完逻辑回归、决策树和随机森林后就可以开始了。不需要等学完所有理论。Kaggle 的入门赛（Titanic, House Prices）是极好的学习素材——它们能让你直观地感受到特征工程的重要性、不同模型的差异、以及交叉验证的必要性。</p>
+<p>建议每学完一个模型就去找对应的 Kernel&#x2F;Notebook 学习别人的思路。先模仿，后超越。</p>
+<p><strong>Q4：ML 工程师需要多深的工程能力？</strong></p>
+<p>取决于你的目标。如果是研究型岗位，能写干净的代码、会用 PyTorch&#x2F;TensorFlow 就够了。如果是工程型岗位，除了 ML 知识外，你还需要：</p>
+<ul>
+<li>熟练的数据处理能力（SQL, Spark）</li>
+<li>基本的后端开发能力（能部署模型为 API）</li>
+<li>了解 Docker、Kubernetes</li>
+<li>了解模型优化（量化、剪枝、ONNX 导出）</li>
+<li>CI&#x2F;CD for ML（MLOps）</li>
+</ul>
+<p><strong>Q5：如何保持长期自学的动力？</strong></p>
+<p>两个核心策略：</p>
+<ol>
+<li><p><strong>以项目驱动学习</strong>。不要纯粹为了”学完这本书”而学习。找到一个你想做的项目（比如”做一个能识别猫品种的 App”），为了完成它去学你需要的知识。有目标的学习比无目标的学习效率高得多。</p>
+</li>
+<li><p><strong>建立反馈闭环</strong>。自学最大的敌人是不知道自己”学得对不对”。解决方式：写博客（读者反馈）、打 Kaggle（分数反馈）、参加面试（面试官反馈）。没有反馈的学习就像在黑暗中射箭，你永远不知道方向对不对。</p>
+</li>
+</ol>
+<p><strong>Q6：数学基础不够好，怎么补？</strong></p>
+<p>这个问题几乎每个自学者都会问。我的建议是”用到什么学什么，以算法为纲”——不要试图先把所有数学学完再开始 ML，那样会遥遥无期。</p>
+<p>具体操作：</p>
+<ol>
+<li><p><strong>线性代数</strong>：重点搞懂特征值&#x2F;特征向量、矩阵分解（SVD、EVD）、矩阵微积分。Gilbert Strang 的 MIT 18.06 公开课的前 15 讲就够了。不需要一上来就学 Jordan 标准型或矩阵分析。</p>
+</li>
+<li><p><strong>概率论</strong>：理解贝叶斯定理、条件概率、常见分布族（Gaussian, Bernoulli, Multinomial, Dirichlet, Beta, Gamma）的形式和共轭关系。浙大概率论教材 + 一个 cheat sheet 足矣。</p>
+</li>
+<li><p><strong>最优化</strong>：先搞懂梯度下降（BGD, SGD, Mini-batch）、拉格朗日乘子法、KKT 条件的直观含义。Boyd 的凸优化是大部头，建议当参考书而非教材——遇到不懂的概念再查。</p>
+</li>
+<li><p><strong>信息论</strong>：只需要理解熵、交叉熵、KL 散度的定义和它们之间的关系。Cover &amp; Thomas 的书前两章就够了。</p>
+</li>
+</ol>
+<p>核心原则：<strong>不要脱离算法学数学</strong>。当你在推导 SVM 对偶问题时遇到了拉格朗日乘子法，这时去学最优化是最有效率的——你知道为什么要学、学了能解决什么问题。</p>
+<p><strong>Q7：工作了以后，如何保持持续学习的节奏？</strong></p>
+<p>这个问题非常现实。工作后的大块时间会明显减少，碎片化学习成为常态。以下策略对我有效：</p>
+<ol>
+<li><p><strong>固定时段</strong>：每天固定 1-2 小时（如早上 6:30-8:00 或晚上 9:00-10:30）用于学习，雷打不动。周末至少拿出半天做深度学习。</p>
+</li>
+<li><p><strong>以项目定学习</strong>：不要为了学而学。定了要做一个推荐系统项目，然后为了完成它去学协同过滤、SVD、DNN for recommendation——有目标的学习效率远高于漫无目的的看书。</p>
+</li>
+<li><p><strong>碎片时间读论文</strong>：通勤、排队等碎片时间用手机读论文的第一遍（abstract + conclusion + figures），标记需要精读的论文。大块时间再做第二遍、第三遍的精读和推导。</p>
+</li>
+<li><p><strong>利用输出倒逼输入</strong>：给自己定下”每周写一篇博客”的目标。为了写一篇有质量的博客，你自然需要深入理解、查阅资料、验证代码。这个过程本身就是最高效的学习。</p>
+</li>
+<li><p><strong>建立知识索引而非知识存储</strong>：不要试图把所有知识点都记在脑子里。建立”问题 -&gt; 在哪能找到答案”的索引就够了。面试或项目需要时，你知道去哪里找。</p>
+</li>
+</ol>
+<p>记住：持续学习的敌人不是时间不够，是丧失动力。保持动力最好的方式就是不断看到自己”能做出以前做不出的东西”。</p>
+<p><strong>Q8：PRML 这本书到底怎么读？</strong></p>
+<p>PRML（Bishop, 2006）是 ML 领域公认的”圣经”之一，但 758 页的体量确实让人望而生畏。以下是我规划的精读策略：</p>
+<ol>
+<li><p><strong>优先章节</strong>（必须先读）：第 1 章（介绍）、第 2 章（概率分布）、第 3 章（线性回归模型）。这三章建立了全书贝叶斯视角的基础语言。</p>
+</li>
+<li><p><strong>核心章节</strong>（按需选读）：第 4 章（线性分类模型，对比逻辑回归和 SVM）、第 6 章（核方法，理解高斯过程）、第 8 章（图模型，理解变量间的条件独立结构）、第 9 章（混合模型与 EM）、第 11-12 章（采样方法与连续潜变量，理解 MCMC 和 PCA）。</p>
+</li>
+<li><p><strong>进阶章节</strong>（有充足时间再读）：第 5 章（神经网络，内容偏旧但框架仍然有价值）、第 7 章（稀疏核机，RVM 如今用得少但方法论有价值）、第 10 章（近似推断，变分推断的早期论述）。</p>
+</li>
+<li><p><strong>每章的习题</strong>：PRML 的习题非常出名地难，但也非常出色。建议至少做每章的前 5 道题。答案可以在网上找到（有非官方的解答集）。</p>
+</li>
+</ol>
+<p>阅读节奏建议：每周读一章（约 30-50 页），配合手推公式和代码实现。一本书读完大约需要 3-4 个月。</p>
+<hr>
+<p>这篇写在 2019 尾巴上的文字，既是对过去的总结，也是对未来的期许。FLAG 已经立好，接下来的【统计学习方法死磕系列】系列文章，就是我在 2020 年践行的第一步。</p>
+<p>Keep calm and keep learning.</p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2019/12/28/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E5%86%99%E5%9C%A819%E5%B9%B4%E5%B0%BE%E5%B7%B4/">http://tufusi.com/2019/12/28/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E5%86%99%E5%9C%A819%E5%B9%B4%E5%B0%BE%E5%B7%B4/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nicolas-j-leclercq-YG20AZCeklo-unsplash.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2020/01/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%84%9F%E7%9F%A5%E6%9C%BA/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nareeta-martin-wM59pRQYbhs-unsplash.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【统计学习方法死磕系列】感知机</span></div></a></div><div class="next-post pull_right"><a href="/2019/12/10/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91Kernel-Logistic-Regression-and-the-Import-Vector-Machine/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/kelly-sikkema-cXkrqY2wFyc-unsplash.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【论文笔记】Kernel Logistic Regression and the Import Vector Machine</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nicolas-j-leclercq-YG20AZCeklo-unsplash.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

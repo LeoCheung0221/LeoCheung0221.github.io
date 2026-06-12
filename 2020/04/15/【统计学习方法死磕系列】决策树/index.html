@@ -1,0 +1,1315 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【统计学习方法死磕系列】决策树 | ONE·PIECE</title><meta name="description" content="【统计学习方法死磕系列】决策树"><meta name="keywords" content="决策树,CART,读书笔记"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【统计学习方法死磕系列】决策树"><meta name="twitter:description" content="【统计学习方法死磕系列】决策树"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nareeta-martin-wM59pRQYbhs-unsplash.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【统计学习方法死磕系列】决策树"><meta property="og:url" content="http://tufusi.com/2020/04/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E5%86%B3%E7%AD%96%E6%A0%91/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【统计学习方法死磕系列】决策树"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nareeta-martin-wM59pRQYbhs-unsplash.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2020/04/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E5%86%B3%E7%AD%96%E6%A0%91/"><link rel="prev" title="【统计学习方法死磕系列Ⅱ】聚类算法" href="http://tufusi.com/2020/05/01/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E2%85%A1%E3%80%91%E8%81%9A%E7%B1%BB%E7%AE%97%E6%B3%95/"><link rel="next" title="【统计学习方法死磕系列Ⅱ】奇异值分解" href="http://tufusi.com/2020/04/01/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E2%85%A1%E3%80%91%E5%A5%87%E5%BC%82%E5%80%BC%E5%88%86%E8%A7%A3/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">写在前面</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#1-%E5%86%B3%E7%AD%96%E6%A0%91%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">1. 决策树的基本概念</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-%E4%BB%80%E4%B9%88%E6%98%AF%E5%86%B3%E7%AD%96%E6%A0%91"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">1.1 什么是决策树</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-2-%E5%86%B3%E7%AD%96%E6%A0%91%E5%AD%A6%E4%B9%A0%E7%9A%84%E4%B8%89%E4%B8%AA%E5%85%B3%E9%94%AE%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">1.2 决策树学习的三个关键问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-3-%E5%86%B3%E7%AD%96%E6%A0%91%E7%9A%84%E5%87%A0%E4%BD%95%E8%A7%A3%E9%87%8A"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">1.3 决策树的几何解释</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-4-%E5%86%B3%E7%AD%96%E6%A0%91%E7%AE%97%E6%B3%95%E5%AE%B6%E6%97%8F%E6%A6%82%E8%A7%88"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">1.4 决策树算法家族概览</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9%E5%87%86%E5%88%99"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">2. 特征选择准则</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E7%86%B5%EF%BC%88Entropy%EF%BC%89"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">2.1 熵（Entropy）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E6%9D%A1%E4%BB%B6%E7%86%B5%EF%BC%88Conditional-Entropy%EF%BC%89"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">2.2 条件熵（Conditional Entropy）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-%E4%BF%A1%E6%81%AF%E5%A2%9E%E7%9B%8A%EF%BC%88Information-Gain%EF%BC%89"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">2.3 信息增益（Information Gain）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-4-%E4%BF%A1%E6%81%AF%E5%A2%9E%E7%9B%8A%E6%AF%94%EF%BC%88Information-Gain-Ratio%EF%BC%89"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">2.4 信息增益比（Information Gain Ratio）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-5-%E5%9F%BA%E5%B0%BC%E6%8C%87%E6%95%B0%EF%BC%88Gini-Index%EF%BC%89"><span class="toc_mobile_items-number">3.5.</span> <span class="toc_mobile_items-text">2.5 基尼指数（Gini Index）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-6-%E6%9C%80%E5%B0%8F%E4%BA%8C%E4%B9%98%E5%9B%9E%E5%BD%92%E6%A0%91%E7%9A%84%E5%88%86%E8%A3%82%E5%87%86%E5%88%99"><span class="toc_mobile_items-number">3.6.</span> <span class="toc_mobile_items-text">2.6 最小二乘回归树的分裂准则</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-ID3-%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">3. ID3 算法</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E7%AE%97%E6%B3%95%E6%8F%8F%E8%BF%B0"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">3.1 算法描述</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-ID3-%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B%EF%BC%88%E4%BC%AA%E4%BB%A3%E7%A0%81%EF%BC%89"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">3.2 ID3 算法流程（伪代码）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-ID3-%E7%9A%84%E6%95%B0%E5%80%BC%E8%AE%A1%E7%AE%97%E6%A1%88%E4%BE%8B"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">3.3 ID3 的数值计算案例</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-ID3-%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc_mobile_items-number">4.4.</span> <span class="toc_mobile_items-text">3.4 ID3 的局限性</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-C4-5-%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">4. C4.5 算法</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E4%BF%A1%E6%81%AF%E5%A2%9E%E7%9B%8A%E6%AF%94%E6%9B%BF%E4%BB%A3%E4%BF%A1%E6%81%AF%E5%A2%9E%E7%9B%8A"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">4.1 信息增益比替代信息增益</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E8%BF%9E%E7%BB%AD%E7%89%B9%E5%BE%81%E5%A4%84%E7%90%86"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">4.2 连续特征处理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-%E7%BC%BA%E5%A4%B1%E5%80%BC%E5%A4%84%E7%90%86"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">4.3 缺失值处理</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%E8%AE%A1%E7%AE%97%E6%96%B9%E6%B3%95"><span class="toc_mobile_items-number">5.3.1.</span> <span class="toc_mobile_items-text">计算方法</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-4-%E5%89%AA%E6%9E%9D%E7%AD%96%E7%95%A5%EF%BC%88PEP-Pessimistic-Error-Pruning%EF%BC%89"><span class="toc_mobile_items-number">5.4.</span> <span class="toc_mobile_items-text">4.4 剪枝策略（PEP - Pessimistic Error Pruning）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-CART%EF%BC%88Classification-and-Regression-Tree%EF%BC%89"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">5. CART（Classification and Regression Tree）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-CART-%E5%88%86%E7%B1%BB%E6%A0%91"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">5.1 CART 分类树</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#5-1-1-%E5%9F%BA%E5%B0%BC%E6%8C%87%E6%95%B0%E9%80%89%E6%8B%A9%E7%89%B9%E5%BE%81"><span class="toc_mobile_items-number">6.1.1.</span> <span class="toc_mobile_items-text">5.1.1 基尼指数选择特征</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#5-1-2-CART-%E5%88%86%E7%B1%BB%E6%A0%91%E7%9A%84%E7%94%9F%E6%88%90%EF%BC%88%E4%BC%AA%E4%BB%A3%E7%A0%81%EF%BC%89"><span class="toc_mobile_items-number">6.1.2.</span> <span class="toc_mobile_items-text">5.1.2 CART 分类树的生成（伪代码）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-CART-%E5%9B%9E%E5%BD%92%E6%A0%91"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">5.2 CART 回归树</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#5-2-1-%E6%9C%80%E5%B0%8F%E4%BA%8C%E4%B9%98%E5%87%86%E5%88%99"><span class="toc_mobile_items-number">6.2.1.</span> <span class="toc_mobile_items-text">5.2.1 最小二乘准则</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#5-2-2-%E5%9B%9E%E5%BD%92%E6%A0%91%E7%9A%84%E6%95%B0%E5%80%BC%E6%A1%88%E4%BE%8B"><span class="toc_mobile_items-number">6.2.2.</span> <span class="toc_mobile_items-text">5.2.2 回归树的数值案例</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-CART-%E7%9A%84%E5%89%AA%E6%9E%9D%EF%BC%9A%E4%BB%A3%E4%BB%B7%E5%A4%8D%E6%9D%82%E5%BA%A6%E5%89%AA%E6%9E%9D%EF%BC%88CCP%EF%BC%89"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">5.3 CART 的剪枝：代价复杂度剪枝（CCP）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#5-3-1-%E4%BB%A3%E4%BB%B7%E5%A4%8D%E6%9D%82%E5%BA%A6%E5%BA%A6%E9%87%8F"><span class="toc_mobile_items-number">6.3.1.</span> <span class="toc_mobile_items-text">5.3.1 代价复杂度度量</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#5-3-2-%E5%89%AA%E6%9E%9D%E8%BF%87%E7%A8%8B"><span class="toc_mobile_items-number">6.3.2.</span> <span class="toc_mobile_items-text">5.3.2 剪枝过程</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#5-3-3-1-SE-%E8%A7%84%E5%88%99"><span class="toc_mobile_items-number">6.3.3.</span> <span class="toc_mobile_items-text">5.3.3 1-SE 规则</span></a></li></ol></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-%E9%A2%84%E5%89%AA%E6%9E%9D%E4%B8%8E%E5%90%8E%E5%89%AA%E6%9E%9D"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">6. 预剪枝与后剪枝</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E9%A2%84%E5%89%AA%E6%9E%9D%EF%BC%88Pre-pruning%EF%BC%89"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">6.1 预剪枝（Pre-pruning）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-%E5%90%8E%E5%89%AA%E6%9E%9D%EF%BC%88Post-pruning%EF%BC%89"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">6.2 后剪枝（Post-pruning）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-%E9%A2%84%E5%89%AA%E6%9E%9D-vs-%E5%90%8E%E5%89%AA%E6%9E%9D"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">6.3 预剪枝 vs 后剪枝</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#7-%E4%BB%8E%E5%86%B3%E7%AD%96%E6%A0%91%E5%88%B0%E9%9B%86%E6%88%90%E5%AD%A6%E4%B9%A0"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">7. 从决策树到集成学习</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-%E5%86%B3%E7%AD%96%E6%A0%91%E7%9A%84%E4%BC%98%E5%8A%BF%E4%B8%8E%E5%8A%A3%E5%8A%BF"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">7.1 决策树的优势与劣势</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-Bagging%EF%BC%88Bootstrap-Aggregating%EF%BC%8C%E8%A3%85%E8%A2%8B%E6%B3%95%EF%BC%89"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">7.2 Bagging（Bootstrap Aggregating，装袋法）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-3-Boosting%EF%BC%88%E6%8F%90%E5%8D%87%E6%B3%95%EF%BC%89"><span class="toc_mobile_items-number">8.3.</span> <span class="toc_mobile_items-text">7.3 Boosting（提升法）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-4-%E5%86%B3%E7%AD%96%E6%A0%91%E5%9C%A8%E9%9B%86%E6%88%90%E4%B8%AD%E7%9A%84%E8%A7%92%E8%89%B2%E6%80%BB%E7%BB%93"><span class="toc_mobile_items-number">8.4.</span> <span class="toc_mobile_items-text">7.4 决策树在集成中的角色总结</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-%E5%88%86%E8%A3%82%E5%87%86%E5%88%99%E7%9A%84%E6%95%B0%E5%AD%A6%E7%BB%9F%E4%B8%80%E4%B8%8E%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">8. 分裂准则的数学统一与对比</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-%E4%B8%8D%E7%BA%AF%E5%BA%A6%E5%BA%A6%E9%87%8F%E7%9A%84%E4%B8%80%E8%88%AC%E6%A1%86%E6%9E%B6"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">8.1 不纯度度量的一般框架</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-%E4%B8%89%E7%A7%8D%E4%B8%8D%E7%BA%AF%E5%BA%A6%E5%87%BD%E6%95%B0%E7%9A%84%E6%AF%94%E8%BE%83%EF%BC%88%E4%BA%8C%E5%88%86%E7%B1%BB%EF%BC%89"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">8.2 三种不纯度函数的比较（二分类）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-3-Gini-%E6%8C%87%E6%95%B0%E4%B8%8E%E6%96%B9%E5%B7%AE%E7%9A%84%E7%AD%89%E4%BB%B7%E6%80%A7%EF%BC%88%E5%9B%9E%E5%BD%92%E8%A7%86%E8%A7%92%EF%BC%89"><span class="toc_mobile_items-number">9.3.</span> <span class="toc_mobile_items-text">8.3 Gini 指数与方差的等价性（回归视角）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-CART-%E7%9A%84%E7%BC%BA%E5%A4%B1%E5%80%BC%E5%A4%84%E7%90%86%EF%BC%9A%E4%BB%A3%E7%90%86%E5%88%86%E8%A3%82"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">9. CART 的缺失值处理：代理分裂</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-%E4%BB%A3%E7%90%86%E5%88%86%E8%A3%82%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">8.1 代理分裂的核心思想</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-%E4%BB%A3%E7%90%86%E5%88%86%E8%A3%82%E7%9A%84%E6%90%9C%E7%B4%A2"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">8.2 代理分裂的搜索</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-3-%E4%BB%A3%E7%90%86%E5%88%86%E8%A3%82%E7%9A%84%E4%BC%98%E5%8A%BF"><span class="toc_mobile_items-number">10.3.</span> <span class="toc_mobile_items-text">8.3 代理分裂的优势</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-4-C4-5-vs-CART-%E7%BC%BA%E5%A4%B1%E5%80%BC%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">10.4.</span> <span class="toc_mobile_items-text">8.4 C4.5 vs CART 缺失值处理对比</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#10-%E5%A4%9A%E5%8F%98%E9%87%8F%E5%86%B3%E7%AD%96%E6%A0%91"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">10. 多变量决策树</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-1-%E5%A4%9A%E5%8F%98%E9%87%8F%E5%86%B3%E7%AD%96%E6%A0%91%E7%9A%84%E4%BC%98%E5%8A%BF"><span class="toc_mobile_items-number">11.1.</span> <span class="toc_mobile_items-text">9.1 多变量决策树的优势</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-2-%E5%B8%B8%E8%A7%81%E7%9A%84%E5%A4%9A%E5%8F%98%E9%87%8F%E5%88%86%E8%A3%82%E6%96%B9%E6%B3%95"><span class="toc_mobile_items-number">11.2.</span> <span class="toc_mobile_items-text">9.2 常见的多变量分裂方法</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#11-%E5%86%B3%E7%AD%96%E6%A0%91%E7%9A%84%E4%B8%8D%E7%A8%B3%E5%AE%9A%E6%80%A7%E4%B8%8E%E9%9B%86%E6%88%90%E5%AD%A6%E4%B9%A0%E7%9A%84%E7%BB%9F%E8%AE%A1%E8%A7%86%E8%A7%92"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">11. 决策树的不稳定性与集成学习的统计视角</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-1-%E5%86%B3%E7%AD%96%E6%A0%91%E6%98%AF%E9%AB%98%E6%96%B9%E5%B7%AE%E5%AD%A6%E4%B9%A0%E5%99%A8"><span class="toc_mobile_items-number">12.1.</span> <span class="toc_mobile_items-text">10.1 决策树是高方差学习器</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-2-Bagging-%E5%A6%82%E4%BD%95%E9%99%8D%E4%BD%8E%E6%96%B9%E5%B7%AE"><span class="toc_mobile_items-number">12.2.</span> <span class="toc_mobile_items-text">10.2 Bagging 如何降低方差</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-3-Bagging-vs-Boosting-%E7%9A%84%E5%81%8F%E5%B7%AE-%E6%96%B9%E5%B7%AE%E8%A7%86%E8%A7%92"><span class="toc_mobile_items-number">12.3.</span> <span class="toc_mobile_items-text">10.3 Bagging vs Boosting 的偏差-方差视角</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#12-%E5%AE%9E%E6%88%98%EF%BC%9Asklearn-%E5%86%B3%E7%AD%96%E6%A0%91%E5%8F%82%E6%95%B0%E5%85%A8%E8%A7%A3%E6%9E%90"><span class="toc_mobile_items-number">13.</span> <span class="toc_mobile_items-text">12. 实战：sklearn 决策树参数全解析</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#12-1-sklearn-tree-DecisionTreeClassifier-%E7%9A%84%E6%A0%B8%E5%BF%83%E5%8F%82%E6%95%B0"><span class="toc_mobile_items-number">13.1.</span> <span class="toc_mobile_items-text">12.1 sklearn.tree.DecisionTreeClassifier 的核心参数</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#12-2-%E5%89%AA%E6%9E%9D%E8%B7%AF%E5%BE%84%E5%8F%AF%E8%A7%86%E5%8C%96"><span class="toc_mobile_items-number">13.2.</span> <span class="toc_mobile_items-text">12.2 剪枝路径可视化</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#12-3-%E7%89%B9%E5%BE%81%E9%87%8D%E8%A6%81%E6%80%A7%E8%AE%A1%E7%AE%97"><span class="toc_mobile_items-number">13.3.</span> <span class="toc_mobile_items-text">12.3 特征重要性计算</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#13-%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E7%AD%94"><span class="toc_mobile_items-number">14.</span> <span class="toc_mobile_items-text">13. 面试高频问答</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#14-%E6%80%BB%E7%BB%93"><span class="toc_mobile_items-number">15.</span> <span class="toc_mobile_items-text">14. 总结</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="toc-number">1.</span> <span class="toc-text">写在前面</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%86%B3%E7%AD%96%E6%A0%91%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-number">2.</span> <span class="toc-text">1. 决策树的基本概念</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E4%BB%80%E4%B9%88%E6%98%AF%E5%86%B3%E7%AD%96%E6%A0%91"><span class="toc-number">2.1.</span> <span class="toc-text">1.1 什么是决策树</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E5%86%B3%E7%AD%96%E6%A0%91%E5%AD%A6%E4%B9%A0%E7%9A%84%E4%B8%89%E4%B8%AA%E5%85%B3%E9%94%AE%E9%97%AE%E9%A2%98"><span class="toc-number">2.2.</span> <span class="toc-text">1.2 决策树学习的三个关键问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E5%86%B3%E7%AD%96%E6%A0%91%E7%9A%84%E5%87%A0%E4%BD%95%E8%A7%A3%E9%87%8A"><span class="toc-number">2.3.</span> <span class="toc-text">1.3 决策树的几何解释</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E5%86%B3%E7%AD%96%E6%A0%91%E7%AE%97%E6%B3%95%E5%AE%B6%E6%97%8F%E6%A6%82%E8%A7%88"><span class="toc-number">2.4.</span> <span class="toc-text">1.4 决策树算法家族概览</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9%E5%87%86%E5%88%99"><span class="toc-number">3.</span> <span class="toc-text">2. 特征选择准则</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E7%86%B5%EF%BC%88Entropy%EF%BC%89"><span class="toc-number">3.1.</span> <span class="toc-text">2.1 熵（Entropy）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%9D%A1%E4%BB%B6%E7%86%B5%EF%BC%88Conditional-Entropy%EF%BC%89"><span class="toc-number">3.2.</span> <span class="toc-text">2.2 条件熵（Conditional Entropy）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E4%BF%A1%E6%81%AF%E5%A2%9E%E7%9B%8A%EF%BC%88Information-Gain%EF%BC%89"><span class="toc-number">3.3.</span> <span class="toc-text">2.3 信息增益（Information Gain）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E4%BF%A1%E6%81%AF%E5%A2%9E%E7%9B%8A%E6%AF%94%EF%BC%88Information-Gain-Ratio%EF%BC%89"><span class="toc-number">3.4.</span> <span class="toc-text">2.4 信息增益比（Information Gain Ratio）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E5%9F%BA%E5%B0%BC%E6%8C%87%E6%95%B0%EF%BC%88Gini-Index%EF%BC%89"><span class="toc-number">3.5.</span> <span class="toc-text">2.5 基尼指数（Gini Index）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-%E6%9C%80%E5%B0%8F%E4%BA%8C%E4%B9%98%E5%9B%9E%E5%BD%92%E6%A0%91%E7%9A%84%E5%88%86%E8%A3%82%E5%87%86%E5%88%99"><span class="toc-number">3.6.</span> <span class="toc-text">2.6 最小二乘回归树的分裂准则</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-ID3-%E7%AE%97%E6%B3%95"><span class="toc-number">4.</span> <span class="toc-text">3. ID3 算法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%AE%97%E6%B3%95%E6%8F%8F%E8%BF%B0"><span class="toc-number">4.1.</span> <span class="toc-text">3.1 算法描述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-ID3-%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B%EF%BC%88%E4%BC%AA%E4%BB%A3%E7%A0%81%EF%BC%89"><span class="toc-number">4.2.</span> <span class="toc-text">3.2 ID3 算法流程（伪代码）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-ID3-%E7%9A%84%E6%95%B0%E5%80%BC%E8%AE%A1%E7%AE%97%E6%A1%88%E4%BE%8B"><span class="toc-number">4.3.</span> <span class="toc-text">3.3 ID3 的数值计算案例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-ID3-%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc-number">4.4.</span> <span class="toc-text">3.4 ID3 的局限性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-C4-5-%E7%AE%97%E6%B3%95"><span class="toc-number">5.</span> <span class="toc-text">4. C4.5 算法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E4%BF%A1%E6%81%AF%E5%A2%9E%E7%9B%8A%E6%AF%94%E6%9B%BF%E4%BB%A3%E4%BF%A1%E6%81%AF%E5%A2%9E%E7%9B%8A"><span class="toc-number">5.1.</span> <span class="toc-text">4.1 信息增益比替代信息增益</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E8%BF%9E%E7%BB%AD%E7%89%B9%E5%BE%81%E5%A4%84%E7%90%86"><span class="toc-number">5.2.</span> <span class="toc-text">4.2 连续特征处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E7%BC%BA%E5%A4%B1%E5%80%BC%E5%A4%84%E7%90%86"><span class="toc-number">5.3.</span> <span class="toc-text">4.3 缺失值处理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E6%96%B9%E6%B3%95"><span class="toc-number">5.3.1.</span> <span class="toc-text">计算方法</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E5%89%AA%E6%9E%9D%E7%AD%96%E7%95%A5%EF%BC%88PEP-Pessimistic-Error-Pruning%EF%BC%89"><span class="toc-number">5.4.</span> <span class="toc-text">4.4 剪枝策略（PEP - Pessimistic Error Pruning）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-CART%EF%BC%88Classification-and-Regression-Tree%EF%BC%89"><span class="toc-number">6.</span> <span class="toc-text">5. CART（Classification and Regression Tree）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-CART-%E5%88%86%E7%B1%BB%E6%A0%91"><span class="toc-number">6.1.</span> <span class="toc-text">5.1 CART 分类树</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-1-1-%E5%9F%BA%E5%B0%BC%E6%8C%87%E6%95%B0%E9%80%89%E6%8B%A9%E7%89%B9%E5%BE%81"><span class="toc-number">6.1.1.</span> <span class="toc-text">5.1.1 基尼指数选择特征</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-1-2-CART-%E5%88%86%E7%B1%BB%E6%A0%91%E7%9A%84%E7%94%9F%E6%88%90%EF%BC%88%E4%BC%AA%E4%BB%A3%E7%A0%81%EF%BC%89"><span class="toc-number">6.1.2.</span> <span class="toc-text">5.1.2 CART 分类树的生成（伪代码）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-CART-%E5%9B%9E%E5%BD%92%E6%A0%91"><span class="toc-number">6.2.</span> <span class="toc-text">5.2 CART 回归树</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-2-1-%E6%9C%80%E5%B0%8F%E4%BA%8C%E4%B9%98%E5%87%86%E5%88%99"><span class="toc-number">6.2.1.</span> <span class="toc-text">5.2.1 最小二乘准则</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-2-2-%E5%9B%9E%E5%BD%92%E6%A0%91%E7%9A%84%E6%95%B0%E5%80%BC%E6%A1%88%E4%BE%8B"><span class="toc-number">6.2.2.</span> <span class="toc-text">5.2.2 回归树的数值案例</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-CART-%E7%9A%84%E5%89%AA%E6%9E%9D%EF%BC%9A%E4%BB%A3%E4%BB%B7%E5%A4%8D%E6%9D%82%E5%BA%A6%E5%89%AA%E6%9E%9D%EF%BC%88CCP%EF%BC%89"><span class="toc-number">6.3.</span> <span class="toc-text">5.3 CART 的剪枝：代价复杂度剪枝（CCP）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-3-1-%E4%BB%A3%E4%BB%B7%E5%A4%8D%E6%9D%82%E5%BA%A6%E5%BA%A6%E9%87%8F"><span class="toc-number">6.3.1.</span> <span class="toc-text">5.3.1 代价复杂度度量</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-3-2-%E5%89%AA%E6%9E%9D%E8%BF%87%E7%A8%8B"><span class="toc-number">6.3.2.</span> <span class="toc-text">5.3.2 剪枝过程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-3-3-1-SE-%E8%A7%84%E5%88%99"><span class="toc-number">6.3.3.</span> <span class="toc-text">5.3.3 1-SE 规则</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E9%A2%84%E5%89%AA%E6%9E%9D%E4%B8%8E%E5%90%8E%E5%89%AA%E6%9E%9D"><span class="toc-number">7.</span> <span class="toc-text">6. 预剪枝与后剪枝</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E9%A2%84%E5%89%AA%E6%9E%9D%EF%BC%88Pre-pruning%EF%BC%89"><span class="toc-number">7.1.</span> <span class="toc-text">6.1 预剪枝（Pre-pruning）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%90%8E%E5%89%AA%E6%9E%9D%EF%BC%88Post-pruning%EF%BC%89"><span class="toc-number">7.2.</span> <span class="toc-text">6.2 后剪枝（Post-pruning）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E9%A2%84%E5%89%AA%E6%9E%9D-vs-%E5%90%8E%E5%89%AA%E6%9E%9D"><span class="toc-number">7.3.</span> <span class="toc-text">6.3 预剪枝 vs 后剪枝</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E4%BB%8E%E5%86%B3%E7%AD%96%E6%A0%91%E5%88%B0%E9%9B%86%E6%88%90%E5%AD%A6%E4%B9%A0"><span class="toc-number">8.</span> <span class="toc-text">7. 从决策树到集成学习</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E5%86%B3%E7%AD%96%E6%A0%91%E7%9A%84%E4%BC%98%E5%8A%BF%E4%B8%8E%E5%8A%A3%E5%8A%BF"><span class="toc-number">8.1.</span> <span class="toc-text">7.1 决策树的优势与劣势</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-Bagging%EF%BC%88Bootstrap-Aggregating%EF%BC%8C%E8%A3%85%E8%A2%8B%E6%B3%95%EF%BC%89"><span class="toc-number">8.2.</span> <span class="toc-text">7.2 Bagging（Bootstrap Aggregating，装袋法）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-Boosting%EF%BC%88%E6%8F%90%E5%8D%87%E6%B3%95%EF%BC%89"><span class="toc-number">8.3.</span> <span class="toc-text">7.3 Boosting（提升法）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-4-%E5%86%B3%E7%AD%96%E6%A0%91%E5%9C%A8%E9%9B%86%E6%88%90%E4%B8%AD%E7%9A%84%E8%A7%92%E8%89%B2%E6%80%BB%E7%BB%93"><span class="toc-number">8.4.</span> <span class="toc-text">7.4 决策树在集成中的角色总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E5%88%86%E8%A3%82%E5%87%86%E5%88%99%E7%9A%84%E6%95%B0%E5%AD%A6%E7%BB%9F%E4%B8%80%E4%B8%8E%E5%AF%B9%E6%AF%94"><span class="toc-number">9.</span> <span class="toc-text">8. 分裂准则的数学统一与对比</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E4%B8%8D%E7%BA%AF%E5%BA%A6%E5%BA%A6%E9%87%8F%E7%9A%84%E4%B8%80%E8%88%AC%E6%A1%86%E6%9E%B6"><span class="toc-number">9.1.</span> <span class="toc-text">8.1 不纯度度量的一般框架</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E4%B8%89%E7%A7%8D%E4%B8%8D%E7%BA%AF%E5%BA%A6%E5%87%BD%E6%95%B0%E7%9A%84%E6%AF%94%E8%BE%83%EF%BC%88%E4%BA%8C%E5%88%86%E7%B1%BB%EF%BC%89"><span class="toc-number">9.2.</span> <span class="toc-text">8.2 三种不纯度函数的比较（二分类）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-Gini-%E6%8C%87%E6%95%B0%E4%B8%8E%E6%96%B9%E5%B7%AE%E7%9A%84%E7%AD%89%E4%BB%B7%E6%80%A7%EF%BC%88%E5%9B%9E%E5%BD%92%E8%A7%86%E8%A7%92%EF%BC%89"><span class="toc-number">9.3.</span> <span class="toc-text">8.3 Gini 指数与方差的等价性（回归视角）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-CART-%E7%9A%84%E7%BC%BA%E5%A4%B1%E5%80%BC%E5%A4%84%E7%90%86%EF%BC%9A%E4%BB%A3%E7%90%86%E5%88%86%E8%A3%82"><span class="toc-number">10.</span> <span class="toc-text">9. CART 的缺失值处理：代理分裂</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E4%BB%A3%E7%90%86%E5%88%86%E8%A3%82%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">10.1.</span> <span class="toc-text">8.1 代理分裂的核心思想</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E4%BB%A3%E7%90%86%E5%88%86%E8%A3%82%E7%9A%84%E6%90%9C%E7%B4%A2"><span class="toc-number">10.2.</span> <span class="toc-text">8.2 代理分裂的搜索</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-%E4%BB%A3%E7%90%86%E5%88%86%E8%A3%82%E7%9A%84%E4%BC%98%E5%8A%BF"><span class="toc-number">10.3.</span> <span class="toc-text">8.3 代理分裂的优势</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-4-C4-5-vs-CART-%E7%BC%BA%E5%A4%B1%E5%80%BC%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94"><span class="toc-number">10.4.</span> <span class="toc-text">8.4 C4.5 vs CART 缺失值处理对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-%E5%A4%9A%E5%8F%98%E9%87%8F%E5%86%B3%E7%AD%96%E6%A0%91"><span class="toc-number">11.</span> <span class="toc-text">10. 多变量决策树</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E5%A4%9A%E5%8F%98%E9%87%8F%E5%86%B3%E7%AD%96%E6%A0%91%E7%9A%84%E4%BC%98%E5%8A%BF"><span class="toc-number">11.1.</span> <span class="toc-text">9.1 多变量决策树的优势</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E5%B8%B8%E8%A7%81%E7%9A%84%E5%A4%9A%E5%8F%98%E9%87%8F%E5%88%86%E8%A3%82%E6%96%B9%E6%B3%95"><span class="toc-number">11.2.</span> <span class="toc-text">9.2 常见的多变量分裂方法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-%E5%86%B3%E7%AD%96%E6%A0%91%E7%9A%84%E4%B8%8D%E7%A8%B3%E5%AE%9A%E6%80%A7%E4%B8%8E%E9%9B%86%E6%88%90%E5%AD%A6%E4%B9%A0%E7%9A%84%E7%BB%9F%E8%AE%A1%E8%A7%86%E8%A7%92"><span class="toc-number">12.</span> <span class="toc-text">11. 决策树的不稳定性与集成学习的统计视角</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-%E5%86%B3%E7%AD%96%E6%A0%91%E6%98%AF%E9%AB%98%E6%96%B9%E5%B7%AE%E5%AD%A6%E4%B9%A0%E5%99%A8"><span class="toc-number">12.1.</span> <span class="toc-text">10.1 决策树是高方差学习器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-Bagging-%E5%A6%82%E4%BD%95%E9%99%8D%E4%BD%8E%E6%96%B9%E5%B7%AE"><span class="toc-number">12.2.</span> <span class="toc-text">10.2 Bagging 如何降低方差</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-3-Bagging-vs-Boosting-%E7%9A%84%E5%81%8F%E5%B7%AE-%E6%96%B9%E5%B7%AE%E8%A7%86%E8%A7%92"><span class="toc-number">12.3.</span> <span class="toc-text">10.3 Bagging vs Boosting 的偏差-方差视角</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-%E5%AE%9E%E6%88%98%EF%BC%9Asklearn-%E5%86%B3%E7%AD%96%E6%A0%91%E5%8F%82%E6%95%B0%E5%85%A8%E8%A7%A3%E6%9E%90"><span class="toc-number">13.</span> <span class="toc-text">12. 实战：sklearn 决策树参数全解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#12-1-sklearn-tree-DecisionTreeClassifier-%E7%9A%84%E6%A0%B8%E5%BF%83%E5%8F%82%E6%95%B0"><span class="toc-number">13.1.</span> <span class="toc-text">12.1 sklearn.tree.DecisionTreeClassifier 的核心参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-2-%E5%89%AA%E6%9E%9D%E8%B7%AF%E5%BE%84%E5%8F%AF%E8%A7%86%E5%8C%96"><span class="toc-number">13.2.</span> <span class="toc-text">12.2 剪枝路径可视化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-3-%E7%89%B9%E5%BE%81%E9%87%8D%E8%A6%81%E6%80%A7%E8%AE%A1%E7%AE%97"><span class="toc-number">13.3.</span> <span class="toc-text">12.3 特征重要性计算</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E7%AD%94"><span class="toc-number">14.</span> <span class="toc-text">13. 面试高频问答</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-%E6%80%BB%E7%BB%93"><span class="toc-number">15.</span> <span class="toc-text">14. 总结</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nareeta-martin-wM59pRQYbhs-unsplash.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【统计学习方法死磕系列】决策树</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2020-04-15<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0/">统计学习</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">12.3k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 44 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h2><p>决策树是机器学习中最直观、最具可解释性的分类与回归方法。它模拟了人类做决策的自然过程——根据一系列特征条件来逐步缩小可能性，最终得出结论。一棵训练好的决策树可以直接可视化为一棵树形结构，每个内部节点代表一个特征上的测试，每个分支代表测试结果，每个叶节点代表一个决策。</p>
+<p>虽然单棵决策树的预测精度通常不如 SVM 或神经网络，但决策树是集成学习（Random Forest、GBDT、XGBoost）的基石——没有决策树，就没有现代最强的表格数据学习器。</p>
+<p>本文严格按照《统计学习方法》的脉络，依次覆盖 ID3、C4.5 和 CART 三种经典决策树学习算法，并深入探讨特征选择准则、剪枝策略、连续值和缺失值处理，以及它们与集成学习的桥梁关系。</p>
+<hr>
+<h2 id="1-决策树的基本概念"><a href="#1-决策树的基本概念" class="headerlink" title="1. 决策树的基本概念"></a>1. 决策树的基本概念</h2><h3 id="1-1-什么是决策树"><a href="#1-1-什么是决策树" class="headerlink" title="1.1 什么是决策树"></a>1.1 什么是决策树</h3><p><strong>定义 1（决策树）</strong>：决策树是一个由节点和有向边组成的树形结构。节点分为两种类型：</p>
+<ul>
+<li><strong>内部节点（Internal Node）</strong>：表示一个特征或属性上的测试</li>
+<li><strong>叶节点（Leaf Node）</strong>：表示一个类别（分类树）或一个预测值（回归树）</li>
+</ul>
+<p>从根节点到叶节点的一条路径对应了一条分类规则。决策树的学习本质上是从训练数据中归纳出一组 if-then 规则。</p>
+<h3 id="1-2-决策树学习的三个关键问题"><a href="#1-2-决策树学习的三个关键问题" class="headerlink" title="1.2 决策树学习的三个关键问题"></a>1.2 决策树学习的三个关键问题</h3><ol>
+<li><strong>特征选择</strong>：在每个节点，应该选择哪个特征来进行划分？用什么样的准则衡量”划分的好坏”？</li>
+<li><strong>决策树生成</strong>：如何根据选择的特征递归地构建决策树？何时停止生长？</li>
+<li><strong>决策树剪枝</strong>：如何对过于复杂的树进行简化，以防止过拟合？</li>
+</ol>
+<p>这三个问题对应了决策树学习的三个步骤，每个经典算法在这三个问题上给出了不同的答案。</p>
+<h3 id="1-3-决策树的几何解释"><a href="#1-3-决策树的几何解释" class="headerlink" title="1.3 决策树的几何解释"></a>1.3 决策树的几何解释</h3><p>从几何角度看，当特征空间是 $\mathbb{R}^d$ 时，决策树的每个内部节点在特征空间中进行一次<strong>轴平行（axis-parallel）</strong>的划分。因此决策树的决策边界是由一系列与坐标轴平行的超平面段组成的。</p>
+<p>这是决策树的一个重要限制——它无法直接学习斜的（oblique）决策边界。但这同时也赋予了决策树良好的可解释性：每个决策规则都对应一个明确可理解的条件（如”年龄 &gt; 30”）。</p>
+<h3 id="1-4-决策树算法家族概览"><a href="#1-4-决策树算法家族概览" class="headerlink" title="1.4 决策树算法家族概览"></a>1.4 决策树算法家族概览</h3><table>
+<thead>
+<tr>
+<th>算法</th>
+<th>提出者&#x2F;年代</th>
+<th>树类型</th>
+<th>特征选择</th>
+<th>连续值</th>
+<th>缺失值</th>
+<th>剪枝</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ID3</td>
+<td>Quinlan, 1986</td>
+<td>分类</td>
+<td>信息增益</td>
+<td>不支持</td>
+<td>不支持</td>
+<td>无</td>
+</tr>
+<tr>
+<td>C4.5</td>
+<td>Quinlan, 1993</td>
+<td>分类</td>
+<td>信息增益比</td>
+<td>支持</td>
+<td>支持</td>
+<td>PEP 剪枝</td>
+</tr>
+<tr>
+<td>CART</td>
+<td>Breiman et al., 1984</td>
+<td>分类+回归</td>
+<td>Gini 指数&#x2F;MSE</td>
+<td>支持</td>
+<td>代理分裂</td>
+<td>CCP 剪枝</td>
+</tr>
+<tr>
+<td>CHAID</td>
+<td>Kass, 1980</td>
+<td>分类</td>
+<td>$\chi^2$ 统计量</td>
+<td>分箱</td>
+<td>支持</td>
+<td>合并类别</td>
+</tr>
+<tr>
+<td>MARS</td>
+<td>Friedman, 1991</td>
+<td>回归</td>
+<td>自适应样条</td>
+<td>原生连续</td>
+<td>支持</td>
+<td>正则化</td>
+</tr>
+</tbody></table>
+<p>本文重点覆盖 ID3、C4.5 和 CART，这也是面试中的核心范围。</p>
+<hr>
+<h2 id="2-特征选择准则"><a href="#2-特征选择准则" class="headerlink" title="2. 特征选择准则"></a>2. 特征选择准则</h2><h3 id="2-1-熵（Entropy）"><a href="#2-1-熵（Entropy）" class="headerlink" title="2.1 熵（Entropy）"></a>2.1 熵（Entropy）</h3><p>信息熵是度量随机变量不确定性的最常用指标。</p>
+<p><strong>定义 2（信息熵）</strong>：设 $X$ 是一个取有限个值的离散随机变量，其概率分布为 $P(X &#x3D; x_i) &#x3D; p_i, i &#x3D; 1, \ldots, n$。则 $X$ 的熵定义为：</p>
+<p>$$H(X) = -\sum_{i=1}^{n} p_i \log_2 p_i$$</p>
+<p>约定 $0 \log 0 &#x3D; 0$。通常对数以 2 为底，此时熵的单位是 bit。</p>
+<p><strong>熵的性质</strong>：</p>
+<ol>
+<li><strong>非负性</strong>：$H(X) \geq 0$，当且仅当 $X$ 退化为确定事件时等号成立（没有不确定性）。</li>
+<li><strong>最大值</strong>：当 $X$ 服从均匀分布时（$p_i &#x3D; 1&#x2F;n$），$H(X) &#x3D; \log_2 n$，达到最大。均匀分布意味着对所有结果同等不确定。</li>
+<li><strong>严格凹性</strong>：$H(X)$ 作为 $p$ 的函数是严格凹的（沿概率单纯形）。</li>
+</ol>
+<p><strong>例</strong>：抛硬币，正面概率 $p$，反面概率 $1-p$：</p>
+<p>$$H(p) = -p \log_2 p - (1-p) \log_2 (1-p)$$</p>
+<p>当 $p &#x3D; 0.5$ 时，$H &#x3D; 1$ bit（最大）；当 $p &#x3D; 0$ 或 $p &#x3D; 1$ 时，$H &#x3D; 0$（最小）。</p>
+<p>具体数值：</p>
+<table>
+<thead>
+<tr>
+<th>$p$</th>
+<th>$H(p)$</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0.0</td>
+<td>0.000</td>
+</tr>
+<tr>
+<td>0.1</td>
+<td>0.469</td>
+</tr>
+<tr>
+<td>0.3</td>
+<td>0.881</td>
+</tr>
+<tr>
+<td>0.5</td>
+<td>1.000</td>
+</tr>
+<tr>
+<td>0.7</td>
+<td>0.881</td>
+</tr>
+<tr>
+<td>0.9</td>
+<td>0.469</td>
+</tr>
+<tr>
+<td>1.0</td>
+<td>0.000</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-条件熵（Conditional-Entropy）"><a href="#2-2-条件熵（Conditional-Entropy）" class="headerlink" title="2.2 条件熵（Conditional Entropy）"></a>2.2 条件熵（Conditional Entropy）</h3><p><strong>定义 3（条件熵）</strong>：已知随机变量 $A$ 的条件下，随机变量 $Y$ 的不确定性：</p>
+<p>$$H(Y|A) = \sum_{a} P(A=a) \cdot H(Y|A=a)$$</p>
+<p>其中 $H(Y|A&#x3D;a) &#x3D; -\sum_y P(Y&#x3D;y|A&#x3D;a) \log_2 P(Y&#x3D;y|A&#x3D;a)$。</p>
+<p>条件熵是给定 $A$ 后 $Y$ 的<strong>残留不确定性</strong>。</p>
+<h3 id="2-3-信息增益（Information-Gain）"><a href="#2-3-信息增益（Information-Gain）" class="headerlink" title="2.3 信息增益（Information Gain）"></a>2.3 信息增益（Information Gain）</h3><p><strong>定义 4（信息增益）</strong>：特征 $A$ 对训练数据集 $D$ 的信息增益 $g(D, A)$，定义为集合 $D$ 的熵 $H(D)$ 与特征 $A$ 给定条件下 $D$ 的条件熵 $H(D|A)$ 之差：</p>
+<p>$$g(D, A) = H(D) - H(D|A)$$</p>
+<p>信息增益表示<strong>得知特征 $A$ 后，对数据集 $D$ 分类不确定性的减少程度</strong>。增益越大，特征对分类越有用。</p>
+<p><strong>ID3 算法使用信息增益作为特征选择准则</strong>，每次选择信息增益最大的特征进行分裂。</p>
+<p><strong>信息增益的计算过程</strong>：</p>
+<p>设训练数据集 $D$，$|D|$ 为其样本容量。设有 $K$ 个类 $C_k, k &#x3D; 1,\ldots,K$，$|C_k|$ 为属于类 $C_k$ 的样本个数。</p>
+<ol>
+<li><p>计算数据集 $D$ 的经验熵：<br>$$H(D) = -\sum_{k=1}^{K} \frac{|C_k|}{|D|} \log_2 \frac{|C_k|}{|D|}$$</p>
+</li>
+<li><p>计算特征 $A$ 对 $D$ 的经验条件熵：<br>设特征 $A$ 有 $n$ 个不同的取值 ${a_1, a_2, \ldots, a_n}$，将 $D$ 划分为 $n$ 个子集 $D_1, D_2, \ldots, D_n$，其中 $D_i &#x3D; {x \in D | A(x) &#x3D; a_i}$。<br>$$H(D|A) = \sum_{i=1}^{n} \frac{|D_i|}{|D|} H(D_i)$$<br>其中 $H(D_i) &#x3D; -\sum_{k&#x3D;1}^{K} \frac{|D_{ik}|}{|D_i|} \log_2 \frac{|D_{ik}|}{|D_i|}$，$D_{ik} &#x3D; D_i \cap C_k$。</p>
+</li>
+<li><p>计算信息增益：<br>$$g(D, A) = H(D) - H(D|A)$$</p>
+</li>
+</ol>
+<h3 id="2-4-信息增益比（Information-Gain-Ratio）"><a href="#2-4-信息增益比（Information-Gain-Ratio）" class="headerlink" title="2.4 信息增益比（Information Gain Ratio）"></a>2.4 信息增益比（Information Gain Ratio）</h3><p>信息增益有一个严重问题：<strong>偏向于选择取值较多的特征</strong>。</p>
+<p>考虑极端情况：样本 ID 作为特征，每个样本的 ID 都不同。按 ID 分裂后每个子集只有一个样本，条件熵 $H(D|A) &#x3D; 0$，信息增益达到最大值 $H(D)$。但这个特征对分类毫无意义——它只是在”记忆”训练数据。</p>
+<p>为了校正这个偏差，C4.5 使用<strong>信息增益比</strong>：</p>
+<p><strong>定义 5（信息增益比）</strong>：特征 $A$ 对训练数据集 $D$ 的信息增益比定义为：</p>
+<p>$$g_R(D, A) = \frac{g(D, A)}{H_A(D)}$$</p>
+<p>其中 $H_A(D) &#x3D; -\sum_{i&#x3D;1}^{n} \frac{|D_i|}{|D|} \log_2 \frac{|D_i|}{|D|}$ 是<strong>分裂信息（Split Information）</strong>——将 $D$ 按 $A$ 的取值分裂成 $n$ 个子集这件事本身的熵。</p>
+<p><strong>直觉</strong>：如果特征取值很多，$H_A(D)$ 会很大（因为数据被分得很散），信息增益比通过除以 $H_A(D)$ 来惩罚这种特征。</p>
+<p><strong>C4.5 使用信息增益比来选择特征</strong>，但不是简单地选增益比最大的：它先从所有候选特征中选出信息增益高于平均水平的特征，再从这些特征中选择信息增益比最大的。</p>
+<h3 id="2-5-基尼指数（Gini-Index）"><a href="#2-5-基尼指数（Gini-Index）" class="headerlink" title="2.5 基尼指数（Gini Index）"></a>2.5 基尼指数（Gini Index）</h3><p>CART 分类树使用基尼指数作为特征选择准则。</p>
+<p><strong>定义 6（基尼指数）</strong>：在分类问题中，假设有 $K$ 个类，样本属于第 $k$ 类的概率为 $p_k$，则概率分布的基尼指数定义为：</p>
+<p>$$\text{Gini}(p) = \sum_{k=1}^{K} p_k (1-p_k) = 1 - \sum_{k=1}^{K} p_k^2$$</p>
+<p>对于给定的样本集合 $D$，其基尼指数为：</p>
+<p>$$\text{Gini}(D) = 1 - \sum_{k=1}^{K} \left(\frac{|C_k|}{|D|}\right)^2$$</p>
+<p><strong>基尼指数的概率解释</strong>：它等于从集合中随机抽取两个样本，其类别标记不一致的概率。所以基尼指数越小，数据集的纯度越高。</p>
+<p><strong>基尼指数 vs 熵的比较</strong>：</p>
+<p>对于二分类问题（$p$ 为正类比例）：</p>
+<table>
+<thead>
+<tr>
+<th>$p$</th>
+<th>Gini: $2p(1-p)$</th>
+<th>半熵: $-\frac{1}{2}[p\log_2 p + (1-p)\log_2(1-p)]$</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0.0</td>
+<td>0.000</td>
+<td>0.000</td>
+</tr>
+<tr>
+<td>0.1</td>
+<td>0.180</td>
+<td>0.234</td>
+</tr>
+<tr>
+<td>0.3</td>
+<td>0.420</td>
+<td>0.441</td>
+</tr>
+<tr>
+<td>0.5</td>
+<td>0.500</td>
+<td>0.500</td>
+</tr>
+<tr>
+<td>0.7</td>
+<td>0.420</td>
+<td>0.441</td>
+</tr>
+<tr>
+<td>0.9</td>
+<td>0.180</td>
+<td>0.234</td>
+</tr>
+<tr>
+<td>1.0</td>
+<td>0.000</td>
+<td>0.000</td>
+</tr>
+</tbody></table>
+<p>半熵和基尼指数的曲线形状非常接近。两者都在 $p&#x3D;0.5$ 处达到最大值。实践中两种准则选出的分裂特征通常一致，只是 Gini 计算更快（不需要 $\log$）。</p>
+<p><strong>特征 $A$ 条件下的基尼指数</strong>（CART 的分裂准则）：</p>
+<p>$$\text{Gini}(D, A) = \sum_{i=1}^{n} \frac{|D_i|}{|D|} \text{Gini}(D_i)$$</p>
+<p>CART 选择使 $\text{Gini}(D, A)$ 最小的特征进行分裂。</p>
+<p><strong>为什么 CART 用 Gini 而不是熵？</strong></p>
+<ol>
+<li>Gini 的计算不需要对数运算，速度更快</li>
+<li>Gini 的梯度更稳定（熵在 $p \to 0$ 时梯度趋于无穷，导致数值问题）</li>
+<li>两者在实践中效果几乎相同，Gini 的简洁性使其成为默认选择</li>
+</ol>
+<h3 id="2-6-最小二乘回归树的分裂准则"><a href="#2-6-最小二乘回归树的分裂准则" class="headerlink" title="2.6 最小二乘回归树的分裂准则"></a>2.6 最小二乘回归树的分裂准则</h3><p>对于回归问题，CART 使用平方误差最小化。</p>
+<p>对于输入空间 $\mathcal{X}$ 被划分为 $M$ 个区域 $R_1, R_2, \ldots, R_M$，每个区域 $R_m$ 的预测值为其内部样本的均值：</p>
+<p>$$\hat{c}_m = \text{avg}(y_i | x_i \in R_m)$$</p>
+<p>回归树使用以下准则来选择最优切分变量 $j$ 和切分点 $s$：</p>
+<p>$$\min_{j,s} \left[ \min_{c_1} \sum_{x_i \in R_1(j,s)} (y_i - c_1)^2 + \min_{c_2} \sum_{x_i \in R_2(j,s)} (y_i - c_2)^2 \right]$$</p>
+<p>其中 $R_1(j,s) &#x3D; {x | x^{(j)} \leq s}$，$R_2(j,s) &#x3D; {x | x^{(j)} &gt; s}$。</p>
+<p>当 $j$ 和 $s$ 固定时，最优的 $c_1, c_2$ 为对应区域内的样本均值。这等价于：</p>
+<ul>
+<li>在所有特征 $j$ 和所有可能的切分点 $s$ 上进行穷举搜索</li>
+<li>选择使分裂后两侧 MSE 之和最小的 $(j, s)$ 对</li>
+</ul>
+<hr>
+<h2 id="3-ID3-算法"><a href="#3-ID3-算法" class="headerlink" title="3. ID3 算法"></a>3. ID3 算法</h2><h3 id="3-1-算法描述"><a href="#3-1-算法描述" class="headerlink" title="3.1 算法描述"></a>3.1 算法描述</h3><p>ID3（Iterative Dichotomiser 3）是 Quinlan 于 1986 年提出的决策树生成算法。其核心是使用<strong>信息增益</strong>进行特征选择，递归地构建决策树。</p>
+<h3 id="3-2-ID3-算法流程（伪代码）"><a href="#3-2-ID3-算法流程（伪代码）" class="headerlink" title="3.2 ID3 算法流程（伪代码）"></a>3.2 ID3 算法流程（伪代码）</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Algorithm: ID3(D, feature_list)</span><br><span class="line">Input: 训练数据集 D, 特征列表 A</span><br><span class="line">Output: 决策树 T</span><br><span class="line"></span><br><span class="line">1. 若 D 中所有样本属于同一类 C_k:</span><br><span class="line">2.     则将 T 置为单节点树，类标记为 C_k，返回 T</span><br><span class="line">3. 若 A = ∅:</span><br><span class="line">4.     则将 T 置为单节点树，类标记为 D 中样本数最多的类 C_max，返回 T</span><br><span class="line">5. 否则:</span><br><span class="line">6.     计算 A 中每个特征的信息增益</span><br><span class="line">7.     选择信息增益最大的特征 A_g</span><br><span class="line">8.     以 A_g 为根节点，对其每个取值 a_i:</span><br><span class="line">9.         将 D 中 A_g = a_i 的样本构成子集 D_i</span><br><span class="line">10.        若 D_i = ∅:</span><br><span class="line">11.            则创建叶节点，标记为 D 中样本最多的类</span><br><span class="line">12.        否则:</span><br><span class="line">13.            以 ID3(D_i, A \ &#123;A_g&#125;) 为子树</span><br><span class="line">14. 返回 T</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-ID3-的数值计算案例"><a href="#3-3-ID3-的数值计算案例" class="headerlink" title="3.3 ID3 的数值计算案例"></a>3.3 ID3 的数值计算案例</h3><p>考虑经典的”打网球”数据集：</p>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>天气 (Outlook)</th>
+<th>温度 (Temp)</th>
+<th>湿度 (Humidity)</th>
+<th>有风 (Windy)</th>
+<th>打球 (Play)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>Sunny</td>
+<td>Hot</td>
+<td>High</td>
+<td>Weak</td>
+<td>No</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Sunny</td>
+<td>Hot</td>
+<td>High</td>
+<td>Strong</td>
+<td>No</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Overcast</td>
+<td>Hot</td>
+<td>High</td>
+<td>Weak</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Rain</td>
+<td>Mild</td>
+<td>High</td>
+<td>Weak</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Rain</td>
+<td>Cool</td>
+<td>Normal</td>
+<td>Weak</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Rain</td>
+<td>Cool</td>
+<td>Normal</td>
+<td>Strong</td>
+<td>No</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Overcast</td>
+<td>Cool</td>
+<td>Normal</td>
+<td>Strong</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Sunny</td>
+<td>Mild</td>
+<td>High</td>
+<td>Weak</td>
+<td>No</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Sunny</td>
+<td>Cool</td>
+<td>Normal</td>
+<td>Weak</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Rain</td>
+<td>Mild</td>
+<td>Normal</td>
+<td>Weak</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Sunny</td>
+<td>Mild</td>
+<td>Normal</td>
+<td>Strong</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Overcast</td>
+<td>Mild</td>
+<td>High</td>
+<td>Strong</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Overcast</td>
+<td>Hot</td>
+<td>Normal</td>
+<td>Weak</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Rain</td>
+<td>Mild</td>
+<td>High</td>
+<td>Strong</td>
+<td>No</td>
+</tr>
+</tbody></table>
+<p>14 个样本中：Yes &#x3D; 9，No &#x3D; 5。</p>
+<p><strong>Step 1：计算根节点熵</strong>：</p>
+<p>$$H(D) = -\frac{9}{14}\log_2\frac{9}{14} - \frac{5}{14}\log_2\frac{5}{14} = -0.643 \times (-0.611) - 0.357 \times (-1.485) = 0.393 + 0.530 = 0.940$$</p>
+<p><strong>Step 2：计算各特征的信息增益</strong>：</p>
+<p>以 Outlook 为例：</p>
+<ul>
+<li><p>Outlook &#x3D; Sunny：5 个样本，其中 Yes&#x3D;2, No&#x3D;3<br>$$H(D_{\text{Sunny}}) = -\frac{2}{5}\log_2\frac{2}{5} - \frac{3}{5}\log_2\frac{3}{5} = 0.971$$</p>
+</li>
+<li><p>Outlook &#x3D; Overcast：4 个样本，其中 Yes&#x3D;4, No&#x3D;0<br>$$H(D_{\text{Overcast}}) = 0$$</p>
+</li>
+<li><p>Outlook &#x3D; Rain：5 个样本，其中 Yes&#x3D;3, No&#x3D;2<br>$$H(D_{\text{Rain}}) = -\frac{3}{5}\log_2\frac{3}{5} - \frac{2}{5}\log_2\frac{2}{5} = 0.971$$</p>
+</li>
+</ul>
+<p>条件熵：</p>
+<p>$$H(D|\text{Outlook}) = \frac{5}{14} \times 0.971 + \frac{4}{14} \times 0 + \frac{5}{14} \times 0.971 = 0.694$$</p>
+<p>信息增益：</p>
+<p>$$g(D, \text{Outlook}) = 0.940 - 0.694 = 0.246$$</p>
+<p>类似计算：</p>
+<p>$$g(D, \text{Temp}) = 0.029$$<br>$$g(D, \text{Humidity}) = 0.151$$<br>$$g(D, \text{Windy}) = 0.048$$</p>
+<p><strong>Outlook 的信息增益最大（0.246），选为根节点</strong>。</p>
+<p><strong>Step 3：递归构建子树</strong>。</p>
+<ul>
+<li>Outlook &#x3D; Overcast 的 4 个样本全是 Yes → 叶节点，类标为 Yes</li>
+<li>Outlook &#x3D; Sunny 和 Rain 的子集需要继续分裂</li>
+</ul>
+<p>对 Sunny 子集（5 个样本，Yes&#x3D;2, No&#x3D;3），计算其余特征的增益…最终选择 Humidity 作为分裂特征。</p>
+<p>完整决策树：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Outlook</span><br><span class="line"> ├── Sunny</span><br><span class="line"> │   ├── Humidity</span><br><span class="line"> │   │   ├── High   → No</span><br><span class="line"> │   │   └── Normal → Yes</span><br><span class="line"> ├── Overcast → Yes</span><br><span class="line"> └── Rain</span><br><span class="line">     ├── Windy</span><br><span class="line">     │   ├── Weak   → Yes</span><br><span class="line">     │   └── Strong → No</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-4-ID3-的局限性"><a href="#3-4-ID3-的局限性" class="headerlink" title="3.4 ID3 的局限性"></a>3.4 ID3 的局限性</h3><ol>
+<li><strong>不能处理连续特征</strong>：ID3 假定所有特征都是离散的。连续值必须先离散化。</li>
+<li><strong>对缺失值敏感</strong>：ID3 没有处理缺失值的机制。</li>
+<li><strong>偏向多值特征</strong>：信息增益天然偏好取值多的特征。</li>
+<li><strong>没有剪枝</strong>：容易过拟合（学习到训练数据中的噪声）。</li>
+<li><strong>不能处理回归</strong>：ID3 是纯分类算法。</li>
+</ol>
+<p>这些局限在 C4.5 中得到了系统性的解决。</p>
+<hr>
+<h2 id="4-C4-5-算法"><a href="#4-C4-5-算法" class="headerlink" title="4. C4.5 算法"></a>4. C4.5 算法</h2><p>C4.5 是 ID3 的改进版本，由同一作者 Quinlan 于 1993 年提出。它在保留 ID3 基本框架的同时，引入了几项关键改进。</p>
+<h3 id="4-1-信息增益比替代信息增益"><a href="#4-1-信息增益比替代信息增益" class="headerlink" title="4.1 信息增益比替代信息增益"></a>4.1 信息增益比替代信息增益</h3><p>如 2.4 节所述，C4.5 使用信息增益比而非信息增益来选择特征。</p>
+<p>继续上节的例子，计算 Outlook 的分裂信息：</p>
+<p>$$H_{\text{Outlook}}(D) = -\frac{5}{14}\log_2\frac{5}{14} - \frac{4}{14}\log_2\frac{4}{14} - \frac{5}{14}\log_2\frac{5}{14} = 1.577$$</p>
+<p>信息增益比：</p>
+<p>$$g_R(D, \text{Outlook}) = \frac{0.246}{1.577} = 0.156$$</p>
+<p>类似地：</p>
+<table>
+<thead>
+<tr>
+<th>特征</th>
+<th>信息增益</th>
+<th>分裂信息</th>
+<th>信息增益比</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Outlook</td>
+<td>0.246</td>
+<td>1.577</td>
+<td>0.156</td>
+</tr>
+<tr>
+<td>Humidity</td>
+<td>0.151</td>
+<td>1.000</td>
+<td>0.151</td>
+</tr>
+<tr>
+<td>Windy</td>
+<td>0.048</td>
+<td>0.985</td>
+<td>0.049</td>
+</tr>
+<tr>
+<td>Temp</td>
+<td>0.029</td>
+<td>1.557</td>
+<td>0.019</td>
+</tr>
+</tbody></table>
+<p>Outlook 在增益比上也胜出。</p>
+<h3 id="4-2-连续特征处理"><a href="#4-2-连续特征处理" class="headerlink" title="4.2 连续特征处理"></a>4.2 连续特征处理</h3><p>C4.5 通过<strong>二分法（Binary Splitting）</strong>来处理连续特征。</p>
+<p>对于连续特征 $A$，将训练集中 $A$ 的取值按升序排列：</p>
+<p>$$a_1 \leq a_2 \leq \cdots \leq a_n$$</p>
+<p>在每对相邻值的中点构造候选切分点：</p>
+<p>$$t_i = \frac{a_i + a_{i+1}}{2}, \quad i = 1, 2, \ldots, n-1$$</p>
+<p>这样得到 $n-1$ 个候选切分点。对每个切分点，计算按”$A \leq t_i$”二分后的信息增益（或增益比），选择最优的那个。</p>
+<p><strong>复杂度分析</strong>：对 $n$ 个样本的连续特征，排序 $O(n \log n)$ + 扫描切分点 $O(n)$，总体 $O(n \log n)$。加上对所有 $d$ 个特征都要做这个操作，特征选择阶段总复杂度为 $O(d n \log n)$。</p>
+<p><strong>注意</strong>：连续特征在一次分裂后，该特征在后续分裂中<strong>仍可能被再次使用</strong>（因为二分法只在某个阈值处分裂，不等于特征被完全”消耗”了）。这是 C4.5 与 ID3 的一个重要区别。</p>
+<h3 id="4-3-缺失值处理"><a href="#4-3-缺失值处理" class="headerlink" title="4.3 缺失值处理"></a>4.3 缺失值处理</h3><p>C4.5 对缺失值的处理分为两个层面：训练时如何计算信息增益，以及预测时如何处理缺失。</p>
+<h4 id="计算方法"><a href="#计算方法" class="headerlink" title="计算方法"></a>计算方法</h4><p>设特征 $A$ 有缺失值。记：</p>
+<ul>
+<li>$D$ 的全部样本数为 $|D|$</li>
+<li>$\tilde{D}$ 为 $D$ 中在特征 $A$ 上无缺失的样本子集</li>
+<li>引入权重 $w_i$（最开始全部为 1），实际的熵计算使用加权熵</li>
+</ul>
+<p><strong>计算信息增益时</strong>，只使用无缺失样本 $\tilde{D}$，然后按比例折算：</p>
+<p>$$g(D, A) = \frac{|\tilde{D}|}{|D|} \cdot g(\tilde{D}, A)$$</p>
+<p>也就是按无缺失样本的比例对信息增益进行”折扣”处理。这隐含地对有大量缺失值的特征施加了惩罚。</p>
+<p><strong>当选择 $A$ 进行分裂后</strong>，对于 $A$ 上有缺失的样本，C4.5 将其按各分支的样本比例分配到所有子节点：</p>
+<ul>
+<li>子节点 $i$ 的样本权重 &#x3D; $\frac{|D_i|}{|\tilde{D}|} \times$（原样本权重）</li>
+</ul>
+<p>一个缺失样本最终可能以不完整的权重出现在多个子节点中。</p>
+<h3 id="4-4-剪枝策略（PEP-Pessimistic-Error-Pruning）"><a href="#4-4-剪枝策略（PEP-Pessimistic-Error-Pruning）" class="headerlink" title="4.4 剪枝策略（PEP - Pessimistic Error Pruning）"></a>4.4 剪枝策略（PEP - Pessimistic Error Pruning）</h3><p>C4.5 使用<strong>悲观错误剪枝（PEP）</strong>，在训练集上直接评估是否应该剪掉某棵子树（不需要单独的验证集）。</p>
+<p>对于一棵子树，估计其在训练集上的错误率的上界：</p>
+<p>$$e = \frac{E + 0.5}{N}$$</p>
+<p>其中 $E$ 是子树在训练集上的错误分类数，$N$ 是覆盖的样本数。$+0.5$ 是连续性校正。</p>
+<p>该子树的分错个数的标准差（二项分布）：</p>
+<p>$$\text{SE} = \sqrt{\frac{e(1-e)}{N}}$$</p>
+<p>如果剪掉子树（用叶节点替代，类标为多数类），其误差为 $E_{\text{leaf}}$。C4.5 的剪枝条件：</p>
+<p>$$E_{\text{leaf}} \leq E_{\text{subtree}} + \text{SE}$$</p>
+<p>即如果叶节点的错误数不超过子树错误数加一个标准差，就把子树剪掉。</p>
+<p><strong>直觉</strong>：子树的复杂性可能只是”记住”了训练数据中的噪声。如果剪掉子树后错误没有显著增加（在一个标准差范围外的增加才被认为是统计显著的），那子树就是不必要的，应被剪掉。</p>
+<hr>
+<h2 id="5-CART（Classification-and-Regression-Tree）"><a href="#5-CART（Classification-and-Regression-Tree）" class="headerlink" title="5. CART（Classification and Regression Tree）"></a>5. CART（Classification and Regression Tree）</h2><p>CART 由 Breiman、Friedman、Olshen 和 Stone 于 1984 年提出，是决策树方法的集大成者。与 ID3&#x2F;C4.5 相比，CART 有以下几个显著特点：</p>
+<ol>
+<li><strong>二分递归分裂</strong>：每个内部节点只产生两个子节点（二叉树），而非 ID3&#x2F;C4.5 的多叉树。</li>
+<li><strong>分类和回归统一</strong>：CART 既可以做分类（Gini 指数），也可以做回归（MSE）。</li>
+<li><strong>代价复杂度剪枝（CCP）</strong>：CART 的剪枝策略有严格的交叉验证支撑。</li>
+</ol>
+<h3 id="5-1-CART-分类树"><a href="#5-1-CART-分类树" class="headerlink" title="5.1 CART 分类树"></a>5.1 CART 分类树</h3><h4 id="5-1-1-基尼指数选择特征"><a href="#5-1-1-基尼指数选择特征" class="headerlink" title="5.1.1 基尼指数选择特征"></a>5.1.1 基尼指数选择特征</h4><p>CART 分类树使用基尼指数选择最优特征和最优二值切分点。</p>
+<p>对于特征 $A$ 和其某个取值 $a$，二分数据集为 $D_1 &#x3D; {x | A &#x3D; a}$ 和 $D_2 &#x3D; {x | A \neq a}$（离散情况），或 $D_1 &#x3D; {x | A \leq s}$ 和 $D_2 &#x3D; {x | A &gt; s}$（连续情况）。</p>
+<p>选择使分裂后加权基尼指数最小的 $(A, a)$ 对：</p>
+<p>$$\text{Gini}(D, A, a) = \frac{|D_1|}{|D|}\text{Gini}(D_1) + \frac{|D_2|}{|D|}\text{Gini}(D_2)$$</p>
+<h4 id="5-1-2-CART-分类树的生成（伪代码）"><a href="#5-1-2-CART-分类树的生成（伪代码）" class="headerlink" title="5.1.2 CART 分类树的生成（伪代码）"></a>5.1.2 CART 分类树的生成（伪代码）</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Algorithm: CART_classification(D)</span><br><span class="line">Input: 训练数据集 D, 停止条件</span><br><span class="line">Output: CART 决策树</span><br><span class="line"></span><br><span class="line">1. 对于每个特征 A 的每个可能取值 a:</span><br><span class="line">2.     计算以 (A, a) 二分 D 后的基尼指数</span><br><span class="line">3. 选择基尼指数最小的 (A*, a*) 作为最优切分点</span><br><span class="line">4. 将 D 切分为 D1 和 D2</span><br><span class="line">5. 对 D1 和 D2 分别递归调用 CART_classification</span><br><span class="line">6. 返回以 (A*, a*) 为根节点的二叉树</span><br></pre></td></tr></table></figure>
+
+<p>停止条件：</p>
+<ol>
+<li>节点中样本个数小于预定阈值</li>
+<li>节点基尼指数小于预定阈值（样本基本纯净）</li>
+<li>没有更多特征可用于分裂</li>
+</ol>
+<h3 id="5-2-CART-回归树"><a href="#5-2-CART-回归树" class="headerlink" title="5.2 CART 回归树"></a>5.2 CART 回归树</h3><h4 id="5-2-1-最小二乘准则"><a href="#5-2-1-最小二乘准则" class="headerlink" title="5.2.1 最小二乘准则"></a>5.2.1 最小二乘准则</h4><p>CART 回归树使用平方误差最小化来选择最优切分。对每个特征 $j$ 和切分点 $s$，求解：</p>
+<p>$$\min_{j,s} \left[ \min_{c_1} \sum_{x_i \in R_1(j,s)} (y_i - c_1)^2 + \min_{c_2} \sum_{x_i \in R_2(j,s)} (y_i - c_2)^2 \right]$$</p>
+<p>其中 $c_1 &#x3D; \frac{1}{|R_1|}\sum_{x_i \in R_1} y_i$，$c_2 &#x3D; \frac{1}{|R_2|}\sum_{x_i \in R_2} y_i$（区域内的样本均值）。</p>
+<h4 id="5-2-2-回归树的数值案例"><a href="#5-2-2-回归树的数值案例" class="headerlink" title="5.2.2 回归树的数值案例"></a>5.2.2 回归树的数值案例</h4><p>假设有如下数据：</p>
+<table>
+<thead>
+<tr>
+<th>$x$</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$y$</td>
+<td>4.5</td>
+<td>4.7</td>
+<td>4.9</td>
+<td>5.2</td>
+<td>5.3</td>
+<td>5.1</td>
+</tr>
+</tbody></table>
+<p>按 $x$ 排序后，候选切分点为 $s \in {1.5, 2.5, 3.5, 4.5, 5.5}$。</p>
+<p>以 $s &#x3D; 3.5$ 为例：</p>
+<ul>
+<li>$R_1: {1, 2, 3}$，$\bar{y}_1 &#x3D; (4.5+4.7+4.9)&#x2F;3 &#x3D; 4.70$</li>
+<li>$R_2: {4, 5, 6}$，$\bar{y}_2 &#x3D; (5.2+5.3+5.1)&#x2F;3 &#x3D; 5.20$</li>
+<li>$\text{MSE} &#x3D; \sum_{R_1}(y - 4.70)^2 + \sum_{R_2}(y - 5.20)^2$<br>$&#x3D; (0.04 + 0 + 0.04) + (0 + 0.01 + 0.01) &#x3D; 0.08 + 0.02 &#x3D; 0.10$</li>
+</ul>
+<p>对所有切分点计算：</p>
+<table>
+<thead>
+<tr>
+<th>$s$</th>
+<th>$R_1$ 均值</th>
+<th>$R_2$ 均值</th>
+<th>MSE</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1.5</td>
+<td>4.50</td>
+<td>5.04</td>
+<td>0.292</td>
+</tr>
+<tr>
+<td>2.5</td>
+<td>4.60</td>
+<td>5.125</td>
+<td>0.229</td>
+</tr>
+<tr>
+<td>3.5</td>
+<td>4.70</td>
+<td>5.20</td>
+<td>0.100</td>
+</tr>
+<tr>
+<td>4.5</td>
+<td>4.825</td>
+<td>5.20</td>
+<td>0.155</td>
+</tr>
+<tr>
+<td>5.5</td>
+<td>4.92</td>
+<td>5.10</td>
+<td>0.269</td>
+</tr>
+</tbody></table>
+<p>$s &#x3D; 3.5$ 对应 MSE 最小（0.10），选为根节点切分点。</p>
+<h3 id="5-3-CART-的剪枝：代价复杂度剪枝（CCP）"><a href="#5-3-CART-的剪枝：代价复杂度剪枝（CCP）" class="headerlink" title="5.3 CART 的剪枝：代价复杂度剪枝（CCP）"></a>5.3 CART 的剪枝：代价复杂度剪枝（CCP）</h3><p>CART 使用<strong>代价复杂度剪枝（Cost-Complexity Pruning）</strong>，也称为最弱链接剪枝（Weakest Link Pruning）。它是 CART 最精巧的部分。</p>
+<h4 id="5-3-1-代价复杂度度量"><a href="#5-3-1-代价复杂度度量" class="headerlink" title="5.3.1 代价复杂度度量"></a>5.3.1 代价复杂度度量</h4><p>对于一棵决策树 $T$，定义其代价复杂度：</p>
+<p>$$R_\alpha(T) = R(T) + \alpha |T|$$</p>
+<p>其中：</p>
+<ul>
+<li>$R(T)$：树 $T$ 在训练数据上的错误率（分类）或 MSE（回归），即经验风险</li>
+<li>$|T|$：树 $T$ 的叶节点个数，作为模型复杂度的度量</li>
+<li>$\alpha \geq 0$：复杂度惩罚参数，控制剪枝的强度</li>
+</ul>
+<p>$\alpha &#x3D; 0$：不惩罚复杂度 → 不剪枝（完全生长的树 $T_0$）<br>$\alpha \to \infty$：极度惩罚复杂度 → 退化为只有根节点的树</p>
+<h4 id="5-3-2-剪枝过程"><a href="#5-3-2-剪枝过程" class="headerlink" title="5.3.2 剪枝过程"></a>5.3.2 剪枝过程</h4><ol>
+<li><p><strong>生成完整树</strong> $T_0$：不断生长直到所有叶节点的样本数小于阈值或纯度为 100%。</p>
+</li>
+<li><p><strong>生成剪枝序列</strong>：对于 $\alpha$ 从 0 逐渐增大的每个阶段，我们通过”剪掉使 $R_\alpha(T)$ 减少最多的子树”来得到一系列嵌套的子树：</p>
+<p>$$T_0 \supset T_1 \supset T_2 \supset \cdots \supset T_K = \{\text{root}\}$$</p>
+<p>对于内部节点 $t$，定义其剪枝前后的代价差：</p>
+<p>$$g(t) = \frac{R(t) - R(T_t)}{|T_t| - 1}$$</p>
+<p>其中 $R(t)$ 是将该节点作为叶节点时的经验风险，$R(T_t)$ 是以 $t$ 为根的子树 $T_t$ 的经验风险。</p>
+<p>$g(t)$ 越小，说明剪去该子树后增加的误差越小（相对于其复杂度减少来说），越应该被剪。</p>
+<p>每次剪去 $g(t)$ 最小的节点，直到只剩根节点。</p>
+<p><strong>为什么 $g(t)$ 的形式是这样？</strong> 考虑两种代价：</p>
+<ul>
+<li>剪枝后（节点 $t$ 变叶节点）：$R(t) + \alpha$</li>
+<li>剪枝前（保留子树 $T_t$）：$R(T_t) + \alpha|T_t|$</li>
+</ul>
+<p>当 $R(t) + \alpha \leq R(T_t) + \alpha|T_t|$ 时剪枝更优，即 $\alpha \geq \frac{R(t) - R(T_t)}{|T_t| - 1} &#x3D; g(t)$。</p>
+<p>所以 $g(t)$ 是使剪枝变得有利的最小 $\alpha$ 值。每次递增 $\alpha$ 到下一个最小的 $g(t)$，剪去对应节点。</p>
+</li>
+<li><p><strong>交叉验证选择最优</strong> $\alpha$：使用独立的验证集（或 k 折交叉验证），从 ${T_0, T_1, \ldots, T_K}$ 中选择验证误差最小的那棵。</p>
+</li>
+</ol>
+<h4 id="5-3-3-1-SE-规则"><a href="#5-3-3-1-SE-规则" class="headerlink" title="5.3.3 1-SE 规则"></a>5.3.3 1-SE 规则</h4><p>为避免选到过于复杂的树（验证集上的变化可能在统计上不显著），CART 推荐使用 <strong>1-SE 规则</strong>：</p>
+<p>在交叉验证中，先找出最小验证误差的树 $T^*$，计算其验证误差的标准误 SE。然后选择满足”验证误差 $\leq$ T*验证误差 + 1 SE”的前提下，最简单的（$|T|$ 最小的）那棵树。</p>
+<p><strong>直觉</strong>：如果两棵树的验证误差差距在一个标准差以内，可以认为没有显著差异；此时选更简单的那棵树更好（奥卡姆剃刀）。</p>
+<hr>
+<h2 id="6-预剪枝与后剪枝"><a href="#6-预剪枝与后剪枝" class="headerlink" title="6. 预剪枝与后剪枝"></a>6. 预剪枝与后剪枝</h2><h3 id="6-1-预剪枝（Pre-pruning）"><a href="#6-1-预剪枝（Pre-pruning）" class="headerlink" title="6.1 预剪枝（Pre-pruning）"></a>6.1 预剪枝（Pre-pruning）</h3><p>预剪枝在树生长过程中提前停止分裂。</p>
+<p><strong>常用停止条件</strong>：</p>
+<ol>
+<li><strong>节点样本数下限</strong>：当节点中样本数少于阈值（如 50），停止分裂</li>
+<li><strong>节点纯度</strong>：当节点的 Gini 指数或熵低于阈值，停止分裂</li>
+<li><strong>信息增益下限</strong>：当最优分裂的信息增益小于阈值，停止分裂</li>
+<li><strong>树的深度</strong>：当树的深度达到预定上限（如 max_depth &#x3D; 10），停止分裂</li>
+<li><strong>叶节点数上限</strong>：当叶节点总数达到预定上限</li>
+</ol>
+<p><strong>优点</strong>：</p>
+<ul>
+<li>简单，计算开销小（不需要先长完整树再剪）</li>
+<li>适用于在线学习场景</li>
+</ul>
+<p><strong>缺点</strong>：</p>
+<ul>
+<li><strong>短视（Short-sighted）</strong>：当前看起来”不好”的分裂可能在后续分裂后变得很好。例如 XOR 问题中，单独任何一个特征的分裂都没有信息增益，但两个特征一起就能完美分类。预剪枝会因为第一步增益为 0 而停止，错失好的模型。</li>
+</ul>
+<h3 id="6-2-后剪枝（Post-pruning）"><a href="#6-2-后剪枝（Post-pruning）" class="headerlink" title="6.2 后剪枝（Post-pruning）"></a>6.2 后剪枝（Post-pruning）</h3><p>后剪枝先生成一棵完全生长的树，然后自底向上地剪去不必要的子树。</p>
+<p><strong>方法对比</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>算法</th>
+<th>验证集</th>
+<th>评价标准</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>REP</td>
+<td>Reduced Error Pruning</td>
+<td>需要</td>
+<td>验证集错误率</td>
+<td>简单但需要额外数据</td>
+</tr>
+<tr>
+<td>PEP</td>
+<td>Pessimistic Error Pruning (C4.5)</td>
+<td>不需要</td>
+<td>训练集+连续性校正</td>
+<td>悲观估计，可能过度剪枝</td>
+</tr>
+<tr>
+<td>CCP</td>
+<td>Cost-Complexity Pruning (CART)</td>
+<td>需要（CV）</td>
+<td>$R_\alpha &#x3D; R + \alpha</td>
+<td>T</td>
+</tr>
+<tr>
+<td>MEP</td>
+<td>Minimum Error Pruning</td>
+<td>不需要</td>
+<td>贝叶斯误差估计</td>
+<td>对先验的设定敏感</td>
+</tr>
+<tr>
+<td>EBP</td>
+<td>Error-Based Pruning</td>
+<td>不需要</td>
+<td>置信区间</td>
+<td>C4.5 的后继使用</td>
+</tr>
+</tbody></table>
+<h3 id="6-3-预剪枝-vs-后剪枝"><a href="#6-3-预剪枝-vs-后剪枝" class="headerlink" title="6.3 预剪枝 vs 后剪枝"></a>6.3 预剪枝 vs 后剪枝</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>预剪枝</th>
+<th>后剪枝</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>计算量</td>
+<td>小（一次建树）</td>
+<td>大（可能多次评估）</td>
+</tr>
+<tr>
+<td>泛化能力</td>
+<td>可能欠拟合</td>
+<td>通常更好</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>大数据集，需要快速训练</td>
+<td>中小数据集，追求精度</td>
+</tr>
+<tr>
+<td>实践</td>
+<td>sklearn 的决策树默认策略</td>
+<td>传统方法（CART, C4.5）</td>
+</tr>
+<tr>
+<td>主要风险</td>
+<td>短视，错过好的深层交互</td>
+<td>需要好的评估策略，否则可能过拟合</td>
+</tr>
+</tbody></table>
+<p>在实践中，现代库（如 sklearn）通常同时使用两者：设置 max_depth&#x2F;min_samples_split 做预剪枝，配合 CCP 做后剪枝（通过 <code>ccp_alpha</code> 参数）。</p>
+<hr>
+<h2 id="7-从决策树到集成学习"><a href="#7-从决策树到集成学习" class="headerlink" title="7. 从决策树到集成学习"></a>7. 从决策树到集成学习</h2><h3 id="7-1-决策树的优势与劣势"><a href="#7-1-决策树的优势与劣势" class="headerlink" title="7.1 决策树的优势与劣势"></a>7.1 决策树的优势与劣势</h3><p>决策树作为基学习器，具有两个关键特性使它非常适合做集成：</p>
+<p><strong>优势</strong>：</p>
+<ol>
+<li><strong>表达能力强</strong>：可以学习复杂的非线性关系</li>
+<li><strong>对数据预处理要求低</strong>：不需要标准化&#x2F;归一化</li>
+<li><strong>自动处理特征交互</strong>：无需手动构造交互特征</li>
+<li><strong>可解释性强</strong>：天然为白盒模型</li>
+</ol>
+<p><strong>劣势</strong>：</p>
+<ol>
+<li><strong>高方差</strong>：对训练数据的微小扰动很敏感（叶节点结构完全改变）</li>
+<li><strong>容易过拟合</strong>：深层树容易记住噪声</li>
+<li><strong>贪心算法</strong>：局部最优不等于全局最优</li>
+<li><strong>不稳定</strong>：数据的小变化可能导致完全不同的树结构</li>
+</ol>
+<h3 id="7-2-Bagging（Bootstrap-Aggregating，装袋法）"><a href="#7-2-Bagging（Bootstrap-Aggregating，装袋法）" class="headerlink" title="7.2 Bagging（Bootstrap Aggregating，装袋法）"></a>7.2 Bagging（Bootstrap Aggregating，装袋法）</h3><p><strong>核心思想</strong>：通过对训练数据进行 bootstrap 采样（有放回采样），构建多个略有不同的训练集，每个训练集上训练一棵决策树，最终通过投票（分类）或平均（回归）来降低方差。</p>
+<p><strong>Random Forest &#x3D; Bagging + 随机特征子空间</strong>：</p>
+<ul>
+<li>除了对样本做 bootstrap，还<strong>在每个分裂节点随机选择一个特征子集</strong>（通常 $\sqrt{d}$ 个特征 for 分类，$d&#x2F;3$ for 回归）</li>
+<li>进一步去相关（decorrelate）各棵决策树，增强集成效果</li>
+</ul>
+<h3 id="7-3-Boosting（提升法）"><a href="#7-3-Boosting（提升法）" class="headerlink" title="7.3 Boosting（提升法）"></a>7.3 Boosting（提升法）</h3><p><strong>核心思想</strong>：串行地训练一系列弱学习器（通常是浅层决策树），每个新学习器都侧重于纠正前一轮集成模型的错误。</p>
+<ul>
+<li><strong>AdaBoost</strong>：通过调整样本权重来关注难分类样本（指数损失）</li>
+<li><strong>GBDT</strong>：每棵树拟合前一轮的负梯度（残差）</li>
+<li><strong>XGBoost</strong>：GBDT + 正则化 + 二阶泰勒展开 + 系统优化</li>
+<li><strong>LightGBM</strong>：基于直方图的 GBDT + 单边梯度采样（GOSS）+ 互斥特征捆绑（EFB）</li>
+</ul>
+<p><strong>为什么 boosting 用浅树？</strong></p>
+<ul>
+<li>Boosting 的核心是 sequential bias reduction，每轮减少前轮集成模型的偏差</li>
+<li>单个基学习器不需要很强（通常 depth &#x3D; 3-6），否则容易过拟合且增加计算开销</li>
+<li>这与 Bagging 的哲学相反（Bagging 用深树，通过平均减少方差）</li>
+</ul>
+<h3 id="7-4-决策树在集成中的角色总结"><a href="#7-4-决策树在集成中的角色总结" class="headerlink" title="7.4 决策树在集成中的角色总结"></a>7.4 决策树在集成中的角色总结</h3><table>
+<thead>
+<tr>
+<th>集成方法</th>
+<th>树的数量</th>
+<th>树的深度</th>
+<th>并行&#x2F;串行</th>
+<th>主导作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Random Forest</td>
+<td>多（100-1000）</td>
+<td>深（完全生长）</td>
+<td>并行</td>
+<td>降方差</td>
+</tr>
+<tr>
+<td>AdaBoost</td>
+<td>多（50-100）</td>
+<td>极浅（stump&#x2F;depth&#x3D;1-3）</td>
+<td>串行</td>
+<td>降偏差</td>
+</tr>
+<tr>
+<td>GBDT</td>
+<td>多（100-500）</td>
+<td>浅（depth&#x3D;4-8）</td>
+<td>串行</td>
+<td>降偏差</td>
+</tr>
+<tr>
+<td>XGBoost</td>
+<td>多（100-500）</td>
+<td>浅（depth&#x3D;3-6）</td>
+<td>串行</td>
+<td>降偏差</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="8-分裂准则的数学统一与对比"><a href="#8-分裂准则的数学统一与对比" class="headerlink" title="8. 分裂准则的数学统一与对比"></a>8. 分裂准则的数学统一与对比</h2><h3 id="8-1-不纯度度量的一般框架"><a href="#8-1-不纯度度量的一般框架" class="headerlink" title="8.1 不纯度度量的一般框架"></a>8.1 不纯度度量的一般框架</h3><p>所有分裂准则可以统一为对节点不纯度（impurity）的度量。设节点 $t$ 包含 $N_t$ 个样本，属于 $K$ 个类别的比例分别为 $p_{t1}, p_{t2}, \ldots, p_{tK}$。</p>
+<p><strong>不纯度函数 $i(t)$</strong> 需要满足：</p>
+<ol>
+<li>当所有样本属于同一类时（$\exists k: p_{tk} &#x3D; 1$），$i(t)$ 达到最小值</li>
+<li>当各类样本均匀分布时（$\forall k: p_{tk} &#x3D; 1&#x2F;K$），$i(t)$ 达到最大值</li>
+<li>$i(t)$ 是关于 $(p_{t1}, \ldots, p_{tK})$ 的对称凹函数</li>
+</ol>
+<p>三种常见的不纯度函数：</p>
+<table>
+<thead>
+<tr>
+<th>不纯度</th>
+<th>公式</th>
+<th>$K&#x3D;2$ 时的形式（令 $p$ 为正类比例）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>分类错误率</td>
+<td>$1 - \max_k p_{tk}$</td>
+<td>$1 - \max(p, 1-p)$</td>
+</tr>
+<tr>
+<td>基尼指数</td>
+<td>$1 - \sum_k p_{tk}^2$</td>
+<td>$2p(1-p)$</td>
+</tr>
+<tr>
+<td>交叉熵</td>
+<td>$-\sum_k p_{tk} \log_2 p_{tk}$</td>
+<td>$-p\log_2 p - (1-p)\log_2(1-p)$</td>
+</tr>
+</tbody></table>
+<p><strong>分裂的增益</strong>：使用特征 $A$ 分裂节点 $t$ 为子节点 $t_1, \ldots, t_m$ 后的不纯度减少量：</p>
+<p>$$\Delta i = i(t) - \sum_{j=1}^{m} \frac{N_{t_j}}{N_t} i(t_j)$$</p>
+<p>选择使 $\Delta i$ 最大化的特征和分裂方式。</p>
+<h3 id="8-2-三种不纯度函数的比较（二分类）"><a href="#8-2-三种不纯度函数的比较（二分类）" class="headerlink" title="8.2 三种不纯度函数的比较（二分类）"></a>8.2 三种不纯度函数的比较（二分类）</h3><p>以二分类为例，令 $p$ 为正类比例，我们对比三种不纯度函数：</p>
+<table>
+<thead>
+<tr>
+<th>$p$</th>
+<th>错误率: $1-\max(p,1!-!p)$</th>
+<th>Gini: $2p(1!-!p)$</th>
+<th>熵: $-p\log p - (1!-!p)\log(1!-!p)$</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0.00</td>
+<td>0.00</td>
+<td>0.00</td>
+<td>0.00</td>
+</tr>
+<tr>
+<td>0.10</td>
+<td>0.10</td>
+<td>0.18</td>
+<td>0.47</td>
+</tr>
+<tr>
+<td>0.25</td>
+<td>0.25</td>
+<td>0.375</td>
+<td>0.81</td>
+</tr>
+<tr>
+<td>0.50</td>
+<td>0.50</td>
+<td>0.50</td>
+<td>1.00</td>
+</tr>
+<tr>
+<td>0.75</td>
+<td>0.25</td>
+<td>0.375</td>
+<td>0.81</td>
+</tr>
+<tr>
+<td>0.90</td>
+<td>0.10</td>
+<td>0.18</td>
+<td>0.47</td>
+</tr>
+<tr>
+<td>1.00</td>
+<td>0.00</td>
+<td>0.00</td>
+<td>0.00</td>
+</tr>
+</tbody></table>
+<p><strong>关键观察</strong>：</p>
+<ol>
+<li>在 $p&#x3D;0.5$ 附近，三者的形状非常相似（通过 Taylor 展开可以验证，Gini 和半熵在 $p&#x3D;0.5$ 处二次近似完全一致）</li>
+<li>远离 $p&#x3D;0.5$ 时，错误率是分段线性的（最”平”），Gini 是二次的，熵是最”陡”的</li>
+<li>这意味着熵对纯度变化最敏感（轻微的不纯会导致较大的熵增），Gini 居中，错误率最不敏感</li>
+<li>实践中 Gini 和熵选出的分裂几乎总是相同；错误率对纯度不敏感，通常不单独用于决策树分裂</li>
+</ol>
+<h3 id="8-3-Gini-指数与方差的等价性（回归视角）"><a href="#8-3-Gini-指数与方差的等价性（回归视角）" class="headerlink" title="8.3 Gini 指数与方差的等价性（回归视角）"></a>8.3 Gini 指数与方差的等价性（回归视角）</h3><p>有趣的是，对于二分类问题（类标为 0&#x2F;1），基尼指数与样本方差之间存在等价关系。</p>
+<p>将类标视为 0&#x2F;1 变量，节点 $t$ 中 $y$ 的方差为：</p>
+<p>$$\text{Var}(y|t) = p_t(1-p_t)$$</p>
+<p>其中 $p_t$ 是 $y&#x3D;1$ 的比例。而基尼指数 $\text{Gini}(t) &#x3D; 2p_t(1-p_t) &#x3D; 2\text{Var}(y|t)$。</p>
+<p>这意味着：<strong>CART 分类树的基尼指数分裂准则，等价于将类标视为连续变量后以最小化方差为目标进行分裂</strong>。这解释了为什么 CART 能用一个统一的框架（均方误差 &#x2F; 方差最小化）同时处理分类和回归——分类不过是回归在 0&#x2F;1 标签上的特例。</p>
+<p>从这个角度看，CART 的回归和分类在数学上是完全统一的——唯一的区别在于叶节点的输出：回归取均值，分类取多数投票（或概率估计）。</p>
+<hr>
+<h2 id="9-CART-的缺失值处理：代理分裂"><a href="#9-CART-的缺失值处理：代理分裂" class="headerlink" title="9. CART 的缺失值处理：代理分裂"></a>9. CART 的缺失值处理：代理分裂</h2><p>CART 对缺失值的处理使用了独特的<strong>代理分裂（Surrogate Split）</strong>机制，与 C4.5 的权重分配法不同。</p>
+<h3 id="8-1-代理分裂的核心思想"><a href="#8-1-代理分裂的核心思想" class="headerlink" title="8.1 代理分裂的核心思想"></a>8.1 代理分裂的核心思想</h3><p>对于被选中分裂的特征 $A^*$（主分裂，Primary Split），如果某个样本在 $A^*$ 上有缺失值，CART 使用<strong>代理特征</strong>来判断该样本应该被分到哪个子节点。</p>
+<p><strong>代理分裂的定义</strong>：对于主分裂 $(A^*, s^*)$，一个在特征 $A_{\text{sur}}$ 上的分裂 $(A_{\text{sur}}, s_{\text{sur}})$ 如果将训练样本分配到左右子节点的分布与主分裂最接近，则被称为代理分裂。</p>
+<h3 id="8-2-代理分裂的搜索"><a href="#8-2-代理分裂的搜索" class="headerlink" title="8.2 代理分裂的搜索"></a>8.2 代理分裂的搜索</h3><p>对于给定的主分裂，CART 在其他特征中搜索代理分裂，按照与主分裂的”一致度”排序：</p>
+<p>$$\text{agreement} = P(\text{surrogate sends } x \text{ to same child as primary})$$</p>
+<p>具体步骤：</p>
+<ol>
+<li>对所有非主分裂特征，搜索使与该特征的最优二分与主分裂分配最一致的那个切分点</li>
+<li>按一致度降序排列代理分裂</li>
+<li>预测时，如果样本在主分裂特征上有缺失，依次尝试第一个、第二个代理分裂，直到找到一个代理特征在该样本上有值</li>
+</ol>
+<h3 id="8-3-代理分裂的优势"><a href="#8-3-代理分裂的优势" class="headerlink" title="8.3 代理分裂的优势"></a>8.3 代理分裂的优势</h3><ol>
+<li><strong>利用特征相关性</strong>：代理分裂天然利用了特征之间的相关性。例如，如果”家庭收入”缺失，可以用高度相关的”教育程度”作为代理。</li>
+<li><strong>不需要修改样本权重</strong>：相比 C4.5 的权重分配法，代理分裂保持每个样本的完整性（一个样本只去一个子节点）。</li>
+<li><strong>模型更稳定</strong>：代理特征与主分裂特征的相关性赋予了模型针对缺失模式的鲁棒性。</li>
+</ol>
+<h3 id="8-4-C4-5-vs-CART-缺失值处理对比"><a href="#8-4-C4-5-vs-CART-缺失值处理对比" class="headerlink" title="8.4 C4.5 vs CART 缺失值处理对比"></a>8.4 C4.5 vs CART 缺失值处理对比</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>C4.5</th>
+<th>CART</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>训练时</td>
+<td>只用无缺失样本计算增益，按比例折扣</td>
+<td>正常分裂（或用代理评估）</td>
+</tr>
+<tr>
+<td>预测时</td>
+<td>权重分配：缺失样本按比例进入各分支</td>
+<td>代理分裂：用代理特征判断方向</td>
+</tr>
+<tr>
+<td>优势</td>
+<td>简单直接</td>
+<td>利用特征相关性，更鲁棒</td>
+</tr>
+<tr>
+<td>劣势</td>
+<td>可能引入偏差</td>
+<td>需要为每个分裂搜索代理</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="10-多变量决策树"><a href="#10-多变量决策树" class="headerlink" title="10. 多变量决策树"></a>10. 多变量决策树</h2><p>传统决策树在每个节点只用一个特征做测试（轴平行划分）。这在面对倾斜的数据分布时会产生大量碎小的矩形区域。<strong>多变量决策树（Multivariate Decision Tree）</strong>在每个节点使用多个特征的线性组合来做测试：</p>
+<p>$$f(x) = \sum_{j=1}^{d} w_j x_j \leq \theta$$</p>
+<p>这就是一个<strong>斜决策边界（Oblique Decision Boundary）</strong>。</p>
+<h3 id="9-1-多变量决策树的优势"><a href="#9-1-多变量决策树的优势" class="headerlink" title="9.1 多变量决策树的优势"></a>9.1 多变量决策树的优势</h3><p>传统决策树（轴平行）在处理对角分布时需要大量递归分裂来近似斜线，导致树又深又复杂，且容易过拟合。多变量决策树一两个节点就能完成斜线划分。</p>
+<p><strong>极端的 XOR 问题</strong>：传统决策树需要至少 3 个内部节点才能解决 XOR，而多变量决策树理论上可以一步解决（但在实践中仍然依赖于能否找到合适的线性组合）。</p>
+<h3 id="9-2-常见的多变量分裂方法"><a href="#9-2-常见的多变量分裂方法" class="headerlink" title="9.2 常见的多变量分裂方法"></a>9.2 常见的多变量分裂方法</h3><ol>
+<li><strong>OC1（Oblique Classifier 1）</strong>：随机搜索 + 爬山法寻找最优的斜分裂超平面</li>
+<li><strong>CART-LC（Linear Combinations）</strong>：CART 作者 Breiman 提出的一个扩展，使用线性组合做分裂，通过交替优化的方式搜索系数</li>
+<li><strong>神经网络决策树</strong>：在每个节点训练一个小型感知机或逻辑回归来做”软”分裂</li>
+</ol>
+<p>虽然多变量决策树理论上有优势，但由于分裂的搜索空间从 $O(nd)$（轴平行）爆炸到指数级，实践中很少被使用——集成方法（如 GBDT）在计算效率和预测精度上几乎总是更优。</p>
+<hr>
+<h2 id="11-决策树的不稳定性与集成学习的统计视角"><a href="#11-决策树的不稳定性与集成学习的统计视角" class="headerlink" title="11. 决策树的不稳定性与集成学习的统计视角"></a>11. 决策树的不稳定性与集成学习的统计视角</h2><h3 id="10-1-决策树是高方差学习器"><a href="#10-1-决策树是高方差学习器" class="headerlink" title="10.1 决策树是高方差学习器"></a>10.1 决策树是高方差学习器</h3><p>从 Bias-Variance 分解的角度看，决策树（特别是深树）是典型的高方差、低偏差模型。</p>
+<p>$$E_{\mathcal{D}}[(y - \hat{f}_{\mathcal{D}}(x))^2] = \text{Bias}^2[\hat{f}(x)] + \text{Var}[\hat{f}(x)] + \sigma^2$$</p>
+<p>其中：</p>
+<ul>
+<li><strong>Bias（偏差）</strong>：模型在无限多训练集上训练后，平均预测与真实值的差距。深树因为表达能力强，偏差低。</li>
+<li><strong>Variance（方差）</strong>：在不同训练集上训练出的模型预测值的波动程度。深树对数据极度敏感，方差高。</li>
+</ul>
+<p><strong>如何证明决策树方差高？</strong> Bootstrap 实验：对同一分布的多个采样集各自训练一棵决策树（不剪枝），比较它们的结构和预测——你会发现树结构几乎完全不一样（不同根节点、不同分裂顺序、不同叶节点数）。</p>
+<h3 id="10-2-Bagging-如何降低方差"><a href="#10-2-Bagging-如何降低方差" class="headerlink" title="10.2 Bagging 如何降低方差"></a>10.2 Bagging 如何降低方差</h3><p>如果 $B$ 个模型是独立同分布的，每个方差为 $\sigma^2$，则它们的均值的方差为 $\sigma^2&#x2F;B$。</p>
+<p>但 Bootstrap 得到的 $B$ 个树并非独立——它们共享相同的原始分布，只是采样略有不同。设两棵树的相关性为 $\rho$，则 $B$ 棵树均值的方差约为：</p>
+<p>$$\text{Var}(\text{ensemble}) = \rho\sigma^2 + \frac{1-\rho}{B}\sigma^2$$</p>
+<p>当 $B \to \infty$，方差趋向 $\rho\sigma^2$。这就是为什么 Random Forest 在 Bootstrap 之外还引入了<strong>随机特征子集</strong>——目的是降低 $\rho$（使树之间更独立），从而更有效地降低方差。</p>
+<h3 id="10-3-Bagging-vs-Boosting-的偏差-方差视角"><a href="#10-3-Bagging-vs-Boosting-的偏差-方差视角" class="headerlink" title="10.3 Bagging vs Boosting 的偏差-方差视角"></a>10.3 Bagging vs Boosting 的偏差-方差视角</h3><table>
+<thead>
+<tr>
+<th></th>
+<th>Bagging (RF)</th>
+<th>Boosting (GBDT)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>基学习器</td>
+<td>强学习器（深树，低偏差高方差）</td>
+<td>弱学习器（浅树，高偏差低方差）</td>
+</tr>
+<tr>
+<td>集成策略</td>
+<td>并行平均</td>
+<td>串行加性组合</td>
+</tr>
+<tr>
+<td>主要降什么</td>
+<td>降方差</td>
+<td>降偏差</td>
+</tr>
+<tr>
+<td>相关性的作用</td>
+<td>$\rho$ 大效果差 → RF 用随机特征降 $\rho$</td>
+<td>相关性是设计的一部分（串行相关）</td>
+</tr>
+<tr>
+<td>基学习器深度</td>
+<td>深（10+）</td>
+<td>浅（3-6）</td>
+</tr>
+</tbody></table>
+<p>这一对比揭示了为什么调参时 Random Forest 的 max_depth 通常很大或完全生长，而 GBDT 的 max_depth 通常很小——这两个算法在 Bias-Variance 谱系的两端。</p>
+<hr>
+<h2 id="12-实战：sklearn-决策树参数全解析"><a href="#12-实战：sklearn-决策树参数全解析" class="headerlink" title="12. 实战：sklearn 决策树参数全解析"></a>12. 实战：sklearn 决策树参数全解析</h2><h3 id="12-1-sklearn-tree-DecisionTreeClassifier-的核心参数"><a href="#12-1-sklearn-tree-DecisionTreeClassifier-的核心参数" class="headerlink" title="12.1 sklearn.tree.DecisionTreeClassifier 的核心参数"></a>12.1 sklearn.tree.DecisionTreeClassifier 的核心参数</h3><p>在 sklearn 中使用决策树时，以下参数直接控制树的结构和训练行为：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>默认值</th>
+<th>含义</th>
+<th>调优建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>criterion</code></td>
+<td><code>&#39;gini&#39;</code></td>
+<td>分裂准则：<code>&#39;gini&#39;</code> 或 <code>&#39;entropy&#39;</code></td>
+<td>两者效果接近，Gini 更快</td>
+</tr>
+<tr>
+<td><code>max_depth</code></td>
+<td><code>None</code></td>
+<td>树的最大深度</td>
+<td>最重要参数，通常 3-15</td>
+</tr>
+<tr>
+<td><code>min_samples_split</code></td>
+<td><code>2</code></td>
+<td>内部节点再分裂所需最小样本数</td>
+<td>增大可防过拟合，常用 10-100</td>
+</tr>
+<tr>
+<td><code>min_samples_leaf</code></td>
+<td><code>1</code></td>
+<td>叶节点最少样本数</td>
+<td>常用 5-50，比 min_samples_split 更直观</td>
+</tr>
+<tr>
+<td><code>min_weight_fraction_leaf</code></td>
+<td><code>0.0</code></td>
+<td>叶节点最小加权样本比例</td>
+<td>用于样本加权场景</td>
+</tr>
+<tr>
+<td><code>max_features</code></td>
+<td><code>None</code></td>
+<td>分裂时考虑的特征数</td>
+<td><code>sqrt</code>, <code>log2</code> 或整数；None&#x3D;全部特征</td>
+</tr>
+<tr>
+<td><code>max_leaf_nodes</code></td>
+<td><code>None</code></td>
+<td>最大叶节点数</td>
+<td>限制总叶节点数，与 max_depth 互斥</td>
+</tr>
+<tr>
+<td><code>min_impurity_decrease</code></td>
+<td><code>0.0</code></td>
+<td>分裂所需最小不纯度减少量</td>
+<td>等价于 CCP 的预剪枝版本</td>
+</tr>
+<tr>
+<td><code>ccp_alpha</code></td>
+<td><code>0.0</code></td>
+<td>代价复杂度剪枝参数</td>
+<td>&gt;0 时启用 CCP 剪枝</td>
+</tr>
+<tr>
+<td><code>class_weight</code></td>
+<td><code>None</code></td>
+<td>类别权重</td>
+<td><code>&#39;balanced&#39;</code> 自动按频率反比加权</td>
+</tr>
+</tbody></table>
+<h3 id="12-2-剪枝路径可视化"><a href="#12-2-剪枝路径可视化" class="headerlink" title="12.2 剪枝路径可视化"></a>12.2 剪枝路径可视化</h3><p>使用 sklearn 寻找最优 <code>ccp_alpha</code> 的标准流程：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.tree <span class="keyword">import</span> DecisionTreeClassifier</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line"><span class="comment"># 先完整生长</span></span><br><span class="line">clf = DecisionTreeClassifier(random_state=<span class="number">0</span>)</span><br><span class="line">path = clf.cost_complexity_pruning_path(X_train, y_train)</span><br><span class="line">ccp_alphas, impurities = path.ccp_alphas, path.impurities</span><br><span class="line"></span><br><span class="line"><span class="comment"># 对每个 alpha 训练一棵树，记录验证精度</span></span><br><span class="line">clfs = []</span><br><span class="line"><span class="keyword">for</span> ccp_alpha <span class="keyword">in</span> ccp_alphas:</span><br><span class="line">    clf = DecisionTreeClassifier(random_state=<span class="number">0</span>, ccp_alpha=ccp_alpha)</span><br><span class="line">    clf.fit(X_train, y_train)</span><br><span class="line">    clfs.append(clf)</span><br><span class="line"></span><br><span class="line">train_scores = [clf.score(X_train, y_train) <span class="keyword">for</span> clf <span class="keyword">in</span> clfs]</span><br><span class="line">test_scores = [clf.score(X_test, y_test) <span class="keyword">for</span> clf <span class="keyword">in</span> clfs]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 选择验证精度最高的 alpha</span></span><br><span class="line">best_alpha = ccp_alphas[np.argmax(test_scores)]</span><br></pre></td></tr></table></figure>
+
+<h3 id="12-3-特征重要性计算"><a href="#12-3-特征重要性计算" class="headerlink" title="12.3 特征重要性计算"></a>12.3 特征重要性计算</h3><p>决策树天然提供特征重要性度量。sklearn 中的计算方式：</p>
+<p>$$\text{importance}(j) = \frac{\sum_{t: \text{split on feature } j} N_t \cdot \Delta i(t)}{\sum_{t \in \text{all internal nodes}} N_t \cdot \Delta i(t)}$$</p>
+<p>即特征 $j$ 在所有使用它的分裂节点上的不纯度减少量（按样本数加权）的归一化值。</p>
+<p><strong>注意</strong>：基于不纯度减少的特征重要性对高基数的特征有偏倚（与信息增益的问题同源）。对于集成模型（如 Random Forest），可以使用 permutation importance 作为更无偏的替代度量。</p>
+<hr>
+<h2 id="13-面试高频问答"><a href="#13-面试高频问答" class="headerlink" title="13. 面试高频问答"></a>13. 面试高频问答</h2><p><strong>Q1: ID3、C4.5、CART 三种决策树算法有什么区别？</strong></p>
+<p>A: 核心区别有四点：</p>
+<ol>
+<li><strong>特征选择准则</strong>：ID3 用信息增益（偏向多值特征），C4.5 用信息增益比（校正多值偏倚），CART 用 Gini 指数（分类）或 MSE（回归）。</li>
+<li><strong>树的结构</strong>：ID3 和 C4.5 生成多叉树（每个特征取值一个分支），CART 只生成二叉树（二分递归）。</li>
+<li><strong>功能范围</strong>：ID3 只能分类，C4.5 能分类但不原生支持回归，CART 分类和回归都能做。</li>
+<li><strong>剪枝策略</strong>：ID3 不剪枝，C4.5 用悲观错误剪枝（PEP，不需要验证集），CART 用代价复杂度剪枝（CCP，使用交叉验证）。</li>
+<li><strong>附加功能</strong>：C4.5 支持连续值和缺失值处理（CART 也支持但方法不同）。C4.5 用二分法处理连续值，CART 用遍历所有可能的二分切分点。</li>
+</ol>
+<p><strong>Q2: 为什么信息增益会偏向于选择取值较多的特征？如何校正？</strong></p>
+<p>A: 考虑一个极端例子：把样本 ID 作为特征。按 ID 分裂后，每个子节点只有一个样本，条件熵 $H(D|ID) &#x3D; 0$，信息增益达到最大。但这个特征毫无泛化价值——它只是在”背诵”训练数据。</p>
+<p>数学上：$g(D, A) &#x3D; H(D) - H(D|A) &#x3D; H(D) - \sum_i \frac{|D_i|}{|D|}H(D_i)$。当 $A$ 取值很多时，每个 $D_i$ 的规模很小（极端情况为 1），每个 $H(D_i)$ 倾向于接近 0，导致条件熵很小，信息增益很大。</p>
+<p>C4.5 的校正方法：除以分裂信息 $H_A(D) &#x3D; -\sum_i \frac{|D_i|}{|D|}\log_2\frac{|D_i|}{|D|}$，得到信息增益比。分裂信息 $H_A(D)$ 同样随特征取值变多而增大，因此起到惩罚作用。举例来说，样本 ID 的分裂信息是 $\log_2 N$（均匀分布），除以这么大的分母后，增益比就变得很小了。</p>
+<p><strong>Q3: CART 回归树的预测值为什么取叶节点内样本的均值？</strong></p>
+<p>A: 从优化角度，给定一个区域的样本 ${(x_i, y_i)}<em>{i \in R}$，我们要找一个常数 $c$ 来拟合这些样本，最小化平方误差 $\sum</em>{i \in R}(y_i - c)^2$。对 $c$ 求导令为 0：</p>
+<p>$$\frac{d}{dc}\sum_{i \in R}(y_i - c)^2 = -2\sum_{i \in R}(y_i - c) = 0 \Rightarrow \sum_{i \in R} y_i = |R| \cdot c \Rightarrow c = \frac{1}{|R|}\sum_{i \in R} y_i$$</p>
+<p>所以均值是平方误差下的最优常数拟合。类似地，如果是绝对误差（MAE），最优常数是<strong>中位数</strong>；这正是分位数回归树的基础。</p>
+<p><strong>Q4: 解释代价复杂度剪枝（CCP）的原理和 $\alpha$ 参数的作用。</strong></p>
+<p>A: CCP 的目标函数是 $R_\alpha(T) &#x3D; R(T) + \alpha|T|$。其中 $R(T)$ 是训练误差（经验风险），$|T|$ 是叶节点数。</p>
+<ul>
+<li>$\alpha &#x3D; 0$：不惩罚复杂度，保持完整树 $T_0$（经验风险最小但过拟合）</li>
+<li>$\alpha \to \infty$：复杂度惩罚极大，剪到只剩根节点</li>
+</ul>
+<p>CCP 通过以下步骤找到最优的 $\alpha$：</p>
+<ol>
+<li>从 $T_0$ 开始，对每个内部节点计算 $g(t) &#x3D; \frac{R(t) - R(T_t)}{|T_t|-1}$（”剪枝的性价比”）</li>
+<li>$g(t)$ 越小，说明剪掉该子树带来的误差增加越少（相比其复杂度减少），越该剪</li>
+<li>每次递增 $\alpha$ 到下一个最小的 $g(t)$，剪掉对应节点，得到一个剪枝序列</li>
+</ol>
+<p>最终通过交叉验证从这个序列中选出最优树。1-SE 规则进一步建议选择最简单但验证误差在 1 个标准误内的树，以获得更稳定的泛化性能。</p>
+<p><strong>Q5: 决策树如何处理连续值特征？</strong></p>
+<p>A: C4.5 和 CART 都处理连续值，但方法略有不同：</p>
+<ul>
+<li><strong>共同点</strong>：将连续特征值排序，在相邻值的”中点”构造候选切分点，计算每个候选点的分裂准则值（信息增益&#x2F;Gini），选最优的。</li>
+<li><strong>C4.5 方式</strong>：$A \leq t$ vs $A &gt; t$（二分）。注意同一个连续特征在后续子树中可以被再次使用（因为只切了一部分）。</li>
+<li><strong>CART 方式</strong>：同样是二分搜索 $j$（哪个特征）和 $s$（在哪个值切）。CART 的搜索更彻底：对每个特征的每个可能切分点都算 Gini&#x2F;MSE。</li>
+</ul>
+<p>复杂度都是 $O(n \log n)$（排序）+ $O(n)$（扫描切分点），总体对 $d$ 个特征来说是 $O(d n \log n)$。</p>
+<p><strong>Q6: 决策树的过拟合现象如何诊断？怎样解决？</strong></p>
+<p>A: </p>
+<ul>
+<li><strong>诊断</strong>：决策树的深度过大（远超特征数的 log）通常就是过拟合信号。定量上看训练集准确率接近 100% 但验证&#x2F;测试集准确率明显低。叶节点中样本数极少（如 1-2 个）也是一个标志。</li>
+<li><strong>解决方案</strong>：<ol>
+<li><strong>剪枝</strong>：后剪枝（CCP&#x2F;PEP）或预剪枝（限制 max_depth, min_samples_split, min_samples_leaf）</li>
+<li><strong>集成学习</strong>：使用 Random Forest 或 GBDT 来降低方差</li>
+<li><strong>限制特征</strong>：只使用最相关的特征子集</li>
+<li><strong>增大数据集</strong>：更多数据意味着树更难”记住”每个样本</li>
+<li><strong>引入噪声鲁棒性</strong>：对连续特征做分箱（binning）可以减少对噪声的敏感度</li>
+</ol>
+</li>
+</ul>
+<p><strong>Q7: 什么时候应该用决策树而不是逻辑回归或 SVM？</strong></p>
+<p>A:</p>
+<ol>
+<li><strong>数据层面</strong>：数据有明显的分段结构（如条件规则 “if-then”），决策树的表达能力天然匹配</li>
+<li><strong>特征层面</strong>：特征中有大量分类变量或缺失值（决策树天然处理，而 LR&#x2F;SVM 需要预处理）；特征间的交互效应很重要（决策树自动捕获，而 LR 需要手动构造交互项）</li>
+<li><strong>模型要求</strong>：需要完全可解释的模型（如金融风控的监管合规场景），决策树的 if-then 规则直接可读</li>
+<li><strong>工程层面</strong>：特征尺度不一致且不想做标准化（决策树不受影响）；需要快速 baseline（决策树训练快）</li>
+<li><strong>集成场景</strong>：需要用 GBDT&#x2F;Random Forest 等 tree-based ensemble 时，决策树是唯一的基学习器选择</li>
+</ol>
+<p><strong>Q8: 为什么 CART 只生成二叉树？</strong></p>
+<p>A: 有三个主要原因：</p>
+<ol>
+<li><strong>统一处理离散和连续特征</strong>：连续特征的二分切分天然产生二叉树。将类别特征也统一为二分（如 $A &#x3D; a$ vs $A \neq a$），简化了算法实现。</li>
+<li><strong>降低碎片化</strong>：多叉分裂将数据切分得越来越碎（每个子节点样本数太小），不利于泛化。二叉树保证了每个子节点都能保留足够多的样本，统计上更稳定。多叉分裂下，一个有 $m$ 个取值的类别特征会将数据分为 $m$ 份，样本迅速被碎片化；二叉树每步只分成两份，更渐进地”消耗”数据。</li>
+<li><strong>理论上没有损失</strong>：任何多叉分裂都可以表示为一串二叉树分裂的组合。例如，将数据按颜色（红&#x2F;蓝&#x2F;绿）三分，等价于先按”是否红色”二分，再将非红子集按”是否蓝色”二分。二叉树的表达力完全等价于多叉树，不会丢失任何决策边界。</li>
+</ol>
+<p><strong>Q9: 决策树训练时熵的对数计算以什么为底？影响是什么？</strong></p>
+<p>A: 信息论中，以 2 为底时熵的单位是 bit，以 $e$ 为底时单位是 nat，以 10 为底时单位是 dit（或 hartley）。底数选择影响熵的绝对数值，但不影响信息增益的相对大小——因为底数转换只是一个全局的乘法因子：$\log_2(x) &#x3D; \ln(x) &#x2F; \ln(2)$。由于信息增益 $g &#x3D; H(D) - H(D|A)$ 是熵的线性组合，换底相当于乘一个常数，不影响不同特征间的相对排序。实践中通常以 2 为底（符合计算机科学的 bit 语义），sklearn 的熵实现使用以 $e$ 为底的自然对数（<code>np.log</code>），因为计算上更高效。</p>
+<hr>
+<h2 id="14-总结"><a href="#14-总结" class="headerlink" title="14. 总结"></a>14. 总结</h2><p>决策树是机器学习中最基础的模型之一。从 ID3 到 C4.5 再到 CART，三代算法逐步解决了信息增益偏倚、连续值处理、缺失值处理、剪枝策略和回归能力等核心问题。这是理解一切树模型和集成方法的起点。</p>
+<p><strong>核心知识地图</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">决策树学习三问</span><br><span class="line">├── 特征选择（用什么分？）</span><br><span class="line">│   ├── ID3：信息增益 (Information Gain)</span><br><span class="line">│   ├── C4.5：信息增益比 (Gain Ratio) → 校正多值偏倚</span><br><span class="line">│   └── CART：基尼指数 (Gini) 或 最小化 MSE</span><br><span class="line">├── 决策树生成（怎么长树？）</span><br><span class="line">│   ├── ID3/C4.5：多叉树，递归分裂</span><br><span class="line">│   └── CART：二叉树，二分递归分裂</span><br><span class="line">└── 决策树剪枝（怎么剪枝？）</span><br><span class="line">    ├── C4.5：PEP (Pessimistic Error Pruning) → 不需要验证集</span><br><span class="line">    ├── CART：CCP (Cost-Complexity Pruning) → CV 选 α</span><br><span class="line">    └── sklearn：预剪枝 (max_depth, min_samples_split) + CCP (ccp_alpha)</span><br></pre></td></tr></table></figure>
+
+<p>决策树的重要性不止于它作为一个独立模型的价值。以决策树为基学习器的集成方法——Random Forest、GBDT、XGBoost、LightGBM、CatBoost——统治了表格数据建模领域长达二十年，至今仍是 Kaggle 竞赛和工业 Tabular 建模的事实标准。深入理解决策树的原理（特别是特征选择、分裂机制和剪枝策略），是理解这些高级算法的必要条件。</p>
+<hr>
+<p><em>本系列下一篇文章将深入探讨提升算法（AdaBoost&#x2F;GBDT&#x2F;XGBoost&#x2F;LightGBM&#x2F;CatBoost），揭示从弱学习器到强学习器的奥秘，敬请期待。</em></p>
+<hr>
+<p><strong>扩展阅读推荐</strong>：</p>
+<ul>
+<li>Breiman et al. (1984), <em>Classification and Regression Trees</em> — CART 的原始著作，统计学习理论基石</li>
+<li>Quinlan (1993), <em>C4.5: Programs for Machine Learning</em> — C4.5 的完整技术文档</li>
+<li>Hastie et al. (2009), <em>The Elements of Statistical Learning</em>, Chapters 9, 10, 15 — 决策树与集成学习的圣经级综述</li>
+</ul>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2020/04/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E5%86%B3%E7%AD%96%E6%A0%91/">http://tufusi.com/2020/04/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E5%86%B3%E7%AD%96%E6%A0%91/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%86%B3%E7%AD%96%E6%A0%91/">决策树    </a><a class="post-meta__tags" href="/tags/CART/">CART    </a><a class="post-meta__tags" href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">读书笔记    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nareeta-martin-wM59pRQYbhs-unsplash.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2020/05/01/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E2%85%A1%E3%80%91%E8%81%9A%E7%B1%BB%E7%AE%97%E6%B3%95/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【统计学习方法死磕系列Ⅱ】聚类算法</span></div></a></div><div class="next-post pull_right"><a href="/2020/04/01/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E2%85%A1%E3%80%91%E5%A5%87%E5%BC%82%E5%80%BC%E5%88%86%E8%A7%A3/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【统计学习方法死磕系列Ⅱ】奇异值分解</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2019/12/02/【机器学习模型】决策树学习（二）/" title="【机器学习模型】决策树学习（二）"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/page/article_number_lot.jpg"><div class="relatedPosts_title">【机器学习模型】决策树学习（二）</div></a></div><div class="relatedPosts_item"><a href="/2019/11/30/【机器学习模型】决策树学习（一）/" title="【机器学习模型】决策树学习（一）"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/niko-photos-tGTVxeOr_Rs-unsplash.jpg"><div class="relatedPosts_title">【机器学习模型】决策树学习（一）</div></a></div><div class="relatedPosts_item"><a href="/2020/02/15/【统计学习方法死磕系列】k近邻法/" title="【统计学习方法死磕系列】k近邻法"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nicolas-j-leclercq-cmV9xe6sqfQ-unsplash.jpg"><div class="relatedPosts_title">【统计学习方法死磕系列】k近邻法</div></a></div><div class="relatedPosts_item"><a href="/2020/01/15/【统计学习方法死磕系列】感知机/" title="【统计学习方法死磕系列】感知机"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nareeta-martin-wM59pRQYbhs-unsplash.jpg"><div class="relatedPosts_title">【统计学习方法死磕系列】感知机</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nareeta-martin-wM59pRQYbhs-unsplash.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

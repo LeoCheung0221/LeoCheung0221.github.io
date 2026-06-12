@@ -1,0 +1,688 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【深入理解JVM字节码】第六篇、反射实现原理 | ONE·PIECE</title><meta name="description" content="【深入理解JVM字节码】第六篇、反射实现原理"><meta name="keywords" content="动态代理,字节码,反射"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【深入理解JVM字节码】第六篇、反射实现原理"><meta name="twitter:description" content="【深入理解JVM字节码】第六篇、反射实现原理"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/270.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【深入理解JVM字节码】第六篇、反射实现原理"><meta property="og:url" content="http://tufusi.com/2021/03/25/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%85%AD%E7%AF%87%E3%80%81%E5%8F%8D%E5%B0%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【深入理解JVM字节码】第六篇、反射实现原理"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/270.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2021/03/25/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%85%AD%E7%AF%87%E3%80%81%E5%8F%8D%E5%B0%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/"><link rel="prev" title="【深入理解JVM字节码】第七篇、javac编译原理" href="http://tufusi.com/2021/04/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E4%B8%83%E7%AF%87%E3%80%81javac%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/"><link rel="next" title="【深入理解JVM字节码】第五篇、synchronized实现原理" href="http://tufusi.com/2021/03/20/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E4%BA%94%E7%AF%87%E3%80%81synchronized%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E5%8F%8D%E5%B0%84%E4%B8%8E%E5%AD%97%E8%8A%82%E7%A0%81%EF%BC%9A%E4%B8%A4%E7%A7%8D%E8%B0%83%E7%94%A8%E8%B7%AF%E5%BE%84"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、反射与字节码：两种调用路径</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81Class-forName-%E7%9A%84%E5%AE%8C%E6%95%B4%E5%8A%A0%E8%BD%BD%E9%93%BE%E8%B7%AF"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、Class.forName 的完整加载链路</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E4%B8%89%E5%B1%82%E8%B0%83%E7%94%A8%E6%9E%B6%E6%9E%84"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 三层调用架构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-ClassLinker-%E7%9A%84%E6%A0%B8%E5%BF%83%E8%A7%92%E8%89%B2"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 ClassLinker 的核心角色</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-Class-forName-vs-ClassLoader-loadClass"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 Class.forName vs ClassLoader.loadClass</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-4-DexFile-FindClassDef%EF%BC%9ADEX-%E6%96%87%E4%BB%B6%E4%B8%AD%E7%9A%84%E7%B1%BB%E6%9F%A5%E6%89%BE"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">2.4 DexFile.FindClassDef：DEX 文件中的类查找</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81Method-invoke-%E7%9A%84%E5%AE%8C%E6%95%B4%E8%B0%83%E7%94%A8%E6%B5%81%E7%A8%8B"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、Method.invoke 的完整调用流程</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-Java-%E5%B1%82%E5%85%A5%E5%8F%A3"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 Java 层入口</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-Native-%E5%B1%82%EF%BC%9AInvokeMethod"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 Native 层：InvokeMethod</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-ArtMethod-Invoke-%E7%9A%84%E6%89%A7%E8%A1%8C"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 ArtMethod::Invoke 的执行</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-FromReflectedMethod-%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">3.4 FromReflectedMethod 的实现</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E5%8F%8D%E5%B0%84%E6%80%A7%E8%83%BD%E5%BC%80%E9%94%80%E7%9A%84%E6%A0%B9%E6%BA%90"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、反射性能开销的根源</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E5%BC%80%E9%94%80%E5%88%86%E8%A7%A3"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 开销分解</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E5%90%84%E5%9C%BA%E6%99%AF%E7%9A%84%E6%80%A7%E8%83%BD%E6%95%B0%E6%8D%AE%EF%BC%88%E8%BF%91%E4%BC%BC%EF%BC%89"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 各场景的性能数据（近似）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81%E5%8F%8D%E5%B0%84%E8%86%A8%E8%83%80%EF%BC%88Reflection-Inflation%EF%BC%89%E4%BC%98%E5%8C%96"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、反射膨胀（Reflection Inflation）优化</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 工作原理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-HotSpot-%E4%B8%AD%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 HotSpot 中的实现对比</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-Inflation-%E7%9A%84%E9%99%90%E5%88%B6"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 Inflation 的限制</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81AccessibleObject-setAccessible-%E7%9A%84%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、AccessibleObject.setAccessible 的机制</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 实现原理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-%E5%AE%89%E5%85%A8%E9%99%90%E5%88%B6"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 安全限制</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81MethodHandle-%E5%92%8C-VarHandle%EF%BC%9A%E5%8F%8D%E5%B0%84%E7%9A%84%E6%BC%94%E8%BF%9B"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、MethodHandle 和 VarHandle：反射的演进</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-MethodHandle%EF%BC%88Java-7-%EF%BC%89"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">7.1 MethodHandle（Java 7+）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-VarHandle%EF%BC%88Java-9-%EF%BC%89"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">7.2 VarHandle（Java 9+）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-3-%E4%B8%89%E8%80%85%E7%9A%84%E6%80%A7%E8%83%BD%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">7.3 三者的性能对比</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86%EF%BC%88Dynamic-Proxy%EF%BC%89"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、动态代理（Dynamic Proxy）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-%E4%BB%A3%E7%90%86%E7%B1%BB%E7%94%9F%E6%88%90%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">8.1 代理类生成的字节码</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-%E4%BB%A3%E7%90%86%E7%B1%BB%E7%9A%84%E5%86%85%E9%83%A8%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">8.2 代理类的内部结构</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81Field-%E5%8F%8D%E5%B0%84%E8%AF%BB%E5%86%99%E4%B8%8E-Constructor-newInstance"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、Field 反射读写与 Constructor.newInstance</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-1-Field-get-set-%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">9.1 Field.get&#x2F;set 的实现</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-2-Constructor-newInstance"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">9.2 Constructor.newInstance</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81JIT-Profiling-%E4%B8%8E-Inflation-%E8%A7%A6%E5%8F%91%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">十、JIT Profiling 与 Inflation 触发机制</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-1-%E8%AE%A1%E6%95%B0%E5%99%A8%E7%9A%84%E7%BB%B4%E6%8A%A4"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">10.1 计数器的维护</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-2-dex2oat-%E7%9A%84-AOT-%E9%A2%84%E7%BC%96%E8%AF%91"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">10.2 dex2oat 的 AOT 预编译</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E5%8F%8D%E5%B0%84%E5%AF%B9-GC-%E5%92%8C%E5%86%85%E5%AD%98%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">十一、反射对 GC 和内存的影响</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81Array-%E5%8F%8D%E5%B0%84%E6%93%8D%E4%BD%9C"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">十二、Array 反射操作</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%89%E3%80%81Constructor-%E7%9A%84%E5%8F%8D%E5%B0%84%E4%B8%8E%E5%AF%B9%E8%B1%A1%E5%88%9B%E5%BB%BA"><span class="toc_mobile_items-number">13.</span> <span class="toc_mobile_items-text">十三、Constructor 的反射与对象创建</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E5%9B%9B%E3%80%81%E5%AE%9E%E6%88%98%E5%BB%BA%E8%AE%AE%E4%B8%8E%E5%B8%B8%E8%A7%81%E9%99%B7%E9%98%B1"><span class="toc_mobile_items-number">14.</span> <span class="toc_mobile_items-text">十四、实战建议与常见陷阱</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-1-%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8F%8D%E5%B0%84%E4%BD%BF%E7%94%A8%E6%A8%A1%E5%BC%8F"><span class="toc_mobile_items-number">14.1.</span> <span class="toc_mobile_items-text">9.1 正确的反射使用模式</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-2-%E5%B8%B8%E8%A7%81%E9%99%B7%E9%98%B1"><span class="toc_mobile_items-number">14.2.</span> <span class="toc_mobile_items-text">9.2 常见陷阱</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81AOSP-%E5%85%B3%E9%94%AE%E6%BA%90%E7%A0%81%E8%B7%AF%E5%BE%84%E6%80%BB%E7%BB%93"><span class="toc_mobile_items-number">15.</span> <span class="toc_mobile_items-text">十、AOSP 关键源码路径总结</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%9D%A2%E8%AF%95%E9%97%AE%E7%AD%94"><span class="toc_mobile_items-number">16.</span> <span class="toc_mobile_items-text">面试问答</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%8F%8D%E5%B0%84%E4%B8%8E%E5%AD%97%E8%8A%82%E7%A0%81%EF%BC%9A%E4%B8%A4%E7%A7%8D%E8%B0%83%E7%94%A8%E8%B7%AF%E5%BE%84"><span class="toc-number">1.</span> <span class="toc-text">一、反射与字节码：两种调用路径</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Class-forName-%E7%9A%84%E5%AE%8C%E6%95%B4%E5%8A%A0%E8%BD%BD%E9%93%BE%E8%B7%AF"><span class="toc-number">2.</span> <span class="toc-text">二、Class.forName 的完整加载链路</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E4%B8%89%E5%B1%82%E8%B0%83%E7%94%A8%E6%9E%B6%E6%9E%84"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 三层调用架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-ClassLinker-%E7%9A%84%E6%A0%B8%E5%BF%83%E8%A7%92%E8%89%B2"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 ClassLinker 的核心角色</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Class-forName-vs-ClassLoader-loadClass"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 Class.forName vs ClassLoader.loadClass</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-DexFile-FindClassDef%EF%BC%9ADEX-%E6%96%87%E4%BB%B6%E4%B8%AD%E7%9A%84%E7%B1%BB%E6%9F%A5%E6%89%BE"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 DexFile.FindClassDef：DEX 文件中的类查找</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Method-invoke-%E7%9A%84%E5%AE%8C%E6%95%B4%E8%B0%83%E7%94%A8%E6%B5%81%E7%A8%8B"><span class="toc-number">3.</span> <span class="toc-text">三、Method.invoke 的完整调用流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Java-%E5%B1%82%E5%85%A5%E5%8F%A3"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 Java 层入口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Native-%E5%B1%82%EF%BC%9AInvokeMethod"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 Native 层：InvokeMethod</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-ArtMethod-Invoke-%E7%9A%84%E6%89%A7%E8%A1%8C"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 ArtMethod::Invoke 的执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-FromReflectedMethod-%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 FromReflectedMethod 的实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%8F%8D%E5%B0%84%E6%80%A7%E8%83%BD%E5%BC%80%E9%94%80%E7%9A%84%E6%A0%B9%E6%BA%90"><span class="toc-number">4.</span> <span class="toc-text">四、反射性能开销的根源</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%BC%80%E9%94%80%E5%88%86%E8%A7%A3"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 开销分解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E5%90%84%E5%9C%BA%E6%99%AF%E7%9A%84%E6%80%A7%E8%83%BD%E6%95%B0%E6%8D%AE%EF%BC%88%E8%BF%91%E4%BC%BC%EF%BC%89"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 各场景的性能数据（近似）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%8F%8D%E5%B0%84%E8%86%A8%E8%83%80%EF%BC%88Reflection-Inflation%EF%BC%89%E4%BC%98%E5%8C%96"><span class="toc-number">5.</span> <span class="toc-text">五、反射膨胀（Reflection Inflation）优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 工作原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-HotSpot-%E4%B8%AD%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%AF%B9%E6%AF%94"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 HotSpot 中的实现对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-Inflation-%E7%9A%84%E9%99%90%E5%88%B6"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 Inflation 的限制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81AccessibleObject-setAccessible-%E7%9A%84%E6%9C%BA%E5%88%B6"><span class="toc-number">6.</span> <span class="toc-text">六、AccessibleObject.setAccessible 的机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 实现原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%AE%89%E5%85%A8%E9%99%90%E5%88%B6"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 安全限制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81MethodHandle-%E5%92%8C-VarHandle%EF%BC%9A%E5%8F%8D%E5%B0%84%E7%9A%84%E6%BC%94%E8%BF%9B"><span class="toc-number">7.</span> <span class="toc-text">七、MethodHandle 和 VarHandle：反射的演进</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-MethodHandle%EF%BC%88Java-7-%EF%BC%89"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 MethodHandle（Java 7+）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-VarHandle%EF%BC%88Java-9-%EF%BC%89"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 VarHandle（Java 9+）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E4%B8%89%E8%80%85%E7%9A%84%E6%80%A7%E8%83%BD%E5%AF%B9%E6%AF%94"><span class="toc-number">7.3.</span> <span class="toc-text">7.3 三者的性能对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86%EF%BC%88Dynamic-Proxy%EF%BC%89"><span class="toc-number">8.</span> <span class="toc-text">八、动态代理（Dynamic Proxy）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E4%BB%A3%E7%90%86%E7%B1%BB%E7%94%9F%E6%88%90%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 代理类生成的字节码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E4%BB%A3%E7%90%86%E7%B1%BB%E7%9A%84%E5%86%85%E9%83%A8%E7%BB%93%E6%9E%84"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 代理类的内部结构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81Field-%E5%8F%8D%E5%B0%84%E8%AF%BB%E5%86%99%E4%B8%8E-Constructor-newInstance"><span class="toc-number">9.</span> <span class="toc-text">九、Field 反射读写与 Constructor.newInstance</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-Field-get-set-%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-number">9.1.</span> <span class="toc-text">9.1 Field.get&#x2F;set 的实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-Constructor-newInstance"><span class="toc-number">9.2.</span> <span class="toc-text">9.2 Constructor.newInstance</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81JIT-Profiling-%E4%B8%8E-Inflation-%E8%A7%A6%E5%8F%91%E6%9C%BA%E5%88%B6"><span class="toc-number">10.</span> <span class="toc-text">十、JIT Profiling 与 Inflation 触发机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-%E8%AE%A1%E6%95%B0%E5%99%A8%E7%9A%84%E7%BB%B4%E6%8A%A4"><span class="toc-number">10.1.</span> <span class="toc-text">10.1 计数器的维护</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-dex2oat-%E7%9A%84-AOT-%E9%A2%84%E7%BC%96%E8%AF%91"><span class="toc-number">10.2.</span> <span class="toc-text">10.2 dex2oat 的 AOT 预编译</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E5%8F%8D%E5%B0%84%E5%AF%B9-GC-%E5%92%8C%E5%86%85%E5%AD%98%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="toc-number">11.</span> <span class="toc-text">十一、反射对 GC 和内存的影响</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81Array-%E5%8F%8D%E5%B0%84%E6%93%8D%E4%BD%9C"><span class="toc-number">12.</span> <span class="toc-text">十二、Array 反射操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%89%E3%80%81Constructor-%E7%9A%84%E5%8F%8D%E5%B0%84%E4%B8%8E%E5%AF%B9%E8%B1%A1%E5%88%9B%E5%BB%BA"><span class="toc-number">13.</span> <span class="toc-text">十三、Constructor 的反射与对象创建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E5%9B%9B%E3%80%81%E5%AE%9E%E6%88%98%E5%BB%BA%E8%AE%AE%E4%B8%8E%E5%B8%B8%E8%A7%81%E9%99%B7%E9%98%B1"><span class="toc-number">14.</span> <span class="toc-text">十四、实战建议与常见陷阱</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8F%8D%E5%B0%84%E4%BD%BF%E7%94%A8%E6%A8%A1%E5%BC%8F"><span class="toc-number">14.1.</span> <span class="toc-text">9.1 正确的反射使用模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E5%B8%B8%E8%A7%81%E9%99%B7%E9%98%B1"><span class="toc-number">14.2.</span> <span class="toc-text">9.2 常见陷阱</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81AOSP-%E5%85%B3%E9%94%AE%E6%BA%90%E7%A0%81%E8%B7%AF%E5%BE%84%E6%80%BB%E7%BB%93"><span class="toc-number">15.</span> <span class="toc-text">十、AOSP 关键源码路径总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E9%97%AE%E7%AD%94"><span class="toc-number">16.</span> <span class="toc-text">面试问答</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/270.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【深入理解JVM字节码】第六篇、反射实现原理</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-03-25<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">9k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 33 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、反射与字节码：两种调用路径"><a href="#一、反射与字节码：两种调用路径" class="headerlink" title="一、反射与字节码：两种调用路径"></a>一、反射与字节码：两种调用路径</h2><p>在进行深入分析之前，先用字节码对比直接调用与反射调用的本质差异：</p>
+<p><strong>直接调用</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">aload_0</span><br><span class="line">invokevirtual #5  // Method foo:()V</span><br></pre></td></tr></table></figure>
+
+<p>仅两条指令（3 字节字节码）。<code>invokevirtual #5</code> 使用常量池索引 #5 的符号引用，可在编译期确定目标方法。首次执行时 JVM 解析常量池，将符号引用替换为直接引用（vtable 索引或 <code>ArtMethod*</code>），后续调用直接查表或跳转，开销极低。</p>
+<p><strong>反射调用</strong>（等价逻辑）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ldc           #5  // class Test（类名字符串常量）</span><br><span class="line">ldc           #6  // String &quot;foo&quot;（方法名字符串常量）</span><br><span class="line">iconst_0</span><br><span class="line">anewarray     #7  // class Class（参数类型数组）</span><br><span class="line">invokevirtual #8  // Method Class.getDeclaredMethod:(..)</span><br><span class="line">astore        2</span><br><span class="line">// 然后 Method.invoke(receiver, args[])</span><br><span class="line">// 涉及：装箱、数组打包、JNI 调用、ArtMethod::Invoke</span><br></pre></td></tr></table></figure>
+
+<p>即使忽略 <code>Method.invoke</code> 的调用成本，仅获取 <code>Method</code> 对象的开销就远超直接调用。反射调用的每个环节——类名查找、方法名匹配、参数类型拆装箱——都需要在运行时进行，编译期无法做任何优化。</p>
+<h2 id="二、Class-forName-的完整加载链路"><a href="#二、Class-forName-的完整加载链路" class="headerlink" title="二、Class.forName 的完整加载链路"></a>二、Class.forName 的完整加载链路</h2><p><code>Class.forName(String className)</code> 是反射的入口之一。它的调用链路从 Java 层穿透到 Native 层，最终由 ART 的 <code>ClassLinker</code> 完成类的定位、加载和链接。</p>
+<h3 id="2-1-三层调用架构"><a href="#2-1-三层调用架构" class="headerlink" title="2.1 三层调用架构"></a>2.1 三层调用架构</h3><p><strong>Layer 1: Java 层</strong></p>
+<p><code>libcore/ojluni/src/main/java/java/lang/Class.java</code>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Class&lt;?&gt; forName(String className) <span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">    <span class="comment">// 1. 获取调用者的 ClassLoader</span></span><br><span class="line">    <span class="type">ClassLoader</span> <span class="variable">caller</span> <span class="operator">=</span> Reflection.getCallerClassLoader();</span><br><span class="line">    <span class="comment">// 2. 调用 forName0 native 方法（实现在 art/runtime/native/java_lang_Class.cc）</span></span><br><span class="line">    <span class="keyword">return</span> forName(className, <span class="literal">true</span>, caller);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Class&lt;?&gt; forName(String name, <span class="type">boolean</span> initialize, ClassLoader loader) &#123;</span><br><span class="line">    <span class="comment">// 3. 如果 loader 为 null，使用 BootClassLoader</span></span><br><span class="line">    <span class="comment">// 4. 调用 Class.classForName(name, initialize, loader)</span></span><br><span class="line">    <span class="comment">// 5. 内部调用 VMClassLoader.loadClass 或通过 ClassLoader.loadClass 委派</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>关键参数 <code>initialize=true</code>：<code>Class.forName</code> 默认执行类的 <code>&lt;clinit&gt;</code> 静态初始化方法。这对于 JDBC 驱动加载等需要触发 <code>static &#123;&#125;</code> 块的场景至关重要。</p>
+<p><strong>Layer 2: ClassLoader 委派链</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ClassLoader.loadClass(String name)</span><br><span class="line">  → 检查是否已加载（findLoadedClass）</span><br><span class="line">  → 委派给 parent.loadClass()</span><br><span class="line">  → 如果 parent 返回 null（未找到）：findClass()</span><br></pre></td></tr></table></figure>
+
+<p>在 Android 中，<code>findClass</code> 最终进入 <code>BaseDexClassLoader</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">BaseDexClassLoader.findClass(name)</span><br><span class="line">  → DexPathList.findClass(name)</span><br><span class="line">  → 遍历 dexElements[]（APK 中的多个 DEX 文件）</span><br><span class="line">     → 每个 element: DexFile.loadClassBinaryName(name, definingContext)</span><br><span class="line">       → 如果找到：defineClass(name, loader, ...)</span><br></pre></td></tr></table></figure>
+
+<p><strong>Layer 3: Native 层 DefineClass</strong></p>
+<p><code>art/runtime/native/dalvik_system_DexFile.cc</code>：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> jclass <span class="title">DexFile_defineClassNative</span><span class="params">(JNIEnv* env, jclass, jstring javaName,</span></span></span><br><span class="line"><span class="params"><span class="function">                                         jobject javaLoader, ...)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 将 java 类名（如 &quot;com.example.Foo&quot;）转换为 descriptor（&quot;Lcom/example/Foo;&quot;）</span></span><br><span class="line">    <span class="type">const</span> <span class="type">char</span>* descriptor = ...;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. 在 DEX 文件中查找类定义（基于 descriptor 在 type_ids 中二分搜索）</span></span><br><span class="line">    <span class="type">const</span> DexFile::ClassDef* class_def = dex_file.<span class="built_in">FindClassDef</span>(descriptor);</span><br><span class="line">    <span class="keyword">if</span> (class_def == <span class="literal">nullptr</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nullptr</span>;  <span class="comment">// 类未找到</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 3. 调用 ClassLinker::DefineClass 在堆上创建 Class 对象</span></span><br><span class="line">    ClassLinker* class_linker = Runtime::<span class="built_in">Current</span>()-&gt;<span class="built_in">GetClassLinker</span>();</span><br><span class="line">    ObjPtr&lt;mirror::Class&gt; klass = class_linker-&gt;<span class="built_in">DefineClass</span>(self, descriptor,</span><br><span class="line">                                                              class_loader, *dex_file,</span><br><span class="line">                                                              *class_def);</span><br><span class="line">    <span class="comment">// 4. 返回 Java 层的 Class 对象</span></span><br><span class="line">    <span class="keyword">return</span> soa.<span class="built_in">AddLocalReference</span>&lt;jclass&gt;(klass);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-ClassLinker-的核心角色"><a href="#2-2-ClassLinker-的核心角色" class="headerlink" title="2.2 ClassLinker 的核心角色"></a>2.2 ClassLinker 的核心角色</h3><p><code>art/runtime/class_linker.cc</code> 是整个类加载系统的中枢，包含四个递进的阶段：</p>
+<p><strong>阶段 1: FindClass —— 查找</strong></p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function">ObjPtr&lt;mirror::Class&gt; <span class="title">ClassLinker::FindClass</span><span class="params">(Thread* self, <span class="type">const</span> <span class="type">char</span>* descriptor,</span></span></span><br><span class="line"><span class="params"><span class="function">                                               Handle&lt;mirror::ClassLoader&gt; class_loader)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 在 ClassTable 中查找（已加载类的哈希表，key 是 descriptor）</span></span><br><span class="line">    ObjPtr&lt;mirror::Class&gt; klass = <span class="built_in">LookupClass</span>(self, descriptor, class_loader);</span><br><span class="line">    <span class="keyword">if</span> (klass != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> klass;  <span class="comment">// 已加载，直接返回</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. 委派给 ClassLoader 加载</span></span><br><span class="line">    <span class="comment">//    （遍历 ClassLoader 委托链，最终调用 DexFile_defineClassNative）</span></span><br><span class="line">    klass = <span class="built_in">LoadClass</span>(self, descriptor, class_loader);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> klass;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ClassTable 是 ART 中的全局类注册表，以 descriptor 字符串为 key。<code>LookupClass</code> 在这个哈希表中 O(1) 查找已加载的类。这保证了同一个类不会被重复加载——即使多次调用 <code>Class.forName(&quot;com.example.Foo&quot;)</code>，只有第一次触发加载流程，后续直接从 ClassTable 返回。</p>
+<p><strong>阶段 2: DefineClass —— 定义</strong></p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function">ObjPtr&lt;mirror::Class&gt; <span class="title">ClassLinker::DefineClass</span><span class="params">(Thread* self, <span class="type">const</span> <span class="type">char</span>* descriptor,</span></span></span><br><span class="line"><span class="params"><span class="function">                                                 Handle&lt;mirror::ClassLoader&gt; class_loader,</span></span></span><br><span class="line"><span class="params"><span class="function">                                                 <span class="type">const</span> DexFile&amp; dex_file,</span></span></span><br><span class="line"><span class="params"><span class="function">                                                 <span class="type">const</span> DexFile::ClassDef&amp; class_def)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 读取 DEX 文件的 class_def 项</span></span><br><span class="line">    <span class="comment">// 2. 在堆上分配 mirror::Class 对象（大小取决于类的复杂程度）</span></span><br><span class="line">    <span class="comment">// 3. 设置 access_flags、class_loader、dex_file 引用等基础字段</span></span><br><span class="line">    <span class="comment">// 4. 将 Class 对象插入 ClassTable（加 class_load_lock_ 锁）</span></span><br><span class="line">    <span class="comment">// 5. 读取 class_def 中的注释和静态字段初始值</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>class_load_lock_</code> 是一个互斥锁（<code>Mutex</code>），确保同一个类不会被多个线程并发加载——第二个线程会在锁上等待第一个线程完成加载后直接从 ClassTable 获取结果。这避免了经典的”双重加载”竞赛条件。</p>
+<p><strong>阶段 3: LinkClass —— 链接</strong></p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">ClassLinker::LinkClass</span><span class="params">(Thread* self, <span class="type">const</span> <span class="type">char</span>* descriptor,</span></span></span><br><span class="line"><span class="params"><span class="function">                             Handle&lt;mirror::Class&gt; klass, ...)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 确保父类和所有接口类已被加载（通过 LoadClass 递归）</span></span><br><span class="line">    <span class="comment">// 2. 构建 vtable（虚方法表）：复制父类 vtable，替换/追加子类方法</span></span><br><span class="line">    <span class="comment">// 3. 构建 iftable（接口方法表）：为每个实现的接口分配方法槽位</span></span><br><span class="line">    <span class="comment">// 4. 计算字段偏移量（field offsets）：子类字段在父类字段之后排列</span></span><br><span class="line">    <span class="comment">// 5. 解析方法中引用的类和字段符号引用</span></span><br><span class="line">    <span class="comment">// 6. 验证字节码（如果 class 文件版本需要 StackMapTable 验证）</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>vtable 构建的细节（在 <code>LinkVirtualMethods</code> 中）：先复制父类 vtable 的所有条目，然后遍历子类的 virtual 方法。如果某个方法与 vtable 中已有的方法有相同的名称和描述符（即 override），则用子类的 <code>ArtMethod*</code> 替换对应槽位；如果是新方法，则追加到 vtable 末尾。</p>
+<p><strong>阶段 4: EnsureInitialized —— 初始化</strong></p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">ClassLinker::EnsureInitialized</span><span class="params">(Thread* self, Handle&lt;mirror::Class&gt; klass, ...)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 如果类已经初始化（初始化状态标记为 kInitialized），直接返回</span></span><br><span class="line">    <span class="comment">// 否则：</span></span><br><span class="line">    <span class="comment">// 1. 先初始化父类（递归 EnsureInitialized on superclass）</span></span><br><span class="line">    <span class="comment">// 2. 执行 &lt;clinit&gt; 方法（类的静态初始化块和静态字段初始化）</span></span><br><span class="line">    <span class="comment">// 3. 设置初始化状态为 kInitialized</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-Class-forName-vs-ClassLoader-loadClass"><a href="#2-3-Class-forName-vs-ClassLoader-loadClass" class="headerlink" title="2.3 Class.forName vs ClassLoader.loadClass"></a>2.3 Class.forName vs ClassLoader.loadClass</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>Class.forName</th>
+<th>ClassLoader.loadClass</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>是否执行 <code>&lt;clinit&gt;</code></td>
+<td>是（默认 initialize&#x3D;true）</td>
+<td>否（懒初始化，首次使用时执行）</td>
+</tr>
+<tr>
+<td>使用场景</td>
+<td>JDBC 驱动、需要静态初始化的类</td>
+<td>通用的类加载模型、Spring 容器</td>
+</tr>
+<tr>
+<td>底层实现</td>
+<td>调用 forName0 Native 方法</td>
+<td>委派给父 ClassLoader</td>
+</tr>
+<tr>
+<td>加载锁</td>
+<td>class_load_lock_</td>
+<td>与 forName 共用同一个锁</td>
+</tr>
+</tbody></table>
+<p><strong>为什么 JDBC 使用 Class.forName？</strong> JDBC 驱动在静态初始化块中将自己注册到 DriverManager：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">com</span>.mysql.jdbc.Driver &#123;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        java.sql.DriverManager.registerDriver(<span class="keyword">new</span> <span class="title class_">com</span>.mysql.jdbc.Driver());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>Class.forName(&quot;com.mysql.jdbc.Driver&quot;)</code> 触发 <code>&lt;clinit&gt;</code>，从而完成注册。如果使用 <code>ClassLoader.loadClass</code>，<code>&lt;clinit&gt;</code> 不会执行，驱动不会被注册。</p>
+<h3 id="2-4-DexFile-FindClassDef：DEX-文件中的类查找"><a href="#2-4-DexFile-FindClassDef：DEX-文件中的类查找" class="headerlink" title="2.4 DexFile.FindClassDef：DEX 文件中的类查找"></a>2.4 DexFile.FindClassDef：DEX 文件中的类查找</h3><p>在 ART 的低层，<code>DexFile::FindClassDef</code> 是通过在 DEX 文件的 <code>type_ids</code> 数组中进行二分搜索实现的。因为 DEX 文件的 <code>type_ids</code> 按字符串排序（基于 <code>string_ids</code> 的排序），所以可以通过二分搜索实现 O(log n) 的类查找。</p>
+<p>查找流程：</p>
+<ol>
+<li>将 descriptor（如 <code>Lcom/example/Foo;</code>）在 <code>string_ids</code> 中二分搜索，获取 string_id 索引。</li>
+<li>在 <code>type_ids</code> 中查找 descriptor_idx 等于该 string_id 索引的条目，获取 type_id 索引。</li>
+<li>在 <code>class_defs</code> 中查找 class_idx 等于该 type_id 索引的条目，即为目标类的 class_def。</li>
+</ol>
+<p>这个三段式查找是 DEX 格式”统一索引表”设计的直接应用。</p>
+<h2 id="三、Method-invoke-的完整调用流程"><a href="#三、Method-invoke-的完整调用流程" class="headerlink" title="三、Method.invoke 的完整调用流程"></a>三、Method.invoke 的完整调用流程</h2><p><code>Method.invoke</code> 是反射调用的核心。其流程非常复杂，涉及权限检查、参数适配、调用分派和可能的 JIT 优化。</p>
+<h3 id="3-1-Java-层入口"><a href="#3-1-Java-层入口" class="headerlink" title="3.1 Java 层入口"></a>3.1 Java 层入口</h3><p>在 <code>libcore/ojluni/src/main/java/java/lang/reflect/Method.java</code> 中：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> Object <span class="title function_">invoke</span><span class="params">(Object obj, Object... args)</span> <span class="keyword">throws</span> ... &#123;</span><br><span class="line">    <span class="comment">// 1. 访问权限检查</span></span><br><span class="line">    <span class="keyword">if</span> (!override) &#123;  <span class="comment">// override 由 setAccessible(true) 设置</span></span><br><span class="line">        <span class="comment">// 检查调用者是否有权访问此方法</span></span><br><span class="line">        <span class="comment">// 涉及类层级关系和模块访问检查</span></span><br><span class="line">        Reflection.verifyMemberAccess(caller, declaringClass, ...);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. 参数数量检查</span></span><br><span class="line">    <span class="keyword">if</span> (args.length != parameterTypes.length) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;wrong number of arguments&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 3. 委托给 Native 实现</span></span><br><span class="line">    <span class="keyword">return</span> invokeNative(obj, args, declaringClass, parameterTypes,</span><br><span class="line">                        returnType, slot, ...);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-Native-层：InvokeMethod"><a href="#3-2-Native-层：InvokeMethod" class="headerlink" title="3.2 Native 层：InvokeMethod"></a>3.2 Native 层：InvokeMethod</h3><p><code>art/runtime/reflection.cc</code> 中的 <code>InvokeMethod</code> 函数（简化逻辑）：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function">JValue <span class="title">InvokeMethod</span><span class="params">(<span class="type">const</span> ScopedObjectAccessAlreadyRunnable&amp; soa,</span></span></span><br><span class="line"><span class="params"><span class="function">                     jobject javaMethod, jobject javaReceiver,</span></span></span><br><span class="line"><span class="params"><span class="function">                     jobject javaArgs, <span class="type">size_t</span> num_frames)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 从 java.lang.reflect.Method 对象中提取 ArtMethod* 指针</span></span><br><span class="line">    ArtMethod* method = ArtMethod::<span class="built_in">FromReflectedMethod</span>(soa, javaMethod);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. 检查方法是否可访问（access_flags 验证）</span></span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">VerifyObjectInClass</span>(receiver, declaring_class)) &#123;</span><br><span class="line">        <span class="built_in">ThrowIllegalAccessException</span>(...);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 3. 将 javaArgs（Object[]）按方法签名解包</span></span><br><span class="line">    <span class="comment">//    - 基本类型参数需要拆箱：Integer → int, Long → long 等</span></span><br><span class="line">    <span class="comment">//    - 检查 null 参数是否可赋值给参数类型</span></span><br><span class="line">    <span class="comment">//    - 构造参数列表（在栈上分配或使用 Thread 的临时缓冲区）</span></span><br><span class="line">    <span class="type">uint32_t</span> args_size = <span class="built_in">NumArgArrayValues</span>(method-&gt;<span class="built_in">GetShorty</span>());</span><br><span class="line">    <span class="type">char</span> args_array[args_size];  <span class="comment">// 或堆分配</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 4. 通过 ArtMethod::Invoke 执行目标方法</span></span><br><span class="line">    method-&gt;<span class="built_in">Invoke</span>(soa.<span class="built_in">Self</span>(), args_array, args_size, &amp;result, method-&gt;<span class="built_in">GetShorty</span>());</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 5. 包装返回值（如果是基本类型，需要装箱：int → Integer 等）</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">BoxPrimitiveResult</span>(result, return_type);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>步骤 3（拆装箱）是反射调用最大的性能瓶颈之一</strong>。对于方法 <code>void foo(int a, long b, String c)</code>，<code>javaArgs</code> 是 <code>Object[]&#123;Integer(1), Long(2L), &quot;hello&quot;&#125;</code>，需要将其转换为原始值 <code>int 1, long 2L, String ref</code> 并放入参数缓冲区。同样的，返回值如果是基本类型也需要装回包装类。</p>
+<h3 id="3-3-ArtMethod-Invoke-的执行"><a href="#3-3-ArtMethod-Invoke-的执行" class="headerlink" title="3.3 ArtMethod::Invoke 的执行"></a>3.3 ArtMethod::Invoke 的执行</h3><p><code>ArtMethod::Invoke</code>（<code>art/runtime/art_method.cc</code>）是执行方法的通用入口：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">ArtMethod::Invoke</span><span class="params">(Thread* self, <span class="type">uint32_t</span>* args, <span class="type">uint32_t</span> args_size,</span></span></span><br><span class="line"><span class="params"><span class="function">                        JValue* result, <span class="type">const</span> <span class="type">char</span>* shorty)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 检查是否有编译代码（AOT 或 JIT）</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">HasCompiledCode</span>()) &#123;</span><br><span class="line">        <span class="comment">// 2a. 直接跳转到 entry_point_from_quick_compiled_code_</span></span><br><span class="line">        <span class="comment">//     这是最快速的路径——直接执行本机代码</span></span><br><span class="line">        <span class="built_in">entry_point_from_quick_compiled_code_</span>(self, args, result, shorty);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 2b. 走解释器路径</span></span><br><span class="line">        <span class="comment">//     在 ART 的 interpreter 中逐条执行字节码</span></span><br><span class="line">        interpreter::<span class="built_in">EnterInterpreterFromInvoke</span>(self, <span class="keyword">this</span>, args, result, ...);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>entry_point_from_quick_compiled_code_</code> 是一个函数指针，指向 AOT（dex2oat 编译）或 JIT 编译生成的本机代码。在 ART 中，方法的执行可以在编译代码和解释器之间无缝切换——这也适用于反射调用。当反射调用目标是一个热点方法时，ART 的 JIT 会编译该方法的普通入口，而反射路径也会自动使用这个编译版本。</p>
+<h3 id="3-4-FromReflectedMethod-的实现"><a href="#3-4-FromReflectedMethod-的实现" class="headerlink" title="3.4 FromReflectedMethod 的实现"></a>3.4 FromReflectedMethod 的实现</h3><p><code>ArtMethod::FromReflectedMethod</code> 是从 <code>java.lang.reflect.Method</code> 对象中提取 <code>ArtMethod*</code> 指针的关键方法。它的工作方式利用了 Java 对象中的隐藏字段：</p>
+<p>在 ART 中，<code>java.lang.reflect.Method</code> 对象实际上包含一个 <code>artMethod</code> 字段（或通过 declaring class 和方法索引间接查找）。最直接的实现是将 <code>ArtMethod*</code> 存储在 Method 对象的某个隐藏字段中（通常是一个 long 类型的字段，在 64 位系统中存储完整的指针，在 32 位系统中有特殊的压缩编码）。</p>
+<p>这种设计意味着反射调用只需要从 Method 对象中读取这个指针字段（一次内存访问），然后就可以调用 <code>ArtMethod::Invoke</code>——而不需要每次都重新从 DEX 文件中查找方法。</p>
+<h2 id="四、反射性能开销的根源"><a href="#四、反射性能开销的根源" class="headerlink" title="四、反射性能开销的根源"></a>四、反射性能开销的根源</h2><h3 id="4-1-开销分解"><a href="#4-1-开销分解" class="headerlink" title="4.1 开销分解"></a>4.1 开销分解</h3><p>反射调用比直接调用慢的原因是多维度的。以下按开销从大到小排序：</p>
+<p><strong>1. 参数拆装箱（Boxing&#x2F;Unboxing）</strong></p>
+<p>反射调用使用 <code>Object[]</code> 作为参数载体。对于基本类型参数：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">应用代码:    int result = method.invoke(42, &quot;hello&quot;);</span><br><span class="line">字节码等价:   Integer boxed = Integer.valueOf(42);</span><br><span class="line">             Object[] args = &#123;boxed, &quot;hello&quot;&#125;;</span><br><span class="line">             Object result = method.invoke(obj, args);</span><br><span class="line">             int unboxed = ((Integer) result).intValue();</span><br></pre></td></tr></table></figure>
+
+<p>每一次基本类型参数的装箱&#x2F;拆箱都涉及对象分配（<code>Integer.valueOf</code>、<code>Double.valueOf</code> 等）和内存间接访问。对于热路径方法，这种开销可能占到反射调用总开销的 40-60%。</p>
+<p><strong>2. 权限检查（Access Check）</strong></p>
+<p>每次 <code>Method.invoke</code> 都会调用 <code>Reflection.verifyMemberAccess</code>，检查调用者是否有权限访问目标方法。这涉及：</p>
+<ul>
+<li>遍历方法的 access_flags（public&#x2F;protected&#x2F;private&#x2F;package）</li>
+<li>遍历调用者的类层级关系</li>
+<li>检查 Java 9+ 的模块访问规则（<code>--add-opens</code>）</li>
+</ul>
+<p>即使调用了 <code>setAccessible(true)</code>，后续的 invoke 仍然需要执行一些简化后的检查（检查 override 标志、检查 receiver 类型匹配等）。</p>
+<p><strong>3. 额外间接层（Indirection）</strong></p>
+<p><code>Method.invoke</code> → JNI 桥接 → <code>InvokeMethod</code> → <code>ArtMethod::Invoke</code> → 目标方法。每个环节都有栈帧创建&#x2F;销毁和参数复制的开销。而直接调用通常是：<code>caller</code> → <code>callee</code>，仅一层。</p>
+<p><strong>4. JIT 内联受阻（Inlining Barrier）</strong></p>
+<p>JIT 编译器难以对反射调用进行内联，因为它看不到调用的实际目标——<code>ArtMethod*</code> 在编译期未知。即使 JIT 在运行时观测到该反射调用点总是调用同一个方法，内联反射调用比内联普通虚方法调用复杂得多（需要在编译代码中处理反射的参数打包协议）。</p>
+<h3 id="4-2-各场景的性能数据（近似）"><a href="#4-2-各场景的性能数据（近似）" class="headerlink" title="4.2 各场景的性能数据（近似）"></a>4.2 各场景的性能数据（近似）</h3><table>
+<thead>
+<tr>
+<th>调用方式</th>
+<th>相对耗时</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>直接调用</td>
+<td>1x (~1-2 ns)</td>
+<td>基线</td>
+</tr>
+<tr>
+<td>反射（cached Method, 无 inflation）</td>
+<td>~50-100x</td>
+<td>每次需拆装箱、访问检查、JNI 桥接</td>
+</tr>
+<tr>
+<td>反射（cached Method, 已 inflation）</td>
+<td>~2-5x</td>
+<td>inflation 消除了大部分开销</td>
+</tr>
+<tr>
+<td>反射（未 cached Method）</td>
+<td>~200-500x</td>
+<td>每次 invoke 前需要 getDeclaredMethod</td>
+</tr>
+<tr>
+<td>MethodHandle.invoke</td>
+<td>~2-10x</td>
+<td>无参数打包，但仍需 MethodHandle 间接调用</td>
+</tr>
+<tr>
+<td>VarHandle</td>
+<td>~1.1-1.5x</td>
+<td>近乎原生性能，但仅限字段访问</td>
+</tr>
+</tbody></table>
+<h2 id="五、反射膨胀（Reflection-Inflation）优化"><a href="#五、反射膨胀（Reflection-Inflation）优化" class="headerlink" title="五、反射膨胀（Reflection Inflation）优化"></a>五、反射膨胀（Reflection Inflation）优化</h2><h3 id="5-1-工作原理"><a href="#5-1-工作原理" class="headerlink" title="5.1 工作原理"></a>5.1 工作原理</h3><p>反射膨胀（Reflection Inflation）是 JVM 对高频反射调用的关键优化，原理类似于 JIT 的热点编译：</p>
+<p><strong>阶段 1: 初次调用（慢速路径）</strong></p>
+<p>最初的 15 次（或由 JVM 参数控制的阈值）反射调用走完整的慢速路径：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Method.invoke → JNI → InvokeMethod → ArtMethod::Invoke → 目标</span><br></pre></td></tr></table></figure>
+<p>ART 的 JIT profiling 在此期间记录该调用点的调用次数。</p>
+<p><strong>阶段 2: 达到阈值</strong></p>
+<p>当调用次数超过阈值（ART 中约 15 次，HotSpot 中由 <code>sun.reflect.inflationThreshold</code> 控制），JIT 为这个调用点生成一个专用的”访问器”（accessor）或”膨胀桩”（inflation stub）。</p>
+<p><strong>阶段 3: 膨胀后调用（快速路径）</strong></p>
+<p>访问器是一小段本机代码，它执行以下操作：</p>
+<ol>
+<li>从 Method 对象中提取 <code>ArtMethod*</code> 指针。</li>
+<li>加载 receiver（<code>this</code> 或 null）。</li>
+<li>按照目标方法的签名直接加载参数（不需要拆装箱）。</li>
+<li>直接调用 <code>entry_point_from_quick_compiled_code_</code>。</li>
+<li>如果需要，箱装返回值。</li>
+</ol>
+<p>关键优势：访问器<strong>静态地知道</strong>目标方法的签名（参数类型和返回类型），因此可以直接从 <code>Object[]</code> 中按索引读取参数并做类型检查，避免了运行时遍历参数数组和反射类型匹配的开销。</p>
+<h3 id="5-2-HotSpot-中的实现对比"><a href="#5-2-HotSpot-中的实现对比" class="headerlink" title="5.2 HotSpot 中的实现对比"></a>5.2 HotSpot 中的实现对比</h3><p>HotSpot 的 inflation 策略与 ART 有所不同：</p>
+<ul>
+<li><strong>HotSpot</strong>：使用 <code>sun.reflect.MethodAccessorGenerator</code>（一个字节码生成器），<strong>生成 Java 字节码</strong>来实现访问器，然后交给 JIT 编译。这意味着 HotSpot 的 inflation 实际上是生成一段等价于 “receiver.method(arg0, arg1, …)” 的字节码——但接收者和参数来自反射框架的包装对象。</li>
+<li><strong>ART</strong>：由于 Android 的 class 文件在安装时已转换为 DEX，不支持运行时字节码生成（这是安全限制的一部分，防止运行时生成可执行代码的恶意行为）。因此 ART 的 JIT 直接生成本机代码作为访问器，跳过了字节码中间表示。</li>
+</ul>
+<h3 id="5-3-Inflation-的限制"><a href="#5-3-Inflation-的限制" class="headerlink" title="5.3 Inflation 的限制"></a>5.3 Inflation 的限制</h3><p>Inflation 不是万能的。以下情况 inflation 可能不生效或效果有限：</p>
+<ul>
+<li><strong>每次都调用了不同的 Method 对象</strong>（如 <code>clazz.getDeclaredMethod(name, types)</code> 在循环中）。Inflation 是绑定在（调用点, Method对象）上的——如果 Method 对象变了，inflation 需要重新触发。</li>
+<li><strong>参数和返回值全是对象类型</strong>（无基本类型），inflated 路径和普通路径的差距不大（因为没有拆装箱开销可以消除）。</li>
+<li><strong>目标方法执行时间很长</strong>（如 I&#x2F;O 操作），反射框架的开销相对于方法体执行时间可以忽略不计，inflation 收益不明显。</li>
+</ul>
+<h2 id="六、AccessibleObject-setAccessible-的机制"><a href="#六、AccessibleObject-setAccessible-的机制" class="headerlink" title="六、AccessibleObject.setAccessible 的机制"></a>六、AccessibleObject.setAccessible 的机制</h2><h3 id="6-1-实现原理"><a href="#6-1-实现原理" class="headerlink" title="6.1 实现原理"></a>6.1 实现原理</h3><p><code>AccessibleObject</code> 是所有可反射访问对象（<code>Field</code>、<code>Method</code>、<code>Constructor</code>）的基类。<code>setAccessible(true)</code> 设置的是其内部的 <code>override</code> 布尔标志。</p>
+<p>在 ART 中，<code>reflection.cc</code> 的 <code>Method_setAccessible</code> JNI 方法：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">Method_setAccessible</span><span class="params">(JNIEnv* env, jobject javaMethod, jboolean flag)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 设置 Method 对象的 override 字段为 true/false</span></span><br><span class="line">    <span class="built_in">SetFieldBoolean</span>(javaMethod, WellKnownClasses::java_lang_reflect_AccessibleObject_override, flag);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>设置 <code>override = true</code> 后，后续的 <code>Method.invoke</code> 调用会跳过 <code>Reflection.verifyMemberAccess</code> 的类层级检查：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">boolean</span> <span class="variable">checkAccess</span> <span class="operator">=</span> !override;</span><br><span class="line"><span class="keyword">if</span> (checkAccess) &#123;</span><br><span class="line">    Reflection.verifyMemberAccess(caller, declaringClass, ...);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-2-安全限制"><a href="#6-2-安全限制" class="headerlink" title="6.2 安全限制"></a>6.2 安全限制</h3><p>即使 <code>setAccessible(true)</code> 也无法完全绕过所有安全检查：</p>
+<ul>
+<li><strong>模块系统（Java 9+）</strong>：即使 override&#x3D;true，如果目标类所在的模块没有 <code>opens</code> 当前调用者的包，则访问仍被拒绝。模块访问检查在 override 检查之前进行。</li>
+<li><strong>安全管理器（SecurityManager，Java 17 废弃）</strong>：<code>setAccessible</code> 本身会触发 <code>checkPermission(ACCESS_PERMISSION)</code>，受 SecurityManager 管控。</li>
+<li><strong>在 Android 中</strong>：Android 没有 SecurityManager，模块系统在 Android 中也较为有限（主要应用在系统内部框架层面），因此 <code>setAccessible(true)</code> 在 Android 应用开发中通常能生效。</li>
+</ul>
+<h2 id="七、MethodHandle-和-VarHandle：反射的演进"><a href="#七、MethodHandle-和-VarHandle：反射的演进" class="headerlink" title="七、MethodHandle 和 VarHandle：反射的演进"></a>七、MethodHandle 和 VarHandle：反射的演进</h2><h3 id="7-1-MethodHandle（Java-7-）"><a href="#7-1-MethodHandle（Java-7-）" class="headerlink" title="7.1 MethodHandle（Java 7+）"></a>7.1 MethodHandle（Java 7+）</h3><p><code>java.lang.invoke.MethodHandle</code> 是 JSR 292 引入的”类型化的方法引用”，它在创建时确定了类型签名，调用时不需要参数拆装箱：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 反射：每次 invoke 都有拆装箱开销</span></span><br><span class="line"><span class="type">Method</span> <span class="variable">m</span> <span class="operator">=</span> String.class.getDeclaredMethod(<span class="string">&quot;length&quot;</span>);</span><br><span class="line"><span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> (Integer) m.invoke(<span class="string">&quot;hello&quot;</span>);  <span class="comment">// 返回 Object → casting → unboxing → int</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// MethodHandle：类型安全，无拆装箱</span></span><br><span class="line">MethodHandles.<span class="type">Lookup</span> <span class="variable">lookup</span> <span class="operator">=</span> MethodHandles.lookup();</span><br><span class="line"><span class="type">MethodHandle</span> <span class="variable">mh</span> <span class="operator">=</span> lookup.findVirtual(String.class, <span class="string">&quot;length&quot;</span>, </span><br><span class="line">                                       MethodType.methodType(<span class="type">int</span>.class));</span><br><span class="line"><span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> (<span class="type">int</span>) mh.invokeExact(<span class="string">&quot;hello&quot;</span>);   <span class="comment">// 精确类型匹配，直接返回 int</span></span><br><span class="line"><span class="comment">// 或者</span></span><br><span class="line"><span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> (<span class="type">int</span>) mh.invoke(<span class="string">&quot;hello&quot;</span>);        <span class="comment">// invoke 可以处理类型转换</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>MethodHandle 的核心优势：</strong></p>
+<ol>
+<li><strong>签名精确</strong>：MethodType 在 Lookup 时确定，<code>invokeExact</code> 要求调用端类型完全匹配，编译期即可进行类型安全校验。</li>
+<li><strong>可组合</strong>：<code>MethodHandles.filterArguments</code>、<code>MethodHandles.collectArguments</code>、<code>MethodHandles.guardWithTest</code> 等操作可以将 MethodHandle 组合成更复杂的调用逻辑，而不需要编写额外的胶水代码。</li>
+<li><strong>JIT 友好</strong>：MethodHandle 的调用链（lambda form）可以被 JIT 编译器递归内联，最终优化为直接调用。</li>
+</ol>
+<p>在 ART 中，MethodHandle 的支持通过 <code>art/runtime/native/java_lang_invoke_MethodHandleImpl.cc</code> 实现。ART 的 MethodHandle 实现最终也是委托给 <code>ArtMethod::Invoke</code>，但跳过了反射框架的参数拆装箱阶段——因为 MethodHandle 在创建时已经记录了 <code>MethodType</code>，调用时不再需要运行时类型推导。</p>
+<h3 id="7-2-VarHandle（Java-9-）"><a href="#7-2-VarHandle（Java-9-）" class="headerlink" title="7.2 VarHandle（Java 9+）"></a>7.2 VarHandle（Java 9+）</h3><p><code>java.lang.invoke.VarHandle</code> 是 Java 9 引入的用于细粒度内存访问和 CAS 操作的句柄，可替代 <code>sun.misc.Unsafe</code> 的字段操作：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Counter</span> &#123;</span><br><span class="line">    <span class="keyword">volatile</span> <span class="type">int</span> value;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 传统 Unsafe 方式（危险，无类型安全）</span></span><br><span class="line"><span class="type">long</span> <span class="variable">offset</span> <span class="operator">=</span> unsafe.objectFieldOffset(Counter.class.getDeclaredField(<span class="string">&quot;value&quot;</span>));</span><br><span class="line">unsafe.compareAndSwapInt(counter, offset, <span class="number">0</span>, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// VarHandle 方式（类型安全）</span></span><br><span class="line"><span class="type">VarHandle</span> <span class="variable">VH</span> <span class="operator">=</span> MethodHandles.lookup()</span><br><span class="line">    .findVarHandle(Counter.class, <span class="string">&quot;value&quot;</span>, <span class="type">int</span>.class);</span><br><span class="line">VH.compareAndSet(counter, <span class="number">0</span>, <span class="number">1</span>);  <span class="comment">// CAS 操作</span></span><br><span class="line">VH.getVolatile(counter);          <span class="comment">// volatile 读</span></span><br><span class="line">VH.setRelease(counter, <span class="number">2</span>);        <span class="comment">// release 写</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>VarHandle 的访问模式（Memory Ordering Modes）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>访问模式</th>
+<th>内存排序保证</th>
+<th>等效 Java 关键词</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>plain</td>
+<td>无保证</td>
+<td>普通变量访问</td>
+</tr>
+<tr>
+<td>opaque</td>
+<td>操作本身的原子性</td>
+<td>–</td>
+</tr>
+<tr>
+<td>acquire</td>
+<td>后续操作不会重排序到此操作之前</td>
+<td>–</td>
+</tr>
+<tr>
+<td>release</td>
+<td>之前操作不会重排序到此操作之后</td>
+<td>–</td>
+</tr>
+<tr>
+<td>volatile</td>
+<td>acquire + release</td>
+<td>volatile 变量</td>
+</tr>
+<tr>
+<td>compareAndSet</td>
+<td>完全内存屏障</td>
+<td>AtomicInteger CAS</td>
+</tr>
+</tbody></table>
+<p>VarHandle 的性能接近直接字段访问（1.1-1.5x），因为它直接映射到 CPU 的原子指令（如 x86 的 <code>CMPXCHG</code>、ARM64 的 <code>LDXR/STXR</code>），不经过任何 JNI 包装或反射框架。</p>
+<p>在 ART 中，VarHandle 通过 <code>sun.misc.Unsafe</code> 的内部实现（<code>art/runtime/native/sun_misc_Unsafe.cc</code>）提供原子操作支持。与 HotSpot 的 JIT 直接编译不同，ART 的 VarHandle 在某些路径上通过解释器或 JNI 边界，性能比 HotSpot 略低，但依然是可用的高性能方案。</p>
+<h3 id="7-3-三者的性能对比"><a href="#7-3-三者的性能对比" class="headerlink" title="7.3 三者的性能对比"></a>7.3 三者的性能对比</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>反射 (Method.invoke)</th>
+<th>MethodHandle</th>
+<th>VarHandle</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>引入版本</td>
+<td>Java 1.1</td>
+<td>Java 7 (JSR 292)</td>
+<td>Java 9 (JEP 193)</td>
+</tr>
+<tr>
+<td>参数包装</td>
+<td>Object[]（有拆装箱）</td>
+<td>精确 MethodType（无拆装箱）</td>
+<td>N&#x2F;A（直接字段访问）</td>
+</tr>
+<tr>
+<td>性能（vs 直接调用）</td>
+<td>~2-5x（inflated）</td>
+<td>~2-10x</td>
+<td>~1.1-1.5x</td>
+</tr>
+<tr>
+<td>类型安全</td>
+<td>弱（运行时检查）</td>
+<td>强（MethodType 在创建时确定）</td>
+<td>强</td>
+</tr>
+<tr>
+<td>可内联性</td>
+<td>低（JIT 受限于 call site）</td>
+<td>高（LambdaForm 可递归内联）</td>
+<td>极高（直接映射为原子指令）</td>
+</tr>
+<tr>
+<td>功能范围</td>
+<td>全面（方法、字段、构造、数组、注解）</td>
+<td>方法调用 + 字段访问 + 组合</td>
+<td>字段的原子&#x2F;volatile 访问模式</td>
+</tr>
+</tbody></table>
+<h2 id="八、动态代理（Dynamic-Proxy）"><a href="#八、动态代理（Dynamic-Proxy）" class="headerlink" title="八、动态代理（Dynamic Proxy）"></a>八、动态代理（Dynamic Proxy）</h2><h3 id="8-1-代理类生成的字节码"><a href="#8-1-代理类生成的字节码" class="headerlink" title="8.1 代理类生成的字节码"></a>8.1 代理类生成的字节码</h3><p><code>java.lang.reflect.Proxy</code> 可以在运行时动态生成一个实现了指定接口的代理类：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">InvocationHandler</span> <span class="variable">handler</span> <span class="operator">=</span> (proxy, method, args) -&gt; &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;before &quot;</span> + method.getName());</span><br><span class="line">    <span class="keyword">return</span> method.invoke(target, args);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">MyInterface</span> <span class="variable">proxy</span> <span class="operator">=</span> (MyInterface) Proxy.newProxyInstance(</span><br><span class="line">    MyInterface.class.getClassLoader(),</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">Class</span>&lt;?&gt;[]&#123;MyInterface.class&#125;,</span><br><span class="line">    handler</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p><code>Proxy.newProxyInstance</code> 的工作流程：</p>
+<ol>
+<li>调用 <code>Proxy.getProxyClass(loader, interfaces)</code> 为给定的接口集合生成或查找代理类。</li>
+<li>通过反射获取代理类的 <code>Constructor(InvocationHandler)</code>。</li>
+<li>使用该构造方法创建代理实例（传入 handler）。</li>
+</ol>
+<h3 id="8-2-代理类的内部结构"><a href="#8-2-代理类的内部结构" class="headerlink" title="8.2 代理类的内部结构"></a>8.2 代理类的内部结构</h3><p>代理类的名字遵循 <code>$ProxyN</code> 模式（N 为递增序号）。在 ART 中，代理类的生成在 <code>libcore/ojluni/src/main/java/java/lang/reflect/Proxy.java</code> 中实现，它通过内部 API 调用 <code>ClassLoader.defineClass</code> 来生成代理类的 DEX 字节码。</p>
+<p>代理类的关键特征：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 简化的等效代码（实际是 DEX 字节码生成，而非 Java 源码）</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">$Proxy0</span> <span class="keyword">extends</span> <span class="title class_">Proxy</span> <span class="keyword">implements</span> <span class="title class_">MyInterface</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Method m1;  <span class="comment">// MyInterface 的方法 1</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Method m2;  <span class="comment">// MyInterface 的方法 2</span></span><br><span class="line">    <span class="comment">// ... equals, hashCode, toString</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="comment">// 静态初始化：缓存 Method 对象</span></span><br><span class="line">        m1 = Class.forName(<span class="string">&quot;MyInterface&quot;</span>).getMethod(<span class="string">&quot;doSomething&quot;</span>, ...);</span><br><span class="line">        m2 = Class.forName(<span class="string">&quot;MyInterface&quot;</span>).getMethod(<span class="string">&quot;getValue&quot;</span>, ...);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">doSomething</span><span class="params">(String arg)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>.h.invoke(<span class="built_in">this</span>, m1, <span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;arg&#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getValue</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> (Integer) <span class="built_in">super</span>.h.invoke(<span class="built_in">this</span>, m2, <span class="literal">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意：代理类的每个接口方法都通过 <code>InvocationHandler.invoke</code> 转发，而 <code>InvocationHandler.invoke</code> 的第三个参数仍然是 <code>Object[]</code>——因此动态代理内部的调用路径仍然是反射风格的（有拆装箱和数组打包开销）。</p>
+<h2 id="九、Field-反射读写与-Constructor-newInstance"><a href="#九、Field-反射读写与-Constructor-newInstance" class="headerlink" title="九、Field 反射读写与 Constructor.newInstance"></a>九、Field 反射读写与 Constructor.newInstance</h2><p>反射不仅用于方法调用，字段（Field）和构造方法（Constructor）的反射操作同样重要。</p>
+<h3 id="9-1-Field-get-set-的实现"><a href="#9-1-Field-get-set-的实现" class="headerlink" title="9.1 Field.get&#x2F;set 的实现"></a>9.1 Field.get&#x2F;set 的实现</h3><p><code>Field.get(Object obj)</code> 和 <code>Field.set(Object obj, Object value)</code> 的实现与 Method.invoke 类似：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// art/runtime/reflection.cc — Field_get 简化</span></span><br><span class="line"><span class="function">JValue <span class="title">Field_get</span><span class="params">(JNIEnv* env, jobject javaField, jobject javaObj)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 从 Field 对象中提取 ArtField* 指针</span></span><br><span class="line">    ArtField* field = ArtField::<span class="built_in">FromReflectedField</span>(javaField);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. 访问权限检查（如未 setAccessible）</span></span><br><span class="line">    <span class="built_in">VerifyAccess</span>(self, obj, field, ...);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 3. 读取字段值</span></span><br><span class="line">    <span class="comment">//    对于实例字段：obj + field_offset（直接内存偏移读取）</span></span><br><span class="line">    <span class="comment">//    对于静态字段：class_static_storage + field_offset</span></span><br><span class="line">    JValue result;</span><br><span class="line">    field-&gt;<span class="built_in">Get</span>(obj, &amp;result);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 4. 如果是基本类型，装箱返回</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">BoxPrimitive</span>(result, field-&gt;<span class="built_in">GetType</span>());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>字段访问比方法调用快得多——因为不需要解析参数数组，不需要构造调用栈。基本类型字段的反射读&#x2F;写主要瓶颈在拆装盒操作（int ↔ Integer），而引用类型字段的反射读&#x2F;写几乎没有额外开销（除了权限检查和 JNI 边界）。</p>
+<p>性能对比：</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>相对耗时 (vs 直接)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>直接字段读</td>
+<td>1x (~1ns)</td>
+</tr>
+<tr>
+<td>Field.get(int 字段)</td>
+<td>~10-20x（装箱开销）</td>
+</tr>
+<tr>
+<td>Field.get(Object 字段)</td>
+<td>~3-5x（权限检查 + JNI）</td>
+</tr>
+<tr>
+<td>Field.get(已 setAccessible)</td>
+<td>~2-3x</td>
+</tr>
+</tbody></table>
+<h3 id="9-2-Constructor-newInstance"><a href="#9-2-Constructor-newInstance" class="headerlink" title="9.2 Constructor.newInstance"></a>9.2 Constructor.newInstance</h3><p><code>Constructor.newInstance(Object... args)</code> 的执行路径与 Method.invoke 几乎相同，差异仅在于：</p>
+<ul>
+<li>调用前需要先给 <code>ArtMethod</code> 分配对象（通过堆分配器 TLAB）。</li>
+<li>调用的是 <code>&lt;init&gt;</code> 方法而非普通方法。</li>
+<li>返回的是新创建的对象（而非 <code>&lt;init&gt;</code> 的 void 返回值）。</li>
+</ul>
+<p>反射创建对象的开销 &#x3D; 对象分配（TLAB fast path: ~10-20ns）+ Method.invoke 开销。</p>
+<h2 id="十、JIT-Profiling-与-Inflation-触发机制"><a href="#十、JIT-Profiling-与-Inflation-触发机制" class="headerlink" title="十、JIT Profiling 与 Inflation 触发机制"></a>十、JIT Profiling 与 Inflation 触发机制</h2><h3 id="10-1-计数器的维护"><a href="#10-1-计数器的维护" class="headerlink" title="10.1 计数器的维护"></a>10.1 计数器的维护</h3><p>ART 的 JIT 系统（<code>art/runtime/jit/jit.cc</code>）通过方法入口计数器来跟踪调用频率。对于反射调用点，计数器按 <code>(CallSite, ArtMethod*)</code> 键追踪：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">每个反射调用点维护:</span><br><span class="line">  ┌────────────────────────────────┐</span><br><span class="line">  │ 调用点 PC (program counter)    │</span><br><span class="line">  │ 目标 ArtMethod* 指针           │</span><br><span class="line">  │ counter: uint16_t              │  ← 当前调用计数</span><br><span class="line">  │ threshold: uint16_t            │  ← inflation 阈值（默认 15）</span><br><span class="line">  │ flags: uint8_t                 │  ← 是否已 inflation / 是否热门</span><br><span class="line">  └────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p>每次 <code>Method.invoke</code> 执行时，JIT profiling 代码递增对应条目的计数器。当 <code>counter &gt;= threshold</code> 时，JIT 触发编译请求。</p>
+<h3 id="10-2-dex2oat-的-AOT-预编译"><a href="#10-2-dex2oat-的-AOT-预编译" class="headerlink" title="10.2 dex2oat 的 AOT 预编译"></a>10.2 dex2oat 的 AOT 预编译</h3><p>ART 的 dex2oat（AOT 编译器）在安装时可以对已知的反射目标进行预编译。如果 <code>art/compiler/optimizing/</code> 的分析阶段检测到类中存在高频反射调用模式（比如通过 <code>Class.forName</code> 加载某个特定类，然后调用 <code>getDeclaredMethod(&quot;特定方法名&quot;)</code>），dex2oat 可以提前准备相应的快速路径，免除前 15 次 warm-up 的开销。</p>
+<p>这种优化受限于 dex2oat 无法进行运行时 profiling（只能做静态分析和启发式预测），因此实际效果有限。主要的 inflation 收益仍然来自运行时 JIT。</p>
+<h2 id="十一、反射对-GC-和内存的影响"><a href="#十一、反射对-GC-和内存的影响" class="headerlink" title="十一、反射对 GC 和内存的影响"></a>十一、反射对 GC 和内存的影响</h2><p>反射调用产生的临时对象对 GC 有不容忽视的压力：</p>
+<ul>
+<li><strong>每次 invoke</strong>：至少分配 <code>Object[]</code>（方法参数）和可能的装箱对象（每个基本类型参数 1 个包装对象）。</li>
+<li><strong>每次 getDeclaredMethod&#x2F;getDeclaredField</strong>：分配一个新的 <code>Method</code>&#x2F;<code>Field</code> 对象。</li>
+<li><strong>动态代理</strong>：每次代理方法调用分配 <code>Object[args]</code>。</li>
+</ul>
+<p>在高频反射调用场景中（如 JSON 反序列化库的早期实现），这些临时对象的分配速率可达 每秒数百万次，对 GC 造成显著压力。现代 JSON 库（如 Moshi、Kotlin Serialization）使用编译期代码生成来替代反射，从根本上消除了这一开销。</p>
+<p>ART 的 TLAB（Thread-Local Allocation Buffer）虽然能加速小对象分配，但无法消除 GC 回收这些临时对象的成本。这是”反射性能差”的隐性维度——不仅仅是 CPU 开销，还有 GC 暂停对帧率的影响。</p>
+<h2 id="十二、Array-反射操作"><a href="#十二、Array-反射操作" class="headerlink" title="十二、Array 反射操作"></a>十二、Array 反射操作</h2><p><code>java.lang.reflect.Array</code> 类提供了数组的动态创建和访问能力：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 动态创建数组</span></span><br><span class="line"><span class="type">int</span>[] arr = (<span class="type">int</span>[]) Array.newInstance(<span class="type">int</span>.class, <span class="number">10</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 动态读取</span></span><br><span class="line"><span class="type">int</span> <span class="variable">value</span> <span class="operator">=</span> Array.getInt(arr, <span class="number">3</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 动态设置</span></span><br><span class="line">Array.setInt(arr, <span class="number">3</span>, <span class="number">42</span>);</span><br></pre></td></tr></table></figure>
+
+<p>这些操作在 ART 中直接映射到 DEX 的数组指令（<code>newarray</code>、<code>iaload</code>、<code>iastore</code>），只是需要通过反射的权限检查和类型验证。与 Method.invoke 不同，数组反射不需要参数拆装箱（因为 <code>Array.getInt/setInt</code> 等方法已经按基本类型重载），因此数组反射的性能比方法反射好得多——仅比直接数组访问慢 2-3 倍。在 <code>art/runtime/native/java_lang_reflect_Array.cc</code> 中可以找到对应的 JNI 实现。</p>
+<p>反射数组与泛型的一个重要交互：<code>Array.newInstance(Class&lt;?&gt; componentType, int length)</code> 是解决泛型数组创建问题的标准方法。当泛型类型参数 T 需要创建数组时，由于 <code>new T[n]</code> 被编译器禁止，代码使用 <code>(T[]) Array.newInstance(componentTypeClass, n)</code> 作为替代方案，这是 Java 类型令牌模式的一种典型应用。</p>
+<h2 id="十三、Constructor-的反射与对象创建"><a href="#十三、Constructor-的反射与对象创建" class="headerlink" title="十三、Constructor 的反射与对象创建"></a>十三、Constructor 的反射与对象创建</h2><p><code>Constructor.newInstance()</code> 在 Android 开发中的一个重要使用场景是 Fragment 的无参构造方法实例化。Android Framework 通过反射调用 <code>Fragment.instantiate(Context, String)</code> 来恢复被销毁重建的 Fragment 实例：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// FragmentFactory / Fragment 内部</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Fragment <span class="title function_">instantiate</span><span class="params">(Context context, String fname)</span> &#123;</span><br><span class="line">    Class&lt;?&gt; clazz = Class.forName(fname);</span><br><span class="line">    Constructor&lt;?&gt; constructor = clazz.getConstructor();</span><br><span class="line">    <span class="keyword">return</span> (Fragment) constructor.newInstance();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这就是为什么 Android Framework 要求 Fragment 必须有一个公开的无参构造方法——Framework 通过反射来创建 Fragment 实例，而无参构造方法确保 <code>newInstance()</code> 的成功调用。从 AndroidX Fragment 1.3.0 开始，<code>FragmentFactory</code> 允许开发者自定义 Fragment 的构造逻辑，但底层仍是基于反射机制。</p>
+<h2 id="十四、实战建议与常见陷阱"><a href="#十四、实战建议与常见陷阱" class="headerlink" title="十四、实战建议与常见陷阱"></a>十四、实战建议与常见陷阱</h2><h3 id="9-1-正确的反射使用模式"><a href="#9-1-正确的反射使用模式" class="headerlink" title="9.1 正确的反射使用模式"></a>9.1 正确的反射使用模式</h3><p><strong>缓存 Method 对象</strong>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 错：每次调用都查找 Method</span></span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">10000</span>; i++) &#123;</span><br><span class="line">    <span class="type">Method</span> <span class="variable">m</span> <span class="operator">=</span> MyClass.class.getDeclaredMethod(<span class="string">&quot;compute&quot;</span>, <span class="type">int</span>.class);</span><br><span class="line">    m.invoke(obj, i);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 对：预先缓存 Method</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Method</span> <span class="variable">COMPUTE</span> <span class="operator">=</span> MyClass.class.getDeclaredMethod(<span class="string">&quot;compute&quot;</span>, <span class="type">int</span>.class);</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">10000</span>; i++) &#123;</span><br><span class="line">    COMPUTE.invoke(obj, i);  <span class="comment">// 前 15 次慢速，之后 inflation 生效</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>getDeclaredMethod</code> 的开销包括：遍历方法表（线性搜索）、创建 <code>Method</code> 对象（堆分配）、安全权限检查。缓存 <code>Method</code> 对象可消除这些开销。</p>
+<p><strong>尽早 setAccessible</strong>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 仅设置一次</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Method</span> <span class="variable">PRIVATE_METHOD</span> <span class="operator">=</span> ...;</span><br><span class="line"><span class="keyword">static</span> &#123;</span><br><span class="line">    PRIVATE_METHOD.setAccessible(<span class="literal">true</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>使用 MethodHandle 替代高频反射</strong>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 替代方案（性能更好，但需要提前知道签名）</span></span><br><span class="line"><span class="type">MethodHandle</span> <span class="variable">mh</span> <span class="operator">=</span> MethodHandles.lookup()</span><br><span class="line">    .findVirtual(MyClass.class, <span class="string">&quot;compute&quot;</span>, MethodType.methodType(<span class="type">int</span>.class, <span class="type">int</span>.class));</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">10000</span>; i++) &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">result</span> <span class="operator">=</span> (<span class="type">int</span>) mh.invokeExact(obj, i);  <span class="comment">// 类型安全，无拆装箱</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="9-2-常见陷阱"><a href="#9-2-常见陷阱" class="headerlink" title="9.2 常见陷阱"></a>9.2 常见陷阱</h3><table>
+<thead>
+<tr>
+<th>陷阱</th>
+<th>说明</th>
+<th>解决</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>getMethods vs getDeclaredMethods</td>
+<td>getMethods 返回所有公共方法（含继承）；getDeclaredMethods 仅返回当前类声明的方法</td>
+<td>明确需求</td>
+</tr>
+<tr>
+<td>可变参数方法的反射调用</td>
+<td><code>method.invoke(obj, new Object[]&#123;new Object[]&#123;1, 2&#125;&#125;)</code> vs <code>method.invoke(obj, 1, 2)</code></td>
+<td>了解 Java 的自动变参展开规则</td>
+</tr>
+<tr>
+<td>基本类型返回值空指针</td>
+<td>反射返回的 Object 为 null 时，拆箱为基本类型会抛出 NPE</td>
+<td>先检查 null，或使用包装类接收</td>
+</tr>
+<tr>
+<td>混淆导致反射失败</td>
+<td>ProGuard&#x2F;R8 可能重命名或移除反射目标</td>
+<td>使用 <code>-keep</code> 规则保留反射调用的类&#x2F;方法&#x2F;字段</td>
+</tr>
+<tr>
+<td>getGenericReturnType 被剥离</td>
+<td>ProGuard 去除 Signature 属性</td>
+<td><code>-keepattributes Signature</code></td>
+</tr>
+<tr>
+<td>桥方法的干扰</td>
+<td>getDeclaredMethod 可能返回桥方法（ACC_BRIDGE）而非实际方法</td>
+<td>检查 method.isBridge()，必要时使用 getMethod</td>
+</tr>
+</tbody></table>
+<h2 id="十、AOSP-关键源码路径总结"><a href="#十、AOSP-关键源码路径总结" class="headerlink" title="十、AOSP 关键源码路径总结"></a>十、AOSP 关键源码路径总结</h2><table>
+<thead>
+<tr>
+<th>文件</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>art/runtime/reflection.cc</code></td>
+<td>反射核心：InvokeMethod、InvokeConstructor、VerifyObjectInClass、所有访问检查逻辑</td>
+</tr>
+<tr>
+<td><code>art/runtime/art_method.h</code></td>
+<td>ArtMethod 结构定义：entry_point_from_quick_compiled_code_、access_flags</td>
+</tr>
+<tr>
+<td><code>art/runtime/art_method.cc</code></td>
+<td>ArtMethod::Invoke、ArtMethod::FromReflectedMethod</td>
+</tr>
+<tr>
+<td><code>art/runtime/class_linker.cc</code></td>
+<td>FindClass、DefineClass、LinkClass、EnsureInitialized、vtable&#x2F;iftable 构建</td>
+</tr>
+<tr>
+<td><code>art/runtime/native/java_lang_reflect_Method.cc</code></td>
+<td>Method.invoke 的 JNI 原生实现</td>
+</tr>
+<tr>
+<td><code>art/runtime/native/java_lang_reflect_Field.cc</code></td>
+<td>Field.get&#x2F;set 的 JNI 实现</td>
+</tr>
+<tr>
+<td><code>art/runtime/native/java_lang_Class.cc</code></td>
+<td>Class.forName、Class.newInstance 的 JNI 实现</td>
+</tr>
+<tr>
+<td><code>art/runtime/native/sun_misc_Unsafe.cc</code></td>
+<td>Unsafe 操作（VarHandle 底层依赖）</td>
+</tr>
+<tr>
+<td><code>art/runtime/native/java_lang_invoke_MethodHandleImpl.cc</code></td>
+<td>MethodHandle 的 ART 实现</td>
+</tr>
+<tr>
+<td><code>art/runtime/jit/jit.cc</code></td>
+<td>JIT profiling：跟踪反射调用频次，触发 inflation</td>
+</tr>
+<tr>
+<td><code>art/runtime/interpreter/</code></td>
+<td>解释器：未编译的 ArtMethod::Invoke 走此路径</td>
+</tr>
+<tr>
+<td><code>libcore/ojluni/src/main/java/java/lang/reflect/Method.java</code></td>
+<td>Java 层反射 Method 类</td>
+</tr>
+<tr>
+<td><code>libcore/ojluni/src/main/java/java/lang/reflect/Field.java</code></td>
+<td>Java 层反射 Field 类</td>
+</tr>
+<tr>
+<td><code>libcore/ojluni/src/main/java/java/lang/reflect/Proxy.java</code></td>
+<td>动态代理类生成</td>
+</tr>
+<tr>
+<td><code>libcore/ojluni/src/main/java/java/lang/invoke/MethodHandle.java</code></td>
+<td>MethodHandle Java API</td>
+</tr>
+<tr>
+<td><code>libcore/ojluni/src/main/java/java/lang/invoke/VarHandle.java</code></td>
+<td>VarHandle Java API</td>
+</tr>
+<tr>
+<td><code>art/runtime/native/java_lang_reflect_Array.cc</code></td>
+<td>Array 反射操作（newInstance、get&#x2F;set）</td>
+</tr>
+</tbody></table>
+<p><strong>调试反射问题的关键日志和工具：</strong></p>
+<ul>
+<li><code>adb logcat | grep -E &quot;reflect|Reflection&quot;</code>：查看 ART 反射路径的运行时日志。</li>
+<li><code>art/tools/dexfuzz/</code>：DEX 文件模糊测试工具，可用于测试反射边界的健壮性。</li>
+<li>使用 <code>StrictMode</code> 检测主线程上的反射调用：<code>StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectReflection().penaltyLog().build())</code>。</li>
+</ul>
+<hr>
+<h2 id="面试问答"><a href="#面试问答" class="headerlink" title="面试问答"></a>面试问答</h2><p><strong>Q1：<code>Class.forName</code> 在 ART 中的完整加载链路是什么？与 <code>ClassLoader.loadClass</code> 有什么区别？</strong></p>
+<p>A：完整链路为：Java 层 <code>Class.forName</code> → <code>ClassLoader.loadClass</code> → <code>BaseDexClassLoader.findClass</code> → <code>DexPathList.findClass</code> 遍历 dex → JNI 层 <code>DefineClass</code>（<code>art/runtime/native/dalvik_system_DexFile.cc</code>）→ <code>ClassLinker::DefineClass</code> 解析 DEX 文件、分配 Class 对象、插入 ClassTable → <code>ClassLinker::LinkClass</code> 构建 vtable&#x2F;iftable → <code>ClassLinker::EnsureInitialized</code> 执行 <code>&lt;clinit&gt;</code>。区别在于 <code>Class.forName</code> 默认执行类的初始化（执行 <code>&lt;clinit&gt;</code>），而 <code>ClassLoader.loadClass</code> 默认不执行初始化，仅在首次实际使用时才初始化（懒加载）。<code>Class.forName</code> 常用于 JDBC 驱动加载等需要触发静态初始化块的场景。两个方法在底层共用同一个 <code>class_load_lock_</code> 防止并发重复加载。</p>
+<p><strong>Q2：<code>Method.invoke</code> 的性能瓶颈在哪里？ART 如何优化？</strong></p>
+<p>A：瓶颈有四个方面：(1) 每次调用的参数类型检查和拆装箱（<code>Object[]</code> 到基本类型的拆箱、返回值的装箱），这占总开销的 40-60%；(2) 每次调用的访问权限检查（<code>Reflection.verifyMemberAccess</code>）；(3) 多层级间接调用（Java→JNI→reflection.cc→ArtMethod::Invoke）；(4) JIT 无法内联未知调用目标。ART 通过”反射膨胀”（reflection inflation）优化——当一个反射方法被频繁调用（约 15 次阈值），JIT 为该调用点生成专用的本机代码访问器，直接跳转到目标 <code>ArtMethod</code> 的编译入口，绕过大部分检查逻辑和拆装箱开销，性能可接近直接调用的 2-5x。关键优化是访问器静态地知道目标方法的签名（参数类型在 inflation 时已确定），因此不需要运行时类型推导。</p>
+<p><strong>Q3：<code>ArtMethod</code> 结构在反射中扮演什么角色？</strong></p>
+<p>A：<code>ArtMethod</code>（<code>art/runtime/art_method.h</code>）是 ART 中表示一个方法的运行时核心数据结构。每个 <code>java.lang.reflect.Method</code> 对象内部持有一个指向对应 <code>ArtMethod</code> 的指针（通过隐藏字段或索引间接存储）。<code>ArtMethod</code> 包含了方法的所有运行时信息：入口点指针 <code>entry_point_from_quick_compiled_code_</code>（指向 AOT 或 JIT 编译的代码）、DEX 方法索引、access flags、方法在 vtable 中的偏移、类引用等。当 <code>Method.invoke</code> 执行时，首先通过 <code>ArtMethod::FromReflectedMethod</code> 提取这个指针，然后调用 <code>ArtMethod::Invoke</code> 执行方法。<code>ArtMethod</code> 的设计使得 ART 可以在 AOT&#x2F;JIT 编译代码和解释器执行之间无缝切换——这种灵活性同样适用于反射调用。</p>
+<p><strong>Q4：如何通过反射获取泛型返回值类型？</strong></p>
+<p>A：使用 <code>Method.getGenericReturnType()</code>（而非 <code>getReturnType()</code>）。后者返回的是擦除后的类型（如 <code>List</code>），前者读取 class 文件中方法的 Signature 属性，返回完整的泛型类型（如 <code>List&lt;String&gt;</code>）。对于字段同理使用 <code>Field.getGenericType()</code>。这些方法的底层实现引用了 <code>java.lang.reflect</code> 包中的 <code>GenericSignatureFormatError</code> 处理逻辑，读取 class 文件的 Signature 属性字符串并解析为 <code>TypeVariable</code>、<code>ParameterizedType</code> 等接口实现。如果 class 文件的 Signature 属性被 ProGuard 剥离（未配置 <code>-keepattributes Signature</code>），则 <code>getGenericReturnType()</code> 会回退到擦除类型。</p>
+<p><strong>Q5：MethodHandle 和反射 Method.invoke 的核心区别是什么？什么时候用哪个？</strong></p>
+<p>A：核心区别有四点。(1) 签名：MethodHandle 在创建时确定 MethodType（参数类型和返回类型），调用时不需要拆装箱；反射的 invoke 总是接收 <code>Object[]</code> 参数，需要运行时类型检查。(2) 性能：MethodHandle 比未 inflation 的反射快得多（2-10x vs 50-100x），但 inflated 后的反射（2-5x）与 MethodHandle 相当。(3) 可组合性：MethodHandle 有丰富的组合器（filterArguments、insertArguments、guardWithTest），可以在调用点进行函数式组合，反射不具备此能力。(4) 使用场景：反射适合需要动态发现方法（方法名在编译期未知、或需要遍历所有方法）的场景；MethodHandle 适合方法名已知、仅在调用方式上需要动态性的场景（如实现一个高性能的调用分发器）。</p>
+<p><strong>Q6：反射的 Inflation 优化在什么情况下不生效？</strong></p>
+<p>A：Inflation 不生效的主要原因：(1) 调用点频繁更换不同的 Method 对象（如在循环中调用 <code>getDeclaredMethod</code>），因为 inflation 绑定在特定的调用点和 Method 对象组合上；(2) 反射调用的目标方法执行时间很长（如磁盘 I&#x2F;O），反射框架的开销占总耗时比例很小，inflation 无法带来显著提升；(3) 方法的参数和返回值全是引用类型（无基本类型），inflation 消除的拆装箱收益有限；(4) 调用次数未能达到阈值（&lt; 15 次），inflation 根本不会被触发；(5) 系统的 JIT 被禁用或处于低配状态（如在模拟器或调试模式下）。</p>
+<p><strong>Q7：动态代理在 Android 中的实现与 HotSpot 有何不同？</strong></p>
+<p>A：在 HotSpot 中，动态代理通过 <code>sun.misc.ProxyGenerator</code> 生成 Java 字节码（.class 文件格式），然后调用 <code>Unsafe.defineClass</code> 将其定义为一个新的类。在 ART 中，由于 Android 不支持运行时字节码生成（.class 格式），动态代理通过 <code>libcore</code> 中的 <code>Proxy.java</code> 直接生成 DEX 字节码，然后通过 <code>ClassLoader.defineClass</code> 注册。两者的接口方法转发逻辑相似——都通过 <code>InvocationHandler.invoke(proxy, method, args)</code> 调用，因此性能特征也相似：每次代理方法调用都涉及反射风格的 <code>Object[]</code> 参数打包。对于性能敏感的代理场景，考虑使用编译期代码生成（如 Dagger、代码生成注解处理器）来替代运行时动态代理。</p>
+<p><strong>Q8：为什么反射调用中缓存 Method 对象如此重要？</strong></p>
+<p>A：<code>getDeclaredMethod</code> 的执行成本远高于一次 <code>invoke</code>。它需要：(1) 遍历方法表进行线性搜索（对比名称和参数类型）；(2) 在找到方法后创建一个新的 <code>Method</code> 对象（堆分配）；(3) 执行安全权限检查。对于一个类有 20 个方法，每次 <code>getDeclaredMethod</code> 都需遍历和比较。而缓存的 <code>Method</code> 对象可以直接调用 <code>invoke</code>——尤其是经过 inflation 后，invoke 的开销降低到直接调用的 2-5x。在实测中，不使用缓存的反射调用（每次 <code>getDeclaredMethod</code> + <code>invoke</code>）可以比直接调用慢 200-500 倍，而缓存后的 inflated invoke 仅慢 2-5 倍。这个 100 倍的差距完全是方法查找和对象创建的开销。</p>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/">动态代理    </a><a class="post-meta__tags" href="/tags/%E5%AD%97%E8%8A%82%E7%A0%81/">字节码    </a><a class="post-meta__tags" href="/tags/%E5%8F%8D%E5%B0%84/">反射    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/270.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/04/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E4%B8%83%E7%AF%87%E3%80%81javac%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/248.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【深入理解JVM字节码】第七篇、javac编译原理</span></div></a></div><div class="next-post pull_right"><a href="/2021/03/20/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E4%BA%94%E7%AF%87%E3%80%81synchronized%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/269.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【深入理解JVM字节码】第五篇、synchronized实现原理</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2019/05/24/重拾Android-Java进阶之反射/" title="Java进阶之反射"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/uploadbeta.com.jpeg"><div class="relatedPosts_title">Java进阶之反射</div></a></div><div class="relatedPosts_item"><a href="/2021/04/25/重拾Android-【深入理解JVM字节码】第十二篇、cglib动态代理原理/" title="【深入理解JVM字节码】第十二篇、cglib动态代理原理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/257.jpg"><div class="relatedPosts_title">【深入理解JVM字节码】第十二篇、cglib动态代理原理</div></a></div><div class="relatedPosts_item"><a href="/2019/06/15/重拾Android-【必知必会SDK】之Retrofit/" title="【必知必会SDK】之Retrofit"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/794.jpg"><div class="relatedPosts_title">【必知必会SDK】之Retrofit</div></a></div><div class="relatedPosts_item"><a href="/2022/07/05/重拾Android-【全埋点方案系列】AppClick全埋点之ASM处理/" title="【全埋点方案系列】AppClick全埋点之ASM处理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【全埋点方案系列】AppClick全埋点之ASM处理</div></a></div><div class="relatedPosts_item"><a href="/2021/06/01/高级Android-【逆向安全技术-基础篇】dex文件格式解析/" title="【逆向安全技术-基础篇】dex文件格式解析"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【逆向安全技术-基础篇】dex文件格式解析</div></a></div><div class="relatedPosts_item"><a href="/2021/05/01/重拾Android-【深入理解JVM字节码】第十三篇、应用破解Vs防破解/" title="【深入理解JVM字节码】第十三篇、应用破解Vs防破解"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/253.jpg"><div class="relatedPosts_title">【深入理解JVM字节码】第十三篇、应用破解Vs防破解</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/270.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

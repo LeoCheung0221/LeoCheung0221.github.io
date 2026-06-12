@@ -1,0 +1,457 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【GNN原理解析】卷积神经网络 | ONE·PIECE</title><meta name="description" content="【GNN原理解析】卷积神经网络"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【GNN原理解析】卷积神经网络"><meta name="twitter:description" content="【GNN原理解析】卷积神经网络"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【GNN原理解析】卷积神经网络"><meta property="og:url" content="http://tufusi.com/2020/08/10/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【GNN原理解析】卷积神经网络"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2020/08/10/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/"><link rel="prev" title="【统计学习方法死磕系列】EM算法" href="http://tufusi.com/2020/08/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91EM%E7%AE%97%E6%B3%95/"><link rel="next" title="【GNN原理解析】什么是图" href="http://tufusi.com/2020/08/05/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E4%BB%80%E4%B9%88%E6%98%AF%E5%9B%BE/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E5%8D%B7%E7%A7%AF%E7%9A%84%E6%95%B0%E5%AD%A6%E5%AE%9A%E4%B9%89"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、卷积的数学定义</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-%E8%BF%9E%E7%BB%AD%E5%9F%9F%E4%B8%AD%E7%9A%84%E5%8D%B7%E7%A7%AF"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">1.1 连续域中的卷积</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-2-%E7%A6%BB%E6%95%A3%E5%9F%9F%E4%B8%AD%E7%9A%84%E5%8D%B7%E7%A7%AF"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">1.2 离散域中的卷积</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-3-CNN-%E4%B8%AD%E7%9A%84%E5%8D%B7%E7%A7%AF%E4%B8%8E%E6%95%B0%E5%AD%A6%E5%8D%B7%E7%A7%AF%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc_mobile_items-number">1.3.</span> <span class="toc_mobile_items-text">1.3 CNN 中的卷积与数学卷积的区别</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81CNN-%E7%9A%84%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、CNN 的核心组件</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E5%8D%B7%E7%A7%AF%E5%B1%82"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 卷积层</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E5%8D%B7%E7%A7%AF%E7%9A%84%E4%B8%A4%E4%B8%AA%E5%85%B3%E9%94%AE%E6%80%A7%E8%B4%A8"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 卷积的两个关键性质</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-%E6%B1%A0%E5%8C%96%E5%B1%82%EF%BC%88Pooling%EF%BC%89"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 池化层（Pooling）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-4-%E5%85%A8%E8%BF%9E%E6%8E%A5%E5%B1%82%EF%BC%88Fully-Connected-Layer%EF%BC%89"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">2.4 全连接层（Fully Connected Layer）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81CNN-%E7%9A%84%E6%95%B0%E5%AD%A6%E8%A7%86%E8%A7%92%EF%BC%9A%E9%82%BB%E5%B1%85%E8%81%9A%E5%90%88"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、CNN 的数学视角：邻居聚合</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E5%8D%B7%E7%A7%AF-%E5%B1%80%E9%83%A8%E9%82%BB%E5%B1%85%E7%89%B9%E5%BE%81%E8%81%9A%E5%90%88"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 卷积 &#x3D; 局部邻居特征聚合</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E5%8D%B7%E7%A7%AF%E7%9A%84%E5%A4%9A%E9%80%9A%E9%81%93%E8%A7%86%E8%A7%92"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 卷积的多通道视角</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0%E4%B8%8E%E5%BD%92%E4%B8%80%E5%8C%96"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、激活函数与归一化</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-ReLU-%E4%B8%8E%E5%8F%98%E4%BD%93"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 ReLU 与变体</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-Batch-Normalization"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 Batch Normalization</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81%E7%BB%8F%E5%85%B8-CNN-%E6%9E%B6%E6%9E%84"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、经典 CNN 架构</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-LeNet-5%EF%BC%881998%EF%BC%89"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 LeNet-5（1998）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-AlexNet%EF%BC%882012%EF%BC%89"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 AlexNet（2012）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-VGG%EF%BC%882014%EF%BC%89"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 VGG（2014）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-4-ResNet%EF%BC%882015%EF%BC%89"><span class="toc_mobile_items-number">5.4.</span> <span class="toc_mobile_items-text">5.4 ResNet（2015）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-5-Inception-GoogLeNet%EF%BC%882014%EF%BC%89"><span class="toc_mobile_items-number">5.5.</span> <span class="toc_mobile_items-text">5.5 Inception &#x2F; GoogLeNet（2014）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81CNN-%E4%B8%8E-GNN-%E7%9A%84%E6%A0%B8%E5%BF%83%E8%81%94%E7%B3%BB"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、CNN 与 GNN 的核心联系</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E5%8D%B7%E7%A7%AF-%E5%9B%BE%E4%B8%8A%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 卷积 &#x3D; 图上的消息传递</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-%E4%BB%8E%E5%9B%BE%E5%83%8F%E5%88%B0%E5%9B%BE%EF%BC%9A%E6%A6%82%E5%BF%B5%E7%9A%84%E6%8E%A8%E5%B9%BF"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 从图像到图：概念的推广</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-%E5%85%B3%E9%94%AE%E5%85%AC%E5%BC%8F%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">6.3 关键公式对比</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E4%BB%8E-CNN-%E5%88%B0-GNN-%E7%9A%84%E6%BC%94%E5%8F%98%E8%B7%AF%E5%BE%84"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、从 CNN 到 GNN 的演变路径</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81CNN-%E8%AE%AD%E7%BB%83%E6%8A%80%E5%B7%A7%E4%B8%8E-GNN-%E7%9A%84%E5%AF%B9%E5%BA%94"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、CNN 训练技巧与 GNN 的对应</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%9D%A2%E8%AF%95-%E8%87%AA%E6%9F%A5%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">面试&#x2F;自查问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81CNN-%E7%9A%84%E5%AE%9E%E7%8E%B0%EF%BC%9A%E4%BB%8E%E9%9B%B6%E6%90%AD%E5%BB%BA"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">九、CNN 的实现：从零搭建</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-1-%E5%AE%8C%E6%95%B4%E7%9A%84%E8%AE%AD%E7%BB%83-Pipeline"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">9.1 完整的训练 Pipeline</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-2-%E7%89%B9%E5%BE%81%E5%9B%BE%E5%8F%AF%E8%A7%86%E5%8C%96"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">9.2 特征图可视化</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81CNN-%E5%88%B0-GNN-%E7%9A%84%E6%95%B0%E5%AD%A6%E6%A1%A5%E6%A2%81"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">十、CNN 到 GNN 的数学桥梁</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-1-%E5%9B%BE%E4%B8%8A%E7%9A%84%E5%8D%B7%E7%A7%AF%E5%AE%9A%E4%B9%89"><span class="toc_mobile_items-number">11.1.</span> <span class="toc_mobile_items-text">10.1 图上的卷积定义</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-2-%E6%84%9F%E5%8F%97%E9%87%8E%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">11.2.</span> <span class="toc_mobile_items-text">10.2 感受野的对比</span></a></li></ol></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%8D%B7%E7%A7%AF%E7%9A%84%E6%95%B0%E5%AD%A6%E5%AE%9A%E4%B9%89"><span class="toc-number">1.</span> <span class="toc-text">一、卷积的数学定义</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E8%BF%9E%E7%BB%AD%E5%9F%9F%E4%B8%AD%E7%9A%84%E5%8D%B7%E7%A7%AF"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 连续域中的卷积</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E7%A6%BB%E6%95%A3%E5%9F%9F%E4%B8%AD%E7%9A%84%E5%8D%B7%E7%A7%AF"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 离散域中的卷积</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-CNN-%E4%B8%AD%E7%9A%84%E5%8D%B7%E7%A7%AF%E4%B8%8E%E6%95%B0%E5%AD%A6%E5%8D%B7%E7%A7%AF%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">1.3.</span> <span class="toc-text">1.3 CNN 中的卷积与数学卷积的区别</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81CNN-%E7%9A%84%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6"><span class="toc-number">2.</span> <span class="toc-text">二、CNN 的核心组件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%8D%B7%E7%A7%AF%E5%B1%82"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 卷积层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%8D%B7%E7%A7%AF%E7%9A%84%E4%B8%A4%E4%B8%AA%E5%85%B3%E9%94%AE%E6%80%A7%E8%B4%A8"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 卷积的两个关键性质</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E6%B1%A0%E5%8C%96%E5%B1%82%EF%BC%88Pooling%EF%BC%89"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 池化层（Pooling）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%85%A8%E8%BF%9E%E6%8E%A5%E5%B1%82%EF%BC%88Fully-Connected-Layer%EF%BC%89"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 全连接层（Fully Connected Layer）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81CNN-%E7%9A%84%E6%95%B0%E5%AD%A6%E8%A7%86%E8%A7%92%EF%BC%9A%E9%82%BB%E5%B1%85%E8%81%9A%E5%90%88"><span class="toc-number">3.</span> <span class="toc-text">三、CNN 的数学视角：邻居聚合</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%8D%B7%E7%A7%AF-%E5%B1%80%E9%83%A8%E9%82%BB%E5%B1%85%E7%89%B9%E5%BE%81%E8%81%9A%E5%90%88"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 卷积 &#x3D; 局部邻居特征聚合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%8D%B7%E7%A7%AF%E7%9A%84%E5%A4%9A%E9%80%9A%E9%81%93%E8%A7%86%E8%A7%92"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 卷积的多通道视角</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0%E4%B8%8E%E5%BD%92%E4%B8%80%E5%8C%96"><span class="toc-number">4.</span> <span class="toc-text">四、激活函数与归一化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-ReLU-%E4%B8%8E%E5%8F%98%E4%BD%93"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 ReLU 与变体</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Batch-Normalization"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 Batch Normalization</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E7%BB%8F%E5%85%B8-CNN-%E6%9E%B6%E6%9E%84"><span class="toc-number">5.</span> <span class="toc-text">五、经典 CNN 架构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-LeNet-5%EF%BC%881998%EF%BC%89"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 LeNet-5（1998）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-AlexNet%EF%BC%882012%EF%BC%89"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 AlexNet（2012）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-VGG%EF%BC%882014%EF%BC%89"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 VGG（2014）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-ResNet%EF%BC%882015%EF%BC%89"><span class="toc-number">5.4.</span> <span class="toc-text">5.4 ResNet（2015）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-Inception-GoogLeNet%EF%BC%882014%EF%BC%89"><span class="toc-number">5.5.</span> <span class="toc-text">5.5 Inception &#x2F; GoogLeNet（2014）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81CNN-%E4%B8%8E-GNN-%E7%9A%84%E6%A0%B8%E5%BF%83%E8%81%94%E7%B3%BB"><span class="toc-number">6.</span> <span class="toc-text">六、CNN 与 GNN 的核心联系</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%8D%B7%E7%A7%AF-%E5%9B%BE%E4%B8%8A%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 卷积 &#x3D; 图上的消息传递</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E4%BB%8E%E5%9B%BE%E5%83%8F%E5%88%B0%E5%9B%BE%EF%BC%9A%E6%A6%82%E5%BF%B5%E7%9A%84%E6%8E%A8%E5%B9%BF"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 从图像到图：概念的推广</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E5%85%B3%E9%94%AE%E5%85%AC%E5%BC%8F%E5%AF%B9%E6%AF%94"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 关键公式对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E4%BB%8E-CNN-%E5%88%B0-GNN-%E7%9A%84%E6%BC%94%E5%8F%98%E8%B7%AF%E5%BE%84"><span class="toc-number">7.</span> <span class="toc-text">七、从 CNN 到 GNN 的演变路径</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81CNN-%E8%AE%AD%E7%BB%83%E6%8A%80%E5%B7%A7%E4%B8%8E-GNN-%E7%9A%84%E5%AF%B9%E5%BA%94"><span class="toc-number">8.</span> <span class="toc-text">八、CNN 训练技巧与 GNN 的对应</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95-%E8%87%AA%E6%9F%A5%E9%97%AE%E9%A2%98"><span class="toc-number">9.</span> <span class="toc-text">面试&#x2F;自查问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81CNN-%E7%9A%84%E5%AE%9E%E7%8E%B0%EF%BC%9A%E4%BB%8E%E9%9B%B6%E6%90%AD%E5%BB%BA"><span class="toc-number">10.</span> <span class="toc-text">九、CNN 的实现：从零搭建</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E5%AE%8C%E6%95%B4%E7%9A%84%E8%AE%AD%E7%BB%83-Pipeline"><span class="toc-number">10.1.</span> <span class="toc-text">9.1 完整的训练 Pipeline</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E7%89%B9%E5%BE%81%E5%9B%BE%E5%8F%AF%E8%A7%86%E5%8C%96"><span class="toc-number">10.2.</span> <span class="toc-text">9.2 特征图可视化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81CNN-%E5%88%B0-GNN-%E7%9A%84%E6%95%B0%E5%AD%A6%E6%A1%A5%E6%A2%81"><span class="toc-number">11.</span> <span class="toc-text">十、CNN 到 GNN 的数学桥梁</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-%E5%9B%BE%E4%B8%8A%E7%9A%84%E5%8D%B7%E7%A7%AF%E5%AE%9A%E4%B9%89"><span class="toc-number">11.1.</span> <span class="toc-text">10.1 图上的卷积定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-%E6%84%9F%E5%8F%97%E9%87%8E%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc-number">11.2.</span> <span class="toc-text">10.2 感受野的对比</span></a></li></ol></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【GNN原理解析】卷积神经网络</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2020-08-10<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E5%9B%BE%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/">图神经网络</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">4.5k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 19 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>卷积神经网络（CNN）是图卷积神经网络（GCN）的直接来源。理解 CNN 的卷积操作如何从规则网格推广到任意拓扑结构的图，是掌握 GNN 的关键。本文系统梳理 CNN 的数学基础、经典架构和与 GNN 的核心联系。</p>
+<span id="more"></span>
+
+<h2 id="一、卷积的数学定义"><a href="#一、卷积的数学定义" class="headerlink" title="一、卷积的数学定义"></a>一、卷积的数学定义</h2><h3 id="1-1-连续域中的卷积"><a href="#1-1-连续域中的卷积" class="headerlink" title="1.1 连续域中的卷积"></a>1.1 连续域中的卷积</h3><p>对于连续函数 f 和 g，卷积定义为：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">(f * g)(t) = ∫_&#123;-∞&#125;^&#123;∞&#125; f(τ) g(t - τ) dτ</span><br></pre></td></tr></table></figure>
+
+<p>物理直觉：g 是一个”滤波器”或”模板”，在 f 上滑动，计算每个位置的重叠积分。这可以理解为：f 在每一点的值，被它周围的邻居值通过 g 的加权平均所替换。</p>
+<h3 id="1-2-离散域中的卷积"><a href="#1-2-离散域中的卷积" class="headerlink" title="1.2 离散域中的卷积"></a>1.2 离散域中的卷积</h3><p>对于离散序列 x[n] 和滤波器 w[k]：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">(x * w)[n] = Σ_k x[k] w[n - k]</span><br></pre></td></tr></table></figure>
+
+<p>对于二维图像 I 和卷积核 K：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">(I * K)[i, j] = Σ_m Σ_n I[i+m, j+n] K[m, n]</span><br></pre></td></tr></table></figure>
+
+<p>这就是 CNN 中卷积层的基础操作：在图像的每个像素位置，取一个局部邻域（卷积核大小），与卷积核进行逐元素乘法并求和。</p>
+<h3 id="1-3-CNN-中的卷积与数学卷积的区别"><a href="#1-3-CNN-中的卷积与数学卷积的区别" class="headerlink" title="1.3 CNN 中的卷积与数学卷积的区别"></a>1.3 CNN 中的卷积与数学卷积的区别</h3><p>CNN 中实际执行的操作在数学上称为<strong>互相关（Cross-correlation）</strong>而非卷积：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># CNN 中实际执行的（互相关）：</span><br><span class="line">output[i,j] = Σ_m Σ_n input[i+m, j+n] * kernel[m, n]</span><br><span class="line"></span><br><span class="line"># 数学上的严格卷积（需要翻转 kernel）：</span><br><span class="line">output[i,j] = Σ_m Σ_n input[i+m, j+n] * kernel[-m, -n]</span><br></pre></td></tr></table></figure>
+
+<p>但由于卷积核是可学习的参数，是否翻转不影响结果（网络会学到相应的参数值）。因此深度学习社区习惯性地称这个操作为”卷积”。</p>
+<h2 id="二、CNN-的核心组件"><a href="#二、CNN-的核心组件" class="headerlink" title="二、CNN 的核心组件"></a>二、CNN 的核心组件</h2><h3 id="2-1-卷积层"><a href="#2-1-卷积层" class="headerlink" title="2.1 卷积层"></a>2.1 卷积层</h3><p>一个标准卷积层包含以下超参数：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+<th>常见取值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>kernel_size</td>
+<td>卷积核大小</td>
+<td>3, 5, 7</td>
+</tr>
+<tr>
+<td>stride</td>
+<td>滑动步长</td>
+<td>1, 2</td>
+</tr>
+<tr>
+<td>padding</td>
+<td>边缘填充</td>
+<td>“same”（保持尺寸）, “valid”（缩小尺寸）</td>
+</tr>
+<tr>
+<td>in_channels</td>
+<td>输入通道数</td>
+<td>3（RGB）, 64, 128, …</td>
+</tr>
+<tr>
+<td>out_channels</td>
+<td>输出通道数（卷积核数量）</td>
+<td>32, 64, 128, 256, …</td>
+</tr>
+<tr>
+<td>dilation</td>
+<td>膨胀率</td>
+<td>1（正常）, 2（膨胀卷积）</td>
+</tr>
+</tbody></table>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"></span><br><span class="line"><span class="comment"># 标准卷积层</span></span><br><span class="line">conv = nn.Conv2d(</span><br><span class="line">    in_channels=<span class="number">3</span>,      <span class="comment"># RGB 图像</span></span><br><span class="line">    out_channels=<span class="number">64</span>,    <span class="comment"># 64 个卷积核</span></span><br><span class="line">    kernel_size=<span class="number">3</span>,</span><br><span class="line">    stride=<span class="number">1</span>,</span><br><span class="line">    padding=<span class="number">1</span>           <span class="comment"># 保持空间尺寸不变</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输入：batch_size=16, channels=3, height=224, width=224</span></span><br><span class="line">x = torch.randn(<span class="number">16</span>, <span class="number">3</span>, <span class="number">224</span>, <span class="number">224</span>)</span><br><span class="line">out = conv(x)          <span class="comment"># 输出：(16, 64, 224, 224)</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-卷积的两个关键性质"><a href="#2-2-卷积的两个关键性质" class="headerlink" title="2.2 卷积的两个关键性质"></a>2.2 卷积的两个关键性质</h3><p><strong>权重共享（Weight Sharing）</strong>：卷积核在整个图像上共享同一组参数。无论目标特征在图像中的哪个位置，卷积核都能检测到它。这大大减少了参数量（全连接层的参数需要 O(H·W·C_in·C_out)，卷积层只需要 O(K^2·C_in·C_out)）。</p>
+<p><strong>平移等变性（Translation Equivariance）</strong>：如果输入图像平移，输出的特征图也做相同的平移。数学表达：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">(L_shift I) * K = shift (I * K)</span><br></pre></td></tr></table></figure>
+
+<p>这是卷积最核心的性质，也是它为何能高效处理图像的原因。但这也限制了 CNN 处理其他不规则数据（如图结构）的能力。</p>
+<h3 id="2-3-池化层（Pooling）"><a href="#2-3-池化层（Pooling）" class="headerlink" title="2.3 池化层（Pooling）"></a>2.3 池化层（Pooling）</h3><p>池化层对特征图进行下采样，减小空间分辨率：</p>
+<ul>
+<li><strong>最大池化（Max Pooling）</strong>：取每个窗口的最大值。保留最突出的特征，适合检测纹理。</li>
+<li><strong>平均池化（Average Pooling）</strong>：取每个窗口的平均值。平滑特征，适合保留背景信息。</li>
+<li><strong>全局平均池化（Global Average Pooling）</strong>：将整个特征图压缩为一个值。通常用在分类网络末尾，替代全连接层。</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 最大池化</span></span><br><span class="line">max_pool = nn.MaxPool2d(kernel_size=<span class="number">2</span>, stride=<span class="number">2</span>)</span><br><span class="line"><span class="comment"># 平均池化</span></span><br><span class="line">avg_pool = nn.AvgPool2d(kernel_size=<span class="number">2</span>, stride=<span class="number">2</span>)</span><br><span class="line"><span class="comment"># 全局平均池化</span></span><br><span class="line">gap = nn.AdaptiveAvgPool2d((<span class="number">1</span>, <span class="number">1</span>))</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-全连接层（Fully-Connected-Layer）"><a href="#2-4-全连接层（Fully-Connected-Layer）" class="headerlink" title="2.4 全连接层（Fully Connected Layer）"></a>2.4 全连接层（Fully Connected Layer）</h3><p>在 CNN 的末端，通常将特征图展平（flatten）后接全连接层进行分类。全连接层的数学：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">y = Wx + b</span><br></pre></td></tr></table></figure>
+
+<p>其中 W ∈ R^{out_dim × in_dim}，b ∈ R^{out_dim}。全连接层的参数量很大（in_dim × out_dim），这也是为什么现代 CNN 倾向于用全局平均池化替代 FC 层。</p>
+<h2 id="三、CNN-的数学视角：邻居聚合"><a href="#三、CNN-的数学视角：邻居聚合" class="headerlink" title="三、CNN 的数学视角：邻居聚合"></a>三、CNN 的数学视角：邻居聚合</h2><h3 id="3-1-卷积-局部邻居特征聚合"><a href="#3-1-卷积-局部邻居特征聚合" class="headerlink" title="3.1 卷积 &#x3D; 局部邻居特征聚合"></a>3.1 卷积 &#x3D; 局部邻居特征聚合</h3><p>将 CNN 视为在每个像素位置，聚合其空间邻居的特征：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h&#x27;_&#123;i,j&#125; = Σ_&#123;(m,n)∈N(i,j)&#125; w_&#123;m-i, n-j&#125; · h_&#123;m,n&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中 N(i,j) 是像素 (i,j) 的卷积核覆盖的局部邻域（由 kernel_size 和 dilation 决定）。</p>
+<p><strong>关键洞察</strong>：图像的像素天然排布在一个规则网格上，每个像素的邻居位置是固定的（上、下、左、右、对角）。卷积利用这个规则网格结构定义了”邻居”和”聚合权重”。</p>
+<h3 id="3-2-卷积的多通道视角"><a href="#3-2-卷积的多通道视角" class="headerlink" title="3.2 卷积的多通道视角"></a>3.2 卷积的多通道视角</h3><p>对于有 C_in 个通道的输入和 C_out 个卷积核：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h&#x27;_&#123;i,j,c_out&#125; = Σ_&#123;c_in=1&#125;^&#123;C_in&#125; Σ_&#123;(m,n)∈N(i,j)&#125; W_&#123;c_out, c_in, m-i, n-j&#125; · h_&#123;m,n,c_in&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个公式在形式上与 GNN 的消息传递公式惊人地相似：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h&#x27;_v = Σ_&#123;u∈N(v)&#125; W · h_u</span><br></pre></td></tr></table></figure>
+
+<p>区别仅在于：</p>
+<ul>
+<li>CNN 的邻居是规则的（kernel_size 个位置）</li>
+<li>GNN 的邻居是图结构定义的（每个节点可能不同）</li>
+<li>CNN 的权重 W 由空间位置决定（左上角、右下角等）</li>
+<li>GNN 的权重 W 通常是共享的（或由注意力机制动态计算）</li>
+</ul>
+<h2 id="四、激活函数与归一化"><a href="#四、激活函数与归一化" class="headerlink" title="四、激活函数与归一化"></a>四、激活函数与归一化</h2><h3 id="4-1-ReLU-与变体"><a href="#4-1-ReLU-与变体" class="headerlink" title="4.1 ReLU 与变体"></a>4.1 ReLU 与变体</h3><p>ReLU（Rectified Linear Unit）是最常用的 CNN 激活函数：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ReLU(x) = max(0, x)</span><br></pre></td></tr></table></figure>
+
+<p>优点：计算简单，缓解梯度消失（x &gt; 0 时梯度恒为 1），产生稀疏激活。</p>
+<p><strong>Leaky ReLU</strong>：解决”dying ReLU”问题（x &lt; 0 时梯度为 0，神经元可能永久失效）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">LeakyReLU(x) = max(αx, x)   # α 通常为 0.01</span><br></pre></td></tr></table></figure>
+
+<p><strong>GELU（Gaussian Error Linear Unit）</strong>：在 Transformer 和现代 CNN 中广泛使用：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">GELU(x) = x · Φ(x) = x · P(X ≤ x), X ~ N(0,1)</span><br><span class="line">         ≈ 0.5 x (1 + tanh(√(2/π)(x + 0.044715 x^3)))    # 近似公式</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-Batch-Normalization"><a href="#4-2-Batch-Normalization" class="headerlink" title="4.2 Batch Normalization"></a>4.2 Batch Normalization</h3><p>BN 对每个 mini-batch 的每个通道进行标准化：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x̂ = (x - μ_B) / √(σ_B^2 + ε)</span><br><span class="line">y = γ x̂ + β</span><br></pre></td></tr></table></figure>
+
+<p>其中 μ_B 和 σ_B^2 是 mini-batch 的均值和方差，γ 和 β 是可学习的缩放和偏移参数。</p>
+<p>BN 的作用：加速训练收敛（允许更大的学习率），缓解梯度消失&#x2F;爆炸，提供部分正则化效果。</p>
+<h2 id="五、经典-CNN-架构"><a href="#五、经典-CNN-架构" class="headerlink" title="五、经典 CNN 架构"></a>五、经典 CNN 架构</h2><h3 id="5-1-LeNet-5（1998）"><a href="#5-1-LeNet-5（1998）" class="headerlink" title="5.1 LeNet-5（1998）"></a>5.1 LeNet-5（1998）</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">LeNet5</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, num_classes=<span class="number">10</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.conv1 = nn.Conv2d(<span class="number">1</span>, <span class="number">6</span>, kernel_size=<span class="number">5</span>, padding=<span class="number">2</span>)   <span class="comment"># 28x28 → 28x28 (SAME padding)</span></span><br><span class="line">        <span class="variable language_">self</span>.pool1 = nn.AvgPool2d(<span class="number">2</span>, <span class="number">2</span>)                           <span class="comment"># 28x28 → 14x14</span></span><br><span class="line">        <span class="variable language_">self</span>.conv2 = nn.Conv2d(<span class="number">6</span>, <span class="number">16</span>, kernel_size=<span class="number">5</span>)              <span class="comment"># 14x14 → 10x10</span></span><br><span class="line">        <span class="variable language_">self</span>.pool2 = nn.AvgPool2d(<span class="number">2</span>, <span class="number">2</span>)                           <span class="comment"># 10x10 → 5x5</span></span><br><span class="line">        <span class="variable language_">self</span>.fc1 = nn.Linear(<span class="number">16</span> * <span class="number">5</span> * <span class="number">5</span>, <span class="number">120</span>)</span><br><span class="line">        <span class="variable language_">self</span>.fc2 = nn.Linear(<span class="number">120</span>, <span class="number">84</span>)</span><br><span class="line">        <span class="variable language_">self</span>.fc3 = nn.Linear(<span class="number">84</span>, num_classes)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x</span>):</span><br><span class="line">        x = torch.tanh(<span class="variable language_">self</span>.conv1(x))</span><br><span class="line">        x = <span class="variable language_">self</span>.pool1(x)</span><br><span class="line">        x = torch.tanh(<span class="variable language_">self</span>.conv2(x))</span><br><span class="line">        x = <span class="variable language_">self</span>.pool2(x)</span><br><span class="line">        x = x.view(x.size(<span class="number">0</span>), -<span class="number">1</span>)</span><br><span class="line">        x = torch.tanh(<span class="variable language_">self</span>.fc1(x))</span><br><span class="line">        x = torch.tanh(<span class="variable language_">self</span>.fc2(x))</span><br><span class="line">        x = <span class="variable language_">self</span>.fc3(x)</span><br><span class="line">        <span class="keyword">return</span> x</span><br></pre></td></tr></table></figure>
+
+<p>LeNet-5 用于手写数字识别（MNIST），是现代 CNN 的起点。它确立了 conv-pool-fc 的基本范式。</p>
+<h3 id="5-2-AlexNet（2012）"><a href="#5-2-AlexNet（2012）" class="headerlink" title="5.2 AlexNet（2012）"></a>5.2 AlexNet（2012）</h3><p>ImageNet 2012 冠军，标志着深度学习时代的到来。关键创新：</p>
+<ol>
+<li><strong>ReLU 激活</strong>：替代 tanh&#x2F;sigmoid，缓解梯度消失</li>
+<li><strong>Dropout</strong>：全连接层使用 dropout 防止过拟合</li>
+<li><strong>数据增强</strong>：随机裁剪、水平翻转、PCA 颜色增强</li>
+<li><strong>GPU 训练</strong>：模型分两半在两块 GTX 580 上并行训练</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">AlexNet</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, num_classes=<span class="number">1000</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.features = nn.Sequential(</span><br><span class="line">            nn.Conv2d(<span class="number">3</span>, <span class="number">96</span>, kernel_size=<span class="number">11</span>, stride=<span class="number">4</span>, padding=<span class="number">2</span>),</span><br><span class="line">            nn.ReLU(inplace=<span class="literal">True</span>),</span><br><span class="line">            nn.MaxPool2d(<span class="number">3</span>, stride=<span class="number">2</span>),</span><br><span class="line">            nn.Conv2d(<span class="number">96</span>, <span class="number">256</span>, kernel_size=<span class="number">5</span>, padding=<span class="number">2</span>),</span><br><span class="line">            nn.ReLU(inplace=<span class="literal">True</span>),</span><br><span class="line">            nn.MaxPool2d(<span class="number">3</span>, stride=<span class="number">2</span>),</span><br><span class="line">            nn.Conv2d(<span class="number">256</span>, <span class="number">384</span>, kernel_size=<span class="number">3</span>, padding=<span class="number">1</span>),</span><br><span class="line">            nn.ReLU(inplace=<span class="literal">True</span>),</span><br><span class="line">            nn.Conv2d(<span class="number">384</span>, <span class="number">384</span>, kernel_size=<span class="number">3</span>, padding=<span class="number">1</span>),</span><br><span class="line">            nn.ReLU(inplace=<span class="literal">True</span>),</span><br><span class="line">            nn.Conv2d(<span class="number">384</span>, <span class="number">256</span>, kernel_size=<span class="number">3</span>, padding=<span class="number">1</span>),</span><br><span class="line">            nn.ReLU(inplace=<span class="literal">True</span>),</span><br><span class="line">            nn.MaxPool2d(<span class="number">3</span>, stride=<span class="number">2</span>),</span><br><span class="line">        )</span><br><span class="line">        <span class="variable language_">self</span>.classifier = nn.Sequential(</span><br><span class="line">            nn.Dropout(<span class="number">0.5</span>),</span><br><span class="line">            nn.Linear(<span class="number">256</span> * <span class="number">6</span> * <span class="number">6</span>, <span class="number">4096</span>),</span><br><span class="line">            nn.ReLU(inplace=<span class="literal">True</span>),</span><br><span class="line">            nn.Dropout(<span class="number">0.5</span>),</span><br><span class="line">            nn.Linear(<span class="number">4096</span>, <span class="number">4096</span>),</span><br><span class="line">            nn.ReLU(inplace=<span class="literal">True</span>),</span><br><span class="line">            nn.Linear(<span class="number">4096</span>, num_classes),</span><br><span class="line">        )</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-3-VGG（2014）"><a href="#5-3-VGG（2014）" class="headerlink" title="5.3 VGG（2014）"></a>5.3 VGG（2014）</h3><p>VGG 的核心哲学：<strong>使用小的卷积核（3×3），堆叠更深的网络</strong>。</p>
+<p>两个 3×3 卷积的感受野等于一个 5×5 卷积，但参数量更少（2×9 &#x3D; 18 vs 25），且有更多的非线性变换。这个理念影响了后续几乎所有 CNN 设计。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># VGG-16 的构建模式</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">vgg_block</span>(<span class="params">in_channels, out_channels, num_convs</span>):</span><br><span class="line">    layers = []</span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(num_convs):</span><br><span class="line">        layers.append(nn.Conv2d(in_channels, out_channels, <span class="number">3</span>, padding=<span class="number">1</span>))</span><br><span class="line">        layers.append(nn.ReLU(inplace=<span class="literal">True</span>))</span><br><span class="line">        in_channels = out_channels</span><br><span class="line">    layers.append(nn.MaxPool2d(<span class="number">2</span>, <span class="number">2</span>))</span><br><span class="line">    <span class="keyword">return</span> nn.Sequential(*layers)</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-4-ResNet（2015）"><a href="#5-4-ResNet（2015）" class="headerlink" title="5.4 ResNet（2015）"></a>5.4 ResNet（2015）</h3><p>ResNet 解决了深层网络训练困难（退化问题：更深的网络训练误差反而更高）的核心瓶颈。引入<strong>残差连接（Skip Connection）</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">H(x) = F(x) + x</span><br></pre></td></tr></table></figure>
+
+<p>其中 F(x) 是残差函数（由 conv-bn-relu 堆叠），x 是恒等映射（identity mapping）。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ResidualBlock</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, in_channels, out_channels, stride=<span class="number">1</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.conv1 = nn.Conv2d(in_channels, out_channels, <span class="number">3</span>, stride, <span class="number">1</span>, bias=<span class="literal">False</span>)</span><br><span class="line">        <span class="variable language_">self</span>.bn1 = nn.BatchNorm2d(out_channels)</span><br><span class="line">        <span class="variable language_">self</span>.conv2 = nn.Conv2d(out_channels, out_channels, <span class="number">3</span>, <span class="number">1</span>, <span class="number">1</span>, bias=<span class="literal">False</span>)</span><br><span class="line">        <span class="variable language_">self</span>.bn2 = nn.BatchNorm2d(out_channels)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># shortcut：如果维度不匹配，使用 1×1 卷积调整</span></span><br><span class="line">        <span class="variable language_">self</span>.shortcut = nn.Sequential()</span><br><span class="line">        <span class="keyword">if</span> stride != <span class="number">1</span> <span class="keyword">or</span> in_channels != out_channels:</span><br><span class="line">            <span class="variable language_">self</span>.shortcut = nn.Sequential(</span><br><span class="line">                nn.Conv2d(in_channels, out_channels, <span class="number">1</span>, stride, bias=<span class="literal">False</span>),</span><br><span class="line">                nn.BatchNorm2d(out_channels)</span><br><span class="line">            )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x</span>):</span><br><span class="line">        out = F.relu(<span class="variable language_">self</span>.bn1(<span class="variable language_">self</span>.conv1(x)))</span><br><span class="line">        out = <span class="variable language_">self</span>.bn2(<span class="variable language_">self</span>.conv2(out))</span><br><span class="line">        out += <span class="variable language_">self</span>.shortcut(x)   <span class="comment"># 残差连接</span></span><br><span class="line">        out = F.relu(out)</span><br><span class="line">        <span class="keyword">return</span> out</span><br></pre></td></tr></table></figure>
+
+<p><strong>ResNet 的深远影响</strong>：残差连接是 GraphSAGE 中自连接（self-connection）的灵感来源，也是 GCN 中 Ã &#x3D; A + I（添加自环）背后的直觉：节点在聚合邻居信息时应保留自身的信息。</p>
+<h3 id="5-5-Inception-GoogLeNet（2014）"><a href="#5-5-Inception-GoogLeNet（2014）" class="headerlink" title="5.5 Inception &#x2F; GoogLeNet（2014）"></a>5.5 Inception &#x2F; GoogLeNet（2014）</h3><p>Inception 模块并行使用不同大小的卷积核（1×1, 3×3, 5×5）和一个池化分支，然后将所有分支的输出在通道维度上拼接：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">InceptionModule</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, in_channels, out_1x1, out_3x3_reduce, out_3x3, out_5x5_reduce, out_5x5, out_pool</span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="comment"># 分支 1：1×1 卷积</span></span><br><span class="line">        <span class="variable language_">self</span>.branch1 = nn.Sequential(</span><br><span class="line">            nn.Conv2d(in_channels, out_1x1, <span class="number">1</span>),</span><br><span class="line">            nn.BatchNorm2d(out_1x1),</span><br><span class="line">            nn.ReLU(inplace=<span class="literal">True</span>)</span><br><span class="line">        )</span><br><span class="line">        <span class="comment"># 分支 2：1×1 reduce → 3×3</span></span><br><span class="line">        <span class="variable language_">self</span>.branch2 = nn.Sequential(</span><br><span class="line">            nn.Conv2d(in_channels, out_3x3_reduce, <span class="number">1</span>),</span><br><span class="line">            nn.BatchNorm2d(out_3x3_reduce),</span><br><span class="line">            nn.ReLU(inplace=<span class="literal">True</span>),</span><br><span class="line">            nn.Conv2d(out_3x3_reduce, out_3x3, <span class="number">3</span>, padding=<span class="number">1</span>),</span><br><span class="line">            nn.BatchNorm2d(out_3x3),</span><br><span class="line">            nn.ReLU(inplace=<span class="literal">True</span>)</span><br><span class="line">        )</span><br><span class="line">        <span class="comment"># 分支 3：1×1 reduce → 5×5</span></span><br><span class="line">        <span class="variable language_">self</span>.branch3 = nn.Sequential(</span><br><span class="line">            nn.Conv2d(in_channels, out_5x5_reduce, <span class="number">1</span>),</span><br><span class="line">            nn.BatchNorm2d(out_5x5_reduce),</span><br><span class="line">            nn.ReLU(inplace=<span class="literal">True</span>),</span><br><span class="line">            nn.Conv2d(out_5x5_reduce, out_5x5, <span class="number">5</span>, padding=<span class="number">2</span>),</span><br><span class="line">            nn.BatchNorm2d(out_5x5),</span><br><span class="line">            nn.ReLU(inplace=<span class="literal">True</span>)</span><br><span class="line">        )</span><br><span class="line">        <span class="comment"># 分支 4：池化 → 1×1</span></span><br><span class="line">        <span class="variable language_">self</span>.branch4 = nn.Sequential(</span><br><span class="line">            nn.MaxPool2d(<span class="number">3</span>, stride=<span class="number">1</span>, padding=<span class="number">1</span>),</span><br><span class="line">            nn.Conv2d(in_channels, out_pool, <span class="number">1</span>),</span><br><span class="line">            nn.BatchNorm2d(out_pool),</span><br><span class="line">            nn.ReLU(inplace=<span class="literal">True</span>)</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x</span>):</span><br><span class="line">        <span class="keyword">return</span> torch.cat([</span><br><span class="line">            <span class="variable language_">self</span>.branch1(x),</span><br><span class="line">            <span class="variable language_">self</span>.branch2(x),</span><br><span class="line">            <span class="variable language_">self</span>.branch3(x),</span><br><span class="line">            <span class="variable language_">self</span>.branch4(x),</span><br><span class="line">        ], dim=<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+<p>Inception 的多尺度聚合思想在 GAT（Graph Attention Networks）中体现为多头注意力（Multi-head Attention）：不同注意力头学习不同的邻居加权方式，最后拼接或平均多个头的输出。</p>
+<h2 id="六、CNN-与-GNN-的核心联系"><a href="#六、CNN-与-GNN-的核心联系" class="headerlink" title="六、CNN 与 GNN 的核心联系"></a>六、CNN 与 GNN 的核心联系</h2><h3 id="6-1-卷积-图上的消息传递"><a href="#6-1-卷积-图上的消息传递" class="headerlink" title="6.1 卷积 &#x3D; 图上的消息传递"></a>6.1 卷积 &#x3D; 图上的消息传递</h3><p>图像可以看作一种特殊的图：</p>
+<ul>
+<li>每个像素是一个节点</li>
+<li>每个像素与其周围 kernel_size 范围内的像素相连（规则网格的邻接关系）</li>
+<li>节点特征 &#x3D; 像素值（RGB 通道）</li>
+</ul>
+<p>在这个视角下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CNN 卷积层                     GNN 消息传递层</span><br><span class="line">──────────────────────────     ──────────────────────────</span><br><span class="line">邻居 N(i,j) 由网格决定        邻居 N(v) 由图结构 A 定义</span><br><span class="line">权重 W 由位置偏移决定         权重通常是共享或由注意力决定</span><br><span class="line">聚合：加权求和                聚合：mean/sum/max/attention</span><br><span class="line">输出：新的特征图              输出：新的节点嵌入</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-2-从图像到图：概念的推广"><a href="#6-2-从图像到图：概念的推广" class="headerlink" title="6.2 从图像到图：概念的推广"></a>6.2 从图像到图：概念的推广</h3><table>
+<thead>
+<tr>
+<th>CNN 概念</th>
+<th>GNN 对应概念</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>图像像素的规则网格</td>
+<td>图的任意拓扑结构</td>
+</tr>
+<tr>
+<td>卷积核（3×3, 5×5）</td>
+<td>邻居聚合函数（AGGREGATE）</td>
+</tr>
+<tr>
+<td>padding&#x3D;”same”</td>
+<td>GCN 的自环（A + I）</td>
+</tr>
+<tr>
+<td>stride &gt; 1</td>
+<td>图池化（Graph Pooling）</td>
+</tr>
+<tr>
+<td>多通道</td>
+<td>多特征维度</td>
+</tr>
+<tr>
+<td>pooling（2×2）</td>
+<td>图粗化（Graph Coarsening）</td>
+</tr>
+<tr>
+<td>Batch Norm</td>
+<td>GraphNorm &#x2F; NodeNorm</td>
+</tr>
+<tr>
+<td>感受野随层数线性增长</td>
+<td>K 层 GNN 覆盖 K-hop 邻居</td>
+</tr>
+</tbody></table>
+<h3 id="6-3-关键公式对比"><a href="#6-3-关键公式对比" class="headerlink" title="6.3 关键公式对比"></a>6.3 关键公式对比</h3><p><strong>CNN 的卷积层：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">H^&#123;(l+1)&#125;_&#123;i,j&#125; = σ( Σ_&#123;m,n∈N&#125; W^&#123;(l)&#125;_&#123;m,n&#125; · H^&#123;(l)&#125;_&#123;i+m,j+n&#125; )</span><br></pre></td></tr></table></figure>
+
+<p><strong>GCN 的图卷积层：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">H^&#123;(l+1)&#125; = σ( D^&#123;-1/2&#125; Ã D^&#123;-1/2&#125; H^&#123;(l)&#125; W^&#123;(l)&#125; )</span><br></pre></td></tr></table></figure>
+
+<p>两者形式惊人地相似：都在聚合局部邻居的信息，然后通过可学习的权重矩阵 W 进行变换。</p>
+<p><strong>根本区别</strong>：CNN 的邻居关系由固定的网格结构决定（每个像素的邻居数量固定），GCN 的邻居关系由图的拓扑结构决定（每个节点的邻居数量可变）。GCN 通过邻接矩阵 A 来”告诉”网络谁是邻居。</p>
+<h2 id="七、从-CNN-到-GNN-的演变路径"><a href="#七、从-CNN-到-GNN-的演变路径" class="headerlink" title="七、从 CNN 到 GNN 的演变路径"></a>七、从 CNN 到 GNN 的演变路径</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1990s: CNN 在图像处理中取得成功（LeNet）</span><br><span class="line">    ↓</span><br><span class="line">2012: AlexNet 引发深度学习革命</span><br><span class="line">    ↓</span><br><span class="line">2014: Bruna et al. 将 CNN 的谱域视角扩展到图（Spectral GCN）</span><br><span class="line">    ↓</span><br><span class="line">2016: Defferrard et al. 使用切比雪夫多项式避免特征分解（ChebNet）</span><br><span class="line">    ↓</span><br><span class="line">2017: Kipf &amp; Welling 一阶近似 + 重归一化 → GCN（革命性简化）</span><br><span class="line">    ↓</span><br><span class="line">2018: Velickovic et al. 引入注意力机制 → GAT</span><br><span class="line">    ↓</span><br><span class="line">2019+: 更多变体：GraphSAGE, GIN, GatedGCN, ...</span><br></pre></td></tr></table></figure>
+
+<p>核心演变思路始终是：<strong>如何将 CNN 中”聚合邻居特征”的思想从规则网格推广到任意图结构</strong>。</p>
+<h2 id="八、CNN-训练技巧与-GNN-的对应"><a href="#八、CNN-训练技巧与-GNN-的对应" class="headerlink" title="八、CNN 训练技巧与 GNN 的对应"></a>八、CNN 训练技巧与 GNN 的对应</h2><table>
+<thead>
+<tr>
+<th>CNN 技巧</th>
+<th>GNN 对应</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Data Augmentation</td>
+<td>DropEdge, Feature Masking</td>
+<td>防止过拟合</td>
+</tr>
+<tr>
+<td>BatchNorm</td>
+<td>GraphNorm &#x2F; LayerNorm</td>
+<td>稳定训练</td>
+</tr>
+<tr>
+<td>Skip Connection</td>
+<td>GCN 自环 &#x2F; JK-Net</td>
+<td>缓解过平滑</td>
+</tr>
+<tr>
+<td>Dropout</td>
+<td>DropNode &#x2F; DropEdge</td>
+<td>正则化</td>
+</tr>
+<tr>
+<td>Learning Rate Warmup</td>
+<td>同样适用</td>
+<td>Transformer 中的成功经验</td>
+</tr>
+<tr>
+<td>Label Smoothing</td>
+<td>同样适用</td>
+<td>提升泛化能力</td>
+</tr>
+<tr>
+<td>Stochastic Depth</td>
+<td>DropGNN</td>
+<td>随机丢弃层</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="面试-自查问题"><a href="#面试-自查问题" class="headerlink" title="面试&#x2F;自查问题"></a>面试&#x2F;自查问题</h2><p><strong>Q1：CNN 的平移等变性在 GNN 中对应什么？</strong></p>
+<p>CNN 的平移等变性对应 GNN 的<strong>置换等变性（Permutation Equivariance）</strong>：如果对输入图的节点重新编号（置换），GNN 输出的嵌入也会做相同的重编号。这意味着 GNN 的输出不依赖于节点的输入顺序。这是所有 GNN 的基本设计约束。数学表达：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">f(P·X, P·A·P^T) = P·f(X, A)</span><br></pre></td></tr></table></figure>
+
+<p>其中 P 是置换矩阵。</p>
+<p><strong>Q2：为什么 GCN 不能简单地像 CNN 那样堆叠很多层？</strong></p>
+<p>CNN 可以堆叠到 152 层（ResNet-152）甚至更多。但 GCN 通常只用 2-4 层。原因是<strong>过平滑（Over-smoothing）</strong>：随着 GCN 层数增加，所有节点的嵌入趋于相同（收敛到图的”平均”状态）。这是因为：</p>
+<ol>
+<li>图拉普拉斯的平滑效应：每次聚合都在”模糊”节点特征</li>
+<li>随着层数增加，每个节点的感受野指数增长，迅速覆盖全图</li>
+<li>信息在大量”宽而浅”的路径上传播，失去区分性</li>
+</ol>
+<p>解决方案包括：JK-Net（层间跳跃连接）、DropEdge（随机丢弃边）、GraphNorm（图专用归一化）。</p>
+<p><strong>Q3：ResNet 的残差连接在 GNN 中如何体现？</strong></p>
+<p>两种方式：</p>
+<ol>
+<li><strong>GCN 的自环</strong>：Ã &#x3D; A + I，相当于在聚合邻居时始终保留自身特征（h_v^{new} &#x3D; h_v + Σ_{u∈N(v)} h_u）</li>
+<li><strong>GraphSAGE 的显式自连接</strong>：h_v^{new} &#x3D; W_1·h_v + W_2·AGGREGATE({h_u, u∈N(v)})，这与 ResNet 的 H(x) &#x3D; F(x) + x 形式完全一致</li>
+</ol>
+<h2 id="九、CNN-的实现：从零搭建"><a href="#九、CNN-的实现：从零搭建" class="headerlink" title="九、CNN 的实现：从零搭建"></a>九、CNN 的实现：从零搭建</h2><h3 id="9-1-完整的训练-Pipeline"><a href="#9-1-完整的训练-Pipeline" class="headerlink" title="9.1 完整的训练 Pipeline"></a>9.1 完整的训练 Pipeline</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">import</span> torchvision</span><br><span class="line"><span class="keyword">import</span> torchvision.transforms <span class="keyword">as</span> transforms</span><br><span class="line"></span><br><span class="line"><span class="comment"># 数据准备</span></span><br><span class="line">transform = transforms.Compose([</span><br><span class="line">    transforms.RandomHorizontalFlip(),</span><br><span class="line">    transforms.RandomCrop(<span class="number">32</span>, padding=<span class="number">4</span>),</span><br><span class="line">    transforms.ToTensor(),</span><br><span class="line">    transforms.Normalize((<span class="number">0.4914</span>, <span class="number">0.4822</span>, <span class="number">0.4465</span>), (<span class="number">0.2023</span>, <span class="number">0.1994</span>, <span class="number">0.2010</span>)),</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line">trainset = torchvision.datasets.CIFAR10(root=<span class="string">&#x27;./data&#x27;</span>, train=<span class="literal">True</span>,</span><br><span class="line">                                         download=<span class="literal">True</span>, transform=transform)</span><br><span class="line">trainloader = torch.utils.data.DataLoader(trainset, batch_size=<span class="number">128</span>,</span><br><span class="line">                                          shuffle=<span class="literal">True</span>, num_workers=<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">testset = torchvision.datasets.CIFAR10(root=<span class="string">&#x27;./data&#x27;</span>, train=<span class="literal">False</span>,</span><br><span class="line">                                        download=<span class="literal">True</span>, transform=transform)</span><br><span class="line">testloader = torch.utils.data.DataLoader(testset, batch_size=<span class="number">100</span>,</span><br><span class="line">                                          shuffle=<span class="literal">False</span>, num_workers=<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># ResNet-18 简化版</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">BasicBlock</span>(nn.Module):</span><br><span class="line">    expansion = <span class="number">1</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, in_planes, planes, stride=<span class="number">1</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.conv1 = nn.Conv2d(in_planes, planes, kernel_size=<span class="number">3</span>, stride=stride, padding=<span class="number">1</span>, bias=<span class="literal">False</span>)</span><br><span class="line">        <span class="variable language_">self</span>.bn1 = nn.BatchNorm2d(planes)</span><br><span class="line">        <span class="variable language_">self</span>.conv2 = nn.Conv2d(planes, planes, kernel_size=<span class="number">3</span>, stride=<span class="number">1</span>, padding=<span class="number">1</span>, bias=<span class="literal">False</span>)</span><br><span class="line">        <span class="variable language_">self</span>.bn2 = nn.BatchNorm2d(planes)</span><br><span class="line">        <span class="variable language_">self</span>.shortcut = nn.Sequential()</span><br><span class="line">        <span class="keyword">if</span> stride != <span class="number">1</span> <span class="keyword">or</span> in_planes != <span class="variable language_">self</span>.expansion * planes:</span><br><span class="line">            <span class="variable language_">self</span>.shortcut = nn.Sequential(</span><br><span class="line">                nn.Conv2d(in_planes, <span class="variable language_">self</span>.expansion * planes, kernel_size=<span class="number">1</span>, stride=stride, bias=<span class="literal">False</span>),</span><br><span class="line">                nn.BatchNorm2d(<span class="variable language_">self</span>.expansion * planes)</span><br><span class="line">            )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x</span>):</span><br><span class="line">        out = F.relu(<span class="variable language_">self</span>.bn1(<span class="variable language_">self</span>.conv1(x)))</span><br><span class="line">        out = <span class="variable language_">self</span>.bn2(<span class="variable language_">self</span>.conv2(out))</span><br><span class="line">        out += <span class="variable language_">self</span>.shortcut(x)</span><br><span class="line">        out = F.relu(out)</span><br><span class="line">        <span class="keyword">return</span> out</span><br><span class="line"></span><br><span class="line"><span class="comment"># 训练循环</span></span><br><span class="line">device = torch.device(<span class="string">&#x27;cuda&#x27;</span> <span class="keyword">if</span> torch.cuda.is_available() <span class="keyword">else</span> <span class="string">&#x27;cpu&#x27;</span>)</span><br><span class="line">model = ResNet18().to(device)</span><br><span class="line">criterion = nn.CrossEntropyLoss()</span><br><span class="line">optimizer = torch.optim.SGD(model.parameters(), lr=<span class="number">0.1</span>, momentum=<span class="number">0.9</span>, weight_decay=<span class="number">5e-4</span>)</span><br><span class="line">scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=<span class="number">200</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">200</span>):</span><br><span class="line">    model.train()</span><br><span class="line">    <span class="keyword">for</span> inputs, targets <span class="keyword">in</span> trainloader:</span><br><span class="line">        inputs, targets = inputs.to(device), targets.to(device)</span><br><span class="line">        optimizer.zero_grad()</span><br><span class="line">        outputs = model(inputs)</span><br><span class="line">        loss = criterion(outputs, targets)</span><br><span class="line">        loss.backward()</span><br><span class="line">        optimizer.step()</span><br><span class="line">    scheduler.step()</span><br></pre></td></tr></table></figure>
+
+<h3 id="9-2-特征图可视化"><a href="#9-2-特征图可视化" class="headerlink" title="9.2 特征图可视化"></a>9.2 特征图可视化</h3><p>了解 CNN 学到了什么：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">visualize_feature_maps</span>(<span class="params">model, image, layer_name</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;可视化指定卷积层的特征图&quot;&quot;&quot;</span></span><br><span class="line">    activations = &#123;&#125;</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">hook_fn</span>(<span class="params">module, <span class="built_in">input</span>, output</span>):</span><br><span class="line">        activations[<span class="string">&#x27;output&#x27;</span>] = output</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 注册 hook</span></span><br><span class="line">    <span class="keyword">for</span> name, module <span class="keyword">in</span> model.named_modules():</span><br><span class="line">        <span class="keyword">if</span> name == layer_name:</span><br><span class="line">            handle = module.register_forward_hook(hook_fn)</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">    model.<span class="built_in">eval</span>()</span><br><span class="line">    <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">        model(image.unsqueeze(<span class="number">0</span>))</span><br><span class="line"></span><br><span class="line">    handle.remove()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 可视化前 16 个通道</span></span><br><span class="line">    feature_maps = activations[<span class="string">&#x27;output&#x27;</span>].squeeze(<span class="number">0</span>)</span><br><span class="line">    fig, axes = plt.subplots(<span class="number">4</span>, <span class="number">4</span>, figsize=(<span class="number">10</span>, <span class="number">10</span>))</span><br><span class="line">    <span class="keyword">for</span> i, ax <span class="keyword">in</span> <span class="built_in">enumerate</span>(axes.flat):</span><br><span class="line">        <span class="keyword">if</span> i &lt; feature_maps.shape[<span class="number">0</span>]:</span><br><span class="line">            ax.imshow(feature_maps[i].cpu(), cmap=<span class="string">&#x27;viridis&#x27;</span>)</span><br><span class="line">        ax.axis(<span class="string">&#x27;off&#x27;</span>)</span><br><span class="line">    plt.show()</span><br></pre></td></tr></table></figure>
+
+<p>早期层的特征图检测边缘、纹理；中间层检测角和更复杂的纹理图案；深层检测语义意义上的目标部件（眼睛、轮子、文字区域）。</p>
+<h2 id="十、CNN-到-GNN-的数学桥梁"><a href="#十、CNN-到-GNN-的数学桥梁" class="headerlink" title="十、CNN 到 GNN 的数学桥梁"></a>十、CNN 到 GNN 的数学桥梁</h2><h3 id="10-1-图上的卷积定义"><a href="#10-1-图上的卷积定义" class="headerlink" title="10.1 图上的卷积定义"></a>10.1 图上的卷积定义</h3><p>回顾 CNN 的卷积公式：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h&#x27;_&#123;i,j&#125; = Σ_&#123;(m,n)∈N(i,j)&#125; w_&#123;m,n&#125; · h_&#123;i+m, j+n&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在图上，设每个节点 v 有特征向量 x_v ∈ R^{d_in}，节点 v 的邻居集合为 N(v)。图卷积的通用形式：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h&#x27;_v = AGGREGATE( &#123; TRANSFORM(x_u) : u ∈ N(v) ∪ &#123;v&#125; &#125; )</span><br></pre></td></tr></table></figure>
+
+<p>其中 AGGREGATE 是聚合函数（sum, mean, max, attention-weighted sum），TRANSFORM 是特征变换（通常是线性变换 x_u W）。</p>
+<p><strong>GCN 的具体形式</strong>（Kipf &amp; Welling, 2017）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">H^&#123;(l+1)&#125; = σ( D̃^&#123;-1/2&#125; Ã D̃^&#123;-1/2&#125; H^&#123;(l)&#125; W^&#123;(l)&#125; )</span><br></pre></td></tr></table></figure>
+
+<p>这与 CNN 的卷积层在数学本质上完全平行：</p>
+<ul>
+<li>CNN：规则网格邻域 + 权重共享</li>
+<li>GCN：任意图邻域 + 权重共享 + 邻接矩阵归一化</li>
+</ul>
+<h3 id="10-2-感受野的对比"><a href="#10-2-感受野的对比" class="headerlink" title="10.2 感受野的对比"></a>10.2 感受野的对比</h3><ul>
+<li><strong>CNN 的感受野</strong>：随层数线性增长。感受野 &#x3D; 2KL + 1（K 层，kernel_size&#x3D;L，stride&#x3D;1）</li>
+<li><strong>GNN 的感受野</strong>：随层数指数增长。K 层覆盖 K-hop 邻居，对稠密图几乎等于全图</li>
+</ul>
+<p>这就是为什么 CNN 可以轻松训练 100+ 层（感受野逐步扩大，渐进地学习更大尺度的特征），而 GNN 通常不超过 4 层（2-3 层已经覆盖了大多数节点的大部分近邻）。</p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2020/08/10/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/">http://tufusi.com/2020/08/10/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2020/08/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91EM%E7%AE%97%E6%B3%95/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【统计学习方法死磕系列】EM算法</span></div></a></div><div class="next-post pull_right"><a href="/2020/08/05/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E4%BB%80%E4%B9%88%E6%98%AF%E5%9B%BE/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【GNN原理解析】什么是图</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

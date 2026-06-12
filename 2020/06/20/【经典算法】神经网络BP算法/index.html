@@ -1,0 +1,757 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【经典算法】神经网络BP算法 | ONE·PIECE</title><meta name="description" content="【经典算法】神经网络BP算法"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【经典算法】神经网络BP算法"><meta name="twitter:description" content="【经典算法】神经网络BP算法"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【经典算法】神经网络BP算法"><meta property="og:url" content="http://tufusi.com/2020/06/20/%E3%80%90%E7%BB%8F%E5%85%B8%E7%AE%97%E6%B3%95%E3%80%91%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9CBP%E7%AE%97%E6%B3%95/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【经典算法】神经网络BP算法"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2020/06/20/%E3%80%90%E7%BB%8F%E5%85%B8%E7%AE%97%E6%B3%95%E3%80%91%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9CBP%E7%AE%97%E6%B3%95/"><link rel="prev" title="【统计学习方法死磕系列Ⅱ】马尔科夫链蒙特卡洛法" href="http://tufusi.com/2020/07/01/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E2%85%A1%E3%80%91%E9%A9%AC%E5%B0%94%E7%A7%91%E5%A4%AB%E9%93%BE%E8%92%99%E7%89%B9%E5%8D%A1%E6%B4%9B%E6%B3%95/"><link rel="next" title="【统计学习方法死磕系列】支持向量机" href="http://tufusi.com/2020/06/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%8E%9F%E7%90%86"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">原理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#1-%E5%BC%95%E8%A8%80%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88BP%E7%AE%97%E6%B3%95%E5%A6%82%E6%AD%A4%E9%87%8D%E8%A6%81"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">1. 引言：为什么BP算法如此重要</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#2-%E6%95%B0%E5%AD%A6%E7%AC%A6%E5%8F%B7%E4%B8%8E%E7%BD%91%E7%BB%9C%E7%BB%93%E6%9E%84%E5%AE%9A%E4%B9%89"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">2. 数学符号与网络结构定义</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-1-%E7%AC%A6%E5%8F%B7%E7%BA%A6%E5%AE%9A"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">2.1 符号约定</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-2-%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">2.2 损失函数</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#3-%E5%89%8D%E5%90%91%E4%BC%A0%E6%92%AD%EF%BC%88Forward-Propagation%EF%BC%89"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">3. 前向传播（Forward Propagation）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-1-%E9%80%90%E5%B1%82%E8%AE%A1%E7%AE%97"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">3.1 逐层计算</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-2-%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">3.2 伪代码</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-3-%E4%B8%89%E5%B1%82%E7%BD%91%E7%BB%9C%E5%85%B7%E4%BD%93%E7%A4%BA%E4%BE%8B"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">3.3 三层网络具体示例</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#4-%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD%E6%8E%A8%E5%AF%BC%EF%BC%88Backward-Propagation%EF%BC%89"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">4. 反向传播推导（Backward Propagation）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-1-%E8%BE%93%E5%87%BA%E5%B1%82%E7%9A%84%E8%AF%AF%E5%B7%AE%E4%BF%A1%E5%8F%B7-%CE%B4-L"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">4.1 输出层的误差信号 δ^[L]</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-2-%E9%9A%90%E8%97%8F%E5%B1%82%E7%9A%84%E8%AF%AF%E5%B7%AE%E4%BF%A1%E5%8F%B7-%CE%B4-l-%EF%BC%88l-L%EF%BC%89"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">4.2 隐藏层的误差信号 δ^[l]（l &lt; L）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-3-%E6%9D%83%E9%87%8D%E6%A2%AF%E5%BA%A6-%E2%88%82E-%E2%88%82W-l"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">4.3 权重梯度 ∂E&#x2F;∂W^[l]</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-4-%E5%81%8F%E7%BD%AE%E6%A2%AF%E5%BA%A6-%E2%88%82E-%E2%88%82b-l"><span class="toc_mobile_items-number">5.4.</span> <span class="toc_mobile_items-text">4.4 偏置梯度 ∂E&#x2F;∂b^[l]</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-5-%E5%AE%8C%E6%95%B4%E7%9A%84%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD%E7%AE%97%E6%B3%95%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc_mobile_items-number">5.5.</span> <span class="toc_mobile_items-text">4.5 完整的反向传播算法伪代码</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#5-%E7%9F%A9%E9%98%B5-%E5%90%91%E9%87%8F%E5%BD%A2%E5%BC%8F%E7%9A%84%E9%AB%98%E6%95%88%E8%AE%A1%E7%AE%97"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">5. 矩阵&#x2F;向量形式的高效计算</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-1-%E6%89%B9%E9%87%8F%E5%89%8D%E5%90%91%E4%BC%A0%E6%92%AD"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">5.1 批量前向传播</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-2-%E6%89%B9%E9%87%8F%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">5.2 批量反向传播</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#6-%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0%E5%8F%8A%E5%85%B6%E5%AF%BC%E6%95%B0%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">6. 激活函数及其导数分析</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-1-Sigmoid"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">6.1 Sigmoid</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-2-Tanh%EF%BC%88%E5%8F%8C%E6%9B%B2%E6%AD%A3%E5%88%87%EF%BC%89"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">6.2 Tanh（双曲正切）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-3-ReLU%EF%BC%88Rectified-Linear-Unit%EF%BC%89"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">6.3 ReLU（Rectified Linear Unit）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-4-LeakyReLU"><span class="toc_mobile_items-number">7.4.</span> <span class="toc_mobile_items-text">6.4 LeakyReLU</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-5-ELU%EF%BC%88Exponential-Linear-Unit%EF%BC%89"><span class="toc_mobile_items-number">7.5.</span> <span class="toc_mobile_items-text">6.5 ELU（Exponential Linear Unit）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-6-Swish%EF%BC%88SiLU%EF%BC%89"><span class="toc_mobile_items-number">7.6.</span> <span class="toc_mobile_items-text">6.6 Swish（SiLU）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-7-%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0%E5%AF%B9%E6%AF%94%E8%A1%A8"><span class="toc_mobile_items-number">7.7.</span> <span class="toc_mobile_items-text">6.7 激活函数对比表</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#7-%E6%A2%AF%E5%BA%A6%E6%B6%88%E5%A4%B1%E4%B8%8E%E6%A2%AF%E5%BA%A6%E7%88%86%E7%82%B8"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">7. 梯度消失与梯度爆炸</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#7-1-%E6%A2%AF%E5%BA%A6%E6%B6%88%E5%A4%B1%EF%BC%88Vanishing-Gradient%EF%BC%89%E7%9A%84%E6%95%B0%E5%AD%A6%E6%A0%B9%E6%BA%90"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">7.1 梯度消失（Vanishing Gradient）的数学根源</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#7-2-%E6%A2%AF%E5%BA%A6%E7%88%86%E7%82%B8%EF%BC%88Exploding-Gradient%EF%BC%89"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">7.2 梯度爆炸（Exploding Gradient）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#7-3-%E6%A2%AF%E5%BA%A6%E8%A3%81%E5%89%AA%EF%BC%88Gradient-Clipping%EF%BC%89"><span class="toc_mobile_items-number">8.3.</span> <span class="toc_mobile_items-text">7.3 梯度裁剪（Gradient Clipping）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#8-%E6%95%B0%E5%80%BC%E6%A2%AF%E5%BA%A6%E6%A3%80%E6%9F%A5%EF%BC%88Numerical-Gradient-Checking%EF%BC%89"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">8. 数值梯度检查（Numerical Gradient Checking）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-1-%E5%8F%8C%E8%BE%B9%E6%9C%89%E9%99%90%E5%B7%AE%E5%88%86%E6%B3%95"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">8.1 双边有限差分法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-2-%E5%AE%9E%E7%8E%B0%E4%BB%A3%E7%A0%81"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">8.2 实现代码</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-3-%E6%A2%AF%E5%BA%A6%E6%AF%94%E8%BE%83"><span class="toc_mobile_items-number">9.3.</span> <span class="toc_mobile_items-text">8.3 梯度比较</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#9-%E4%BC%98%E5%8C%96%E5%99%A8%EF%BC%9ABP%E6%A2%AF%E5%BA%A6%E5%A6%82%E4%BD%95%E9%A9%B1%E5%8A%A8%E5%8F%82%E6%95%B0%E6%9B%B4%E6%96%B0"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">9. 优化器：BP梯度如何驱动参数更新</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-1-%E6%A0%87%E5%87%86-SGD%EF%BC%88Stochastic-Gradient-Descent%EF%BC%89"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">9.1 标准 SGD（Stochastic Gradient Descent）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-2-Momentum%EF%BC%88%E5%B8%A6%E5%8A%A8%E9%87%8F%E7%9A%84-SGD%EF%BC%89"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">9.2 Momentum（带动量的 SGD）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-3-Nesterov-Accelerated-Gradient-NAG"><span class="toc_mobile_items-number">10.3.</span> <span class="toc_mobile_items-text">9.3 Nesterov Accelerated Gradient (NAG)</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-4-AdaGrad%EF%BC%88Adaptive-Gradient%EF%BC%89"><span class="toc_mobile_items-number">10.4.</span> <span class="toc_mobile_items-text">9.4 AdaGrad（Adaptive Gradient）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-5-RMSprop"><span class="toc_mobile_items-number">10.5.</span> <span class="toc_mobile_items-text">9.5 RMSprop</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-6-Adam%EF%BC%88Adaptive-Moment-Estimation%EF%BC%89"><span class="toc_mobile_items-number">10.6.</span> <span class="toc_mobile_items-text">9.6 Adam（Adaptive Moment Estimation）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-7-%E4%BC%98%E5%8C%96%E5%99%A8%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">10.7.</span> <span class="toc_mobile_items-text">9.7 优化器对比</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#10-%E6%89%B9%E5%BD%92%E4%B8%80%E5%8C%96%EF%BC%88Batch-Normalization%EF%BC%89"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">10. 批归一化（Batch Normalization）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#10-1-%E5%8A%A8%E6%9C%BA"><span class="toc_mobile_items-number">11.1.</span> <span class="toc_mobile_items-text">10.1 动机</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#10-2-%E5%89%8D%E5%90%91%E4%BC%A0%E6%92%AD"><span class="toc_mobile_items-number">11.2.</span> <span class="toc_mobile_items-text">10.2 前向传播</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#10-3-%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD%E6%8E%A8%E5%AF%BC"><span class="toc_mobile_items-number">11.3.</span> <span class="toc_mobile_items-text">10.3 反向传播推导</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#10-4-%E8%AE%AD%E7%BB%83-vs-%E6%8E%A8%E7%90%86"><span class="toc_mobile_items-number">11.4.</span> <span class="toc_mobile_items-text">10.4 训练 vs 推理</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#11-%E6%9D%83%E9%87%8D%E5%88%9D%E5%A7%8B%E5%8C%96%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">11. 权重初始化策略</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#11-1-Xavier%EF%BC%88Glorot%EF%BC%89%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc_mobile_items-number">12.1.</span> <span class="toc_mobile_items-text">11.1 Xavier（Glorot）初始化</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#11-2-He%EF%BC%88Kaiming%EF%BC%89%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc_mobile_items-number">12.2.</span> <span class="toc_mobile_items-text">11.2 He（Kaiming）初始化</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#11-3-%E5%81%8F%E7%BD%AE%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc_mobile_items-number">12.3.</span> <span class="toc_mobile_items-text">11.3 偏置初始化</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#12-%E5%AD%A6%E4%B9%A0%E7%8E%87%E8%B0%83%E5%BA%A6%EF%BC%88Learning-Rate-Schedules%EF%BC%89"><span class="toc_mobile_items-number">13.</span> <span class="toc_mobile_items-text">12. 学习率调度（Learning Rate Schedules）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#13-%E8%AE%A1%E7%AE%97%E5%9B%BE%E8%A7%86%E8%A7%92%E4%B8%8E%E8%87%AA%E5%8A%A8%E5%BE%AE%E5%88%86"><span class="toc_mobile_items-number">14.</span> <span class="toc_mobile_items-text">13. 计算图视角与自动微分</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#13-1-%E8%AE%A1%E7%AE%97%E5%9B%BE"><span class="toc_mobile_items-number">14.1.</span> <span class="toc_mobile_items-text">13.1 计算图</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#13-2-%E5%8F%8D%E5%90%91%E6%A8%A1%E5%BC%8F%E8%87%AA%E5%8A%A8%E5%BE%AE%E5%88%86"><span class="toc_mobile_items-number">14.2.</span> <span class="toc_mobile_items-text">13.2 反向模式自动微分</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#13-3-PyTorch-Autograd-%E7%A4%BA%E4%BE%8B"><span class="toc_mobile_items-number">14.3.</span> <span class="toc_mobile_items-text">13.3 PyTorch Autograd 示例</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#13-4-%E5%8A%A8%E6%80%81%E5%9B%BE-vs-%E9%9D%99%E6%80%81%E5%9B%BE"><span class="toc_mobile_items-number">14.4.</span> <span class="toc_mobile_items-text">13.4 动态图 vs 静态图</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#14-NumPy-%E5%AE%9E%E7%8E%B0%EF%BC%9A%E5%AE%8C%E6%95%B4%E7%9A%84-BP-%E8%AE%AD%E7%BB%83%E7%A4%BA%E4%BE%8B"><span class="toc_mobile_items-number">15.</span> <span class="toc_mobile_items-text">14. NumPy 实现：完整的 BP 训练示例</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#15-%E8%AE%AD%E7%BB%83%E5%AE%9E%E7%94%A8%E6%8A%80%E5%B7%A7%E6%80%BB%E7%BB%93"><span class="toc_mobile_items-number">16.</span> <span class="toc_mobile_items-text">15. 训练实用技巧总结</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#15-1-%E6%95%B0%E6%8D%AE%E9%A2%84%E5%A4%84%E7%90%86"><span class="toc_mobile_items-number">16.1.</span> <span class="toc_mobile_items-text">15.1 数据预处理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#15-2-%E6%A2%AF%E5%BA%A6%E7%9B%B8%E5%85%B3%E6%8A%80%E5%B7%A7"><span class="toc_mobile_items-number">16.2.</span> <span class="toc_mobile_items-text">15.2 梯度相关技巧</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#15-3-%E8%B0%83%E8%AF%95-BP-%E7%9A%84%E6%AD%A5%E8%BF%9B%E6%B8%85%E5%8D%95"><span class="toc_mobile_items-number">16.3.</span> <span class="toc_mobile_items-text">15.3 调试 BP 的步进清单</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#16-%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E7%AD%94"><span class="toc_mobile_items-number">17.</span> <span class="toc_mobile_items-text">16. 面试高频问答</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8E%9F%E7%90%86"><span class="toc-number">1.</span> <span class="toc-text">原理</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#1-%E5%BC%95%E8%A8%80%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88BP%E7%AE%97%E6%B3%95%E5%A6%82%E6%AD%A4%E9%87%8D%E8%A6%81"><span class="toc-number">2.</span> <span class="toc-text">1. 引言：为什么BP算法如此重要</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-%E6%95%B0%E5%AD%A6%E7%AC%A6%E5%8F%B7%E4%B8%8E%E7%BD%91%E7%BB%9C%E7%BB%93%E6%9E%84%E5%AE%9A%E4%B9%89"><span class="toc-number">3.</span> <span class="toc-text">2. 数学符号与网络结构定义</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-%E7%AC%A6%E5%8F%B7%E7%BA%A6%E5%AE%9A"><span class="toc-number">3.1.</span> <span class="toc-text">2.1 符号约定</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0"><span class="toc-number">3.2.</span> <span class="toc-text">2.2 损失函数</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-%E5%89%8D%E5%90%91%E4%BC%A0%E6%92%AD%EF%BC%88Forward-Propagation%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">3. 前向传播（Forward Propagation）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-%E9%80%90%E5%B1%82%E8%AE%A1%E7%AE%97"><span class="toc-number">4.1.</span> <span class="toc-text">3.1 逐层计算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc-number">4.2.</span> <span class="toc-text">3.2 伪代码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-%E4%B8%89%E5%B1%82%E7%BD%91%E7%BB%9C%E5%85%B7%E4%BD%93%E7%A4%BA%E4%BE%8B"><span class="toc-number">4.3.</span> <span class="toc-text">3.3 三层网络具体示例</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD%E6%8E%A8%E5%AF%BC%EF%BC%88Backward-Propagation%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">4. 反向传播推导（Backward Propagation）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-%E8%BE%93%E5%87%BA%E5%B1%82%E7%9A%84%E8%AF%AF%E5%B7%AE%E4%BF%A1%E5%8F%B7-%CE%B4-L"><span class="toc-number">5.1.</span> <span class="toc-text">4.1 输出层的误差信号 δ^[L]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-%E9%9A%90%E8%97%8F%E5%B1%82%E7%9A%84%E8%AF%AF%E5%B7%AE%E4%BF%A1%E5%8F%B7-%CE%B4-l-%EF%BC%88l-L%EF%BC%89"><span class="toc-number">5.2.</span> <span class="toc-text">4.2 隐藏层的误差信号 δ^[l]（l &lt; L）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-3-%E6%9D%83%E9%87%8D%E6%A2%AF%E5%BA%A6-%E2%88%82E-%E2%88%82W-l"><span class="toc-number">5.3.</span> <span class="toc-text">4.3 权重梯度 ∂E&#x2F;∂W^[l]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-4-%E5%81%8F%E7%BD%AE%E6%A2%AF%E5%BA%A6-%E2%88%82E-%E2%88%82b-l"><span class="toc-number">5.4.</span> <span class="toc-text">4.4 偏置梯度 ∂E&#x2F;∂b^[l]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-5-%E5%AE%8C%E6%95%B4%E7%9A%84%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD%E7%AE%97%E6%B3%95%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc-number">5.5.</span> <span class="toc-text">4.5 完整的反向传播算法伪代码</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#5-%E7%9F%A9%E9%98%B5-%E5%90%91%E9%87%8F%E5%BD%A2%E5%BC%8F%E7%9A%84%E9%AB%98%E6%95%88%E8%AE%A1%E7%AE%97"><span class="toc-number">6.</span> <span class="toc-text">5. 矩阵&#x2F;向量形式的高效计算</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#5-1-%E6%89%B9%E9%87%8F%E5%89%8D%E5%90%91%E4%BC%A0%E6%92%AD"><span class="toc-number">6.1.</span> <span class="toc-text">5.1 批量前向传播</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-2-%E6%89%B9%E9%87%8F%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD"><span class="toc-number">6.2.</span> <span class="toc-text">5.2 批量反向传播</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#6-%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0%E5%8F%8A%E5%85%B6%E5%AF%BC%E6%95%B0%E5%88%86%E6%9E%90"><span class="toc-number">7.</span> <span class="toc-text">6. 激活函数及其导数分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#6-1-Sigmoid"><span class="toc-number">7.1.</span> <span class="toc-text">6.1 Sigmoid</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-2-Tanh%EF%BC%88%E5%8F%8C%E6%9B%B2%E6%AD%A3%E5%88%87%EF%BC%89"><span class="toc-number">7.2.</span> <span class="toc-text">6.2 Tanh（双曲正切）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-3-ReLU%EF%BC%88Rectified-Linear-Unit%EF%BC%89"><span class="toc-number">7.3.</span> <span class="toc-text">6.3 ReLU（Rectified Linear Unit）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-4-LeakyReLU"><span class="toc-number">7.4.</span> <span class="toc-text">6.4 LeakyReLU</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-5-ELU%EF%BC%88Exponential-Linear-Unit%EF%BC%89"><span class="toc-number">7.5.</span> <span class="toc-text">6.5 ELU（Exponential Linear Unit）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-6-Swish%EF%BC%88SiLU%EF%BC%89"><span class="toc-number">7.6.</span> <span class="toc-text">6.6 Swish（SiLU）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-7-%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0%E5%AF%B9%E6%AF%94%E8%A1%A8"><span class="toc-number">7.7.</span> <span class="toc-text">6.7 激活函数对比表</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#7-%E6%A2%AF%E5%BA%A6%E6%B6%88%E5%A4%B1%E4%B8%8E%E6%A2%AF%E5%BA%A6%E7%88%86%E7%82%B8"><span class="toc-number">8.</span> <span class="toc-text">7. 梯度消失与梯度爆炸</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#7-1-%E6%A2%AF%E5%BA%A6%E6%B6%88%E5%A4%B1%EF%BC%88Vanishing-Gradient%EF%BC%89%E7%9A%84%E6%95%B0%E5%AD%A6%E6%A0%B9%E6%BA%90"><span class="toc-number">8.1.</span> <span class="toc-text">7.1 梯度消失（Vanishing Gradient）的数学根源</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-2-%E6%A2%AF%E5%BA%A6%E7%88%86%E7%82%B8%EF%BC%88Exploding-Gradient%EF%BC%89"><span class="toc-number">8.2.</span> <span class="toc-text">7.2 梯度爆炸（Exploding Gradient）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-3-%E6%A2%AF%E5%BA%A6%E8%A3%81%E5%89%AA%EF%BC%88Gradient-Clipping%EF%BC%89"><span class="toc-number">8.3.</span> <span class="toc-text">7.3 梯度裁剪（Gradient Clipping）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#8-%E6%95%B0%E5%80%BC%E6%A2%AF%E5%BA%A6%E6%A3%80%E6%9F%A5%EF%BC%88Numerical-Gradient-Checking%EF%BC%89"><span class="toc-number">9.</span> <span class="toc-text">8. 数值梯度检查（Numerical Gradient Checking）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#8-1-%E5%8F%8C%E8%BE%B9%E6%9C%89%E9%99%90%E5%B7%AE%E5%88%86%E6%B3%95"><span class="toc-number">9.1.</span> <span class="toc-text">8.1 双边有限差分法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-2-%E5%AE%9E%E7%8E%B0%E4%BB%A3%E7%A0%81"><span class="toc-number">9.2.</span> <span class="toc-text">8.2 实现代码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-3-%E6%A2%AF%E5%BA%A6%E6%AF%94%E8%BE%83"><span class="toc-number">9.3.</span> <span class="toc-text">8.3 梯度比较</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#9-%E4%BC%98%E5%8C%96%E5%99%A8%EF%BC%9ABP%E6%A2%AF%E5%BA%A6%E5%A6%82%E4%BD%95%E9%A9%B1%E5%8A%A8%E5%8F%82%E6%95%B0%E6%9B%B4%E6%96%B0"><span class="toc-number">10.</span> <span class="toc-text">9. 优化器：BP梯度如何驱动参数更新</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#9-1-%E6%A0%87%E5%87%86-SGD%EF%BC%88Stochastic-Gradient-Descent%EF%BC%89"><span class="toc-number">10.1.</span> <span class="toc-text">9.1 标准 SGD（Stochastic Gradient Descent）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-2-Momentum%EF%BC%88%E5%B8%A6%E5%8A%A8%E9%87%8F%E7%9A%84-SGD%EF%BC%89"><span class="toc-number">10.2.</span> <span class="toc-text">9.2 Momentum（带动量的 SGD）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-3-Nesterov-Accelerated-Gradient-NAG"><span class="toc-number">10.3.</span> <span class="toc-text">9.3 Nesterov Accelerated Gradient (NAG)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-4-AdaGrad%EF%BC%88Adaptive-Gradient%EF%BC%89"><span class="toc-number">10.4.</span> <span class="toc-text">9.4 AdaGrad（Adaptive Gradient）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-5-RMSprop"><span class="toc-number">10.5.</span> <span class="toc-text">9.5 RMSprop</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-6-Adam%EF%BC%88Adaptive-Moment-Estimation%EF%BC%89"><span class="toc-number">10.6.</span> <span class="toc-text">9.6 Adam（Adaptive Moment Estimation）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-7-%E4%BC%98%E5%8C%96%E5%99%A8%E5%AF%B9%E6%AF%94"><span class="toc-number">10.7.</span> <span class="toc-text">9.7 优化器对比</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#10-%E6%89%B9%E5%BD%92%E4%B8%80%E5%8C%96%EF%BC%88Batch-Normalization%EF%BC%89"><span class="toc-number">11.</span> <span class="toc-text">10. 批归一化（Batch Normalization）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#10-1-%E5%8A%A8%E6%9C%BA"><span class="toc-number">11.1.</span> <span class="toc-text">10.1 动机</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-2-%E5%89%8D%E5%90%91%E4%BC%A0%E6%92%AD"><span class="toc-number">11.2.</span> <span class="toc-text">10.2 前向传播</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-3-%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD%E6%8E%A8%E5%AF%BC"><span class="toc-number">11.3.</span> <span class="toc-text">10.3 反向传播推导</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-4-%E8%AE%AD%E7%BB%83-vs-%E6%8E%A8%E7%90%86"><span class="toc-number">11.4.</span> <span class="toc-text">10.4 训练 vs 推理</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#11-%E6%9D%83%E9%87%8D%E5%88%9D%E5%A7%8B%E5%8C%96%E7%AD%96%E7%95%A5"><span class="toc-number">12.</span> <span class="toc-text">11. 权重初始化策略</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#11-1-Xavier%EF%BC%88Glorot%EF%BC%89%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">12.1.</span> <span class="toc-text">11.1 Xavier（Glorot）初始化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-2-He%EF%BC%88Kaiming%EF%BC%89%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">12.2.</span> <span class="toc-text">11.2 He（Kaiming）初始化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-3-%E5%81%8F%E7%BD%AE%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">12.3.</span> <span class="toc-text">11.3 偏置初始化</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#12-%E5%AD%A6%E4%B9%A0%E7%8E%87%E8%B0%83%E5%BA%A6%EF%BC%88Learning-Rate-Schedules%EF%BC%89"><span class="toc-number">13.</span> <span class="toc-text">12. 学习率调度（Learning Rate Schedules）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#13-%E8%AE%A1%E7%AE%97%E5%9B%BE%E8%A7%86%E8%A7%92%E4%B8%8E%E8%87%AA%E5%8A%A8%E5%BE%AE%E5%88%86"><span class="toc-number">14.</span> <span class="toc-text">13. 计算图视角与自动微分</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#13-1-%E8%AE%A1%E7%AE%97%E5%9B%BE"><span class="toc-number">14.1.</span> <span class="toc-text">13.1 计算图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-2-%E5%8F%8D%E5%90%91%E6%A8%A1%E5%BC%8F%E8%87%AA%E5%8A%A8%E5%BE%AE%E5%88%86"><span class="toc-number">14.2.</span> <span class="toc-text">13.2 反向模式自动微分</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-3-PyTorch-Autograd-%E7%A4%BA%E4%BE%8B"><span class="toc-number">14.3.</span> <span class="toc-text">13.3 PyTorch Autograd 示例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-4-%E5%8A%A8%E6%80%81%E5%9B%BE-vs-%E9%9D%99%E6%80%81%E5%9B%BE"><span class="toc-number">14.4.</span> <span class="toc-text">13.4 动态图 vs 静态图</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#14-NumPy-%E5%AE%9E%E7%8E%B0%EF%BC%9A%E5%AE%8C%E6%95%B4%E7%9A%84-BP-%E8%AE%AD%E7%BB%83%E7%A4%BA%E4%BE%8B"><span class="toc-number">15.</span> <span class="toc-text">14. NumPy 实现：完整的 BP 训练示例</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#15-%E8%AE%AD%E7%BB%83%E5%AE%9E%E7%94%A8%E6%8A%80%E5%B7%A7%E6%80%BB%E7%BB%93"><span class="toc-number">16.</span> <span class="toc-text">15. 训练实用技巧总结</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#15-1-%E6%95%B0%E6%8D%AE%E9%A2%84%E5%A4%84%E7%90%86"><span class="toc-number">16.1.</span> <span class="toc-text">15.1 数据预处理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#15-2-%E6%A2%AF%E5%BA%A6%E7%9B%B8%E5%85%B3%E6%8A%80%E5%B7%A7"><span class="toc-number">16.2.</span> <span class="toc-text">15.2 梯度相关技巧</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#15-3-%E8%B0%83%E8%AF%95-BP-%E7%9A%84%E6%AD%A5%E8%BF%9B%E6%B8%85%E5%8D%95"><span class="toc-number">16.3.</span> <span class="toc-text">15.3 调试 BP 的步进清单</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#16-%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E7%AD%94"><span class="toc-number">17.</span> <span class="toc-text">16. 面试高频问答</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【经典算法】神经网络BP算法</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2020-06-20<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">深度学习</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">8.8k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 37 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>误差逆传播算法-最成功的神经网络学习算法</p>
+<h1 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h1><p>对每个训练样例，BP算法执行以下操作：</p>
+<pre><code>先将输入示例提供给输入层神经元，然后逐层将新号前传，直到产生输出层的结果；  
+然后计算输出层的误差，再将误差逆向传播至隐藏神经元；
+最后根据隐层神经元的误差来对连接权和阈值进行调整。
+</code></pre>
+<p>该迭代过程循环进行，直到达到某些停止条件为止。</p>
+<h1 id="1-引言：为什么BP算法如此重要"><a href="#1-引言：为什么BP算法如此重要" class="headerlink" title="1. 引言：为什么BP算法如此重要"></a>1. 引言：为什么BP算法如此重要</h1><p>反向传播（Backpropagation，BP）算法是训练前馈神经网络最核心的算法。它由 Rumelhart、Hinton 和 Williams 于 1986 年在 Nature 上系统性地提出，但这并非一蹴而就——早在 1960 年代，控制论领域就用到了类似的链式法则思想；1970 年代，Werbos 在博士论文中首次将反向模式自动微分应用于神经网络。</p>
+<p>BP的本质是：<strong>利用链式法则（Chain Rule），高效地计算损失函数对网络中每一个可学习参数（权重和偏置）的偏导数（梯度）</strong>。有了这些梯度，我们就能用梯度下降法（或它的变体）来更新参数，使损失函数逐步减小。</p>
+<p>为什么叫”反向传播”？因为梯度的计算方向与信号的前向传播方向相反——从输出层开始，逐层向输入层传播误差信号。</p>
+<p>BP算法的核心贡献在于<strong>计算效率</strong>。对于一个具有 N 层、每层 M 个神经元的网络，如果使用数值微分来计算梯度，每计算一个参数的梯度需要两次前向传播，总复杂度为 O(M^2 * N)。而BP算法利用链式法则和动态规划的思想，共享中间计算结果，将总复杂度降为 O(M * N)（即一次前向传播 + 一次反向传播）。</p>
+<h1 id="2-数学符号与网络结构定义"><a href="#2-数学符号与网络结构定义" class="headerlink" title="2. 数学符号与网络结构定义"></a>2. 数学符号与网络结构定义</h1><p>在深入推导之前，我们先建立严格的符号系统。考虑一个 L 层的全连接神经网络（输入层算作第 0 层，不计入 L）：</p>
+<h2 id="2-1-符号约定"><a href="#2-1-符号约定" class="headerlink" title="2.1 符号约定"></a>2.1 符号约定</h2><table>
+<thead>
+<tr>
+<th>符号</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>L</td>
+<td>网络层数（不包含输入层）</td>
+</tr>
+<tr>
+<td>n_l</td>
+<td>第 l 层的神经元数目</td>
+</tr>
+<tr>
+<td>W^[l]</td>
+<td>第 l-1 层到第 l 层的权重矩阵，维度 (n_l, n_{l-1})</td>
+</tr>
+<tr>
+<td>b^[l]</td>
+<td>第 l 层的偏置向量，维度 (n_l, 1)</td>
+</tr>
+<tr>
+<td>z^[l]</td>
+<td>第 l 层的加权输入（激活前），维度 (n_l, 1)</td>
+</tr>
+<tr>
+<td>a^[l]</td>
+<td>第 l 层的激活输出，维度 (n_l, 1)</td>
+</tr>
+<tr>
+<td>a^[0] &#x3D; x</td>
+<td>输入层的激活值，即输入特征</td>
+</tr>
+<tr>
+<td>a^[L] &#x3D; ŷ</td>
+<td>网络的最终输出（预测值）</td>
+</tr>
+<tr>
+<td>g^<a href="%C2%B7">l</a></td>
+<td>第 l 层的激活函数</td>
+</tr>
+<tr>
+<td>E</td>
+<td>损失函数（误差函数）</td>
+</tr>
+<tr>
+<td>δ^[l]</td>
+<td>第 l 层的误差信号（error signal）</td>
+</tr>
+<tr>
+<td>⊙</td>
+<td>逐元素乘法（Hadamard product）</td>
+</tr>
+</tbody></table>
+<h2 id="2-2-损失函数"><a href="#2-2-损失函数" class="headerlink" title="2.2 损失函数"></a>2.2 损失函数</h2><p>本文主要使用二次损失函数（均方误差，MSE）作为示例：</p>
+<p>$$E = \frac{1}{2} \sum_{j=1}^{n_L} (a_j^{[L]} - y_j)^2 = \frac{1}{2} \|\hat{y} - y\|_2^2$$</p>
+<p>对于分类问题，更常用<strong>交叉熵损失</strong>（Cross-Entropy Loss）。对于二分类（sigmoid输出）：</p>
+<p>$$E = -[y \log \hat{y} + (1-y) \log(1-\hat{y})]$$</p>
+<p>对于多分类（softmax输出）：</p>
+<p>$$E = -\sum_{j=1}^{n_L} y_j \log \hat{y}_j$$</p>
+<p>其中 y_j 是 one-hot 编码的真实标签。</p>
+<h1 id="3-前向传播（Forward-Propagation）"><a href="#3-前向传播（Forward-Propagation）" class="headerlink" title="3. 前向传播（Forward Propagation）"></a>3. 前向传播（Forward Propagation）</h1><p>前向传播就是将输入信号逐层传递，最终产生预测结果的过程。</p>
+<h2 id="3-1-逐层计算"><a href="#3-1-逐层计算" class="headerlink" title="3.1 逐层计算"></a>3.1 逐层计算</h2><p>对于第 l 层（l &#x3D; 1, 2, …, L）：</p>
+<p><strong>步骤1：计算加权输入</strong><br>$$z^{[l]} = W^{[l]} \cdot a^{[l-1]} + b^{[l]}$$</p>
+<p>写成逐神经元的形式：</p>
+<p>$$z_j^{[l]} = \sum_{k=1}^{n_{l-1}} W_{jk}^{[l]} \cdot a_k^{[l-1]} + b_j^{[l]}$$</p>
+<p><strong>步骤2：应用激活函数</strong><br>$$a^{[l]} = g^{[l]}(z^{[l]})$$</p>
+<h2 id="3-2-伪代码"><a href="#3-2-伪代码" class="headerlink" title="3.2 伪代码"></a>3.2 伪代码</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">forward_pass</span>(<span class="params">X, parameters</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    X: 输入数据，shape (n_0, m)  # m 为样本数</span></span><br><span class="line"><span class="string">    parameters: &#123;&#x27;W1&#x27;: ..., &#x27;b1&#x27;: ..., &#x27;W2&#x27;: ..., &#x27;b2&#x27;: ..., ...&#125;</span></span><br><span class="line"><span class="string">    返回: 各层的 z 和 a（缓存在 cache 中供反向传播使用）</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    cache = &#123;<span class="string">&#x27;a0&#x27;</span>: X&#125;</span><br><span class="line">    A = X</span><br><span class="line">    <span class="keyword">for</span> l <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, L + <span class="number">1</span>):</span><br><span class="line">        Z = parameters[<span class="string">f&#x27;W<span class="subst">&#123;l&#125;</span>&#x27;</span>] @ A + parameters[<span class="string">f&#x27;b<span class="subst">&#123;l&#125;</span>&#x27;</span>]</span><br><span class="line">        A = activation(Z, activation_type=<span class="string">f&#x27;g<span class="subst">&#123;l&#125;</span>&#x27;</span>)</span><br><span class="line">        cache[<span class="string">f&#x27;z<span class="subst">&#123;l&#125;</span>&#x27;</span>] = Z</span><br><span class="line">        cache[<span class="string">f&#x27;a<span class="subst">&#123;l&#125;</span>&#x27;</span>] = A</span><br><span class="line">    <span class="keyword">return</span> A, cache  <span class="comment"># A 即最终的预测值</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="3-3-三层网络具体示例"><a href="#3-3-三层网络具体示例" class="headerlink" title="3.3 三层网络具体示例"></a>3.3 三层网络具体示例</h2><p>以 n_0 &#x3D; 3（输入特征数），n_1 &#x3D; 4（隐藏层神经元数），n_2 &#x3D; 2（输出层神经元数）为例：</p>
+<p><strong>隐藏层（l&#x3D;1）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Z1 = W1 @ X + b1          # shape: (4, 1)</span><br><span class="line">A1 = sigmoid(Z1)           # shape: (4, 1)</span><br></pre></td></tr></table></figure>
+
+<p><strong>输出层（l&#x3D;2）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Z2 = W2 @ A1 + b2          # shape: (2, 1)</span><br><span class="line">A2 = sigmoid(Z2)           # shape: (2, 1)  即预测值 ŷ</span><br></pre></td></tr></table></figure>
+
+<h1 id="4-反向传播推导（Backward-Propagation）"><a href="#4-反向传播推导（Backward-Propagation）" class="headerlink" title="4. 反向传播推导（Backward Propagation）"></a>4. 反向传播推导（Backward Propagation）</h1><p>这是本文最核心的部分。我们将使用<strong>链式法则</strong>，从输出层开始，逐层向后推导梯度。</p>
+<h2 id="4-1-输出层的误差信号-δ-L"><a href="#4-1-输出层的误差信号-δ-L" class="headerlink" title="4.1 输出层的误差信号 δ^[L]"></a>4.1 输出层的误差信号 δ^[L]</h2><p>定义第 l 层的误差信号为损失函数对该层加权输入的偏导数：</p>
+<p>$$\delta^{[l]} = \frac{\partial E}{\partial z^{[l]}}$$</p>
+<p>对于输出层（l &#x3D; L），以 MSE 损失为例：</p>
+<p>$$E = \frac{1}{2} \sum_{j} (a_j^{[L]} - y_j)^2$$</p>
+<p>首先计算 ∂E&#x2F;∂a^[L]：</p>
+<p>$$\frac{\partial E}{\partial a_j^{[L]}} = a_j^{[L]} - y_j$$</p>
+<p>即：</p>
+<p>$$\frac{\partial E}{\partial a^{[L]}} = \hat{y} - y$$</p>
+<p>现在利用链式法则求 δ^[L] &#x3D; ∂E&#x2F;∂z^[L]：</p>
+<p>$$\delta_j^{[L]} = \frac{\partial E}{\partial z_j^{[L]}} 
+= \frac{\partial E}{\partial a_j^{[L]}} \cdot \frac{\partial a_j^{[L]}}{\partial z_j^{[L]}}
+= (a_j^{[L]} - y_j) \cdot g'^{[L]}(z_j^{[L]})$$</p>
+<p>写成向量形式：</p>
+<p>$$\boxed{\delta^{[L]} = (\hat{y} - y) \odot g'^{[L]}(z^{[L]})}$$</p>
+<p><strong>重要</strong>：如果输出层使用 sigmoid 激活 + 交叉熵损失，可以证明 δ^[L] 有非常简洁的形式：</p>
+<p>$$\delta^{[L]} = \hat{y} - y$$</p>
+<p>这就是为什么分类任务中常使用 sigmoid + 交叉熵 或 softmax + 交叉熵的组合——它们能消除激活函数导数项，加速训练。</p>
+<h2 id="4-2-隐藏层的误差信号-δ-l-（l-L）"><a href="#4-2-隐藏层的误差信号-δ-l-（l-L）" class="headerlink" title="4.2 隐藏层的误差信号 δ^[l]（l &lt; L）"></a>4.2 隐藏层的误差信号 δ^[l]（l &lt; L）</h2><p>对于隐藏层，误差信号需要从后一层反向传播。核心递归关系：</p>
+<p>$$\delta_j^{[l]} = \frac{\partial E}{\partial z_j^{[l]}} = \sum_{k=1}^{n_{l+1}} \frac{\partial E}{\partial z_k^{[l+1]}} \cdot \frac{\partial z_k^{[l+1]}}{\partial z_j^{[l]}}$$</p>
+<p>关键在于 ∂z_k^{[l+1]} &#x2F; ∂z_j^{[l]} 的计算。注意到：</p>
+<p>$$z_k^{[l+1]} = \sum_{i=1}^{n_l} W_{ki}^{[l+1]} \cdot a_i^{[l]} + b_k^{[l+1]}
+= \sum_{i=1}^{n_l} W_{ki}^{[l+1]} \cdot g^{[l]}(z_i^{[l]}) + b_k^{[l+1]}$$</p>
+<p>因此：</p>
+<p>$$\frac{\partial z_k^{[l+1]}}{\partial z_j^{[l]}} = W_{kj}^{[l+1]} \cdot g'^{[l]}(z_j^{[l]})$$</p>
+<p>代入递归式：</p>
+<p>$$\delta_j^{[l]} = \sum_{k=1}^{n_{l+1}} \delta_k^{[l+1]} \cdot W_{kj}^{[l+1]} \cdot g'^{[l]}(z_j^{[l]})
+= g'^{[l]}(z_j^{[l]}) \cdot \sum_{k=1}^{n_{l+1}} \delta_k^{[l+1]} W_{kj}^{[l+1]}$$</p>
+<p>向量化形式：</p>
+<p>$$\boxed{\delta^{[l]} = (W^{[l+1]})^T \cdot \delta^{[l+1]} \odot g'^{[l]}(z^{[l]})}$$</p>
+<p>其中 (W^{[l+1]})^T 是 W^{[l+1]} 的转置。</p>
+<h2 id="4-3-权重梯度-∂E-∂W-l"><a href="#4-3-权重梯度-∂E-∂W-l" class="headerlink" title="4.3 权重梯度 ∂E&#x2F;∂W^[l]"></a>4.3 权重梯度 ∂E&#x2F;∂W^[l]</h2><p>对于权重矩阵 W^[l] 中的每一个元素 W_{jk}^{[l]}（连接第 l-1 层的第 k 个神经元到第 l 层的第 j 个神经元）：</p>
+<p>$$\frac{\partial E}{\partial W_{jk}^{[l]}} 
+= \frac{\partial E}{\partial z_j^{[l]}} \cdot \frac{\partial z_j^{[l]}}{\partial W_{jk}^{[l]}}
+= \delta_j^{[l]} \cdot a_k^{[l-1]}$$</p>
+<p>向量化形式（考虑该层所有神经元的权重梯度）：</p>
+<p>$$\boxed{\frac{\partial E}{\partial W^{[l]}} = \delta^{[l]} \cdot (a^{[l-1]})^T}$$</p>
+<p>维度验证：δ^[l] : (n_l, 1)，(a^{[l-1]})^T : (1, n_{l-1}) → 结果 (n_l, n_{l-1})，与 W^[l] 的维度一致。</p>
+<h2 id="4-4-偏置梯度-∂E-∂b-l"><a href="#4-4-偏置梯度-∂E-∂b-l" class="headerlink" title="4.4 偏置梯度 ∂E&#x2F;∂b^[l]"></a>4.4 偏置梯度 ∂E&#x2F;∂b^[l]</h2><p>对于偏置 b_j^{[l]}：</p>
+<p>$$\frac{\partial E}{\partial b_j^{[l]}} 
+= \frac{\partial E}{\partial z_j^{[l]}} \cdot \frac{\partial z_j^{[l]}}{\partial b_j^{[l]}}
+= \delta_j^{[l]} \cdot 1 = \delta_j^{[l]}$$</p>
+<p>因为 ∂z_j^{[l]}&#x2F;∂b_j^{[l]} &#x3D; 1（b_j 只是 z_j 的一个加项）。向量形式：</p>
+<p>$$\boxed{\frac{\partial E}{\partial b^{[l]}} = \delta^{[l]}}$$</p>
+<h2 id="4-5-完整的反向传播算法伪代码"><a href="#4-5-完整的反向传播算法伪代码" class="headerlink" title="4.5 完整的反向传播算法伪代码"></a>4.5 完整的反向传播算法伪代码</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">backward_pass</span>(<span class="params">y, cache, parameters</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    y: 真实标签，shape (n_L, m)</span></span><br><span class="line"><span class="string">    cache: 前向传播中缓存的 z 和 a</span></span><br><span class="line"><span class="string">    parameters: 权重和偏置字典</span></span><br><span class="line"><span class="string">    返回: gradients 字典 &#123;&#x27;dW1&#x27;: ..., &#x27;db1&#x27;: ..., ...&#125;</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    m = y.shape[<span class="number">1</span>]  <span class="comment"># 样本数</span></span><br><span class="line">    grads = &#123;&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># Step 1: 输出层误差信号</span></span><br><span class="line">    dZ = cache[<span class="string">f&#x27;a<span class="subst">&#123;L&#125;</span>&#x27;</span>] - y  <span class="comment"># δ^[L]（假设 MSE + 线性输出，或 sigmoid+CE）</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># Step 2: 反向逐层计算</span></span><br><span class="line">    <span class="keyword">for</span> l <span class="keyword">in</span> <span class="built_in">reversed</span>(<span class="built_in">range</span>(<span class="number">1</span>, L + <span class="number">1</span>)):</span><br><span class="line">        <span class="comment"># 计算梯度</span></span><br><span class="line">        grads[<span class="string">f&#x27;dW<span class="subst">&#123;l&#125;</span>&#x27;</span>] = (<span class="number">1</span>/m) * dZ @ cache[<span class="string">f&#x27;a<span class="subst">&#123;l-<span class="number">1</span>&#125;</span>&#x27;</span>].T</span><br><span class="line">        grads[<span class="string">f&#x27;db<span class="subst">&#123;l&#125;</span>&#x27;</span>] = (<span class="number">1</span>/m) * np.<span class="built_in">sum</span>(dZ, axis=<span class="number">1</span>, keepdims=<span class="literal">True</span>)</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 计算前一层的误差信号（如果不是第一层）</span></span><br><span class="line">        <span class="keyword">if</span> l &gt; <span class="number">1</span>:</span><br><span class="line">            dA_prev = parameters[<span class="string">f&#x27;W<span class="subst">&#123;l&#125;</span>&#x27;</span>].T @ dZ</span><br><span class="line">            dZ = dA_prev * activation_derivative(cache[<span class="string">f&#x27;z<span class="subst">&#123;l-<span class="number">1</span>&#125;</span>&#x27;</span>])</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> grads</span><br></pre></td></tr></table></figure>
+
+<h1 id="5-矩阵-向量形式的高效计算"><a href="#5-矩阵-向量形式的高效计算" class="headerlink" title="5. 矩阵&#x2F;向量形式的高效计算"></a>5. 矩阵&#x2F;向量形式的高效计算</h1><p>在实际实现中（如 NumPy、PyTorch、TensorFlow），所有计算都是批量处理的。下面给出考虑 mini-batch 的矩阵形式。</p>
+<h2 id="5-1-批量前向传播"><a href="#5-1-批量前向传播" class="headerlink" title="5.1 批量前向传播"></a>5.1 批量前向传播</h2><p>假设 mini-batch 包含 m 个样本，输入矩阵 X 的维度是 (n_0, m)。则：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Z^&#123;[l]&#125; = W^&#123;[l]&#125; @ A^&#123;[l-1]&#125; + b^&#123;[l]&#125;    # (n_l, m)</span><br><span class="line">A^&#123;[l]&#125; = g^&#123;[l]&#125;(Z^&#123;[l]&#125;)                   # (n_l, m)</span><br></pre></td></tr></table></figure>
+
+<p>注意 b^{[l]} 的维度是 (n_l, 1)，在 NumPy 中会自动广播（broadcast）到 (n_l, m)。</p>
+<h2 id="5-2-批量反向传播"><a href="#5-2-批量反向传播" class="headerlink" title="5.2 批量反向传播"></a>5.2 批量反向传播</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">δ^&#123;[L]&#125; = (A^&#123;[L]&#125; - Y) ⊙ g&#x27;^&#123;[L]&#125;(Z^&#123;[L]&#125;)        # (n_L, m)</span><br><span class="line">δ^&#123;[l]&#125; = ((W^&#123;[l+1]&#125;)^T @ δ^&#123;[l+1]&#125;) ⊙ g&#x27;^&#123;[l]&#125;(Z^&#123;[l]&#125;)   # (n_l, m)</span><br><span class="line"></span><br><span class="line">∂E/∂W^&#123;[l]&#125; = (1/m) * δ^&#123;[l]&#125; @ (A^&#123;[l-1]&#125;)^T     # (n_l, n_&#123;l-1&#125;)</span><br><span class="line">∂E/∂b^&#123;[l]&#125; = (1/m) * Σ_&#123;axis=1&#125; δ^&#123;[l]&#125;           # (n_l, 1)</span><br></pre></td></tr></table></figure>
+
+<p>其中求和在样本维度上进行（axis&#x3D;1），除以 m 得到平均梯度。</p>
+<h1 id="6-激活函数及其导数分析"><a href="#6-激活函数及其导数分析" class="headerlink" title="6. 激活函数及其导数分析"></a>6. 激活函数及其导数分析</h1><p>激活函数的选择对 BP 算法的性能影响巨大。以下是常用激活函数及其导数。</p>
+<h2 id="6-1-Sigmoid"><a href="#6-1-Sigmoid" class="headerlink" title="6.1 Sigmoid"></a>6.1 Sigmoid</h2><p>$$\sigma(z) = \frac{1}{1 + e^{-z}}$$</p>
+<p><strong>导数</strong>：<br>$$\sigma'(z) = \sigma(z) \cdot (1 - \sigma(z))$$</p>
+<p><strong>性质</strong>：输出范围 (0, 1)，导数最大值 0.25（在 z&#x3D;0 处）。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">sigmoid</span>(<span class="params">z</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span> / (<span class="number">1</span> + np.exp(-z))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">sigmoid_derivative</span>(<span class="params">z</span>):</span><br><span class="line">    s = sigmoid(z)</span><br><span class="line">    <span class="keyword">return</span> s * (<span class="number">1</span> - s)</span><br></pre></td></tr></table></figure>
+
+<p><strong>问题</strong>：当 |z| 较大时，σ(z) 饱和（趋于 0 或 1），σ’(z) 趋于 0，导致梯度消失。</p>
+<h2 id="6-2-Tanh（双曲正切）"><a href="#6-2-Tanh（双曲正切）" class="headerlink" title="6.2 Tanh（双曲正切）"></a>6.2 Tanh（双曲正切）</h2><p>$$\tanh(z) = \frac{e^z - e^{-z}}{e^z + e^{-z}}$$</p>
+<p><strong>导数</strong>：<br>$$\tanh'(z) = 1 - \tanh^2(z)$$</p>
+<p><strong>性质</strong>：输出范围 (-1, 1)，零中心化（zero-centered），缓解了 sigmoid 的非零中心问题。导数最大值为 1（在 z&#x3D;0 处）。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">tanh_derivative</span>(<span class="params">z</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span> - np.tanh(z) ** <span class="number">2</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="6-3-ReLU（Rectified-Linear-Unit）"><a href="#6-3-ReLU（Rectified-Linear-Unit）" class="headerlink" title="6.3 ReLU（Rectified Linear Unit）"></a>6.3 ReLU（Rectified Linear Unit）</h2><p>$$\text{ReLU}(z) = \max(0, z)$$</p>
+<p><strong>导数</strong>：<br>$$\text{ReLU}'(z) = \begin{cases} 1 & \text{if } z > 0 \\ 0 & \text{if } z \leq 0 \end{cases}$$</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">relu</span>(<span class="params">z</span>):</span><br><span class="line">    <span class="keyword">return</span> np.maximum(<span class="number">0</span>, z)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">relu_derivative</span>(<span class="params">z</span>):</span><br><span class="line">    <span class="keyword">return</span> (z &gt; <span class="number">0</span>).astype(<span class="built_in">float</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>优势</strong>：正区间梯度恒为 1，有效缓解梯度消失；计算简单高效。</p>
+<p><strong>问题（Dying ReLU）</strong>：当 z ≤ 0 时梯度为 0，如果某个神经元对几乎所有输入都输出负值，该神经元的权重将永远不会更新——称为”神经元死亡”。这在学习率过大或偏置初始化不当时容易发生。</p>
+<p><strong>数值示例</strong>：假设某神经元经过 ReLU，初始偏置 b &#x3D; -0.1，权重 W &#x3D; [0.01, -0.02]。对于输入 x &#x3D; [1, 2]，z &#x3D; 0.01×1 + (-0.02)×2 - 0.1 &#x3D; -0.13 &lt; 0，梯度为 0，参数不再更新。</p>
+<h2 id="6-4-LeakyReLU"><a href="#6-4-LeakyReLU" class="headerlink" title="6.4 LeakyReLU"></a>6.4 LeakyReLU</h2><p>$$\text{LeakyReLU}(z) = \max(\alpha z, z), \quad \alpha \text{ 通常取 } 0.01$$</p>
+<p><strong>导数</strong>：<br>$$\text{LeakyReLU}'(z) = \begin{cases} 1 & \text{if } z > 0 \\ \alpha & \text{if } z \leq 0 \end{cases}$$</p>
+<p>α 是一个小的正数，保证了负区间的梯度不为零，解决了 Dying ReLU 问题。</p>
+<h2 id="6-5-ELU（Exponential-Linear-Unit）"><a href="#6-5-ELU（Exponential-Linear-Unit）" class="headerlink" title="6.5 ELU（Exponential Linear Unit）"></a>6.5 ELU（Exponential Linear Unit）</h2><p>$$\text{ELU}(z) = \begin{cases} z & \text{if } z > 0 \\ \alpha (e^z - 1) & \text{if } z \leq 0 \end{cases}$$</p>
+<p><strong>导数</strong>：<br>$$\text{ELU}'(z) = \begin{cases} 1 & \text{if } z > 0 \\ \text{ELU}(z) + \alpha & \text{if } z \leq 0 \end{cases}$$</p>
+<p>ELU 的输出均值更接近零，收敛速度通常快于 LeakyReLU。代价是计算指数运算。</p>
+<h2 id="6-6-Swish（SiLU）"><a href="#6-6-Swish（SiLU）" class="headerlink" title="6.6 Swish（SiLU）"></a>6.6 Swish（SiLU）</h2><p>Google Brain 于 2017 年提出：</p>
+<p>$$\text{Swish}(z) = z \cdot \sigma(\beta z)$$</p>
+<p>其中 β 是可学习参数或固定常数（β&#x3D;1 时即 SiLU）。</p>
+<p><strong>导数</strong>：<br>$$\text{Swish}'(z) = \beta \cdot \text{Swish}(z) + \sigma(\beta z) \cdot (1 - \beta \cdot \text{Swish}(z))$$</p>
+<p>Swish 具有非单调的”凸起”形状，在深层网络上表现优于 ReLU。</p>
+<h2 id="6-7-激活函数对比表"><a href="#6-7-激活函数对比表" class="headerlink" title="6.7 激活函数对比表"></a>6.7 激活函数对比表</h2><table>
+<thead>
+<tr>
+<th>函数</th>
+<th>公式</th>
+<th>输出范围</th>
+<th>导数范围</th>
+<th>零中心</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Sigmoid</td>
+<td>1&#x2F;(1+e^{-z})</td>
+<td>(0,1)</td>
+<td>(0, 0.25]</td>
+<td>否</td>
+<td>平滑，可解释为概率</td>
+<td>梯度消失，非零中心</td>
+</tr>
+<tr>
+<td>Tanh</td>
+<td>(e^z-e^{-z})&#x2F;(e^z+e^{-z})</td>
+<td>(-1,1)</td>
+<td>(0, 1]</td>
+<td>是</td>
+<td>零中心，比sigmoid更好</td>
+<td>仍有饱和问题</td>
+</tr>
+<tr>
+<td>ReLU</td>
+<td>max(0,z)</td>
+<td>[0,∞)</td>
+<td>{0,1}</td>
+<td>否</td>
+<td>计算快，缓解梯度消失</td>
+<td>Dying ReLU</td>
+</tr>
+<tr>
+<td>LeakyReLU</td>
+<td>max(0.01z, z)</td>
+<td>(-∞,∞)</td>
+<td>{0.01,1}</td>
+<td>否</td>
+<td>解决Dying ReLU</td>
+<td>α需手动设定</td>
+</tr>
+<tr>
+<td>ELU</td>
+<td>z if z&gt;0 else α(e^z-1)</td>
+<td>(-α,∞)</td>
+<td>(0, 1]</td>
+<td>近似</td>
+<td>输出均值接近零</td>
+<td>计算指数</td>
+</tr>
+<tr>
+<td>Swish</td>
+<td>z·σ(z)</td>
+<td>(-~0.278,∞)</td>
+<td>(0,~1.1)</td>
+<td>否</td>
+<td>非单调，深层表现好</td>
+<td>计算开销较大</td>
+</tr>
+</tbody></table>
+<p><strong>经验法则</strong>：</p>
+<ul>
+<li>隐藏层首选 ReLU 及其变体</li>
+<li>二分类输出层用 Sigmoid</li>
+<li>多分类输出层用 Softmax（组合）</li>
+<li>回归输出层通常不用激活函数（线性输出）</li>
+</ul>
+<h1 id="7-梯度消失与梯度爆炸"><a href="#7-梯度消失与梯度爆炸" class="headerlink" title="7. 梯度消失与梯度爆炸"></a>7. 梯度消失与梯度爆炸</h1><h2 id="7-1-梯度消失（Vanishing-Gradient）的数学根源"><a href="#7-1-梯度消失（Vanishing-Gradient）的数学根源" class="headerlink" title="7.1 梯度消失（Vanishing Gradient）的数学根源"></a>7.1 梯度消失（Vanishing Gradient）的数学根源</h2><p>梯度消失是早期深度学习难以训练的主要原因。考虑一个深层网络，使用 sigmoid 作为激活函数。</p>
+<p>根据链式法则，第 l 层的误差信号：</p>
+<p>$$\delta^{[l]} = g'(z^{[l]}) \cdot (W^{[l+1]})^T \cdot \delta^{[l+1]}$$</p>
+<p>展开到输出层：</p>
+<p>$$\delta^{[l]} = \left( \prod_{i=l+1}^{L} g'(z^{[i]}) \cdot (W^{[i]})^T \right) \cdot (\hat{y} - y)$$</p>
+<p>对于 sigmoid，导数最大值仅为 0.25。假设 |W| &lt; 1，那么：</p>
+<p>$$\|\delta^{[l]}\| \leq 0.25^{L-l} \cdot \|\hat{y} - y\|$$</p>
+<p>当 L - l 较大（即接近输入层）时，误差信号呈指数级衰减——这就是梯度消失。</p>
+<p><strong>数值示例</strong>：对于 10 层 sigmoid 网络，如果每个 sigmoid 导数的平均值为 0.2，则梯度传播到第一层时约为原始梯度的 0.2^9 ≈ 5.12 × 10^{-7}。这意味着底层参数几乎不更新。</p>
+<h2 id="7-2-梯度爆炸（Exploding-Gradient）"><a href="#7-2-梯度爆炸（Exploding-Gradient）" class="headerlink" title="7.2 梯度爆炸（Exploding Gradient）"></a>7.2 梯度爆炸（Exploding Gradient）</h2><p>相反地，如果 |W| &gt; 1（且激活函数导数也较大），梯度可能呈指数增长：</p>
+<p>$$\|\delta^{[l]}\| \geq C^{L-l} \cdot \|\hat{y} - y\|, \quad C > 1$$</p>
+<p>梯度爆炸会导致参数更新过大，损失函数发散（NaN）。</p>
+<p><strong>检测方法</strong>：</p>
+<ul>
+<li>训练损失突然变为 NaN</li>
+<li>梯度范数异常增大（例如 &gt; 1000）</li>
+</ul>
+<h2 id="7-3-梯度裁剪（Gradient-Clipping）"><a href="#7-3-梯度裁剪（Gradient-Clipping）" class="headerlink" title="7.3 梯度裁剪（Gradient Clipping）"></a>7.3 梯度裁剪（Gradient Clipping）</h2><p>梯度爆炸的标准解决方案是梯度裁剪：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">clip_gradients</span>(<span class="params">grads, max_norm=<span class="number">5.0</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;按范数裁剪梯度&quot;&quot;&quot;</span></span><br><span class="line">    total_norm = <span class="number">0.0</span></span><br><span class="line">    <span class="keyword">for</span> param <span class="keyword">in</span> grads.values():</span><br><span class="line">        total_norm += np.<span class="built_in">sum</span>(param ** <span class="number">2</span>)</span><br><span class="line">    total_norm = np.sqrt(total_norm)</span><br><span class="line">    </span><br><span class="line">    clip_coef = max_norm / (total_norm + <span class="number">1e-6</span>)</span><br><span class="line">    <span class="keyword">if</span> clip_coef &lt; <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">for</span> key <span class="keyword">in</span> grads:</span><br><span class="line">            grads[key] *= clip_coef</span><br><span class="line">    <span class="keyword">return</span> grads</span><br></pre></td></tr></table></figure>
+
+<p>或者直接按值裁剪（value clipping）：<code>grads = np.clip(grads, -threshold, threshold)</code>。</p>
+<p>这是 RNN&#x2F;LSTM 训练的标配操作。</p>
+<h1 id="8-数值梯度检查（Numerical-Gradient-Checking）"><a href="#8-数值梯度检查（Numerical-Gradient-Checking）" class="headerlink" title="8. 数值梯度检查（Numerical Gradient Checking）"></a>8. 数值梯度检查（Numerical Gradient Checking）</h1><p>BP 推导容易出错，数值梯度检查是验证反向传播实现正确性的重要工具。</p>
+<h2 id="8-1-双边有限差分法"><a href="#8-1-双边有限差分法" class="headerlink" title="8.1 双边有限差分法"></a>8.1 双边有限差分法</h2><p>对每个参数 θ_i，用中心差分近似梯度：</p>
+<p>$$\frac{\partial E}{\partial \theta_i} \approx \frac{E(\theta_i + \epsilon) - E(\theta_i - \epsilon)}{2\epsilon}$$</p>
+<p>其中 ε 通常取 10^{-7} 到 10^{-4} 之间的值。中心差分的截断误差为 O(ε^2)，优于单边差分的 O(ε)。</p>
+<h2 id="8-2-实现代码"><a href="#8-2-实现代码" class="headerlink" title="8.2 实现代码"></a>8.2 实现代码</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">numerical_gradient</span>(<span class="params">f, theta, epsilon=<span class="number">1e-7</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    f: 损失函数，接受参数向量 theta 返回标量</span></span><br><span class="line"><span class="string">    theta: 参数向量（展平后的）</span></span><br><span class="line"><span class="string">    返回: 数值梯度，shape 与 theta 相同</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    grad = np.zeros_like(theta)</span><br><span class="line">    n = <span class="built_in">len</span>(theta)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(n):</span><br><span class="line">        old_val = theta[i]</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># θ + ε</span></span><br><span class="line">        theta[i] = old_val + epsilon</span><br><span class="line">        loss_plus = f(theta)</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># θ - ε</span></span><br><span class="line">        theta[i] = old_val - epsilon</span><br><span class="line">        loss_minus = f(theta)</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 中心差分</span></span><br><span class="line">        grad[i] = (loss_plus - loss_minus) / (<span class="number">2</span> * epsilon)</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 恢复原值</span></span><br><span class="line">        theta[i] = old_val</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> grad</span><br></pre></td></tr></table></figure>
+
+<p><strong>重要</strong>：由于需要对每个参数分别进行两次前向传播，数值梯度检查的总复杂度高达 O(参数量 × 前向传播)。因此<strong>只能用于小网络的验证</strong>，或检查部分参数是否为随机子集。</p>
+<h2 id="8-3-梯度比较"><a href="#8-3-梯度比较" class="headerlink" title="8.3 梯度比较"></a>8.3 梯度比较</h2><p>比较解析梯度和数值梯度时，使用相对误差：</p>
+<p>$$\text{relative error} = \frac{\| \nabla_{analytical} - \nabla_{numerical} \|_2}{\| \nabla_{analytical} \|_2 + \| \nabla_{numerical} \|_2}$$</p>
+<p>经验法则：</p>
+<ul>
+<li>relative error &lt; 10^{-7}：非常好</li>
+<li>10^{-7} &lt; relative error &lt; 10^{-5}：可能正确，可复查</li>
+<li>10^{-5} &lt; relative error &lt; 10^{-3}：基本不满意，检查个别有问题的参数</li>
+<li>relative error &gt; 10^{-3}：一定有 bug</li>
+</ul>
+<p><strong>常见陷阱</strong>：</p>
+<ul>
+<li>必须在关闭 Dropout、BatchNorm 等随机性的情况下做梯度检查</li>
+<li>注意正则化项（L1&#x2F;L2）也需要计入梯度</li>
+<li>使用 double precision（float64），避免浮点精度误差干扰</li>
+</ul>
+<h1 id="9-优化器：BP梯度如何驱动参数更新"><a href="#9-优化器：BP梯度如何驱动参数更新" class="headerlink" title="9. 优化器：BP梯度如何驱动参数更新"></a>9. 优化器：BP梯度如何驱动参数更新</h1><p>BP 计算出了梯度，而<strong>优化器</strong>决定了如何利用这些梯度来更新参数。</p>
+<h2 id="9-1-标准-SGD（Stochastic-Gradient-Descent）"><a href="#9-1-标准-SGD（Stochastic-Gradient-Descent）" class="headerlink" title="9.1 标准 SGD（Stochastic Gradient Descent）"></a>9.1 标准 SGD（Stochastic Gradient Descent）</h2><p>$$\theta_{t+1} = \theta_t - \eta \cdot \nabla_\theta E(\theta_t)$$</p>
+<p>η 是学习率。SGD 的特点是每个 mini-batch 的梯度都有噪声，这有助于逃离局部极小值，但也导致收敛路径震荡。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 标准 SGD 更新步骤</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">sgd_update</span>(<span class="params">params, grads, lr</span>):</span><br><span class="line">    <span class="keyword">for</span> key <span class="keyword">in</span> params:</span><br><span class="line">        params[key] -= lr * grads[key]</span><br></pre></td></tr></table></figure>
+
+<h2 id="9-2-Momentum（带动量的-SGD）"><a href="#9-2-Momentum（带动量的-SGD）" class="headerlink" title="9.2 Momentum（带动量的 SGD）"></a>9.2 Momentum（带动量的 SGD）</h2><p>引入速度变量 v，累积历史梯度：</p>
+<p>$$v_{t+1} = \gamma v_t + \eta \nabla_\theta E(\theta_t)$$<br>$$\theta_{t+1} = \theta_t - v_{t+1}$$</p>
+<p>γ 通常取 0.9。类比物理：参数是在势能面上运动的粒子，梯度是力，动量是惯性。</p>
+<p><strong>解读</strong>：如果梯度方向持续一致，v 会累积增大，加速收敛；如果方向反复（震荡），v 会抵消，起到平滑作用。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">momentum_update</span>(<span class="params">params, grads, velocities, lr=<span class="number">0.01</span>, gamma=<span class="number">0.9</span></span>):</span><br><span class="line">    <span class="keyword">for</span> key <span class="keyword">in</span> params:</span><br><span class="line">        velocities[key] = gamma * velocities[key] + lr * grads[key]</span><br><span class="line">        params[key] -= velocities[key]</span><br></pre></td></tr></table></figure>
+
+<h2 id="9-3-Nesterov-Accelerated-Gradient-NAG"><a href="#9-3-Nesterov-Accelerated-Gradient-NAG" class="headerlink" title="9.3 Nesterov Accelerated Gradient (NAG)"></a>9.3 Nesterov Accelerated Gradient (NAG)</h2><p>Nesterov 动量先沿着累积速度方向走一步，然后在”前瞻位置”计算梯度：</p>
+<p>$$v_{t+1} = \gamma v_t + \eta \nabla_\theta E(\theta_t - \gamma v_t)$$<br>$$\theta_{t+1} = \theta_t - v_{t+1}$$</p>
+<p>前瞻计算的梯度更准确地反映参数更新后的实际情况，通常比标准动量收敛更快。</p>
+<h2 id="9-4-AdaGrad（Adaptive-Gradient）"><a href="#9-4-AdaGrad（Adaptive-Gradient）" class="headerlink" title="9.4 AdaGrad（Adaptive Gradient）"></a>9.4 AdaGrad（Adaptive Gradient）</h2><p>为每个参数维护独立的学习率，根据历史梯度的平方和来自适应调整：</p>
+<p>$$G_t = G_{t-1} + (\nabla_\theta E(\theta_t))^2$$<br>$$\theta_{t+1} = \theta_t - \frac{\eta}{\sqrt{G_t + \epsilon}} \odot \nabla_\theta E(\theta_t)$$</p>
+<p><strong>优点</strong>：适合稀疏特征（每个特征收到不同的有效学习率）。<br><strong>缺点</strong>：G_t 单调递增，学习率不断衰减，可能在达到最优点前就衰减到零。</p>
+<h2 id="9-5-RMSprop"><a href="#9-5-RMSprop" class="headerlink" title="9.5 RMSprop"></a>9.5 RMSprop</h2><p>解决 AdaGrad 学习率单调衰减的问题，用指数移动平均替代累加和：</p>
+<p>$$G_t = \rho \cdot G_{t-1} + (1 - \rho) \cdot (\nabla_\theta E(\theta_t))^2$$<br>$$\theta_{t+1} = \theta_t - \frac{\eta}{\sqrt{G_t + \epsilon}} \odot \nabla_\theta E(\theta_t)$$</p>
+<p>ρ 通常取 0.9 到 0.999。这是 Hinton 在 Coursera 课程中提出的非正式算法。</p>
+<h2 id="9-6-Adam（Adaptive-Moment-Estimation）"><a href="#9-6-Adam（Adaptive-Moment-Estimation）" class="headerlink" title="9.6 Adam（Adaptive Moment Estimation）"></a>9.6 Adam（Adaptive Moment Estimation）</h2><p>融合了 Momentum 和 RMSprop 的思想，是目前最常用的优化器：</p>
+<p><strong>一阶矩估计（均值）</strong>：<br>$$m_t = \beta_1 m_{t-1} + (1 - \beta_1) \nabla_\theta E(\theta_t)$$</p>
+<p><strong>二阶矩估计（未中心化的方差）</strong>：<br>$$v_t = \beta_2 v_{t-1} + (1 - \beta_2) (\nabla_\theta E(\theta_t))^2$$</p>
+<p><strong>偏差校正</strong>（因为 m_0 &#x3D; 0, v_0 &#x3D; 0，初始步会有偏差）：<br>$$\hat{m}_t = \frac{m_t}{1 - \beta_1^t}, \quad \hat{v}_t = \frac{v_t}{1 - \beta_2^t}$$</p>
+<p><strong>参数更新</strong>：<br>$$\theta_{t+1} = \theta_t - \eta \cdot \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon}$$</p>
+<p>默认超参数：η &#x3D; 0.001, β_1 &#x3D; 0.9, β_2 &#x3D; 0.999, ε &#x3D; 10^{-8}。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">adam_update</span>(<span class="params">params, grads, m, v, t, lr=<span class="number">0.001</span>, </span></span><br><span class="line"><span class="params">                beta1=<span class="number">0.9</span>, beta2=<span class="number">0.999</span>, eps=<span class="number">1e-8</span></span>):</span><br><span class="line">    <span class="keyword">for</span> key <span class="keyword">in</span> params:</span><br><span class="line">        <span class="comment"># 更新一阶矩和二阶矩</span></span><br><span class="line">        m[key] = beta1 * m[key] + (<span class="number">1</span> - beta1) * grads[key]</span><br><span class="line">        v[key] = beta2 * v[key] + (<span class="number">1</span> - beta2) * (grads[key] ** <span class="number">2</span>)</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 偏差校正</span></span><br><span class="line">        m_hat = m[key] / (<span class="number">1</span> - beta1 ** t)</span><br><span class="line">        v_hat = v[key] / (<span class="number">1</span> - beta2 ** t)</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 更新参数</span></span><br><span class="line">        params[key] -= lr * m_hat / (np.sqrt(v_hat) + eps)</span><br></pre></td></tr></table></figure>
+
+<h2 id="9-7-优化器对比"><a href="#9-7-优化器对比" class="headerlink" title="9.7 优化器对比"></a>9.7 优化器对比</h2><table>
+<thead>
+<tr>
+<th>优化器</th>
+<th>自适应学习率</th>
+<th>动量</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SGD</td>
+<td>否</td>
+<td>否</td>
+<td>简单任务，需要手动调节学习率</td>
+</tr>
+<tr>
+<td>SGD+Momentum</td>
+<td>否</td>
+<td>是</td>
+<td>大多数场景的好的 baseline</td>
+</tr>
+<tr>
+<td>Nesterov</td>
+<td>否</td>
+<td>是（前瞻）</td>
+<td>比 Momentum 略好</td>
+</tr>
+<tr>
+<td>AdaGrad</td>
+<td>是</td>
+<td>否</td>
+<td>稀疏特征（NLP&#x2F;推荐系统）</td>
+</tr>
+<tr>
+<td>RMSprop</td>
+<td>是</td>
+<td>否</td>
+<td>RNN&#x2F;LSTM 训练</td>
+</tr>
+<tr>
+<td>Adam</td>
+<td>是</td>
+<td>是</td>
+<td>默认首选，大多数场景效果好</td>
+</tr>
+<tr>
+<td>AdamW</td>
+<td>是</td>
+<td>是</td>
+<td>Adam + 解耦权重衰减，现代标准</td>
+</tr>
+</tbody></table>
+<h1 id="10-批归一化（Batch-Normalization）"><a href="#10-批归一化（Batch-Normalization）" class="headerlink" title="10. 批归一化（Batch Normalization）"></a>10. 批归一化（Batch Normalization）</h1><p>BatchNorm 是 Ioffe 和 Szegedy 在 2015 年提出的技术，它极大地加速了深层网络的训练。理解 BN 的前向和反向传播对于掌握现代 BP 算法至关重要。</p>
+<h2 id="10-1-动机"><a href="#10-1-动机" class="headerlink" title="10.1 动机"></a>10.1 动机</h2><p>训练过程中，前面层参数的更新会导致后面层输入分布不断变化——称为<strong>内部协变量偏移（Internal Covariate Shift）</strong>。BN 通过对每一层的激活值进行标准化来解决这个问题，使得每层都能学习在更加稳定的分布上。</p>
+<h2 id="10-2-前向传播"><a href="#10-2-前向传播" class="headerlink" title="10.2 前向传播"></a>10.2 前向传播</h2><p>给定 mini-batch B &#x3D; {x_1, x_2, …, x_m}（这里 x_i 是该层的激活值）：</p>
+<p><strong>步骤1：计算 batch 均值和方差</strong><br>$$\mu_B = \frac{1}{m} \sum_{i=1}^{m} x_i$$<br>$$\sigma_B^2 = \frac{1}{m} \sum_{i=1}^{m} (x_i - \mu_B)^2$$</p>
+<p><strong>步骤2：标准化</strong><br>$$\hat{x}_i = \frac{x_i - \mu_B}{\sqrt{\sigma_B^2 + \epsilon}}$$</p>
+<p><strong>步骤3：尺度变换和偏移（可学习参数 γ 和 β）</strong><br>$$y_i = \gamma \cdot \hat{x}_i + \beta$$</p>
+<p>注意 γ 和 β 是可学习的参数，使得网络可以在需要时恢复原始的分布（当 γ &#x3D; σ_B, β &#x3D; μ_B 时，y_i &#x3D; x_i）。</p>
+<h2 id="10-3-反向传播推导"><a href="#10-3-反向传播推导" class="headerlink" title="10.3 反向传播推导"></a>10.3 反向传播推导</h2><p>需要计算 ∂E&#x2F;∂γ, ∂E&#x2F;∂β, 以及最重要的 ∂E&#x2F;∂x_i（传给前一层的梯度）。</p>
+<p>已知上游梯度 ∂E&#x2F;∂y_i。</p>
+<p><strong>∂E&#x2F;∂γ 和 ∂E&#x2F;∂β</strong>（直接计算）：</p>
+<p>$$\frac{\partial E}{\partial \gamma} = \sum_{i=1}^{m} \frac{\partial E}{\partial y_i} \cdot \hat{x}_i$$<br>$$\frac{\partial E}{\partial \beta} = \sum_{i=1}^{m} \frac{\partial E}{\partial y_i}$$</p>
+<p><strong>∂E&#x2F;∂x_i</strong>（需要通过链式法则展开）：</p>
+<p>$$\frac{\partial E}{\partial x_i} = \frac{\partial E}{\partial \hat{x}_i} \cdot \frac{\partial \hat{x}_i}{\partial x_i} 
++ \frac{\partial E}{\partial \mu_B} \cdot \frac{\partial \mu_B}{\partial x_i}
++ \frac{\partial E}{\partial \sigma_B^2} \cdot \frac{\partial \sigma_B^2}{\partial x_i}$$</p>
+<p>这是因为 x_i 不仅直接影响 \hat{x}_i，还通过 μ_B 和 σ_B^2 间接影响所有 \hat{x}_j。</p>
+<p>展开计算（省略详细推导）：</p>
+<p>$$\frac{\partial E}{\partial \hat{x}_i} = \frac{\partial E}{\partial y_i} \cdot \gamma$$</p>
+<p>$$\frac{\partial E}{\partial \sigma_B^2} = \sum_{i=1}^{m} \frac{\partial E}{\partial \hat{x}_i} \cdot (x_i - \mu_B) \cdot \left(-\frac{1}{2}\right) \cdot (\sigma_B^2 + \epsilon)^{-3/2}$$</p>
+<p>$$\frac{\partial E}{\partial \mu_B} = \left(\sum_{i=1}^{m} \frac{\partial E}{\partial \hat{x}_i} \cdot \frac{-1}{\sqrt{\sigma_B^2 + \epsilon}}\right) + \frac{\partial E}{\partial \sigma_B^2} \cdot \frac{-2}{m} \sum_{i=1}^{m} (x_i - \mu_B)$$</p>
+<p>最终：<br>$$\frac{\partial E}{\partial x_i} = \frac{\partial E}{\partial \hat{x}_i} \cdot \frac{1}{\sqrt{\sigma_B^2 + \epsilon}} 
++ \frac{\partial E}{\partial \sigma_B^2} \cdot \frac{2(x_i - \mu_B)}{m}
++ \frac{\partial E}{\partial \mu_B} \cdot \frac{1}{m}$$</p>
+<h2 id="10-4-训练-vs-推理"><a href="#10-4-训练-vs-推理" class="headerlink" title="10.4 训练 vs 推理"></a>10.4 训练 vs 推理</h2><p>训练时使用 mini-batch 的统计量；推理时使用训练集上的移动平均：</p>
+<p>$$\mu_{running} = \alpha \cdot \mu_{running} + (1 - \alpha) \cdot \mu_B$$<br>$$\sigma^2_{running} = \alpha \cdot \sigma^2_{running} + (1 - \alpha) \cdot \sigma^2_B$$</p>
+<p>α 通常取 0.9 到 0.99。</p>
+<h1 id="11-权重初始化策略"><a href="#11-权重初始化策略" class="headerlink" title="11. 权重初始化策略"></a>11. 权重初始化策略</h1><p>初始化对 BP 算法的效果有决定性影响——糟糕的初始化会导致梯度消失&#x2F;爆炸，使网络无法训练。</p>
+<h2 id="11-1-Xavier（Glorot）初始化"><a href="#11-1-Xavier（Glorot）初始化" class="headerlink" title="11.1 Xavier（Glorot）初始化"></a>11.1 Xavier（Glorot）初始化</h2><p>适用于 sigmoid&#x2F;tanh 激活函数。目标是保持各层激活值和梯度的方差一致。</p>
+<p>假设输入维度为 fan_in，输出维度为 fan_out：</p>
+<p>$$W_{ij} \sim U\left(-\sqrt{\frac{6}{fan\_in + fan\_out}}, \sqrt{\frac{6}{fan\_in + fan\_out}}\right)$$</p>
+<p>或正态分布：<br>$$W_{ij} \sim \mathcal{N}\left(0, \sqrt{\frac{2}{fan\_in + fan\_out}}\right)$$</p>
+<h2 id="11-2-He（Kaiming）初始化"><a href="#11-2-He（Kaiming）初始化" class="headerlink" title="11.2 He（Kaiming）初始化"></a>11.2 He（Kaiming）初始化</h2><p>专为 ReLU 激活函数设计。ReLU 会使一半的激活值为零，因此方差被减半。He 初始化通过将方差加倍来补偿：</p>
+<p>$$W_{ij} \sim \mathcal{N}\left(0, \sqrt{\frac{2}{fan\_in}}\right)$$</p>
+<p>这是使用 ReLU 类激活时的标准选择。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># He 初始化实现</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">he_init</span>(<span class="params">shape</span>):</span><br><span class="line">    fan_in = shape[<span class="number">1</span>]  <span class="comment"># 对于 (n_l, n_&#123;l-1&#125;) 的权重矩阵</span></span><br><span class="line">    std = np.sqrt(<span class="number">2.0</span> / fan_in)</span><br><span class="line">    <span class="keyword">return</span> np.random.randn(*shape) * std</span><br></pre></td></tr></table></figure>
+
+<h2 id="11-3-偏置初始化"><a href="#11-3-偏置初始化" class="headerlink" title="11.3 偏置初始化"></a>11.3 偏置初始化</h2><p>偏置通常初始化为 0。但对于 ReLU 网络，常设为小的正数（如 0.01）以避免 Dying ReLU。</p>
+<h1 id="12-学习率调度（Learning-Rate-Schedules）"><a href="#12-学习率调度（Learning-Rate-Schedules）" class="headerlink" title="12. 学习率调度（Learning Rate Schedules）"></a>12. 学习率调度（Learning Rate Schedules）</h1><p>学习率是 BP + SGD 中最重要的超参数。现代训练通常使用学习率调度策略。</p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>公式</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Step decay</td>
+<td>η &#x3D; η_0 × γ^{floor(t&#x2F;s)}</td>
+<td>每 s 轮衰减 γ 倍</td>
+</tr>
+<tr>
+<td>Exponential</td>
+<td>η &#x3D; η_0 × γ^t</td>
+<td>指数衰减</td>
+</tr>
+<tr>
+<td>Cosine</td>
+<td>η &#x3D; 0.5η_0 × (1 + cos(π×t&#x2F;T))</td>
+<td>余弦退火，常用</td>
+</tr>
+<tr>
+<td>Plateau</td>
+<td>监控验证损失，停滞时衰减</td>
+<td>自适应</td>
+</tr>
+<tr>
+<td>OneCycleLR</td>
+<td>先升后降</td>
+<td>超收敛</td>
+</tr>
+<tr>
+<td>Warmup</td>
+<td>前 k 步线性增长</td>
+<td>大 batch 训练必需</td>
+</tr>
+</tbody></table>
+<p><strong>Warmup 的重要性</strong>：在大 batch 训练或使用 Adam 时，初始阶段梯度方向不稳定，如果一开始就用大学习率，可能导致训练崩溃。Warmup 策略在前 1000~5000 步将学习率从 0 线性增加到 η_max。</p>
+<h1 id="13-计算图视角与自动微分"><a href="#13-计算图视角与自动微分" class="headerlink" title="13. 计算图视角与自动微分"></a>13. 计算图视角与自动微分</h1><p>现代深度学习框架（PyTorch、TensorFlow、JAX）并非”手动实现 BP”，而是基于<strong>计算图（Computational Graph）</strong>和<strong>自动微分（Autograd）</strong>机制。</p>
+<h2 id="13-1-计算图"><a href="#13-1-计算图" class="headerlink" title="13.1 计算图"></a>13.1 计算图</h2><p>神经网络的计算可以表示为一个有向无环图（DAG），其中：</p>
+<ul>
+<li>节点表示操作（operation）或变量</li>
+<li>边表示数据流</li>
+</ul>
+<p>例如 z &#x3D; Wx + b 的计算图：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x ────┐</span><br><span class="line">      ├─→ MatMul ──→ Add ──→ z</span><br><span class="line">W ────┘            ↑</span><br><span class="line">                   │</span><br><span class="line">                   b</span><br></pre></td></tr></table></figure>
+
+<h2 id="13-2-反向模式自动微分"><a href="#13-2-反向模式自动微分" class="headerlink" title="13.2 反向模式自动微分"></a>13.2 反向模式自动微分</h2><p>BP 本质上就是反向模式自动微分（Reverse-mode Automatic Differentiation）的一个特例。反向模式对于”多输入 → 单输出”（即损失函数）的场景特别高效，恰好与神经网络的训练需求匹配。</p>
+<p><strong>前向模式 vs 反向模式</strong>：</p>
+<ul>
+<li>前向模式：适合 f: R^n → R^m 且 n &lt;&lt; m（少输入，多输出）</li>
+<li>反向模式：适合 f: R^n → R 且 n 很大（多输入，单输出），这正是神经网络的场景</li>
+</ul>
+<h2 id="13-3-PyTorch-Autograd-示例"><a href="#13-3-PyTorch-Autograd-示例" class="headerlink" title="13.3 PyTorch Autograd 示例"></a>13.3 PyTorch Autograd 示例</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建需要梯度的张量</span></span><br><span class="line">x = torch.randn(<span class="number">10</span>, <span class="number">3</span>, requires_grad=<span class="literal">True</span>)</span><br><span class="line">W1 = torch.randn(<span class="number">4</span>, <span class="number">3</span>, requires_grad=<span class="literal">True</span>)</span><br><span class="line">b1 = torch.randn(<span class="number">4</span>, <span class="number">1</span>, requires_grad=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 前向传播</span></span><br><span class="line">z1 = W1 @ x.T + b1   <span class="comment"># (4, 10)</span></span><br><span class="line">a1 = torch.relu(z1)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 计算损失</span></span><br><span class="line">loss = a1.<span class="built_in">sum</span>()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 反向传播（自动！）</span></span><br><span class="line">loss.backward()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 梯度已自动填充</span></span><br><span class="line"><span class="built_in">print</span>(W1.grad.shape)   <span class="comment"># torch.Size([4, 3])</span></span><br><span class="line"><span class="built_in">print</span>(b1.grad.shape)   <span class="comment"># torch.Size([4, 1])</span></span><br></pre></td></tr></table></figure>
+
+<p><code>loss.backward()</code> 内部自动执行了完整的 BP 过程。</p>
+<h2 id="13-4-动态图-vs-静态图"><a href="#13-4-动态图-vs-静态图" class="headerlink" title="13.4 动态图 vs 静态图"></a>13.4 动态图 vs 静态图</h2><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>PyTorch (动态图)</th>
+<th>TensorFlow 1.x (静态图)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>图构建</td>
+<td>每次前向传播动态构建</td>
+<td>先定义图，后运行（define-and-run）</td>
+</tr>
+<tr>
+<td>调试</td>
+<td>易于调试，可直接使用 Python 调试器</td>
+<td>需要使用 tf.Session 和专用调试器</td>
+</tr>
+<tr>
+<td>控制流</td>
+<td>原生 Python if&#x2F;for</td>
+<td>需要 tf.cond &#x2F; tf.while_loop</td>
+</tr>
+<tr>
+<td>优化空间</td>
+<td>优化空间较小</td>
+<td>图层面可做更多优化</td>
+</tr>
+<tr>
+<td>现代趋势</td>
+<td>PyTorch 2.0 引入 torch.compile 融合两者</td>
+<td>TensorFlow 2.x 转向 eager execution</td>
+</tr>
+</tbody></table>
+<h1 id="14-NumPy-实现：完整的-BP-训练示例"><a href="#14-NumPy-实现：完整的-BP-训练示例" class="headerlink" title="14. NumPy 实现：完整的 BP 训练示例"></a>14. NumPy 实现：完整的 BP 训练示例</h1><p>下面给出一个完整的 NumPy 实现，训练一个简单的多层网络进行二分类：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="comment"># ========== 激活函数 ==========</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">sigmoid</span>(<span class="params">z</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span> / (<span class="number">1</span> + np.exp(-np.clip(z, -<span class="number">500</span>, <span class="number">500</span>)))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">sigmoid_derivative</span>(<span class="params">z</span>):</span><br><span class="line">    s = sigmoid(z)</span><br><span class="line">    <span class="keyword">return</span> s * (<span class="number">1</span> - s)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">relu</span>(<span class="params">z</span>):</span><br><span class="line">    <span class="keyword">return</span> np.maximum(<span class="number">0</span>, z)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">relu_derivative</span>(<span class="params">z</span>):</span><br><span class="line">    <span class="keyword">return</span> (z &gt; <span class="number">0</span>).astype(<span class="built_in">float</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># ========== 损失函数 ==========</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">binary_cross_entropy</span>(<span class="params">y_hat, y</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;y_hat: 预测概率, y: 真实标签 (0或1)&quot;&quot;&quot;</span></span><br><span class="line">    eps = <span class="number">1e-15</span></span><br><span class="line">    y_hat = np.clip(y_hat, eps, <span class="number">1</span> - eps)</span><br><span class="line">    <span class="keyword">return</span> -np.mean(y * np.log(y_hat) + (<span class="number">1</span> - y) * np.log(<span class="number">1</span> - y_hat))</span><br><span class="line"></span><br><span class="line"><span class="comment"># ========== 初始化 ==========</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">initialize_parameters</span>(<span class="params">layer_dims</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;He 初始化&quot;&quot;&quot;</span></span><br><span class="line">    params = &#123;&#125;</span><br><span class="line">    <span class="keyword">for</span> l <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, <span class="built_in">len</span>(layer_dims)):</span><br><span class="line">        params[<span class="string">f&#x27;W<span class="subst">&#123;l&#125;</span>&#x27;</span>] = np.random.randn(layer_dims[l], layer_dims[l-<span class="number">1</span>]) \</span><br><span class="line">                          * np.sqrt(<span class="number">2.0</span> / layer_dims[l-<span class="number">1</span>])</span><br><span class="line">        params[<span class="string">f&#x27;b<span class="subst">&#123;l&#125;</span>&#x27;</span>] = np.zeros((layer_dims[l], <span class="number">1</span>))</span><br><span class="line">    <span class="keyword">return</span> params</span><br><span class="line"></span><br><span class="line"><span class="comment"># ========== 前向传播 ==========</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">forward_propagation</span>(<span class="params">X, params</span>):</span><br><span class="line">    cache = &#123;<span class="string">&#x27;A0&#x27;</span>: X&#125;</span><br><span class="line">    L = <span class="built_in">len</span>(params) // <span class="number">2</span></span><br><span class="line">    A = X</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> l <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, L):</span><br><span class="line">        Z = params[<span class="string">f&#x27;W<span class="subst">&#123;l&#125;</span>&#x27;</span>] @ A + params[<span class="string">f&#x27;b<span class="subst">&#123;l&#125;</span>&#x27;</span>]</span><br><span class="line">        A = relu(Z)</span><br><span class="line">        cache[<span class="string">f&#x27;Z<span class="subst">&#123;l&#125;</span>&#x27;</span>] = Z</span><br><span class="line">        cache[<span class="string">f&#x27;A<span class="subst">&#123;l&#125;</span>&#x27;</span>] = A</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 输出层用 sigmoid</span></span><br><span class="line">    Z_L = params[<span class="string">f&#x27;W<span class="subst">&#123;L&#125;</span>&#x27;</span>] @ A + params[<span class="string">f&#x27;b<span class="subst">&#123;L&#125;</span>&#x27;</span>]</span><br><span class="line">    A_L = sigmoid(Z_L)</span><br><span class="line">    cache[<span class="string">f&#x27;Z<span class="subst">&#123;L&#125;</span>&#x27;</span>] = Z_L</span><br><span class="line">    cache[<span class="string">f&#x27;A<span class="subst">&#123;L&#125;</span>&#x27;</span>] = A_L</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> A_L, cache</span><br><span class="line"></span><br><span class="line"><span class="comment"># ========== 反向传播 ==========</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">backward_propagation</span>(<span class="params">y, params, cache</span>):</span><br><span class="line">    m = y.shape[<span class="number">1</span>]</span><br><span class="line">    L = <span class="built_in">len</span>(params) // <span class="number">2</span></span><br><span class="line">    grads = &#123;&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 输出层: sigmoid + 交叉熵 -&gt; dZ = A - Y</span></span><br><span class="line">    A_L = cache[<span class="string">f&#x27;A<span class="subst">&#123;L&#125;</span>&#x27;</span>]</span><br><span class="line">    dZ = A_L - y  <span class="comment"># δ^[L]</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> l <span class="keyword">in</span> <span class="built_in">reversed</span>(<span class="built_in">range</span>(<span class="number">1</span>, L + <span class="number">1</span>)):</span><br><span class="line">        A_prev = cache[<span class="string">f&#x27;A<span class="subst">&#123;l-<span class="number">1</span>&#125;</span>&#x27;</span>]</span><br><span class="line">        </span><br><span class="line">        grads[<span class="string">f&#x27;dW<span class="subst">&#123;l&#125;</span>&#x27;</span>] = (<span class="number">1</span> / m) * (dZ @ A_prev.T)</span><br><span class="line">        grads[<span class="string">f&#x27;db<span class="subst">&#123;l&#125;</span>&#x27;</span>] = (<span class="number">1</span> / m) * np.<span class="built_in">sum</span>(dZ, axis=<span class="number">1</span>, keepdims=<span class="literal">True</span>)</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> l &gt; <span class="number">1</span>:</span><br><span class="line">            dA = params[<span class="string">f&#x27;W<span class="subst">&#123;l&#125;</span>&#x27;</span>].T @ dZ</span><br><span class="line">            dZ = dA * relu_derivative(cache[<span class="string">f&#x27;Z<span class="subst">&#123;l-<span class="number">1</span>&#125;</span>&#x27;</span>])</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> grads</span><br><span class="line"></span><br><span class="line"><span class="comment"># ========== Adam 更新 ==========</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">adam_update</span>(<span class="params">params, grads, m_adam, v_adam, t, </span></span><br><span class="line"><span class="params">                lr=<span class="number">0.001</span>, beta1=<span class="number">0.9</span>, beta2=<span class="number">0.999</span>, eps=<span class="number">1e-8</span></span>):</span><br><span class="line">    <span class="keyword">for</span> key <span class="keyword">in</span> params:</span><br><span class="line">        m_adam[key] = beta1 * m_adam[key] + (<span class="number">1</span> - beta1) * grads[<span class="string">f&#x27;d<span class="subst">&#123;key&#125;</span>&#x27;</span>]</span><br><span class="line">        v_adam[key] = beta2 * v_adam[key] + (<span class="number">1</span> - beta2) * (grads[<span class="string">f&#x27;d<span class="subst">&#123;key&#125;</span>&#x27;</span>] ** <span class="number">2</span>)</span><br><span class="line">        </span><br><span class="line">        m_hat = m_adam[key] / (<span class="number">1</span> - beta1 ** t)</span><br><span class="line">        v_hat = v_adam[key] / (<span class="number">1</span> - beta2 ** t)</span><br><span class="line">        </span><br><span class="line">        params[key] -= lr * m_hat / (np.sqrt(v_hat) + eps)</span><br><span class="line"></span><br><span class="line"><span class="comment"># ========== 训练循环 ==========</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">train</span>(<span class="params">X, y, layer_dims, epochs=<span class="number">1000</span>, batch_size=<span class="number">64</span>, lr=<span class="number">0.001</span></span>):</span><br><span class="line">    n_samples = X.shape[<span class="number">1</span>]</span><br><span class="line">    params = initialize_parameters(layer_dims)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 初始化 Adam 状态</span></span><br><span class="line">    L = <span class="built_in">len</span>(layer_dims) - <span class="number">1</span></span><br><span class="line">    m_adam = &#123;&#125;</span><br><span class="line">    v_adam = &#123;&#125;</span><br><span class="line">    <span class="keyword">for</span> l <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, L + <span class="number">1</span>):</span><br><span class="line">        m_adam[<span class="string">f&#x27;W<span class="subst">&#123;l&#125;</span>&#x27;</span>] = np.zeros_like(params[<span class="string">f&#x27;W<span class="subst">&#123;l&#125;</span>&#x27;</span>])</span><br><span class="line">        v_adam[<span class="string">f&#x27;W<span class="subst">&#123;l&#125;</span>&#x27;</span>] = np.zeros_like(params[<span class="string">f&#x27;W<span class="subst">&#123;l&#125;</span>&#x27;</span>])</span><br><span class="line">        m_adam[<span class="string">f&#x27;b<span class="subst">&#123;l&#125;</span>&#x27;</span>] = np.zeros_like(params[<span class="string">f&#x27;b<span class="subst">&#123;l&#125;</span>&#x27;</span>])</span><br><span class="line">        v_adam[<span class="string">f&#x27;b<span class="subst">&#123;l&#125;</span>&#x27;</span>] = np.zeros_like(params[<span class="string">f&#x27;b<span class="subst">&#123;l&#125;</span>&#x27;</span>])</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(epochs):</span><br><span class="line">        <span class="comment"># Mini-batch</span></span><br><span class="line">        perm = np.random.permutation(n_samples)</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, n_samples, batch_size):</span><br><span class="line">            idx = perm[i:i + batch_size]</span><br><span class="line">            X_batch, y_batch = X[:, idx], y[:, idx]</span><br><span class="line">            </span><br><span class="line">            <span class="comment"># 前向</span></span><br><span class="line">            y_hat, cache = forward_propagation(X_batch, params)</span><br><span class="line">            </span><br><span class="line">            <span class="comment"># 反向</span></span><br><span class="line">            grads = backward_propagation(y_batch, params, cache)</span><br><span class="line">            </span><br><span class="line">            <span class="comment"># 更新</span></span><br><span class="line">            t = epoch * (n_samples // batch_size) + i // batch_size + <span class="number">1</span></span><br><span class="line">            adam_update(params, grads, m_adam, v_adam, t, lr=lr)</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 每个 epoch 结束后报告损失</span></span><br><span class="line">        <span class="keyword">if</span> epoch % <span class="number">100</span> == <span class="number">0</span>:</span><br><span class="line">            y_hat_full, _ = forward_propagation(X, params)</span><br><span class="line">            loss = binary_cross_entropy(y_hat_full, y)</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">f&quot;Epoch <span class="subst">&#123;epoch&#125;</span>, Loss: <span class="subst">&#123;loss:<span class="number">.6</span>f&#125;</span>&quot;</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> params</span><br><span class="line"></span><br><span class="line"><span class="comment"># ========== 使用示例 ==========</span></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    <span class="comment"># 生成玩具数据：两个半月形</span></span><br><span class="line">    <span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> make_moons</span><br><span class="line">    X, y = make_moons(n_samples=<span class="number">1000</span>, noise=<span class="number">0.2</span>, random_state=<span class="number">42</span>)</span><br><span class="line">    X = X.T  <span class="comment"># (2, 1000)</span></span><br><span class="line">    y = y.reshape(<span class="number">1</span>, -<span class="number">1</span>)  <span class="comment"># (1, 1000)</span></span><br><span class="line">    </span><br><span class="line">    layer_dims = [<span class="number">2</span>, <span class="number">16</span>, <span class="number">8</span>, <span class="number">1</span>]  <span class="comment"># 2输入 -&gt; 16 -&gt; 8 -&gt; 1输出</span></span><br><span class="line">    trained_params = train(X, y, layer_dims, epochs=<span class="number">2000</span>, batch_size=<span class="number">32</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;训练完成！&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h1 id="15-训练实用技巧总结"><a href="#15-训练实用技巧总结" class="headerlink" title="15. 训练实用技巧总结"></a>15. 训练实用技巧总结</h1><h2 id="15-1-数据预处理"><a href="#15-1-数据预处理" class="headerlink" title="15.1 数据预处理"></a>15.1 数据预处理</h2><ul>
+<li><strong>标准化</strong>：使每个特征均值为 0，标准差为 1。<code>X = (X - mean) / std</code></li>
+<li><strong>归一化</strong>：将特征缩放到 [0, 1] 或 [-1, 1] 区间</li>
+<li>不标准化的后果：不同特征的尺度差异会导致权重更新的步长在不同方向差异巨大，优化路径呈 “之” 字形</li>
+</ul>
+<h2 id="15-2-梯度相关技巧"><a href="#15-2-梯度相关技巧" class="headerlink" title="15.2 梯度相关技巧"></a>15.2 梯度相关技巧</h2><ul>
+<li>定期检查梯度范数：如果梯度持续很小（&lt; 1e-7），可能存在梯度消失</li>
+<li>如果损失函数不下降，试试增大学习率或更换优化器</li>
+<li>使用 <code>np.isnan(grad).any()</code> 检查梯度是否爆炸</li>
+</ul>
+<h2 id="15-3-调试-BP-的步进清单"><a href="#15-3-调试-BP-的步进清单" class="headerlink" title="15.3 调试 BP 的步进清单"></a>15.3 调试 BP 的步进清单</h2><ol>
+<li>先在极小的数据集（如 10 个样本）上训练，确保能过拟合（损失 → 0）</li>
+<li>对随机数据（标签打乱）训练，损失应无法下降——这证明网络有足够容量且实现正确</li>
+<li>用数值梯度检查验证手工推导的梯度</li>
+<li>逐步增加网络深度，观察每一层的梯度范数</li>
+</ol>
+<h1 id="16-面试高频问答"><a href="#16-面试高频问答" class="headerlink" title="16. 面试高频问答"></a>16. 面试高频问答</h1><p><strong>Q1: 请用白板推导 BP 算法中一个隐藏层神经元的权重梯度。要求写出完整的链式法则展开过程。</strong></p>
+<p>A: 以三层网络为例，隐藏层神经元 j 连接到输出层神经元 k 的权重 W_{kj}。根据 BP 算法，我们需要计算 ∂E&#x2F;∂W_{kj}。</p>
+<p>第一步：明确 E 是输出层激活值 a_k 的函数，而 a_k 依赖于 z_k，z_k 依赖于 W_{kj}：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">∂E/∂W_&#123;kj&#125; = ∂E/∂a_k · ∂a_k/∂z_k · ∂z_k/∂W_&#123;kj&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第二步：分别计算三项：</p>
+<ul>
+<li>∂E&#x2F;∂a_k &#x3D; a_k - y_k（MSE 损失）</li>
+<li>∂a_k&#x2F;∂z_k &#x3D; g’(z_k)（激活函数导数）</li>
+<li>∂z_k&#x2F;∂W_{kj} &#x3D; a_j（前一层激活值）</li>
+</ul>
+<p>第三步：定义误差信号 δ_k &#x3D; (a_k - y_k) · g’(z_k)，则：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">∂E/∂W_&#123;kj&#125; = δ_k · a_j</span><br></pre></td></tr></table></figure>
+
+<p>写成矩阵形式就是 δ^{[2]} · (a^{[1]})^T。关键是理解为什么定义 δ &#x3D; ∂E&#x2F;∂z 作为中间变量——它使得整个反向传播可以递归地逐层计算，极大地简化了表达。</p>
+<hr>
+<p><strong>Q2: 为什么 sigmoid + MSE 的组合在深度网络中表现很差？sigmoid + 交叉熵又如何？请从数学角度分析。</strong></p>
+<p>A: sigmoid + MSE 的问题出在输出层的反向传播公式：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">δ = (ŷ - y) ⊙ σ&#x27;(z)</span><br></pre></td></tr></table></figure>
+<p>当 σ’(z) 很小时（即 z 的绝对值很大，sigmoid 进入饱和区），即使 (ŷ - y) 很大，δ 也会被 σ’(z) 缩小，导致梯度很小，参数更新缓慢。</p>
+<p>而 sigmoid + 交叉熵损失的计算：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">E = -[y log ŷ + (1-y) log(1-ŷ)]</span><br><span class="line">∂E/∂z = ∂E/∂ŷ · ∂ŷ/∂z </span><br><span class="line">       = [-(y/ŷ) + (1-y)/(1-ŷ)] · ŷ(1-ŷ)</span><br><span class="line">       = ŷ - y</span><br></pre></td></tr></table></figure>
+<p>σ’(z) &#x3D; ŷ(1-ŷ) 恰好与损失函数的导数中的项抵消，得到的 δ &#x3D; ŷ - y 不包含 σ’(z) 因子。这样当预测错误时（ŷ 与 y 差异大），梯度就大，不会因为饱和而停止学习。这是数学上的精妙设计。</p>
+<hr>
+<p><strong>Q3: Batch Normalization 在训练和推理时的行为有什么不同？为什么？</strong></p>
+<p>A: 在训练时，BN 使用当前 mini-batch 的均值 μ_B 和方差 σ_B^2 进行标准化。这引入了随机性，起到了正则化效果（类似 Dropout）。</p>
+<p>在推理（测试&#x2F;部署）时，BN 使用训练过程中维护的移动平均 μ_running 和 σ^2_running 进行标准化。原因有二：</p>
+<ol>
+<li>推理时可能没有 “batch” 的概念（单样本预测），无法计算 mini-batch 统计量</li>
+<li>推理需要确定性输出，不能依赖当前输入的统计量</li>
+</ol>
+<p>此外，BN 的可学习参数 γ 和 β 不受影响——它们在训练和推理时的行为完全一致。</p>
+<hr>
+<p><strong>Q4: 什么是 dying ReLU 问题？有哪些解决方案？</strong></p>
+<p>A: Dying ReLU 是指 ReLU 神经元对几乎所有输入输出负值，导致该神经元的梯度恒为零，权重永远不会再被更新的现象。常见原因包括：</p>
+<ul>
+<li>学习率过大，权重被更新到使 z ≤ 0 的区域</li>
+<li>偏置初始化过于负值</li>
+<li>高学习率 + 大梯度导致参数 “跳入” 死亡区</li>
+</ul>
+<p>解决方案：</p>
+<ol>
+<li><strong>LeakyReLU&#x2F;PReLU</strong>：负区间有非零梯度（如 α &#x3D; 0.01），权重可以继续更新</li>
+<li><strong>ELU</strong>：负区间平滑且输出均值接近零</li>
+<li><strong>更小的学习率</strong>：减少参数 “跳入” 死亡区的概率</li>
+<li><strong>偏置初始化为小的正数</strong>：如 b &#x3D; 0.01，使初始 z &gt; 0</li>
+<li><strong>使用 Adam 等自适应优化器</strong>：每个参数有独立的学习率，能更好地平衡</li>
+</ol>
+<p>数学上，dying ReLU 的本质是 ReLU 在 z ≤ 0 时 ∂ReLU&#x2F;∂z &#x3D; 0，由 BP 的链式法则，这个零会传播给所有依赖它的权重：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">∂E/∂W_j = δ_j · a_&#123;prev&#125;</span><br><span class="line">如果 δ_j 因 ReLU 导数而为零，则 ∂E/∂W_j = 0</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p><strong>Q5: 请解释 Adam 优化器中的偏差校正（bias correction）是什么意思，为什么需要它？</strong></p>
+<p>A: Adam 维护两个指数移动平均：一阶矩估计 m_t 和二阶矩估计 v_t，初始化时均为零向量。</p>
+<p>以 m_t 为例：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">m_1 = β_1 · 0 + (1 - β_1) · g_1 = (1 - β_1) · g_1</span><br><span class="line">m_2 = β_1 · m_1 + (1 - β_1) · g_2 </span><br><span class="line">    = β_1(1 - β_1)g_1 + (1 - β_1)g_2</span><br><span class="line">    = (1 - β_1)[β_1 g_1 + g_2]</span><br></pre></td></tr></table></figure>
+
+<p>展开后系数之和是 (1 - β_1) · (β_1 + 1)，不等于 1（应为 1 才是有效的加权平均）。</p>
+<p>实际上，数学期望 E[m_t] 不等于真实的一阶矩 E[g_t]。可以证明：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">E[m_t] = E[g_t] · (1 - β_1^t)</span><br></pre></td></tr></table></figure>
+
+<p>因此需要除以 (1 - β_1^t) 来校正：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">m̂_t = m_t / (1 - β_1^t)</span><br></pre></td></tr></table></figure>
+
+<p>当 t 很大时，β_1^t → 0，校正因子趋于 1，校正效果自动消失。这确保在训练的早期阶段（t 较小时），估计值是无偏的，避免初始步长的严重低估导致收敛缓慢。</p>
+<p>实践中，不使用偏差校正的 Adam 在训练初期步长会非常小，可能需要数十步才能 “加速” 到正常步长。偏差校正使得 Adam 从第一步起就以合理的步长前进。</p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2020/06/20/%E3%80%90%E7%BB%8F%E5%85%B8%E7%AE%97%E6%B3%95%E3%80%91%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9CBP%E7%AE%97%E6%B3%95/">http://tufusi.com/2020/06/20/%E3%80%90%E7%BB%8F%E5%85%B8%E7%AE%97%E6%B3%95%E3%80%91%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9CBP%E7%AE%97%E6%B3%95/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2020/07/01/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E2%85%A1%E3%80%91%E9%A9%AC%E5%B0%94%E7%A7%91%E5%A4%AB%E9%93%BE%E8%92%99%E7%89%B9%E5%8D%A1%E6%B4%9B%E6%B3%95/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【统计学习方法死磕系列Ⅱ】马尔科夫链蒙特卡洛法</span></div></a></div><div class="next-post pull_right"><a href="/2020/06/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【统计学习方法死磕系列】支持向量机</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

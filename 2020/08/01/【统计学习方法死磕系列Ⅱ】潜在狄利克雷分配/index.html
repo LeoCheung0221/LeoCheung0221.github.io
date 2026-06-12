@@ -1,0 +1,522 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【统计学习方法死磕系列Ⅱ】潜在狄利克雷分配 | ONE·PIECE</title><meta name="description" content="【统计学习方法死磕系列Ⅱ】潜在狄利克雷分配"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【统计学习方法死磕系列Ⅱ】潜在狄利克雷分配"><meta name="twitter:description" content="【统计学习方法死磕系列Ⅱ】潜在狄利克雷分配"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【统计学习方法死磕系列Ⅱ】潜在狄利克雷分配"><meta property="og:url" content="http://tufusi.com/2020/08/01/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E2%85%A1%E3%80%91%E6%BD%9C%E5%9C%A8%E7%8B%84%E5%88%A9%E5%85%8B%E9%9B%B7%E5%88%86%E9%85%8D/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【统计学习方法死磕系列Ⅱ】潜在狄利克雷分配"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2020/08/01/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E2%85%A1%E3%80%91%E6%BD%9C%E5%9C%A8%E7%8B%84%E5%88%A9%E5%85%8B%E9%9B%B7%E5%88%86%E9%85%8D/"><link rel="prev" title="【GNN原理解析】什么是图" href="http://tufusi.com/2020/08/05/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E4%BB%80%E4%B9%88%E6%98%AF%E5%9B%BE/"><link rel="next" title="【统计学习方法死磕系列】提升算法" href="http://tufusi.com/2020/07/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%8F%90%E5%8D%87%E7%AE%97%E6%B3%95/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E5%BC%95%E8%A8%80%EF%BC%9A%E4%BB%8E%E6%96%87%E6%A1%A3%E5%88%B0%E4%B8%BB%E9%A2%98"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、引言：从文档到主题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81%E4%BB%8E-LSA-%E5%88%B0-pLSA-%E5%88%B0-LDA-%E7%9A%84%E6%BC%94%E5%8F%98"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、从 LSA 到 pLSA 到 LDA 的演变</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E4%B8%89%E4%B8%AA%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 三个模型的对比</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81LDA-%E7%9A%84%E6%A0%B8%E5%BF%83%E5%81%87%E8%AE%BE%E4%B8%8E%E7%94%9F%E6%88%90%E8%BF%87%E7%A8%8B"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、LDA 的核心假设与生成过程</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E6%A8%A1%E5%9E%8B%E5%81%87%E8%AE%BE"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 模型假设</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E7%94%9F%E6%88%90%E8%BF%87%E7%A8%8B%E7%9A%84%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 生成过程的伪代码</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-%E7%9B%98%E5%AD%90%E8%A1%A8%E7%A4%BA%E6%B3%95%EF%BC%88Plate-Notation%EF%BC%89"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 盘子表示法（Plate Notation）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-Dirichlet-%E5%88%86%E5%B8%83%E7%9A%84%E7%9B%B4%E8%A7%82%E7%90%86%E8%A7%A3"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">3.4 Dirichlet 分布的直观理解</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81LDA-%E7%9A%84%E6%95%B0%E5%AD%A6%E4%B8%8E%E6%8E%A8%E6%96%AD"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、LDA 的数学与推断</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E8%81%94%E5%90%88%E6%A6%82%E7%8E%87%E5%88%86%E5%B8%83"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 联合概率分布</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E6%8E%A8%E6%96%AD%E7%9B%AE%E6%A0%87"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 推断目标</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-%E6%8E%A8%E6%96%AD%E6%96%B9%E6%B3%95%E6%A6%82%E8%BF%B0"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 推断方法概述</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81%E5%9D%8D%E7%BC%A9-Gibbs-%E9%87%87%E6%A0%B7%E6%8E%A8%E5%AF%BC"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、坍缩 Gibbs 采样推导</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-Dirichlet-Multinomial-%E5%85%B1%E8%BD%AD"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 Dirichlet-Multinomial 共轭</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-%E5%9D%8D%E7%BC%A9-Gibbs-%E9%87%87%E6%A0%B7%E5%85%AC%E5%BC%8F"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 坍缩 Gibbs 采样公式</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-%E7%AE%97%E6%B3%95%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 算法伪代码</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-4-Python-%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">5.4.</span> <span class="toc_mobile_items-text">5.4 Python 实现</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94-B%E3%80%81%E5%8F%98%E5%88%86%E6%8E%A8%E6%96%AD%E8%A7%86%E8%A7%92%EF%BC%88Blei-et-al-%E5%8E%9F%E5%A7%8B%E6%96%B9%E6%B3%95%EF%BC%89"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">五-B、变分推断视角（Blei et al. 原始方法）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%8F%98%E5%88%86%E6%8E%A8%E6%96%AD%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">变分推断的核心思想</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%8F%98%E5%88%86-EM-%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">变分 EM 算法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%8F%98%E5%88%86%E6%8E%A8%E6%96%AD-vs-Gibbs-%E9%87%87%E6%A0%B7"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">变分推断 vs Gibbs 采样</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81LDA-%E7%9A%84%E5%BA%94%E7%94%A8%E4%B8%8E%E5%AE%9E%E8%B7%B5"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">六、LDA 的应用与实践</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">6.1 应用场景</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-sklearn-%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">6.2 sklearn 实现</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-%E5%9B%B0%E6%83%91%E5%BA%A6%E8%AF%84%E4%BC%B0"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">6.3 困惑度评估</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">七、面试高频问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">八、总结</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%BC%95%E8%A8%80%EF%BC%9A%E4%BB%8E%E6%96%87%E6%A1%A3%E5%88%B0%E4%B8%BB%E9%A2%98"><span class="toc-number">1.</span> <span class="toc-text">一、引言：从文档到主题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E4%BB%8E-LSA-%E5%88%B0-pLSA-%E5%88%B0-LDA-%E7%9A%84%E6%BC%94%E5%8F%98"><span class="toc-number">2.</span> <span class="toc-text">二、从 LSA 到 pLSA 到 LDA 的演变</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E4%B8%89%E4%B8%AA%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 三个模型的对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81LDA-%E7%9A%84%E6%A0%B8%E5%BF%83%E5%81%87%E8%AE%BE%E4%B8%8E%E7%94%9F%E6%88%90%E8%BF%87%E7%A8%8B"><span class="toc-number">3.</span> <span class="toc-text">三、LDA 的核心假设与生成过程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%A8%A1%E5%9E%8B%E5%81%87%E8%AE%BE"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 模型假设</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E7%94%9F%E6%88%90%E8%BF%87%E7%A8%8B%E7%9A%84%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 生成过程的伪代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E7%9B%98%E5%AD%90%E8%A1%A8%E7%A4%BA%E6%B3%95%EF%BC%88Plate-Notation%EF%BC%89"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 盘子表示法（Plate Notation）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-Dirichlet-%E5%88%86%E5%B8%83%E7%9A%84%E7%9B%B4%E8%A7%82%E7%90%86%E8%A7%A3"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 Dirichlet 分布的直观理解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81LDA-%E7%9A%84%E6%95%B0%E5%AD%A6%E4%B8%8E%E6%8E%A8%E6%96%AD"><span class="toc-number">4.</span> <span class="toc-text">四、LDA 的数学与推断</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E8%81%94%E5%90%88%E6%A6%82%E7%8E%87%E5%88%86%E5%B8%83"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 联合概率分布</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%8E%A8%E6%96%AD%E7%9B%AE%E6%A0%87"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 推断目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E6%8E%A8%E6%96%AD%E6%96%B9%E6%B3%95%E6%A6%82%E8%BF%B0"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 推断方法概述</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%9D%8D%E7%BC%A9-Gibbs-%E9%87%87%E6%A0%B7%E6%8E%A8%E5%AF%BC"><span class="toc-number">5.</span> <span class="toc-text">五、坍缩 Gibbs 采样推导</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Dirichlet-Multinomial-%E5%85%B1%E8%BD%AD"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 Dirichlet-Multinomial 共轭</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E5%9D%8D%E7%BC%A9-Gibbs-%E9%87%87%E6%A0%B7%E5%85%AC%E5%BC%8F"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 坍缩 Gibbs 采样公式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E7%AE%97%E6%B3%95%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 算法伪代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-Python-%E5%AE%9E%E7%8E%B0"><span class="toc-number">5.4.</span> <span class="toc-text">5.4 Python 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94-B%E3%80%81%E5%8F%98%E5%88%86%E6%8E%A8%E6%96%AD%E8%A7%86%E8%A7%92%EF%BC%88Blei-et-al-%E5%8E%9F%E5%A7%8B%E6%96%B9%E6%B3%95%EF%BC%89"><span class="toc-number">6.</span> <span class="toc-text">五-B、变分推断视角（Blei et al. 原始方法）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%98%E5%88%86%E6%8E%A8%E6%96%AD%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">6.1.</span> <span class="toc-text">变分推断的核心思想</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%98%E5%88%86-EM-%E7%AE%97%E6%B3%95"><span class="toc-number">6.2.</span> <span class="toc-text">变分 EM 算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%98%E5%88%86%E6%8E%A8%E6%96%AD-vs-Gibbs-%E9%87%87%E6%A0%B7"><span class="toc-number">6.3.</span> <span class="toc-text">变分推断 vs Gibbs 采样</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81LDA-%E7%9A%84%E5%BA%94%E7%94%A8%E4%B8%8E%E5%AE%9E%E8%B7%B5"><span class="toc-number">7.</span> <span class="toc-text">六、LDA 的应用与实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">7.1.</span> <span class="toc-text">6.1 应用场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-sklearn-%E5%AE%9E%E7%8E%B0"><span class="toc-number">7.2.</span> <span class="toc-text">6.2 sklearn 实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E5%9B%B0%E6%83%91%E5%BA%A6%E8%AF%84%E4%BC%B0"><span class="toc-number">7.3.</span> <span class="toc-text">6.3 困惑度评估</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E9%A2%98"><span class="toc-number">8.</span> <span class="toc-text">七、面试高频问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-number">9.</span> <span class="toc-text">八、总结</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【统计学习方法死磕系列Ⅱ】潜在狄利克雷分配</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2020-08-01<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0/">统计学习</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">4.6k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 18 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、引言：从文档到主题"><a href="#一、引言：从文档到主题" class="headerlink" title="一、引言：从文档到主题"></a>一、引言：从文档到主题</h2><p>想象你面前摆着 10000 篇新闻文章。你想知道它们大约在讨论哪些主题——政治、体育、科技、娱乐？每个主题由哪些关键词定义？每篇文章又涉及哪些主题、各占多少比例？</p>
+<p>潜在狄利克雷分配（Latent Dirichlet Allocation, LDA）是解决这个问题的经典模型。它由 Blei、Ng 和 Jordan 于 2003 年提出，是主题模型（Topic Model）中最具代表性的工作，也是贝叶斯层级模型在自然语言处理中最成功的应用之一。</p>
+<p>LDA 的核心假设优雅而深刻：<strong>每篇文档是关于若干主题的分布，每个主题是关于若干词语的分布</strong>。这一简单的三层贝叶斯模型，能够从无标签的文档集合中自动发现”主题”及其对应的词语分布。</p>
+<h2 id="二、从-LSA-到-pLSA-到-LDA-的演变"><a href="#二、从-LSA-到-pLSA-到-LDA-的演变" class="headerlink" title="二、从 LSA 到 pLSA 到 LDA 的演变"></a>二、从 LSA 到 pLSA 到 LDA 的演变</h2><p>在进入 LDA 的细节之前，有必要理解主题模型的发展脉络。</p>
+<h3 id="2-1-三个模型的对比"><a href="#2-1-三个模型的对比" class="headerlink" title="2.1 三个模型的对比"></a>2.1 三个模型的对比</h3><table>
+<thead>
+<tr>
+<th>模型</th>
+<th>年份</th>
+<th>数学基础</th>
+<th>概率</th>
+<th>文档-主题</th>
+<th>可生成</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LSA</td>
+<td>1988</td>
+<td>SVD</td>
+<td>非概率</td>
+<td>确定值</td>
+<td>否</td>
+</tr>
+<tr>
+<td>pLSA</td>
+<td>1999</td>
+<td>EM 算法</td>
+<td>概率</td>
+<td>确定值</td>
+<td>否（对新文档不行）</td>
+</tr>
+<tr>
+<td>LDA</td>
+<td>2003</td>
+<td>贝叶斯推断</td>
+<td>概率</td>
+<td>随机变量</td>
+<td>是</td>
+</tr>
+</tbody></table>
+<p>LDA 相对于 pLSA 的关键改进是：<strong>在文档-主题分布和主题-词分布上加了 Dirichlet 先验</strong>，使模型成为完全的贝叶斯生成模型，能够对新文档进行推断，也避免了 pLSA 的参数爆炸问题。</p>
+<h2 id="三、LDA-的核心假设与生成过程"><a href="#三、LDA-的核心假设与生成过程" class="headerlink" title="三、LDA 的核心假设与生成过程"></a>三、LDA 的核心假设与生成过程</h2><h3 id="3-1-模型假设"><a href="#3-1-模型假设" class="headerlink" title="3.1 模型假设"></a>3.1 模型假设</h3><p>LDA 假设一个包含 $K$ 个主题和 $V$ 个词汇的语料库 $D$（含 $M$ 篇文档）按以下方式生成：</p>
+<ol>
+<li>每个主题 $k$ 有一个词分布 $\varphi_k \sim \text{Dirichlet}(\beta)$（$V$ 维向量）</li>
+<li>每篇文档 $d$ 有一个主题分布 $\theta_d \sim \text{Dirichlet}(\alpha)$（$K$ 维向量）</li>
+<li>文档 $d$ 中的每个词通过两步生成：<ul>
+<li>先按 $\theta_d$ 选一个主题 $z_{d,n} \sim \text{Multinomial}(\theta_d)$</li>
+<li>再按该主题的词分布 $\varphi_{z_{d,n}}$ 选一个词 $w_{d,n} \sim \text{Multinomial}(\varphi_{z_{d,n}})$</li>
+</ul>
+</li>
+</ol>
+<p>其中 $\alpha$ 和 $\beta$ 是 Dirichlet 先验的浓度参数。</p>
+<h3 id="3-2-生成过程的伪代码"><a href="#3-2-生成过程的伪代码" class="headerlink" title="3.2 生成过程的伪代码"></a>3.2 生成过程的伪代码</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Algorithm: LDA Generative Process</span><br><span class="line">----------------------------------------------</span><br><span class="line">Input: M, K, V, α, β</span><br><span class="line"></span><br><span class="line">1. For each topic k = 1..K:</span><br><span class="line">       φ_k ~ Dirichlet(β)       // topic-word distribution</span><br><span class="line"></span><br><span class="line">2. For each document d = 1..M:</span><br><span class="line">       θ_d ~ Dirichlet(α)       // document-topic distribution</span><br><span class="line">       </span><br><span class="line">       For each word position n = 1..N_d:</span><br><span class="line">           z_&#123;d,n&#125; ~ Categorical(θ_d)     // topic assignment</span><br><span class="line">           w_&#123;d,n&#125; ~ Categorical(φ_&#123;z_&#123;d,n&#125;&#125;)  // word generation</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-盘子表示法（Plate-Notation）"><a href="#3-3-盘子表示法（Plate-Notation）" class="headerlink" title="3.3 盘子表示法（Plate Notation）"></a>3.3 盘子表示法（Plate Notation）</h3><p>LDA 的图模型可以用以下盘子表示：</p>
+<ul>
+<li>外层盘子（M）：重复 M 次（每篇文档）</li>
+<li>内层盘子（N）：重复 N_d 次（文档中的每个词）</li>
+<li>外层 $K$：重复 K 次（每个主题）</li>
+</ul>
+<p>变量的依赖关系：</p>
+<ul>
+<li>$\alpha \to \theta_d \to z_{d,n}$（文档的主题分布影响每个词的主题）</li>
+<li>$\beta \to \varphi_k \to w_{d,n}$（每个主题的词分布影响词的生成）</li>
+<li>$z_{d,n} \to w_{d,n}$（词的主题决定词的生成）</li>
+</ul>
+<h3 id="3-4-Dirichlet-分布的直观理解"><a href="#3-4-Dirichlet-分布的直观理解" class="headerlink" title="3.4 Dirichlet 分布的直观理解"></a>3.4 Dirichlet 分布的直观理解</h3><p>Dirichlet 分布是 Beta 分布的多元推广。一个 $K$ 维 Dirichlet 分布的概率密度为：</p>
+<p>$$
+p(\theta | \alpha) = \frac{\Gamma(\sum_k \alpha_k)}{\prod_k \Gamma(\alpha_k)} \prod_{k=1}^{K} \theta_k^{\alpha_k - 1}
+$$</p>
+<p>其中 $\theta_k \geq 0, \sum_k \theta_k &#x3D; 1$（因此在 $K-1$ 维单纯形上）。</p>
+<p><strong>对称 Dirichlet 先验</strong>（$\alpha_1 &#x3D; \alpha_2 &#x3D; \dots &#x3D; \alpha_K &#x3D; \alpha$）：</p>
+<ul>
+<li>$\alpha &lt; 1$：倾向于<strong>稀疏</strong>的分布——文档倾向于聚焦在少数几个主题上</li>
+<li>$\alpha &#x3D; 1$：均匀先验——等价于在单纯形上均匀采样</li>
+<li>$\alpha &gt; 1$：倾向于<strong>平滑</strong>的分布——文档倾向于混合多个主题</li>
+</ul>
+<p>对于主题模型，通常取 $\alpha &lt; 1$（如 0.1）来鼓励每个文档只涉及少量主题，同理 $\beta &lt; 1$（如 0.01）来鼓励每个主题只涉及少量词汇。</p>
+<h2 id="四、LDA-的数学与推断"><a href="#四、LDA-的数学与推断" class="headerlink" title="四、LDA 的数学与推断"></a>四、LDA 的数学与推断</h2><h3 id="4-1-联合概率分布"><a href="#4-1-联合概率分布" class="headerlink" title="4.1 联合概率分布"></a>4.1 联合概率分布</h3><p>LDA 的完全联合概率为：</p>
+<p>$$
+p(W, Z, \Theta, \Phi | \alpha, \beta) = \prod_{k=1}^{K} p(\varphi_k | \beta) \prod_{d=1}^{M} p(\theta_d | \alpha) \prod_{n=1}^{N_d} p(z_{d,n} | \theta_d) p(w_{d,n} | z_{d,n}, \varphi)
+$$</p>
+<p>我们观测到的只有词 $W$，需要推断的是隐变量 $Z$（主题分配）、$\Theta$（文档-主题分布）和 $\Phi$（主题-词分布）。</p>
+<h3 id="4-2-推断目标"><a href="#4-2-推断目标" class="headerlink" title="4.2 推断目标"></a>4.2 推断目标</h3><p>我们想要计算后验分布：</p>
+<p>$$
+p(Z, \Theta, \Phi | W, \alpha, \beta) = \frac{p(W, Z, \Theta, \Phi | \alpha, \beta)}{p(W | \alpha, \beta)}
+$$</p>
+<p>分母 $p(W|\alpha,\beta)$ 涉及对 $\Theta$、$\Phi$ 和 $Z$ 的高维积分，无法解析计算。因此需要近似推断方法。</p>
+<h3 id="4-3-推断方法概述"><a href="#4-3-推断方法概述" class="headerlink" title="4.3 推断方法概述"></a>4.3 推断方法概述</h3><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>核心思想</th>
+<th>优缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>变分推断（VB）</td>
+<td>用简单的变分分布近似后验</td>
+<td>Blei 原文使用，快速但可能偏差</td>
+</tr>
+<tr>
+<td>坍缩 Gibbs 采样</td>
+<td>积分掉 $\Theta, \Phi$，仅对 $Z$ 采样</td>
+<td>实现简单，结果较好，但慢</td>
+</tr>
+<tr>
+<td>坍缩变分推断（CVB）</td>
+<td>融合 Gibbs 采样和 VB</td>
+<td>速度和精度的折中</td>
+</tr>
+<tr>
+<td>在线变分推断</td>
+<td>每次用部分数据更新</td>
+<td>适合流数据或大数据集</td>
+</tr>
+</tbody></table>
+<p>本文将重点介绍<strong>坍缩 Gibbs 采样</strong>——这是最直观、也最容易手写实现的方法。</p>
+<h2 id="五、坍缩-Gibbs-采样推导"><a href="#五、坍缩-Gibbs-采样推导" class="headerlink" title="五、坍缩 Gibbs 采样推导"></a>五、坍缩 Gibbs 采样推导</h2><h3 id="5-1-Dirichlet-Multinomial-共轭"><a href="#5-1-Dirichlet-Multinomial-共轭" class="headerlink" title="5.1 Dirichlet-Multinomial 共轭"></a>5.1 Dirichlet-Multinomial 共轭</h3><p>Gibbs 采样的关键是利用 Dirichlet 与 Multinomial 的共轭关系：</p>
+<p>如果 $\theta \sim \text{Dirichlet}(\alpha)$，且 $z_i \sim \text{Multinomial}(\theta)$，则 $\theta$ 的后验也是 Dirichlet：</p>
+<p>$$
+p(\theta | z_1, \dots, z_N) = \text{Dirichlet}(\alpha + c_1, \alpha + c_2, \dots, \alpha + c_K)
+$$</p>
+<p>其中 $c_k$ 是观察到 $z_i &#x3D; k$ 的次数。</p>
+<p>这一共轭性质允许我们把 $\Theta$ 和 $\Phi$ 积分掉（”坍缩”），大幅简化采样问题。</p>
+<h3 id="5-2-坍缩-Gibbs-采样公式"><a href="#5-2-坍缩-Gibbs-采样公式" class="headerlink" title="5.2 坍缩 Gibbs 采样公式"></a>5.2 坍缩 Gibbs 采样公式</h3><p>将 $\Theta$ 和 $\Phi$ 积分掉后，只剩下主题分配 $Z$ 需要采样。对于文档 $d$ 中的第 $n$ 个词（设位置为 $i$），其主题分配 $z_{d,n}$ 的条件分布为：</p>
+<p>$$
+p(z_{d,n} = k | Z_{\setminus(d,n)}, W, \alpha, \beta) \propto
+\frac{n_{d,k}^{\setminus(d,n)} + \alpha_k}{\sum_{j}(n_{d,j}^{\setminus(d,n)} + \alpha_j)}
+\cdot
+\frac{m_{k, w_{d,n}}^{\setminus(d,n)} + \beta}{\sum_{v}(m_{k,v}^{\setminus(d,n)} + \beta)}
+$$</p>
+<p>其中：</p>
+<ul>
+<li>$n_{d,k}$：文档 $d$ 中分配给主题 $k$ 的词数</li>
+<li>$m_{k,v}$：词汇 $v$ 被分配给主题 $k$ 的次数（在所有文档中）</li>
+<li>$\setminus(d,n)$：除去当前位置的计数</li>
+</ul>
+<p>直观理解：</p>
+<ul>
+<li><strong>第一项</strong>（文档-主题）：文档 $d$ 中主题 $k$ 的比例。话题 $k$ 在文档中越”火”，当前位置越倾向于选它</li>
+<li><strong>第二项</strong>（主题-词）：词 $w_{d,n}$ 在主题 $k$ 中出现的比例。该词在主题 $k$ 中越常见，当前位置越倾向选它</li>
+</ul>
+<p>两者相乘，体现了 LDA 的”富者愈富”（rich get richer）效应。</p>
+<h3 id="5-3-算法伪代码"><a href="#5-3-算法伪代码" class="headerlink" title="5.3 算法伪代码"></a>5.3 算法伪代码</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Algorithm: Collapsed Gibbs Sampling for LDA</span><br><span class="line">----------------------------------------------</span><br><span class="line">Input: corpus (documents of word indices), K, α, β, iterations</span><br><span class="line">Output: topic assignments Z, φ_k, θ_d</span><br><span class="line"></span><br><span class="line">// Initialization</span><br><span class="line">For each document d:</span><br><span class="line">    For each word position n in document d:</span><br><span class="line">        Randomly assign topic z_&#123;d,n&#125; ∈ &#123;1..K&#125;</span><br><span class="line">        Increment counters:</span><br><span class="line">            n_&#123;d,k&#125; += 1</span><br><span class="line">            m_&#123;k,w_&#123;d,n&#125;&#125; += 1</span><br><span class="line"></span><br><span class="line">// Gibbs sampling iterations</span><br><span class="line">For iter = 1 to iterations:</span><br><span class="line">    For each document d:</span><br><span class="line">        For each word position n in document d:</span><br><span class="line">            // Remove current assignment</span><br><span class="line">            Decrement counters for (d, n)</span><br><span class="line">            </span><br><span class="line">            // Compute conditional probability for each topic k</span><br><span class="line">            For k = 1 to K:</span><br><span class="line">                p(k) ∝ (n_&#123;d,k&#125; + α) * (m_&#123;k,word&#125; + β) </span><br><span class="line">                        / (Σ_j n_&#123;d,j&#125; + Kα) / (Σ_v m_&#123;k,v&#125; + Vβ)</span><br><span class="line">            </span><br><span class="line">            // Sample new topic from p(k)</span><br><span class="line">            z_&#123;d,n&#125; ~ Categorical(softmax(log_p))</span><br><span class="line">            </span><br><span class="line">            // Update counters</span><br><span class="line"></span><br><span class="line">// Estimate φ and θ after burn-in</span><br><span class="line">For k = 1..K:</span><br><span class="line">    φ_kv = (m_&#123;k,v&#125; + β) / (Σ_v&#x27; m_&#123;k,v&#x27;&#125; + Vβ)</span><br><span class="line">For d = 1..M:</span><br><span class="line">    θ_dk = (n_&#123;d,k&#125; + α) / (Σ_k&#x27; n_&#123;d,k&#x27;&#125; + Kα)</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-4-Python-实现"><a href="#5-4-Python-实现" class="headerlink" title="5.4 Python 实现"></a>5.4 Python 实现</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> defaultdict</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">LDA</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, n_topics=<span class="number">10</span>, alpha=<span class="number">0.1</span>, beta=<span class="number">0.01</span>, n_iters=<span class="number">1000</span></span>):</span><br><span class="line">        <span class="variable language_">self</span>.K = n_topics</span><br><span class="line">        <span class="variable language_">self</span>.alpha = alpha</span><br><span class="line">        <span class="variable language_">self</span>.beta = beta</span><br><span class="line">        <span class="variable language_">self</span>.n_iters = n_iters</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">fit</span>(<span class="params">self, docs, vocab_size</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        docs: list of list of word indices</span></span><br><span class="line"><span class="string">        vocab_size: int</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        M = <span class="built_in">len</span>(docs)</span><br><span class="line">        V = vocab_size</span><br><span class="line">        K = <span class="variable language_">self</span>.K</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># Counters</span></span><br><span class="line">        ndk = np.zeros((M, K))       <span class="comment"># doc-topic counts</span></span><br><span class="line">        nkv = np.zeros((K, V))       <span class="comment"># topic-word counts</span></span><br><span class="line">        nk = np.zeros(K)             <span class="comment"># total words per topic</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment"># Topic assignments</span></span><br><span class="line">        z = []</span><br><span class="line">        <span class="keyword">for</span> d, doc <span class="keyword">in</span> <span class="built_in">enumerate</span>(docs):</span><br><span class="line">            zd = []</span><br><span class="line">            <span class="keyword">for</span> w <span class="keyword">in</span> doc:</span><br><span class="line">                k = np.random.randint(K)</span><br><span class="line">                zd.append(k)</span><br><span class="line">                ndk[d, k] += <span class="number">1</span></span><br><span class="line">                nkv[k, w] += <span class="number">1</span></span><br><span class="line">                nk[k] += <span class="number">1</span></span><br><span class="line">            z.append(np.array(zd))</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># Gibbs sampling</span></span><br><span class="line">        <span class="keyword">for</span> it <span class="keyword">in</span> <span class="built_in">range</span>(<span class="variable language_">self</span>.n_iters):</span><br><span class="line">            <span class="keyword">for</span> d, doc <span class="keyword">in</span> <span class="built_in">enumerate</span>(docs):</span><br><span class="line">                <span class="keyword">for</span> n, w <span class="keyword">in</span> <span class="built_in">enumerate</span>(doc):</span><br><span class="line">                    old_k = z[d][n]</span><br><span class="line">                    <span class="comment"># Remove current assignment</span></span><br><span class="line">                    ndk[d, old_k] -= <span class="number">1</span></span><br><span class="line">                    nkv[old_k, w] -= <span class="number">1</span></span><br><span class="line">                    nk[old_k] -= <span class="number">1</span></span><br><span class="line">                    </span><br><span class="line">                    <span class="comment"># Compute probabilities</span></span><br><span class="line">                    p = np.zeros(K)</span><br><span class="line">                    <span class="keyword">for</span> k <span class="keyword">in</span> <span class="built_in">range</span>(K):</span><br><span class="line">                        <span class="comment"># Doc-topic prob</span></span><br><span class="line">                        theta = (ndk[d, k] + <span class="variable language_">self</span>.alpha)</span><br><span class="line">                        <span class="comment"># Topic-word prob</span></span><br><span class="line">                        phi = (nkv[k, w] + <span class="variable language_">self</span>.beta) / (nk[k] + V * <span class="variable language_">self</span>.beta)</span><br><span class="line">                        p[k] = theta * phi</span><br><span class="line">                    </span><br><span class="line">                    <span class="comment"># Normalize and sample</span></span><br><span class="line">                    p /= p.<span class="built_in">sum</span>()</span><br><span class="line">                    new_k = np.random.choice(K, p=p)</span><br><span class="line">                    </span><br><span class="line">                    <span class="comment"># Update</span></span><br><span class="line">                    z[d][n] = new_k</span><br><span class="line">                    ndk[d, new_k] += <span class="number">1</span></span><br><span class="line">                    nkv[new_k, w] += <span class="number">1</span></span><br><span class="line">                    nk[new_k] += <span class="number">1</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment"># Estimate distributions</span></span><br><span class="line">        <span class="variable language_">self</span>.phi_ = np.zeros((K, V))</span><br><span class="line">        <span class="keyword">for</span> k <span class="keyword">in</span> <span class="built_in">range</span>(K):</span><br><span class="line">            <span class="variable language_">self</span>.phi_[k] = (nkv[k] + <span class="variable language_">self</span>.beta) / (nk[k] + V * <span class="variable language_">self</span>.beta)</span><br><span class="line">        </span><br><span class="line">        <span class="variable language_">self</span>.theta_ = np.zeros((M, K))</span><br><span class="line">        <span class="keyword">for</span> d <span class="keyword">in</span> <span class="built_in">range</span>(M):</span><br><span class="line">            <span class="variable language_">self</span>.theta_[d] = (ndk[d] + <span class="variable language_">self</span>.alpha) / (ndk[d].<span class="built_in">sum</span>() + K * <span class="variable language_">self</span>.alpha)</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">self</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">get_top_words</span>(<span class="params">self, vocab, n_words=<span class="number">10</span></span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;Return top n_words for each topic&quot;&quot;&quot;</span></span><br><span class="line">        top_words = []</span><br><span class="line">        <span class="keyword">for</span> k <span class="keyword">in</span> <span class="built_in">range</span>(<span class="variable language_">self</span>.K):</span><br><span class="line">            top_idx = np.argsort(<span class="variable language_">self</span>.phi_[k])[::-<span class="number">1</span>][:n_words]</span><br><span class="line">            top_words.append([vocab[i] <span class="keyword">for</span> i <span class="keyword">in</span> top_idx])</span><br><span class="line">        <span class="keyword">return</span> top_words</span><br></pre></td></tr></table></figure>
+
+<h2 id="五-B、变分推断视角（Blei-et-al-原始方法）"><a href="#五-B、变分推断视角（Blei-et-al-原始方法）" class="headerlink" title="五-B、变分推断视角（Blei et al. 原始方法）"></a>五-B、变分推断视角（Blei et al. 原始方法）</h2><p>虽然坍缩 Gibbs 采样是最容易手写实现的方法，但 Blei、Ng 和 Jordan 在 2003 年的原始论文中使用的推断方法是<strong>变分推断</strong>（Variational Inference, VB）。它值得了解，因为它是后续大量扩展工作（如在线 LDA、动态主题模型）的基础。</p>
+<h3 id="变分推断的核心思想"><a href="#变分推断的核心思想" class="headerlink" title="变分推断的核心思想"></a>变分推断的核心思想</h3><p>LDA 的后验 $p(\Theta, \Phi, Z | W, \alpha, \beta)$ 由于分母（evidence）不可计算，无法直接使用。变分推断的策略是：用一族容易处理的<strong>变分分布</strong> $q(\Theta, \Phi, Z | \gamma, \phi, \lambda)$ 来近似真实后验，然后通过最小化两者之间的 KL 散度来找到最佳近似：</p>
+<p>$$
+q^* = \arg\min_q \text{KL}(q \| p)
+$$</p>
+<p>Blei et al. 使用<strong>平均场假设</strong>（mean-field assumption），将变分分布分解为：</p>
+<p>$$
+q(\Theta, \Phi, Z | \gamma, \phi, \lambda) = \prod_{d=1}^{M} q(\theta_d | \gamma_d) \prod_{k=1}^{K} q(\varphi_k | \lambda_k) \prod_{d=1}^{M} \prod_{n=1}^{N_d} q(z_{d,n} | \phi_{d,n})
+$$</p>
+<p>其中：</p>
+<ul>
+<li>$\gamma_d$：文档 $d$ 的变分 Dirichlet 参数（近似 $\theta_d$ 的后验）</li>
+<li>$\lambda_k$：主题 $k$ 的变分 Dirichlet 参数（近似 $\varphi_k$ 的后验）</li>
+<li>$\phi_{d,n}$：词 $w_{d,n}$ 的变分 Multinomial 参数（近似 $z_{d,n}$ 的后验）</li>
+</ul>
+<h3 id="变分-EM-算法"><a href="#变分-EM-算法" class="headerlink" title="变分 EM 算法"></a>变分 EM 算法</h3><p>变分推断通过<strong>坐标上升</strong>（coordinate ascent）迭代更新三个参数：</p>
+<p><strong>变分 E 步</strong>（对每篇文档）：</p>
+<ol>
+<li><p>初始化 $\gamma_d &#x3D; \alpha + N_d&#x2F;K$，$\phi_{d,n,k} &#x3D; 1&#x2F;K$</p>
+</li>
+<li><p>迭代更新直到收敛：</p>
+<ul>
+<li>更新 $\phi_{d,n,k} \propto \exp(\Psi(\gamma_{dk}) + \Psi(\lambda_{k,w_{d,n}}) - \Psi(\sum_v \lambda_{kv}))$</li>
+<li>更新 $\gamma_{dk} &#x3D; \alpha_k + \sum_{n&#x3D;1}^{N_d} \phi_{d,n,k}$</li>
+</ul>
+</li>
+</ol>
+<p>其中 $\Psi$ 是 digamma 函数（$\Gamma$ 函数的对数导数）。</p>
+<p><strong>变分 M 步</strong>（对所有文档）：</p>
+<p>$$
+\lambda_{kv} = \beta_v + \sum_{d=1}^{M} \sum_{n: w_{d,n}=v} \phi_{d,n,k}
+$$</p>
+<h3 id="变分推断-vs-Gibbs-采样"><a href="#变分推断-vs-Gibbs-采样" class="headerlink" title="变分推断 vs Gibbs 采样"></a>变分推断 vs Gibbs 采样</h3><table>
+<thead>
+<tr>
+<th>方面</th>
+<th>变分推断</th>
+<th>坍缩 Gibbs 采样</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>性质</td>
+<td>优化问题（坐标上升）</td>
+<td>采样问题（MCMC）</td>
+</tr>
+<tr>
+<td>确定性</td>
+<td>确定性</td>
+<td>随机</td>
+</tr>
+<tr>
+<td>收敛检测</td>
+<td>ELBO 单调递增</td>
+<td>迹图和 $\hat{R}$ 诊断</td>
+</tr>
+<tr>
+<td>速度</td>
+<td>通常更快（特别是在线变分）</td>
+<td>通常较慢（但容易并行化）</td>
+</tr>
+<tr>
+<td>理论基础</td>
+<td>KL 散度最小化</td>
+<td>平稳分布收敛</td>
+</tr>
+<tr>
+<td>扩展性</td>
+<td>容易导出在线版本</td>
+<td>容易扩展到非共轭模型</td>
+</tr>
+</tbody></table>
+<p>两者在实践中都给出可接受的结果。选择取决于具体场景：需要处理流式数据选在线变分，模型非共轭选 Gibbs 采样。</p>
+<h2 id="六、LDA-的应用与实践"><a href="#六、LDA-的应用与实践" class="headerlink" title="六、LDA 的应用与实践"></a>六、LDA 的应用与实践</h2><h3 id="6-1-应用场景"><a href="#6-1-应用场景" class="headerlink" title="6.1 应用场景"></a>6.1 应用场景</h3><table>
+<thead>
+<tr>
+<th>领域</th>
+<th>应用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>文本分析</td>
+<td>新闻主题发现，科技文章分类</td>
+</tr>
+<tr>
+<td>推荐系统</td>
+<td>基于主题相似度推荐内容</td>
+</tr>
+<tr>
+<td>社交网络</td>
+<td>用户兴趣画像，社区发现</td>
+</tr>
+<tr>
+<td>生物信息学</td>
+<td>基因表达模式发现</td>
+</tr>
+<tr>
+<td>计算机视觉</td>
+<td>视觉词袋模型，场景分类</td>
+</tr>
+<tr>
+<td>数字人文</td>
+<td>文学作品主题分析，历史文献挖掘</td>
+</tr>
+</tbody></table>
+<h3 id="6-2-sklearn-实现"><a href="#6-2-sklearn-实现" class="headerlink" title="6.2 sklearn 实现"></a>6.2 sklearn 实现</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.decomposition <span class="keyword">import</span> LatentDirichletAllocation</span><br><span class="line"><span class="keyword">from</span> sklearn.feature_extraction.text <span class="keyword">import</span> CountVectorizer</span><br><span class="line"></span><br><span class="line"><span class="comment"># Prepare data</span></span><br><span class="line">vectorizer = CountVectorizer(max_features=<span class="number">10000</span>, stop_words=<span class="string">&#x27;english&#x27;</span>)</span><br><span class="line">X = vectorizer.fit_transform(documents)  <span class="comment"># n_samples x n_features</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Fit LDA</span></span><br><span class="line">lda = LatentDirichletAllocation(</span><br><span class="line">    n_components=<span class="number">10</span>,     <span class="comment"># number of topics</span></span><br><span class="line">    doc_topic_prior=<span class="number">0.1</span>,  <span class="comment"># alpha</span></span><br><span class="line">    topic_word_prior=<span class="number">0.01</span>, <span class="comment"># beta</span></span><br><span class="line">    learning_method=<span class="string">&#x27;batch&#x27;</span>,</span><br><span class="line">    max_iter=<span class="number">100</span>,</span><br><span class="line">    random_state=<span class="number">42</span></span><br><span class="line">)</span><br><span class="line">lda.fit(X)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Get top words for each topic</span></span><br><span class="line">feature_names = vectorizer.get_feature_names_out()</span><br><span class="line"><span class="keyword">for</span> topic_idx, topic <span class="keyword">in</span> <span class="built_in">enumerate</span>(lda.components_):</span><br><span class="line">    top_words = [feature_names[i] <span class="keyword">for</span> i <span class="keyword">in</span> topic.argsort()[:-<span class="number">10</span>-<span class="number">1</span>:-<span class="number">1</span>]]</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;Topic <span class="subst">&#123;topic_idx&#125;</span>: <span class="subst">&#123;<span class="string">&#x27;, &#x27;</span>.join(top_words)&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Get document-topic distributions</span></span><br><span class="line">doc_topic_dist = lda.transform(X)  <span class="comment"># shape: (n_samples, n_topics)</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="6-3-困惑度评估"><a href="#6-3-困惑度评估" class="headerlink" title="6.3 困惑度评估"></a>6.3 困惑度评估</h3><p><strong>困惑度</strong>（Perplexity）是评估 LDA 质量的标准指标，越低越好：</p>
+<p>$$
+\text{Perplexity}(D_{\text{test}}) = \exp\left(-\frac{\sum_{d \in D_{\text{test}}} \log p(w_d)}{\sum_{d \in D_{\text{test}}} N_d}\right)
+$$</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Compute perplexity on held-out data</span></span><br><span class="line">perplexity = lda.perplexity(X_test)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Perplexity: <span class="subst">&#123;perplexity:<span class="number">.2</span>f&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="七、面试高频问题"><a href="#七、面试高频问题" class="headerlink" title="七、面试高频问题"></a>七、面试高频问题</h2><p><strong>Q1：LDA 中的 $\alpha$ 和 $\beta$ 如何影响模型？如何选择？</strong></p>
+<p>$\alpha$ 控制文档-主题分布的稀疏性：</p>
+<ul>
+<li>$\alpha &lt; 1$：每篇文档主要涉及少数主题（更符合实际）</li>
+<li>$\alpha &gt; 1$：文档倾向于混合所有主题</li>
+<li>典型值：$\alpha &#x3D; 0.1$ 或 $50&#x2F;K$</li>
+</ul>
+<p>$\beta$ 控制主题-词分布的稀疏性：</p>
+<ul>
+<li>$\beta &lt; 1$：每个主题由少数特征词定义</li>
+<li>$\beta &gt; 1$：主题的词分布更平滑</li>
+<li>典型值：$\beta &#x3D; 0.01$（让每个主题用少量词就能刻画）</li>
+</ul>
+<p>两者都可以通过超参数搜索（grid search 在 perplexity 上）来选择。或使用非对称的 $\alpha$（允许某些主题在先验上更常见）。</p>
+<p><strong>Q2：LDA 和 pLSA 的核心区别是什么？</strong></p>
+<p>pLSA 的文档-主题分布 $\theta_d$ 和主题-词分布 $\varphi_k$ 是<strong>模型参数</strong>（确定性值），直接用 MLE 估计。这导致两个问题：</p>
+<ol>
+<li><strong>过拟合</strong>：参数个数随文档数线性增长（$M \times K + K \times V$）</li>
+<li><strong>无法处理新文档</strong>：没有先验，无法为新文档推断主题分布</li>
+</ol>
+<p>LDA 将 $\theta_d$ 和 $\varphi_k$ 视为<strong>随机变量</strong>，加 Dirichlet 先验。好处：</p>
+<ol>
+<li><strong>正则化</strong>：先验防止过拟合，参数个数固定（$K \times V$）</li>
+<li><strong>生成性</strong>：新文档可以直接推断 $\theta$ 而不需要重新训练</li>
+</ol>
+<p><strong>Q3：坍缩 Gibbs 采样中的”坍缩”是什么意思？</strong></p>
+<p>“坍缩”（collapsed）指的是通过共轭关系将连续变量 $\Theta$ 和 $\Phi$ <strong>解析积分掉</strong>，只留下离散变量 $Z$ 进行采样。</p>
+<p>积分后的采样空间大幅缩小（从连续参数空间 + 离散主题空间变为仅离散主题空间），收敛更快。采样后 $\Theta$ 和 $\Phi$ 可以通过计数平均值恢复：</p>
+<p>$$
+\hat{\theta}_{dk} = \frac{n_{dk} + \alpha}{\sum_j n_{dj} + K\alpha}
+$$</p>
+<p><strong>Q4：如何确定主题数 K？</strong></p>
+<ol>
+<li><strong>困惑度</strong>：在不同 K 下计算 perplexity（hold-out），选困惑度最低的 K</li>
+<li><strong>一致性</strong>（Coherence）：衡量主题中 top words 的语义一致性（如使用 NPMI），越高越好</li>
+<li><strong>人类评估</strong>：人工检查主题的可解释性（topic interpretability）</li>
+<li><strong>先验知识</strong>：根据业务场景预设主题数</li>
+</ol>
+<p>实践中通常尝试若干 K 值，综合考虑 perplexity、coherence 和人类可解释性。</p>
+<p><strong>Q5：LDA 假设词袋模型，忽略了词序信息。这会导致什么问题？如何改进？</strong></p>
+<p>词袋假设意味着 LDA 认为”我爱中国”和”中国爱我”是相同的文档。这在以下场景可能有问题：</p>
+<ul>
+<li>情感分析（”not good” vs “good”）</li>
+<li>需要词序的语义（短语、命名实体等）</li>
+</ul>
+<p>改进方法：</p>
+<ul>
+<li><strong>N-gram 特征</strong>：使用 bigram 或 trigram 作为”词”</li>
+<li><strong>短语检测</strong>：先用算法检测短语，再将短语作为 token</li>
+<li><strong>HMM-LDA</strong>：结合 HMM 建模词序（如 Griffiths et al. 2005）</li>
+<li><strong>Dynamic Topic Model</strong>：建模主题随时间的变化</li>
+<li><strong>Contextualized Topic Model</strong>：使用 BERT 嵌入代替词频</li>
+</ul>
+<p><strong>Q6：LDA 的结果如何评估？Perplexity 和 Topic Coherence 哪个更好？</strong></p>
+<p>LDA 的评估分为自动评估和人工评估两个层面。</p>
+<p><strong>困惑度（Perplexity）</strong>：衡量模型对 hold-out 文档的预测能力。数学定义为：</p>
+<p>$$
+\text{Perplexity} = \exp\left(-\frac{\sum_{d \in D_{test}} \log p(w_d|\Phi, \alpha)}{\sum_{d \in D_{test}} N_d}\right)
+$$</p>
+<p>困惑度越低，模型对未见文档的预测能力越强。但它有一个致命缺陷：<strong>困惑度与人类对主题质量的判断常常不一致</strong>。低困惑度的模型未必生成语义连贯的主题——模型可能学到了高频词搭配的统计规律，但没学到有意义的语义结构。</p>
+<p><strong>主题一致性（Topic Coherence）</strong>：衡量主题的 top-N 词在外部语料（如 Wikipedia）或训练语料中的共现程度。常用指标：</p>
+<ol>
+<li><p><strong>UMass Coherence</strong>（Mimno et al., 2011）：用训练语料中的词共现计算</p>
+<p>$$
+   C_{\text{UMass}}(t; V^{(t)}) = \frac{2}{N(N-1)} \sum_{i=1}^{N} \sum_{j=1}^{i-1} \log \frac{D(w_i, w_j) + \epsilon}{D(w_j)}
+   $$</p>
+<p>其中 $D(w_i, w_j)$ 是词 $w_i$ 和 $w_j$ 的共文档频率，$D(w_j)$ 是 $w_j$ 的文档频率。</p>
+</li>
+<li><p><strong>NPMI（Normalized Pointwise Mutual Information）</strong>：使用外部大语料（如 Wikipedia）计算</p>
+<p>$$
+   \text{NPMI}(w_i, w_j) = \frac{\log \frac{P(w_i, w_j)}{P(w_i)P(w_j)}}{-\log P(w_i, w_j)}
+   $$</p>
+</li>
+</ol>
+<p>主题一致性与人类判断的相关性远高于困惑度。<strong>实践建议</strong>：用 Topic Coherence 选择 K 和评估主题质量，困惑度仅作为参考。</p>
+<p><strong>人工评估</strong>（黄金标准）：</p>
+<ul>
+<li><strong>Topic Intrusion</strong>：在每个主题的 top words 中注入一个不相关的词，让标注者找出——标注者越容易找出，主题越连贯</li>
+<li><strong>Topic Interpretability</strong>：直接让标注者给主题的”可解释性”打分</li>
+</ul>
+<p>最终，LDA 是否成功取决于主题能否为下游任务（搜索、推荐、分析）提供价值。数字指标是指南，人类判断才是终点。</p>
+<h2 id="八、总结"><a href="#八、总结" class="headerlink" title="八、总结"></a>八、总结</h2><p>潜在狄利克雷分配（LDA）是主题模型的标杆。它通过 Dirichlet-Multinomial 共轭这一优雅的贝叶斯构造，实现了从无标签文本中自动发现语义主题。Blei、Ng 和 Jordan 在 2003 年提出的这个模型，至今仍然是文本挖掘、信息检索和推荐系统中的重要工具。</p>
+<p>LDA 的美丽在于它的简单性：仅用三个变量（$\alpha, \beta, K$）就能从数以百万计的文档中发现有意义的主题结构。而这种”无监督发现隐藏结构”的能力，正是机器学习最令人着迷的特质之一。</p>
+<p>在 LDA 之外，主题模型近年来也在进化——从词袋到词嵌入（如 lda2vec），从 Gibbs 采样到变分自编码器（如 NVDM），从静态话题到动态话题追踪。但无论怎样演变，LDA 的贝叶斯层级思想都将是理解这一切的出发点。</p>
+<p><strong>参考文献</strong>：</p>
+<ol>
+<li>Blei, D. M., Ng, A. Y., &amp; Jordan, M. I. (2003). Latent Dirichlet Allocation. <em>Journal of Machine Learning Research</em>, 3, 993-1022.</li>
+<li>Griffiths, T. L., &amp; Steyvers, M. (2004). Finding scientific topics. <em>Proceedings of the National Academy of Sciences</em>, 101(suppl 1), 5228-5235.</li>
+<li>Heinrich, G. (2005). Parameter estimation for text analysis. Technical report.</li>
+<li>李航. (2019). 《统计学习方法》（第2版）. 第17章.</li>
+<li>Hoffman, M. D., Blei, D. M., &amp; Bach, F. (2010). Online learning for latent Dirichlet allocation. <em>NIPS</em>.</li>
+</ol>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2020/08/01/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E2%85%A1%E3%80%91%E6%BD%9C%E5%9C%A8%E7%8B%84%E5%88%A9%E5%85%8B%E9%9B%B7%E5%88%86%E9%85%8D/">http://tufusi.com/2020/08/01/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E2%85%A1%E3%80%91%E6%BD%9C%E5%9C%A8%E7%8B%84%E5%88%A9%E5%85%8B%E9%9B%B7%E5%88%86%E9%85%8D/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2020/08/05/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E4%BB%80%E4%B9%88%E6%98%AF%E5%9B%BE/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【GNN原理解析】什么是图</span></div></a></div><div class="next-post pull_right"><a href="/2020/07/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%8F%90%E5%8D%87%E7%AE%97%E6%B3%95/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【统计学习方法死磕系列】提升算法</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

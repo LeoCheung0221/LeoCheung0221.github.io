@@ -1,0 +1,507 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【深入理解JVM字节码】第十四篇、APM实现原理 | ONE·PIECE</title><meta name="description" content="【深入理解JVM字节码】第十四篇、APM实现原理"><meta name="keywords" content="APM"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【深入理解JVM字节码】第十四篇、APM实现原理"><meta name="twitter:description" content="【深入理解JVM字节码】第十四篇、APM实现原理"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/254.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【深入理解JVM字节码】第十四篇、APM实现原理"><meta property="og:url" content="http://tufusi.com/2021/05/05/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%8D%81%E5%9B%9B%E7%AF%87%E3%80%81APM%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【深入理解JVM字节码】第十四篇、APM实现原理"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/254.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2021/05/05/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%8D%81%E5%9B%9B%E7%AF%87%E3%80%81APM%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/"><link rel="prev" title="【深入理解JVM字节码】第十五篇、Android字节码注入原理" href="http://tufusi.com/2021/05/10/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%8D%81%E4%BA%94%E7%AF%87%E3%80%81Android%E5%AD%97%E8%8A%82%E7%A0%81%E6%B3%A8%E5%85%A5%E5%8E%9F%E7%90%86/"><link rel="next" title="【深入理解JVM字节码】第十三篇、应用破解Vs防破解" href="http://tufusi.com/2021/05/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%8D%81%E4%B8%89%E7%AF%87%E3%80%81%E5%BA%94%E7%94%A8%E7%A0%B4%E8%A7%A3Vs%E9%98%B2%E7%A0%B4%E8%A7%A3/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81APM-%E5%AD%97%E8%8A%82%E7%A0%81%E6%B3%A8%E5%85%A5%E7%9A%84%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、APM 字节码注入的整体架构</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-%E6%9E%84%E5%BB%BA%E6%9C%9F%E6%B3%A8%E5%85%A5-vs-%E8%BF%90%E8%A1%8C%E6%97%B6%E6%B3%A8%E5%85%A5"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">1.1 构建期注入 vs 运行时注入</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-2-%E4%B8%89%E5%B1%82%E6%9E%B6%E6%9E%84"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">1.2 三层架构</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81%E6%96%B9%E6%B3%95%E8%80%97%E6%97%B6%E7%9B%91%E6%8E%A7%EF%BC%9A%E6%A0%B8%E5%BF%83%E6%B3%A8%E5%85%A5%E6%A8%A1%E5%BC%8F"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、方法耗时监控：核心注入模式</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-Matrix-MethodTracer-%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 Matrix MethodTracer 的工作原理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E6%97%B6%E9%97%B4%E5%9F%BA%E5%87%86%E7%9A%84%E9%80%89%E6%8B%A9%EF%BC%9ASystemClock-uptimeMillis-vs-elapsedRealtime-vs-nanoTime"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 时间基准的选择：SystemClock.uptimeMillis vs elapsedRealtime vs nanoTime</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-%E7%8E%AF%E5%BD%A2%E7%BC%93%E5%86%B2%E5%8C%BA%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 环形缓冲区的设计</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81IO-%E7%9B%91%E6%8E%A7%EF%BC%9AHook-%E6%96%87%E4%BB%B6%E6%B5%81%E6%93%8D%E4%BD%9C"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、IO 监控：Hook 文件流操作</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-IO-%E6%80%A7%E8%83%BD%E9%97%AE%E9%A2%98%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 IO 性能问题的分类</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-Matrix-IOCanary-%E7%9A%84%E6%B3%A8%E5%85%A5%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 Matrix IOCanary 的注入机制</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-%E4%B8%BB%E7%BA%BF%E7%A8%8B-IO-%E6%A3%80%E6%B5%8B"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 主线程 IO 检测</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-IO-%E5%85%B3%E9%97%AD%E6%A3%80%E6%B5%8B%EF%BC%88%E8%B5%84%E6%BA%90%E6%B3%84%E6%BC%8F%EF%BC%89"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">3.4 IO 关闭检测（资源泄漏）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E5%B8%A7%E6%B8%B2%E6%9F%93%E7%9B%91%E6%8E%A7"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、帧渲染监控</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-Choreographer-%E9%A9%B1%E5%8A%A8%E7%9A%84%E5%B8%A7%E6%A8%A1%E5%9E%8B"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 Choreographer 驱动的帧模型</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-Matrix-FrameBeat-%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 Matrix FrameBeat 的实现</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-View-%E7%BA%A7%E5%88%AB%E6%B8%B2%E6%9F%93%E7%9B%91%E6%8E%A7%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81%E6%B3%A8%E5%85%A5"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 View 级别渲染监控的字节码注入</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81Binder-%E7%9B%91%E6%8E%A7%E4%B8%8E%E8%B7%A8%E8%BF%9B%E7%A8%8B%E9%80%9A%E4%BF%A1%E5%BC%80%E9%94%80"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、Binder 监控与跨进程通信开销</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-Binder-%E8%B0%83%E7%94%A8%E7%9A%84%E7%BB%9F%E4%B8%80%E5%85%A5%E5%8F%A3"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 Binder 调用的统一入口</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-%E7%9B%91%E6%8E%A7%E5%BA%94%E7%94%A8%E5%8F%91%E8%B5%B7%E7%9A%84-Binder-%E8%B0%83%E7%94%A8"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 监控应用发起的 Binder 调用</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-Code-%E2%86%92-Name-%E7%9A%84%E6%98%A0%E5%B0%84"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 Code → Name 的映射</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E7%BD%91%E7%BB%9C%E7%9B%91%E6%8E%A7"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、网络监控</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82%E7%9A%84%E6%B3%A8%E5%85%A5%E7%82%B9"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 网络请求的注入点</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-OkHttp-%E7%9B%91%E6%8E%A7%E6%B3%A8%E5%85%A5%E7%A4%BA%E4%BE%8B"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 OkHttp 监控注入示例</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-%E5%85%B3%E9%94%AE%E7%9B%91%E6%8E%A7%E6%8C%87%E6%A0%87"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">6.3 关键监控指标</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E5%B4%A9%E6%BA%83%E4%B8%8E%E8%BF%90%E8%A1%8C%E6%97%B6%E5%BC%82%E5%B8%B8%E7%9B%91%E6%8E%A7"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、崩溃与运行时异常监控</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-Try-Catch-%E6%B3%A8%E5%85%A5%E6%A8%A1%E5%BC%8F"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">7.1 Try-Catch 注入模式</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-%E5%BC%80%E9%94%80%E4%B8%8E%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">7.2 开销与策略</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81%E6%80%A7%E8%83%BD%E5%BC%80%E9%94%80%E6%8E%A7%E5%88%B6"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、性能开销控制</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-%E6%B3%A8%E5%85%A5%E7%99%BD%E5%90%8D%E5%8D%95%E4%B8%8E%E9%BB%91%E5%90%8D%E5%8D%95"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">8.1 注入白名单与黑名单</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-%E9%87%87%E6%A0%B7%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">8.2 采样策略</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-3-%E6%89%B9%E9%87%8F%E4%B8%8A%E6%8A%A5"><span class="toc_mobile_items-number">8.3.</span> <span class="toc_mobile_items-text">8.3 批量上报</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E5%AD%97%E8%8A%82%E8%B7%B3%E5%8A%A8%E7%9A%84-Sliver-%E4%B8%8E-ByteX"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、字节跳动的 Sliver 与 ByteX</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-1-Sliver-%E7%9A%84-Trace-ID-%E4%BC%A0%E6%92%AD"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">9.1 Sliver 的 Trace ID 传播</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-2-ByteX-%E7%9A%84%E6%8F%92%E4%BB%B6%E6%9E%B6%E6%9E%84"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">9.2 ByteX 的插件架构</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%9D%A2%E8%AF%95%E9%97%AE%E7%AD%94"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">面试问答</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81APM-%E5%AD%97%E8%8A%82%E7%A0%81%E6%B3%A8%E5%85%A5%E7%9A%84%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="toc-number">1.</span> <span class="toc-text">一、APM 字节码注入的整体架构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E6%9E%84%E5%BB%BA%E6%9C%9F%E6%B3%A8%E5%85%A5-vs-%E8%BF%90%E8%A1%8C%E6%97%B6%E6%B3%A8%E5%85%A5"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 构建期注入 vs 运行时注入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E4%B8%89%E5%B1%82%E6%9E%B6%E6%9E%84"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 三层架构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%96%B9%E6%B3%95%E8%80%97%E6%97%B6%E7%9B%91%E6%8E%A7%EF%BC%9A%E6%A0%B8%E5%BF%83%E6%B3%A8%E5%85%A5%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.</span> <span class="toc-text">二、方法耗时监控：核心注入模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Matrix-MethodTracer-%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 Matrix MethodTracer 的工作原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%97%B6%E9%97%B4%E5%9F%BA%E5%87%86%E7%9A%84%E9%80%89%E6%8B%A9%EF%BC%9ASystemClock-uptimeMillis-vs-elapsedRealtime-vs-nanoTime"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 时间基准的选择：SystemClock.uptimeMillis vs elapsedRealtime vs nanoTime</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E7%8E%AF%E5%BD%A2%E7%BC%93%E5%86%B2%E5%8C%BA%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 环形缓冲区的设计</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81IO-%E7%9B%91%E6%8E%A7%EF%BC%9AHook-%E6%96%87%E4%BB%B6%E6%B5%81%E6%93%8D%E4%BD%9C"><span class="toc-number">3.</span> <span class="toc-text">三、IO 监控：Hook 文件流操作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-IO-%E6%80%A7%E8%83%BD%E9%97%AE%E9%A2%98%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 IO 性能问题的分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Matrix-IOCanary-%E7%9A%84%E6%B3%A8%E5%85%A5%E6%9C%BA%E5%88%B6"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 Matrix IOCanary 的注入机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E4%B8%BB%E7%BA%BF%E7%A8%8B-IO-%E6%A3%80%E6%B5%8B"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 主线程 IO 检测</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-IO-%E5%85%B3%E9%97%AD%E6%A3%80%E6%B5%8B%EF%BC%88%E8%B5%84%E6%BA%90%E6%B3%84%E6%BC%8F%EF%BC%89"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 IO 关闭检测（资源泄漏）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%B8%A7%E6%B8%B2%E6%9F%93%E7%9B%91%E6%8E%A7"><span class="toc-number">4.</span> <span class="toc-text">四、帧渲染监控</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Choreographer-%E9%A9%B1%E5%8A%A8%E7%9A%84%E5%B8%A7%E6%A8%A1%E5%9E%8B"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 Choreographer 驱动的帧模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Matrix-FrameBeat-%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 Matrix FrameBeat 的实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-View-%E7%BA%A7%E5%88%AB%E6%B8%B2%E6%9F%93%E7%9B%91%E6%8E%A7%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81%E6%B3%A8%E5%85%A5"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 View 级别渲染监控的字节码注入</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Binder-%E7%9B%91%E6%8E%A7%E4%B8%8E%E8%B7%A8%E8%BF%9B%E7%A8%8B%E9%80%9A%E4%BF%A1%E5%BC%80%E9%94%80"><span class="toc-number">5.</span> <span class="toc-text">五、Binder 监控与跨进程通信开销</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Binder-%E8%B0%83%E7%94%A8%E7%9A%84%E7%BB%9F%E4%B8%80%E5%85%A5%E5%8F%A3"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 Binder 调用的统一入口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E7%9B%91%E6%8E%A7%E5%BA%94%E7%94%A8%E5%8F%91%E8%B5%B7%E7%9A%84-Binder-%E8%B0%83%E7%94%A8"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 监控应用发起的 Binder 调用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-Code-%E2%86%92-Name-%E7%9A%84%E6%98%A0%E5%B0%84"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 Code → Name 的映射</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E7%BD%91%E7%BB%9C%E7%9B%91%E6%8E%A7"><span class="toc-number">6.</span> <span class="toc-text">六、网络监控</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82%E7%9A%84%E6%B3%A8%E5%85%A5%E7%82%B9"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 网络请求的注入点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-OkHttp-%E7%9B%91%E6%8E%A7%E6%B3%A8%E5%85%A5%E7%A4%BA%E4%BE%8B"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 OkHttp 监控注入示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E5%85%B3%E9%94%AE%E7%9B%91%E6%8E%A7%E6%8C%87%E6%A0%87"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 关键监控指标</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%B4%A9%E6%BA%83%E4%B8%8E%E8%BF%90%E8%A1%8C%E6%97%B6%E5%BC%82%E5%B8%B8%E7%9B%91%E6%8E%A7"><span class="toc-number">7.</span> <span class="toc-text">七、崩溃与运行时异常监控</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-Try-Catch-%E6%B3%A8%E5%85%A5%E6%A8%A1%E5%BC%8F"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 Try-Catch 注入模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E5%BC%80%E9%94%80%E4%B8%8E%E7%AD%96%E7%95%A5"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 开销与策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E6%80%A7%E8%83%BD%E5%BC%80%E9%94%80%E6%8E%A7%E5%88%B6"><span class="toc-number">8.</span> <span class="toc-text">八、性能开销控制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E6%B3%A8%E5%85%A5%E7%99%BD%E5%90%8D%E5%8D%95%E4%B8%8E%E9%BB%91%E5%90%8D%E5%8D%95"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 注入白名单与黑名单</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E9%87%87%E6%A0%B7%E7%AD%96%E7%95%A5"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 采样策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-%E6%89%B9%E9%87%8F%E4%B8%8A%E6%8A%A5"><span class="toc-number">8.3.</span> <span class="toc-text">8.3 批量上报</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E5%AD%97%E8%8A%82%E8%B7%B3%E5%8A%A8%E7%9A%84-Sliver-%E4%B8%8E-ByteX"><span class="toc-number">9.</span> <span class="toc-text">九、字节跳动的 Sliver 与 ByteX</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-Sliver-%E7%9A%84-Trace-ID-%E4%BC%A0%E6%92%AD"><span class="toc-number">9.1.</span> <span class="toc-text">9.1 Sliver 的 Trace ID 传播</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-ByteX-%E7%9A%84%E6%8F%92%E4%BB%B6%E6%9E%B6%E6%9E%84"><span class="toc-number">9.2.</span> <span class="toc-text">9.2 ByteX 的插件架构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E9%97%AE%E7%AD%94"><span class="toc-number">10.</span> <span class="toc-text">面试问答</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/254.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【深入理解JVM字节码】第十四篇、APM实现原理</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-05-05<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">6.7k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 25 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、APM-字节码注入的整体架构"><a href="#一、APM-字节码注入的整体架构" class="headerlink" title="一、APM 字节码注入的整体架构"></a>一、APM 字节码注入的整体架构</h2><p>Application Performance Monitoring（APM）SDK 的核心技术手段是<strong>编译期字节码注入</strong>。通过在应用构建阶段向目标方法中插入监控代码，可以在不修改业务源码的情况下实现全量的性能数据采集。国内主流 APM SDK 均采用此方案：美团 Matrix（开源）、字节跳动 Sliver&#x2F;ByteX（开源）、腾讯 Matrix-Android（基于 Matrix 的定制）、阿里 Sophix 的性能监控模块等。</p>
+<h3 id="1-1-构建期注入-vs-运行时注入"><a href="#1-1-构建期注入-vs-运行时注入" class="headerlink" title="1.1 构建期注入 vs 运行时注入"></a>1.1 构建期注入 vs 运行时注入</h3><p>APM 字节码注入有两类策略：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>构建期注入（Compile-time）</th>
+<th>运行时注入（Runtime）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>实现方式</td>
+<td>Gradle Transform + ASM 修改 .class</td>
+<td>Java Agent &#x2F; Xposed &#x2F; Frida &#x2F; 动态代理</td>
+</tr>
+<tr>
+<td>覆盖范围</td>
+<td>所有应用自有代码</td>
+<td>可覆盖系统类和应用代码</td>
+</tr>
+<tr>
+<td>性能开销</td>
+<td>一次性构建成本 + 运行时零额外开销（除注入的计时代码）</td>
+<td>持续的 Hook 拦截开销</td>
+</tr>
+<tr>
+<td>稳定性</td>
+<td>高（字节码在安装前已固化）</td>
+<td>中等（Hook 可能触发系统限制，如 Android 14+ 对动态代码加载的限制）</td>
+</tr>
+<tr>
+<td>代表方案</td>
+<td>Matrix, Sliver, ByteX</td>
+<td>BlockCanary 的 Looper Hook（通过反射），Xposed 模块</td>
+</tr>
+<tr>
+<td>生产环境</td>
+<td><strong>是</strong></td>
+<td>通常 <strong>否</strong>（仅用于调试&#x2F;测试）</td>
+</tr>
+</tbody></table>
+<p>在 Android 生产环境中，<strong>构建期注入是唯一可行的方案</strong>——它经过 R8 优化、ART AOT&#x2F;JIT 编译优化，运行时与手写代码无异。运行时 Hook 在 Android 上受到越来越多的限制（SELinux 策略、ART 完整性检查、Google Play 政策）。</p>
+<h3 id="1-2-三层架构"><a href="#1-2-三层架构" class="headerlink" title="1.2 三层架构"></a>1.2 三层架构</h3><p>典型的 APM SDK 架构分为三层：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌──────────────────────────────────────────────────────────────┐</span><br><span class="line">│  Gradle 插件层（控制注入范围和配置）                            │</span><br><span class="line">│  matrix-gradle-plugin / bytex-plugin / sliver-plugin          │</span><br><span class="line">├──────────────────────────────────────────────────────────────┤</span><br><span class="line">│  字节码变换层（ASM ClassVisitor 链）                           │</span><br><span class="line">│  MethodTracer / IOCanary / FrameBeat / CrashGuard             │</span><br><span class="line">├──────────────────────────────────────────────────────────────┤</span><br><span class="line">│  运行时数据收集层（SDK Runtime）                                │</span><br><span class="line">│  AppMethodBeat / FrameBeat / IOCanaryPlugin / CrashReporter    │</span><br><span class="line">└──────────────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p>完整的数据流向：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">业务方法执行</span><br><span class="line">    → 注入的监控代码（调用 SDK 方法）</span><br><span class="line">    → 运行时 SDK 聚合（环形缓冲区 / 队列）</span><br><span class="line">    → 定时/事件触发（批量）上报</span><br><span class="line">    → APM 分析平台（聚合、统计、告警）</span><br></pre></td></tr></table></figure>
+
+<h2 id="二、方法耗时监控：核心注入模式"><a href="#二、方法耗时监控：核心注入模式" class="headerlink" title="二、方法耗时监控：核心注入模式"></a>二、方法耗时监控：核心注入模式</h2><h3 id="2-1-Matrix-MethodTracer-的工作原理"><a href="#2-1-Matrix-MethodTracer-的工作原理" class="headerlink" title="2.1 Matrix MethodTracer 的工作原理"></a>2.1 Matrix MethodTracer 的工作原理</h3><p>美团 Matrix 的 <code>MethodTracer</code> 是最完整的开源方法级性能监控实现。其设计覆盖编译期和运行时两个维度。</p>
+<p><strong>编译期（MethodTracer ASM 注入）</strong>：</p>
+<p><code>MethodTracer</code> 是一个 ASM ClassVisitor，在 <code>visitMethod()</code> 方法中为每个非构造&#x2F;非静态初始化方法创建 <code>MethodTracer.TraceMethodAdapter</code>（继承自 <code>AdviceAdapter</code>）：</p>
+<p>在 <code>onMethodEnter()</code> 中插入：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// AppMethodBeat.i(int methodId)</span></span><br><span class="line">mv.visitLdcInsn(methodId);</span><br><span class="line">mv.visitMethodInsn(INVOKESTATIC,</span><br><span class="line">    <span class="string">&quot;com/tencent/matrix/trace/core/AppMethodBeat&quot;</span>, <span class="string">&quot;i&quot;</span>, <span class="string">&quot;(I)V&quot;</span>, <span class="literal">false</span>);</span><br></pre></td></tr></table></figure>
+
+<p>在 <code>onMethodExit(int opcode)</code> 中插入：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// AppMethodBeat.o(int methodId)</span></span><br><span class="line"><span class="keyword">if</span> (opcode != ATHROW) &#123;</span><br><span class="line">    mv.visitLdcInsn(methodId);</span><br><span class="line">    mv.visitMethodInsn(INVOKESTATIC,</span><br><span class="line">        <span class="string">&quot;com/tencent/matrix/trace/core/AppMethodBeat&quot;</span>, <span class="string">&quot;o&quot;</span>, <span class="string">&quot;(I)V&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>methodId 的分配</strong>：Matrix 使用基于方法签名的 32 位哈希作为 methodId（<code>className + methodName + descriptor</code> 的哈希值，通过 <code>AccurateMath.murmurhash2_32()</code> 或类似算法计算）。这样保证了增量编译的稳定性——同一个方法无论第几次编译，methodId 始终保持不变。哈希碰撞的概率极低（32位空间中，10万方法碰撞概率约 0.1%），即使碰撞也只影响两个方法的统计精度，不会造成崩溃。</p>
+<p><strong>运行时（AppMethodBeat 数据收集）</strong>：</p>
+<p><code>AppMethodBeat</code> 维护了一个 <code>long[]</code> 环形缓冲区。方法进入时调用 <code>AppMethodBeat.i(int methodId)</code>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">i</span><span class="params">(<span class="type">int</span> methodId)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (isRealTrace) &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">threadId</span> <span class="operator">=</span> Thread.currentThread().getId();</span><br><span class="line">        <span class="comment">// 将 methodId 和时间戳编码到 64 位 long 中</span></span><br><span class="line">        <span class="type">long</span> <span class="variable">entry</span> <span class="operator">=</span> ((<span class="type">long</span>) methodId &lt;&lt; <span class="number">32</span>) | (SystemClock.uptimeMillis() &amp; <span class="number">0xFFFFFFFFL</span>);</span><br><span class="line">        <span class="comment">// 写入当前线程的环形缓冲区</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">index</span> <span class="operator">=</span> sIndexRecord[threadId];</span><br><span class="line">        sBuffer[index] = entry;</span><br><span class="line">        sIndexRecord[threadId] = (index + <span class="number">1</span>) % BUFFER_SIZE;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>方法退出时调用 <code>AppMethodBeat.o(int methodId)</code>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">o</span><span class="params">(<span class="type">int</span> methodId)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (isRealTrace) &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">threadId</span> <span class="operator">=</span> Thread.currentThread().getId();</span><br><span class="line">        <span class="type">int</span> <span class="variable">index</span> <span class="operator">=</span> sIndexRecord[threadId];</span><br><span class="line">        <span class="comment">// 计算耗时 = 当前时间 - 入口时间</span></span><br><span class="line">        <span class="type">long</span> <span class="variable">exitTime</span> <span class="operator">=</span> SystemClock.uptimeMillis();</span><br><span class="line">        <span class="comment">// 在 buffer 中找到对应 methodId 的入口记录（向前搜索）</span></span><br><span class="line">        <span class="type">long</span> <span class="variable">duration</span> <span class="operator">=</span> calculateDuration(threadId, methodId, exitTime);</span><br><span class="line">        <span class="comment">// 将结果存储到单独的耗时记录数组中</span></span><br><span class="line">        storeDuration(methodId, duration);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意</strong>：Matrix 实际实现中，<code>i()</code> 和 <code>o()</code> 的匹配并不是简单的”找到最近的入口”，因为方法调用可能有嵌套。实际上，Matrix 在 <code>i()</code> 中压入 <code>(methodId | timestamp)</code>，在 <code>o()</code> 中向前搜索第一个 methodId 匹配的入口记录来计算耗时。这是”方法嵌套调用”跟踪的正确方式。</p>
+<h3 id="2-2-时间基准的选择：SystemClock-uptimeMillis-vs-elapsedRealtime-vs-nanoTime"><a href="#2-2-时间基准的选择：SystemClock-uptimeMillis-vs-elapsedRealtime-vs-nanoTime" class="headerlink" title="2.2 时间基准的选择：SystemClock.uptimeMillis vs elapsedRealtime vs nanoTime"></a>2.2 时间基准的选择：SystemClock.uptimeMillis vs elapsedRealtime vs nanoTime</h3><p>APM 方法耗时监控需要一个可靠的时间基准。Android 提供了多个选择：</p>
+<table>
+<thead>
+<tr>
+<th>API</th>
+<th>底层 syscall</th>
+<th>特点</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>System.currentTimeMillis()</code></td>
+<td><code>clock_gettime(CLOCK_REALTIME)</code></td>
+<td>可能因 NTP 校时&#x2F;用户改时跳变（向前&#x2F;向后）</td>
+<td>不适合 APM：可能出现负耗时或异常大耗时</td>
+</tr>
+<tr>
+<td><code>SystemClock.uptimeMillis()</code></td>
+<td><code>clock_gettime(CLOCK_MONOTONIC)</code></td>
+<td>单调递增，不包含深度睡眠时间</td>
+<td>Matrix 使用：应用性能不应计入睡眠时间</td>
+</tr>
+<tr>
+<td><code>SystemClock.elapsedRealtime()</code></td>
+<td><code>clock_gettime(CLOCK_BOOTTIME)</code></td>
+<td>单调递增，包含深度睡眠时间</td>
+<td>适合需要包含系统休眠时间的场景（如后台任务计时）</td>
+</tr>
+<tr>
+<td><code>System.nanoTime()</code></td>
+<td><code>clock_gettime(CLOCK_MONOTONIC)</code></td>
+<td>单调递增，纳秒精度</td>
+<td>适合微秒级精度的短时测量，但不同 CPU 核心的 TSC 可能不同步</td>
+</tr>
+</tbody></table>
+<p><strong>Matrix 使用 <code>SystemClock.uptimeMillis()</code> 的理由</strong>：</p>
+<ol>
+<li><strong>单调性</strong>：不受用户改时和 NTP 校准影响。</li>
+<li><strong>排除深度睡眠</strong>：如果手机进入深度睡眠（Doze），<code>uptimeMillis()</code> 暂停计时。对于应用层方法耗时，睡眠期间不应该计入”执行时间”。</li>
+<li><strong>开销低</strong>：<code>uptimeMillis()</code> 是通过 JNI 调用 <code>clock_gettime(CLOCK_MONOTONIC)</code>，比 <code>nanoTime()</code> 更少受 CPU 频率缩放和多核不一致的影响。</li>
+<li><strong>精度足够</strong>：毫秒级精度对方法耗时统计（通常关注 &gt; 16ms 的长耗时方法）已经足够。</li>
+</ol>
+<p>**为什么不用 nanoTime()**：虽然精度更高，但 <code>nanoTime()</code> 在部分 ARM 设备上可能受到跨核心 TSC 不同步的影响（arm64 引入 <code>CNTVCT</code> 后有所改善），且调用开销略高于 <code>uptimeMillis()</code>（虽然差异极小）。</p>
+<h3 id="2-3-环形缓冲区的设计"><a href="#2-3-环形缓冲区的设计" class="headerlink" title="2.3 环形缓冲区的设计"></a>2.3 环形缓冲区的设计</h3><p>Matrix 使用 <code>long[]</code> 环形缓冲区的设计包含几个重点决策：</p>
+<p><strong>为什么不使用每个方法调用单独上报</strong>？</p>
+<ul>
+<li>频繁的 JNI 调用开销：如果每次方法调用通过 JNI 写入文件或发送网络包，性能开销不可接受。</li>
+<li>内存抖动：字符串拼接、Message 对象创建会引发频繁 GC。</li>
+<li>IO 阻塞：文件&#x2F;网络 IO 可能阻塞主线程，造成额外的 jank。</li>
+</ul>
+<p><strong>环形缓冲区的设计要点</strong>：</p>
+<ol>
+<li><strong>无锁写入</strong>：每个线程拥有独立的缓冲区（通过 <code>ThreadLocal</code> 或线程 ID 索引），避免跨线程的锁竞争。</li>
+<li><strong>零对象分配</strong>：使用原始 <code>long[]</code> 数组，所有数据编码到 64 位 long 中（高 32 位 &#x3D; methodId，低 32 位 &#x3D; 时间戳）。整个过程中不分配任何对象。</li>
+<li><strong>O(1) 写入</strong>：通过原子索引推进，写入开销极低。</li>
+<li><strong>批量读取</strong>：定时器或事件触发时，从缓冲区中读取所有数据，解析后通过网络上报。这摊还了数据序列化和传输的开销。</li>
+</ol>
+<p><strong>环形缓冲区的大小</strong>：Matrix 默认每个线程分配约 100KB 的缓冲空间（约 12800 条记录），可记录约 3-5 秒的方法调用历史（取决于方法调用频率）。当缓冲区满时，最旧的记录被覆盖——这意味着在问题发生时，可以从缓冲区回溯最近几秒的方法调用记录（类似于飞机黑匣子的设计）。</p>
+<h2 id="三、IO-监控：Hook-文件流操作"><a href="#三、IO-监控：Hook-文件流操作" class="headerlink" title="三、IO 监控：Hook 文件流操作"></a>三、IO 监控：Hook 文件流操作</h2><h3 id="3-1-IO-性能问题的分类"><a href="#3-1-IO-性能问题的分类" class="headerlink" title="3.1 IO 性能问题的分类"></a>3.1 IO 性能问题的分类</h3><p>Android 中的 IO 操作是性能问题的主要来源之一：</p>
+<table>
+<thead>
+<tr>
+<th>问题类型</th>
+<th>具体表现</th>
+<th>监控手段</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>主线程 IO</strong></td>
+<td>在 UI 线程中进行文件读写&#x2F;数据库查询，导致帧渲染延迟（jank）</td>
+<td>Hook 构造方法记录调用栈，检查是否在主线程</td>
+</tr>
+<tr>
+<td><strong>频繁小 IO</strong></td>
+<td>每次读&#x2F;写 1 字节，产生大量系统调用</td>
+<td>Hook read&#x2F;write 方法，记录 buffer 大小</td>
+</tr>
+<tr>
+<td><strong>IO 未关闭</strong></td>
+<td>文件&#x2F;流使用后未调用 close()，资源泄漏</td>
+<td>Hook close() 方法，检测未配对的 open&#x2F;close</td>
+</tr>
+<tr>
+<td><strong>大文件操作</strong></td>
+<td>一次性读写大文件导致长时间 IO 阻塞</td>
+<td>Hook read&#x2F;write，记录传输字节数和耗时</td>
+</tr>
+<tr>
+<td><strong>SP 的同步提交</strong></td>
+<td>SharedPreferences.Editor.commit() 触发同步磁盘写入</td>
+<td>Hook commit() 方法</td>
+</tr>
+</tbody></table>
+<h3 id="3-2-Matrix-IOCanary-的注入机制"><a href="#3-2-Matrix-IOCanary-的注入机制" class="headerlink" title="3.2 Matrix IOCanary 的注入机制"></a>3.2 Matrix IOCanary 的注入机制</h3><p>Matrix 的 <code>IOCanaryPlugin</code> 通过 ASM ClassVisitor 匹配并修改 <code>java.io.FileInputStream</code>、<code>java.io.FileOutputStream</code>、<code>java.io.RandomAccessFile</code> 的构造方法和关键 IO 方法。</p>
+<p><strong>第一步：匹配目标类</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">IOCanaryClassVisitor</span> <span class="keyword">extends</span> <span class="title class_">ClassVisitor</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> String className;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">visit</span><span class="params">(<span class="type">int</span> version, <span class="type">int</span> access, String name, ...)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.className = name;</span><br><span class="line">        <span class="built_in">super</span>.visit(...);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> MethodVisitor <span class="title function_">visitMethod</span><span class="params">(<span class="type">int</span> access, String name, String desc, ...)</span> &#123;</span><br><span class="line">        <span class="type">MethodVisitor</span> <span class="variable">mv</span> <span class="operator">=</span> <span class="built_in">super</span>.visitMethod(access, name, desc, signature, exceptions);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 匹配 FileInputStream/FileOutputStream 的构造方法</span></span><br><span class="line">        <span class="keyword">if</span> (isIOTargetClass(className) &amp;&amp; name.equals(<span class="string">&quot;&lt;init&gt;&quot;</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">IOConstructorVisitor</span>(api, mv, access, name, desc, className);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 匹配 read/write 方法</span></span><br><span class="line">        <span class="keyword">if</span> (isIOTargetClass(className) &amp;&amp; (name.equals(<span class="string">&quot;read&quot;</span>) || name.equals(<span class="string">&quot;write&quot;</span>))) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">IOMethodVisitor</span>(api, mv, access, name, desc, className);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> mv;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>第二步：构造方法的监控</strong></p>
+<p>对于 <code>FileInputStream(File file)</code> 或 <code>FileOutputStream(String path)</code> 等构造方法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">IOConstructorVisitor</span> <span class="keyword">extends</span> <span class="title class_">AdviceAdapter</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> <span class="variable">isSuperCalled</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">visitMethodInsn</span><span class="params">(<span class="type">int</span> opcode, String owner, String name, String desc, <span class="type">boolean</span> itf)</span> &#123;</span><br><span class="line">        <span class="comment">// 在 super() 调用之后立即插入监控代码</span></span><br><span class="line">        <span class="built_in">super</span>.visitMethodInsn(opcode, owner, name, desc, itf);</span><br><span class="line">        <span class="keyword">if</span> (opcode == INVOKESPECIAL &amp;&amp; name.equals(<span class="string">&quot;&lt;init&gt;&quot;</span>) &amp;&amp; !isSuperCalled) &#123;</span><br><span class="line">            isSuperCalled = <span class="literal">true</span>;</span><br><span class="line">            <span class="comment">// 插入：IOCanaryPlugin.onFileOpened(this, filePath, stackTrace);</span></span><br><span class="line">            mv.visitVarInsn(ALOAD, <span class="number">0</span>);     <span class="comment">// this (FileInputStream)</span></span><br><span class="line">            mv.visitVarInsn(ALOAD, <span class="number">1</span>);     <span class="comment">// file/path 参数</span></span><br><span class="line">            mv.visitMethodInsn(INVOKESTATIC,</span><br><span class="line">                <span class="string">&quot;com/tencent/matrix/iocanary/core/IOCanaryPlugin&quot;</span>,</span><br><span class="line">                <span class="string">&quot;onFileOpened&quot;</span>,</span><br><span class="line">                <span class="string">&quot;(Ljava/lang/Object;Ljava/lang/String;)V&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>关键：必须在 <code>super()</code> 调用<strong>之后</strong>才能安全地使用 <code>this</code> 引用（因为此时父类构造已完成，对象已初步初始化）。</p>
+<p><strong>第三步：read&#x2F;write 方法的监控</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">IOMethodVisitor</span> <span class="keyword">extends</span> <span class="title class_">AdviceAdapter</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> startTimeVar;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> bytesVar;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">onMethodEnter</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// 记录开始时间</span></span><br><span class="line">        mv.visitMethodInsn(INVOKESTATIC, <span class="string">&quot;android/os/SystemClock&quot;</span>,</span><br><span class="line">            <span class="string">&quot;uptimeMillis&quot;</span>, <span class="string">&quot;()J&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">        startTimeVar = newLocal(Type.LONG_TYPE);</span><br><span class="line">        mv.visitVarInsn(LSTORE, startTimeVar);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 如果方法有 int 返回值（实际读/写的字节数），预留槽位</span></span><br><span class="line">        <span class="keyword">if</span> (isIntReturnType) &#123;</span><br><span class="line">            bytesVar = newLocal(Type.INT_TYPE);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">onMethodExit</span><span class="params">(<span class="type">int</span> opcode)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (opcode == ATHROW) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 获取返回值（实际读/写的字节数）</span></span><br><span class="line">        <span class="keyword">if</span> (isIntReturnType) &#123;</span><br><span class="line">            mv.visitVarInsn(ISTORE, bytesVar);  <span class="comment">// 保存返回值</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 计算耗时</span></span><br><span class="line">        mv.visitMethodInsn(INVOKESTATIC, <span class="string">&quot;android/os/SystemClock&quot;</span>,</span><br><span class="line">            <span class="string">&quot;uptimeMillis&quot;</span>, <span class="string">&quot;()J&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">        mv.visitVarInsn(LLOAD, startTimeVar);</span><br><span class="line">        mv.visitInsn(LSUB);  <span class="comment">// duration = now - start</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 插入：IOCanaryPlugin.onIOEnd(this, duration, bytes, filePath)</span></span><br><span class="line">        mv.visitVarInsn(ALOAD, <span class="number">0</span>);              <span class="comment">// this (FileInputStream)</span></span><br><span class="line">        <span class="comment">// duration 已在栈顶</span></span><br><span class="line">        mv.visitVarInsn(ILOAD, bytesVar);       <span class="comment">// bytes</span></span><br><span class="line">        mv.visitLdcInsn(filePath);              <span class="comment">// filePath</span></span><br><span class="line">        mv.visitMethodInsn(INVOKESTATIC,</span><br><span class="line">            <span class="string">&quot;com/tencent/matrix/iocanary/core/IOCanaryPlugin&quot;</span>,</span><br><span class="line">            <span class="string">&quot;onIOEnd&quot;</span>, <span class="string">&quot;(Ljava/lang/Object;JILjava/lang/String;)V&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-主线程-IO-检测"><a href="#3-3-主线程-IO-检测" class="headerlink" title="3.3 主线程 IO 检测"></a>3.3 主线程 IO 检测</h3><p>在 <code>IOCanaryPlugin.onFileOpened()</code> 或 <code>onIOEnd()</code> 中，检查当前线程是否为主线程：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">onIOEnd</span><span class="params">(Object fileStream, <span class="type">long</span> duration, <span class="type">int</span> bytes, String path)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (Looper.myLooper() == Looper.getMainLooper()) &#123;</span><br><span class="line">        <span class="comment">// 主线程 IO，收集堆栈信息</span></span><br><span class="line">        StackTraceElement[] stack = Thread.currentThread().getStackTrace();</span><br><span class="line">        <span class="comment">// 上报到 APM</span></span><br><span class="line">        reportMainThreadIO(path, duration, bytes, stack);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 检查 buffer 大小</span></span><br><span class="line">    <span class="keyword">if</span> (bytes &gt; <span class="number">0</span> &amp;&amp; bytes &lt; BUFFER_SMALL_THRESHOLD) &#123;</span><br><span class="line">        <span class="comment">// 小 buffer IO 警告（如每次只读取 1 字节）</span></span><br><span class="line">        reportSmallBufferIO(path, bytes);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 检查 IO 耗时</span></span><br><span class="line">    <span class="keyword">if</span> (duration &gt; IO_SLOW_THRESHOLD) &#123;</span><br><span class="line">        reportSlowIO(path, duration, bytes);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-4-IO-关闭检测（资源泄漏）"><a href="#3-4-IO-关闭检测（资源泄漏）" class="headerlink" title="3.4 IO 关闭检测（资源泄漏）"></a>3.4 IO 关闭检测（资源泄漏）</h3><p>Matrix IOCanary 使用类似 <code>CloseGuard</code> 的机制检测未关闭的文件流：</p>
+<ol>
+<li><strong>在构造方法注入</strong>：记录 <code>StreamRecord</code>（包含文件路径、打开时间、打开时的调用栈）。</li>
+<li><strong>在 close() 方法注入</strong>：移除 <code>StreamRecord</code>。</li>
+<li><strong>定时检查</strong>：定期扫描未移除的 <code>StreamRecord</code>，如果打开时间超过阈值，报告资源泄漏。</li>
+</ol>
+<h2 id="四、帧渲染监控"><a href="#四、帧渲染监控" class="headerlink" title="四、帧渲染监控"></a>四、帧渲染监控</h2><h3 id="4-1-Choreographer-驱动的帧模型"><a href="#4-1-Choreographer-驱动的帧模型" class="headerlink" title="4.1 Choreographer 驱动的帧模型"></a>4.1 Choreographer 驱动的帧模型</h3><p>Android 的帧渲染由 <code>Choreographer</code>（<code>android.view.Choreographer</code>）驱动。每个 VSYNC 信号（60fps 下每 16.67ms 一次）触发一次 <code>Choreographer.doFrame()</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">VSYNC → Choreographer.doFrame(long frameTimeNanos)</span><br><span class="line">    ├── INPUT Callback      (处理输入事件)</span><br><span class="line">    ├── ANIMATION Callback   (执行动画)</span><br><span class="line">    ├── TRAVERSAL Callback   (measure/layout/draw)</span><br><span class="line">    └── COMMIT Callback      (提交渲染结果到 SurfaceFlinger)</span><br></pre></td></tr></table></figure>
+
+<p><strong>帧耗时</strong> &#x3D; Choreographer 处理完一帧所有回调的时间。如果超过 16.67ms（60fps）&#x2F; 5.6ms（120fps），说明发生了丢帧（jank）。</p>
+<h3 id="4-2-Matrix-FrameBeat-的实现"><a href="#4-2-Matrix-FrameBeat-的实现" class="headerlink" title="4.2 Matrix FrameBeat 的实现"></a>4.2 Matrix FrameBeat 的实现</h3><p>Matrix 的 <code>FrameBeat</code> 通过反射 Hook Choreographer 来监控帧耗时。核心流程：</p>
+<ol>
+<li><p><strong>获取 Choreographer 实例</strong>：通过反射 <code>Choreographer.getInstance()</code>（或通过 <code>Looper.getMainLooper()</code> 关联的 Choreographer）。</p>
+</li>
+<li><p><strong>向回调队列插入自定义回调</strong>：Choreographer 内部使用 <code>CallbackQueue</code> 链表存储回调。<code>FrameBeat</code> 通过反射访问 <code>Choreographer.mCallbackQueues</code>，在每个类型的回调链表头部<strong>插入</strong>一个自定义的 <code>CallbackRecord</code>。</p>
+</li>
+<li><p><strong>记录回调耗时</strong>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// FrameBeat 插入的回调</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">FrameBeatCallback</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.nanoTime();</span><br><span class="line">        <span class="comment">// 依次执行原始回调（通过反射调用 Choreographer 的下一个回调）</span></span><br><span class="line">        executeOriginalCallbacks();</span><br><span class="line">        <span class="type">long</span> <span class="variable">duration</span> <span class="operator">=</span> System.nanoTime() - start;</span><br><span class="line">        <span class="comment">// 记录每个回调类型的耗时</span></span><br><span class="line">        FrameBeat.onCallbackCompleted(callbackType, duration);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>丢帧检测</strong>：如果一帧内所有回调的总耗时超过 16.67ms，记录为一次丢帧事件。收集主要耗时来源（INPUT vs ANIMATION vs TRAVERSAL）。</p>
+</li>
+</ol>
+<h3 id="4-3-View-级别渲染监控的字节码注入"><a href="#4-3-View-级别渲染监控的字节码注入" class="headerlink" title="4.3 View 级别渲染监控的字节码注入"></a>4.3 View 级别渲染监控的字节码注入</h3><p>除了 Choreographer 层面的帧监控，字节码注入还可以实现更细粒度的 View 级别渲染监控——直接注入到 <code>View.onMeasure()</code>、<code>View.onLayout()</code> 和 <code>View.draw()</code> 中：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ViewMeasureVisitor</span> <span class="keyword">extends</span> <span class="title class_">AdviceAdapter</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">onMethodEnter</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// AppMethodBeat.onViewMeasureStart(this);</span></span><br><span class="line">        mv.visitVarInsn(ALOAD, <span class="number">0</span>);  <span class="comment">// this = View 子类实例</span></span><br><span class="line">        mv.visitMethodInsn(INVOKESTATIC,</span><br><span class="line">            <span class="string">&quot;com/tencent/matrix/trace/view/ViewTracer&quot;</span>,</span><br><span class="line">            <span class="string">&quot;onViewMeasureStart&quot;</span>, <span class="string">&quot;(Landroid/view/View;)V&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">onMethodExit</span><span class="params">(<span class="type">int</span> opcode)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (opcode == ATHROW) <span class="keyword">return</span>;</span><br><span class="line">        <span class="comment">// AppMethodBeat.onViewMeasureEnd(this);</span></span><br><span class="line">        mv.visitVarInsn(ALOAD, <span class="number">0</span>);</span><br><span class="line">        mv.visitMethodInsn(INVOKESTATIC,</span><br><span class="line">            <span class="string">&quot;com/tencent/matrix/trace/view/ViewTracer&quot;</span>,</span><br><span class="line">            <span class="string">&quot;onViewMeasureEnd&quot;</span>, <span class="string">&quot;(Landroid/view/View;)V&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>View 级别的监控可以定位到具体哪个 View 的 measure&#x2F;layout&#x2F;draw 耗时最多——对于复杂布局的性能优化至关重要。</p>
+<h2 id="五、Binder-监控与跨进程通信开销"><a href="#五、Binder-监控与跨进程通信开销" class="headerlink" title="五、Binder 监控与跨进程通信开销"></a>五、Binder 监控与跨进程通信开销</h2><h3 id="5-1-Binder-调用的统一入口"><a href="#5-1-Binder-调用的统一入口" class="headerlink" title="5.1 Binder 调用的统一入口"></a>5.1 Binder 调用的统一入口</h3><p>Android 的所有 Binder 客户端调用最终通过 <code>android.os.BinderProxy.transact(int code, Parcel data, Parcel reply, int flags)</code> 发送。这是监控所有跨进程通信的统一注入点。</p>
+<p><code>BinderProxy</code> 的类名在字节码中为 <code>android/os/BinderProxy</code>，属于系统类。对于 Transform 中 <code>SCOPE_FULL_PROJECT</code> 的作用域，系统类通常不会被 Transform 处理——因为系统类来自 <code>android.jar</code>，不以源代码或 <code>.class</code> 形式参与编译。但可以通过 Hook 应用的<strong>调用点</strong>来监控。</p>
+<h3 id="5-2-监控应用发起的-Binder-调用"><a href="#5-2-监控应用发起的-Binder-调用" class="headerlink" title="5.2 监控应用发起的 Binder 调用"></a>5.2 监控应用发起的 Binder 调用</h3><p>方案一：直接修改 <code>BinderProxy.class</code> 并替换到 <code>android.jar</code> 中（不推荐，侵入性强，不兼容 AGP 更新）。</p>
+<p>方案二：Hook 应用的 Binder 调用点——在实际调用 <code>transact()</code> 的地方注入监控代码。但这需要对所有 Binder 调用点做 ASM 注入，较难实现。</p>
+<p>方案三（推荐）：使用 <strong>动态代理 + <code>ContentProvider</code> &#x2F; Service 的 Binder 包装</strong>。在应用层创建一个 Binder 的代理包装器，在重要的 Binder 通信点（如 Activity 启动、Service 绑定）插入监控代码。Matrix 的 Binder 监控主要通过方案三在应用框架层插入。</p>
+<h3 id="5-3-Code-→-Name-的映射"><a href="#5-3-Code-→-Name-的映射" class="headerlink" title="5.3 Code → Name 的映射"></a>5.3 Code → Name 的映射</h3><p>Binder 调用通过整数 <code>code</code> 标识具体操作。例如在 <code>IActivityManager.Stub</code> 中：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Frameworks 中的 AIDL 定义 (frameworks/base/core/java/android/app/IActivityManager.aidl)</span></span><br><span class="line"><span class="type">int</span> <span class="variable">START_ACTIVITY_TRANSACTION</span> <span class="operator">=</span> <span class="number">3</span>;</span><br><span class="line"><span class="type">int</span> <span class="variable">START_ACTIVITY_AS_USER_TRANSACTION</span> <span class="operator">=</span> <span class="number">153</span>;</span><br><span class="line"><span class="type">int</span> <span class="variable">FINISH_ACTIVITY_TRANSACTION</span> <span class="operator">=</span> <span class="number">6</span>;</span><br><span class="line"><span class="type">int</span> <span class="variable">GET_CONTENT_PROVIDER_TRANSACTION</span> <span class="operator">=</span> <span class="number">29</span>;</span><br></pre></td></tr></table></figure>
+
+<p>APM SDK 可以维护一个 code → name 的映射表。映射表可以通过以下方式构建：</p>
+<ol>
+<li>手动维护（覆盖 AMS、WMS、PMS 等核心 service 的常用 transaction）。</li>
+<li>通过 AOSP 源码中的 AIDL 文件自动生成（解析 <code>.aidl</code> 文件提取 <code>int ..._TRANSACTION = ...;</code> 的定义）。</li>
+</ol>
+<p>运行时通过这个映射表解析 Binder 调用的语义：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">name</span> <span class="operator">=</span> BinderTransactionMap.getName(serviceName, code);</span><br><span class="line"><span class="comment">// name = &quot;startActivity&quot; / &quot;getContentProvider&quot; / ...</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="六、网络监控"><a href="#六、网络监控" class="headerlink" title="六、网络监控"></a>六、网络监控</h2><h3 id="6-1-网络请求的注入点"><a href="#6-1-网络请求的注入点" class="headerlink" title="6.1 网络请求的注入点"></a>6.1 网络请求的注入点</h3><p>Android 中网络请求有两个主要的注入层面：</p>
+<p><strong>（1）底层 Socket 层</strong>：Hook <code>java.net.Socket.connect()</code>、<code>SocketInputStream.read()</code>、<code>SocketOutputStream.write()</code>。优点是覆盖所有网络库，缺点是缺少 HTTP 语义信息（如 URL、method、status code、headers）。</p>
+<p><strong>（2）HTTP 库层</strong>：Hook <code>HttpURLConnection.connect()</code> &#x2F; <code>getInputStream()</code> &#x2F; <code>getResponseCode()</code>（覆盖原生 HTTP 客户端），Hook OkHttp 的 <code>RealCall.execute()</code> 和 <code>RealCall.enqueue()</code>（覆盖 OkHttp 客户端，占 Android HTTP 请求的 90%+）。</p>
+<h3 id="6-2-OkHttp-监控注入示例"><a href="#6-2-OkHttp-监控注入示例" class="headerlink" title="6.2 OkHttp 监控注入示例"></a>6.2 OkHttp 监控注入示例</h3><p>通过 ASM Hook OkHttp 的 <code>RealCall.execute()</code> 和 <code>RealCall.enqueue()</code>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">OkHttpHookVisitor</span> <span class="keyword">extends</span> <span class="title class_">AdviceAdapter</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">onMethodEnter</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// 获取 Request（okhttp3.RealCall.getRequest()）</span></span><br><span class="line">        mv.visitVarInsn(ALOAD, <span class="number">0</span>);  <span class="comment">// this = RealCall</span></span><br><span class="line">        mv.visitMethodInsn(INVOKEVIRTUAL,</span><br><span class="line">            <span class="string">&quot;okhttp3/RealCall&quot;</span>, <span class="string">&quot;request&quot;</span>, <span class="string">&quot;()Lokhttp3/Request;&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">        <span class="comment">// 提取 URL</span></span><br><span class="line">        mv.visitMethodInsn(INVOKEVIRTUAL,</span><br><span class="line">            <span class="string">&quot;okhttp3/Request&quot;</span>, <span class="string">&quot;url&quot;</span>, <span class="string">&quot;()Lokhttp3/HttpUrl;&quot;</span>, <span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 插入：NetworkMonitor.onRequestStart(request, url);</span></span><br><span class="line">        mv.visitMethodInsn(INVOKESTATIC,</span><br><span class="line">            <span class="string">&quot;com/example/NetworkMonitor&quot;</span>, <span class="string">&quot;onRequestStart&quot;</span>,</span><br><span class="line">            <span class="string">&quot;(Lokhttp3/Request;Lokhttp3/HttpUrl;)V&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">onMethodExit</span><span class="params">(<span class="type">int</span> opcode)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (opcode == ATHROW) &#123;</span><br><span class="line">            <span class="comment">// 记录网络异常</span></span><br><span class="line">            mv.visitMethodInsn(INVOKESTATIC, <span class="string">&quot;com/example/NetworkMonitor&quot;</span>,</span><br><span class="line">                <span class="string">&quot;onRequestError&quot;</span>, <span class="string">&quot;()V&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 获取 Response（返回值在栈顶）</span></span><br><span class="line">            mv.visitMethodInsn(INVOKESTATIC, <span class="string">&quot;com/example/NetworkMonitor&quot;</span>,</span><br><span class="line">                <span class="string">&quot;onRequestEnd&quot;</span>, <span class="string">&quot;(Lokhttp3/Response;)V&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-3-关键监控指标"><a href="#6-3-关键监控指标" class="headerlink" title="6.3 关键监控指标"></a>6.3 关键监控指标</h3><p>网络监控收集的核心指标：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>获取方式</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>请求 URL</td>
+<td>Request.url()</td>
+<td>识别请求的目标服务</td>
+</tr>
+<tr>
+<td>HTTP 方法</td>
+<td>Request.method()</td>
+<td>GET&#x2F;POST&#x2F;PUT&#x2F;DELETE 分布</td>
+</tr>
+<tr>
+<td>响应状态码</td>
+<td>Response.code()</td>
+<td>识别服务端错误（5xx）、客户端错误（4xx）</td>
+</tr>
+<tr>
+<td>请求耗时</td>
+<td>入口&#x2F;出口时间戳差值</td>
+<td>识别慢请求、超时</td>
+</tr>
+<tr>
+<td>请求&#x2F;响应体大小</td>
+<td>Request&#x2F;Response body</td>
+<td>识别大数据传输</td>
+</tr>
+<tr>
+<td>是否使用缓存</td>
+<td>Response.cacheResponse()</td>
+<td>缓存命中率</td>
+</tr>
+<tr>
+<td>DNS 解析耗时</td>
+<td>EventListener.dnsStart&#x2F;dnsEnd</td>
+<td>识别 DNS 问题</td>
+</tr>
+<tr>
+<td>TLS 握手耗时</td>
+<td>EventListener.secureConnectStart&#x2F;End</td>
+<td>识别证书&#x2F;TLS 问题</td>
+</tr>
+<tr>
+<td>连接建立耗时</td>
+<td>EventListener.connectStart&#x2F;End</td>
+<td>识别连接池问题</td>
+</tr>
+</tbody></table>
+<h2 id="七、崩溃与运行时异常监控"><a href="#七、崩溃与运行时异常监控" class="headerlink" title="七、崩溃与运行时异常监控"></a>七、崩溃与运行时异常监控</h2><h3 id="7-1-Try-Catch-注入模式"><a href="#7-1-Try-Catch-注入模式" class="headerlink" title="7.1 Try-Catch 注入模式"></a>7.1 Try-Catch 注入模式</h3><p>字节码注入可以在每个方法周围包裹 try-catch 来捕获未处理的异常。实现的关键在于构建异常处理表条目（TryCatchBlock）：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">CrashGuardMethodVisitor</span> <span class="keyword">extends</span> <span class="title class_">MethodVisitor</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">Label</span> <span class="variable">tryStart</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Label</span>();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">Label</span> <span class="variable">tryEnd</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Label</span>();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">Label</span> <span class="variable">catchStart</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Label</span>();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String className;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String methodName;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">visitCode</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>.visitCode();</span><br><span class="line">        mv.visitTryCatchBlock(tryStart, tryEnd, catchStart, <span class="string">&quot;java/lang/Throwable&quot;</span>);</span><br><span class="line">        mv.visitLabel(tryStart);  <span class="comment">// try 块的开始</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">visitMaxs</span><span class="params">(<span class="type">int</span> maxStack, <span class="type">int</span> maxLocals)</span> &#123;</span><br><span class="line">        mv.visitLabel(tryEnd);    <span class="comment">// try 块的结束</span></span><br><span class="line">        <span class="comment">// 正常流程：跳过 catch 块</span></span><br><span class="line">        <span class="type">Label</span> <span class="variable">normalContinue</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Label</span>();</span><br><span class="line">        mv.visitJumpInsn(GOTO, normalContinue);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Catch 块：</span></span><br><span class="line">        mv.visitLabel(catchStart);</span><br><span class="line">        <span class="type">int</span> <span class="variable">exceptionVar</span> <span class="operator">=</span> maxLocals;  <span class="comment">// 新分配的局部变量槽位</span></span><br><span class="line">        mv.visitVarInsn(ASTORE, exceptionVar);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 上报异常：CrashReporter.report(className, methodName, exception)</span></span><br><span class="line">        mv.visitLdcInsn(className);</span><br><span class="line">        mv.visitLdcInsn(methodName);</span><br><span class="line">        mv.visitVarInsn(ALOAD, exceptionVar);</span><br><span class="line">        mv.visitMethodInsn(INVOKESTATIC,</span><br><span class="line">            <span class="string">&quot;com/example/CrashReporter&quot;</span>, <span class="string">&quot;report&quot;</span>,</span><br><span class="line">            <span class="string">&quot;(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)V&quot;</span>, <span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 重新抛出异常（可选：吞掉异常？）</span></span><br><span class="line">        mv.visitVarInsn(ALOAD, exceptionVar);</span><br><span class="line">        mv.visitInsn(ATHROW);</span><br><span class="line"></span><br><span class="line">        mv.visitLabel(normalContinue);</span><br><span class="line">        <span class="built_in">super</span>.visitMaxs(maxStack + <span class="number">1</span>, maxLocals + <span class="number">1</span>);  <span class="comment">// 额外槽位和栈空间</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-2-开销与策略"><a href="#7-2-开销与策略" class="headerlink" title="7.2 开销与策略"></a>7.2 开销与策略</h3><p>全量包裹 try-catch 的开销不低——每个方法增加一个异常表条目和额外的字节码。在实际 APM 中，通常采用<strong>选择性包裹</strong>策略：</p>
+<ul>
+<li>只包裹被开发者标记的”关键方法”。</li>
+<li>只包裹生命周期方法（onCreate、onResume 等）。</li>
+<li>只包裹顶层调用方法（如事件处理方法），由异常传播穿透底层方法。</li>
+</ul>
+<p>Matrix 不使用全量 try-catch 包裹，而是通过注册 <code>Thread.UncaughtExceptionHandler</code> 来收集崩溃信息。字节码注入的崩溃监控主要用于提供更丰富的崩溃上下文——在崩溃发生时，能够从环形缓冲区中回溯崩溃前的方法调用序列（因为方法计时已经记录了每个方法进入&#x2F;退出的时间戳）。</p>
+<h2 id="八、性能开销控制"><a href="#八、性能开销控制" class="headerlink" title="八、性能开销控制"></a>八、性能开销控制</h2><h3 id="8-1-注入白名单与黑名单"><a href="#8-1-注入白名单与黑名单" class="headerlink" title="8.1 注入白名单与黑名单"></a>8.1 注入白名单与黑名单</h3><p>字节码注入的性能开销主要体现在两个方面：注入代码本身的运行时开销，以及注入过程增加的构建时间。</p>
+<p><strong>运行时开销控制</strong>：</p>
+<ul>
+<li><strong>白名单模式</strong>：只注入指定包名的方法（如 <code>com.myapp.*</code>），跳过所有第三方库和系统类。</li>
+<li><strong>黑名单模式</strong>：排除短小方法（如 getter&#x2F;setter，JVM 指令数 &lt; 10 条，这类方法执行时间通常 &lt; 1us，注入开销可能超过方法本身的开销）。</li>
+<li><strong>排除构造方法和访问器</strong>：跳过 <code>&lt;init&gt;</code>、<code>&lt;clinit&gt;</code>、<code>get*()</code>、<code>set*()</code>、<code>is*()</code> 等高频调用方法。</li>
+</ul>
+<p>Matrix 的白名单配置示例：</p>
+<figure class="highlight groovy"><table><tr><td class="code"><pre><span class="line">matrix &#123;</span><br><span class="line">    trace &#123;</span><br><span class="line">        enable = <span class="literal">true</span></span><br><span class="line">        <span class="comment">// 只对指定包的方法注入</span></span><br><span class="line">        methodWhitelist = [<span class="string">&quot;com.tencent.sample&quot;</span>]</span><br><span class="line">        <span class="comment">// 排除以下类</span></span><br><span class="line">        blackListFile = <span class="string">&quot;$&#123;project.projectDir&#125;/matrixTraceBlackList.txt&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-2-采样策略"><a href="#8-2-采样策略" class="headerlink" title="8.2 采样策略"></a>8.2 采样策略</h3><p>对于高频方法（每秒调用数百次甚至上千次），全量记录所有调用会产生大量数据。APM SDK 可以使用采样策略：</p>
+<ul>
+<li><strong>固定速率采样</strong>：每 N 次调用只记录 1 次。</li>
+<li><strong>随机采样</strong>：每次调用以概率 P 记录（如 1% &#x3D; 0.01）。</li>
+<li><strong>自适应采样</strong>：根据方法耗时的方差自动调整采样率。方差大（耗时不稳定）的方法增加采样率，方差小（耗时稳定）的方法降低采样率。</li>
+</ul>
+<p>Matrix 默认不采用采样（所有调用都记录），因为其环形缓冲区的设计已经足够高效。但对于 IO 和网络监控，采样是常见的做法。</p>
+<h3 id="8-3-批量上报"><a href="#8-3-批量上报" class="headerlink" title="8.3 批量上报"></a>8.3 批量上报</h3><p>APM 的数据收集和上报是解耦的：</p>
+<ul>
+<li><strong>收集</strong>：运行时持续写入环形缓冲区&#x2F;内存队列，低开销。</li>
+<li><strong>上报</strong>：在合适的时机批量处理，避免在方法调用过程中进行网络 IO：<ul>
+<li>App 进入后台时（<code>onTrimMemory</code> &#x2F; <code>onStop</code>）。</li>
+<li>缓冲区满时。</li>
+<li>定时器触发（如每 30 秒）。</li>
+<li>Wi-Fi 连接时（避免消耗移动数据）。</li>
+</ul>
+</li>
+</ul>
+<p>Matrix 的上报通过单独的 HandlerThread 执行，确保与 UI 线程和业务线程隔离。</p>
+<h2 id="九、字节跳动的-Sliver-与-ByteX"><a href="#九、字节跳动的-Sliver-与-ByteX" class="headerlink" title="九、字节跳动的 Sliver 与 ByteX"></a>九、字节跳动的 Sliver 与 ByteX</h2><h3 id="9-1-Sliver-的-Trace-ID-传播"><a href="#9-1-Sliver-的-Trace-ID-传播" class="headerlink" title="9.1 Sliver 的 Trace ID 传播"></a>9.1 Sliver 的 Trace ID 传播</h3><p>字节跳动的 Sliver 框架在 Matrix 的基础上引入了 <strong>Trace ID 传播机制</strong>——在一个分布式追踪中，为每个请求&#x2F;操作生成唯一的 Trace ID，并追踪它在不同线程、不同 Binder 调用中的传播路径。</p>
+<p>Trace ID 的传播通过字节码注入实现：</p>
+<ol>
+<li><p><strong>线程切换点</strong>：在 <code>Handler.post()</code>、<code>Thread.start()</code>、<code>AsyncTask.execute()</code>、<code>ExecutorService.submit()</code> 等线程切换点注入代码，将当前线程的 Trace ID 传递给目标线程。</p>
+</li>
+<li><p><strong>Binder 调用</strong>：在 <code>BinderProxy.transact()</code> 调用点注入代码，将 Trace ID 写入 <code>Parcel</code> 的 meta-data 区域（如果可以安全使用），或在 Binder 调用的两侧通过独立的 side channel 传递。</p>
+</li>
+<li><p><strong>异步回调</strong>：在常见的异步回调接口（如 <code>Callback.onSuccess()</code>）注入代码，恢复&#x2F;传播 Trace ID。</p>
+</li>
+</ol>
+<p>这比 Matrix 更进一步——不仅记录单个方法的耗时，还记录了操作在整个应用中的端到端链路。</p>
+<h3 id="9-2-ByteX-的插件架构"><a href="#9-2-ByteX-的插件架构" class="headerlink" title="9.2 ByteX 的插件架构"></a>9.2 ByteX 的插件架构</h3><p>字节跳动的 ByteX 是一个通用的 Gradle Transform 框架，它定义了一个插件接口，让不同的字节码变换（方法计时、IO 监控、Trace ID 传播等）实现为独立的<strong>插件</strong>。ByteX 框架负责管理和顺序化这些插件，每个插件只需要实现 <code>Plugin.transform()</code> 方法即可。</p>
+<hr>
+<h2 id="面试问答"><a href="#面试问答" class="headerlink" title="面试问答"></a>面试问答</h2><p><strong>Q1：APM SDK 通过字节码注入实现方法耗时监控的完整原理是什么？为什么使用编译期注入而非运行时 Hook？</strong></p>
+<p>A：完整原理分三步：（1）编译期通过 ASM AdviceAdapter 在目标方法入口（onMethodEnter）插入时间戳获取（<code>SystemClock.uptimeMillis()</code>），在方法出口（onMethodExit）插入第二次时间戳获取并计算差值，调用运行时 SDK 方法传递耗时数据；（2）运行时 SDK（如 Matrix 的 AppMethodBeat）使用 <code>long[]</code> 环形缓冲区存储编码后的 <code>(methodId | timestamp)</code>，通过原子索引实现 O(1) 无锁写入；（3）定时或事件触发时批量从缓冲区读取数据，解析后通过网络上报。选择编译期注入的原因：（a）覆盖全量应用代码，无遗漏；（b）注入的代码与业务代码一起经过 R8 优化和 ART AOT&#x2F;JIT 编译，运行效率与手写代码无异；（c）注入是一次性构建成本，运行时零额外开销（除计时代码本身）；（d）运行时 Hook（Xposed&#x2F;Frida）不适用于生产环境，且受到 Android 平台越来越严格的限制（SELinux 策略、ART 完整性检查、Google Play 政策）。</p>
+<p><strong>Q2：Matrix 的 AppMethodBeat 为什么使用环形缓冲区而非每次方法调用直接上报？</strong></p>
+<p>A：直接上报（如每次方法调用后立即通过 JNI 写文件或发网络包）会导致三个严重问题：频繁的 JNI 调用开销（每次跨越 Java→Native 边界约 100-300ns）；内存抖动（字符串拼接和对象创建触发频繁 GC，在方法调用高频场景下可导致严重卡顿）；IO 阻塞（文件&#x2F;网络 IO 可能阻塞调用线程，特别是在主线程上会造成 jank）。环形缓冲区方案将所有数据编码到 <code>long[]</code> 中（高 32 位 methodId，低 32 位 timestamp），写入成本是一条数组写入 + 原子索引推进（O(1)），完全在 Java 堆内操作，零对象分配，零 JNI 开销。定时上报摊还了解析和网络传输的开销。此外，环形缓冲区具有”黑匣子”特性——可以从当前时刻向前回溯最近 N 秒的方法调用历史，在崩溃或性能问题发生时提供关键上下文。</p>
+<p><strong>Q3：如何通过字节码注入监控 IO 操作？如何检测主线程 IO 和资源泄漏？</strong></p>
+<p>A：通过 ASM ClassVisitor 匹配 <code>java.io.FileInputStream</code>、<code>java.io.FileOutputStream</code> 等类的构造方法和 read&#x2F;write 方法：（1）在构造方法中（super() 调用之后）注入 <code>IOCanaryPlugin.onFileOpened(this, filePath, stackTrace)</code>，记录文件路径、打开时间、调用栈；（2）在 read&#x2F;write 方法入口插入时间戳，出口计算耗时和传输字节数；（3）在 close() 方法中注入 <code>IOCanaryPlugin.onFileClosed(this)</code>，移除文件打开记录。主线程 IO 检测：在 <code>onFileOpened</code> 或 IO 方法中通过 <code>Looper.myLooper() == Looper.getMainLooper()</code> 判断。资源泄漏检测：定期扫描打开时间超过阈值但未被 close 的流记录，报告 filePath 和打开时的调用栈。此外监控小 buffer IO（每次 read 字节数 &lt; 512），因为频繁小 IO 会产生大量不必要的系统调用。</p>
+<p><strong>Q4：APM 字节码注入如何控制性能开销？有哪些具体的优化策略？</strong></p>
+<p>A：五个主要策略：（1）白名单&#x2F;黑名单：只注入指定包的业务代码，排除系统类（android.*）、第三方库（androidx.*、com.google.*）、合成类（R 文件、BuildConfig），排除短小方法（getter&#x2F;setter&#x2F;inline 方法，指令数 &lt; 10 条）和高频构造方法（<init>）。（2）采样策略：对高频方法按比例采样（如 1%），或根据方法耗时方差自适应调整采样率——方差大的方法（耗时不稳定）增加采样，方差小的降低采样。（3）环形缓冲区 + 批量上报：使用 <code>long[]</code> 原始数组 + 原子索引实现零对象分配的 O(1) 数据写入，定时&#x2F;事件触发批量读取和上报，摊还 IO 开销。（4）无锁设计：每个线程独立的缓冲区，避免跨线程的锁竞争。（5）合适的计时 API：使用 <code>SystemClock.uptimeMillis()</code>（基于 <code>CLOCK_MONOTONIC</code>）而非 <code>System.nanoTime()</code>，排除深度睡眠时间的同时降低计时调用开销。</p>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/APM/">APM    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/254.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/05/10/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%8D%81%E4%BA%94%E7%AF%87%E3%80%81Android%E5%AD%97%E8%8A%82%E7%A0%81%E6%B3%A8%E5%85%A5%E5%8E%9F%E7%90%86/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/255.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【深入理解JVM字节码】第十五篇、Android字节码注入原理</span></div></a></div><div class="next-post pull_right"><a href="/2021/05/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%8D%81%E4%B8%89%E7%AF%87%E3%80%81%E5%BA%94%E7%94%A8%E7%A0%B4%E8%A7%A3Vs%E9%98%B2%E7%A0%B4%E8%A7%A3/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/253.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【深入理解JVM字节码】第十三篇、应用破解Vs防破解</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2022/09/05/高级Android-【实战开发系列】微信Matrix-APM源码解析/" title="微信Matrix APM源码解析"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/338.jpg"><div class="relatedPosts_title">微信Matrix APM源码解析</div></a></div><div class="relatedPosts_item"><a href="/2021/05/10/重拾Android-【深入理解JVM字节码】第十五篇、Android字节码注入原理/" title="【深入理解JVM字节码】第十五篇、Android字节码注入原理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/255.jpg"><div class="relatedPosts_title">【深入理解JVM字节码】第十五篇、Android字节码注入原理</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/254.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

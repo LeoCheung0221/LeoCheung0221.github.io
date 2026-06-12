@@ -1,0 +1,711 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【竞赛专题】比赛技巧.md | ONE·PIECE</title><meta name="description" content="【竞赛专题】比赛技巧.md"><meta name="keywords" content="Kaggle"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【竞赛专题】比赛技巧.md"><meta name="twitter:description" content="【竞赛专题】比赛技巧.md"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【竞赛专题】比赛技巧.md"><meta property="og:url" content="http://tufusi.com/2020/03/20/%E3%80%90%E7%AB%9E%E8%B5%9B%E4%B8%93%E9%A2%98%E3%80%91%E6%AF%94%E8%B5%9B%E6%8A%80%E5%B7%A7/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【竞赛专题】比赛技巧.md"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2020/03/20/%E3%80%90%E7%AB%9E%E8%B5%9B%E4%B8%93%E9%A2%98%E3%80%91%E6%AF%94%E8%B5%9B%E6%8A%80%E5%B7%A7/"><link rel="prev" title="【统计学习方法死磕系列Ⅱ】奇异值分解" href="http://tufusi.com/2020/04/01/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E2%85%A1%E3%80%91%E5%A5%87%E5%BC%82%E5%80%BC%E5%88%86%E8%A7%A3/"><link rel="next" title="【统计学习方法死磕系列】朴素贝叶斯法" href="http://tufusi.com/2020/03/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF%E6%B3%95/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E6%AF%94%E8%B5%9B%E9%9C%80%E6%8E%8C%E6%8F%A1%E6%8A%80%E5%B7%A7%EF%BC%9A%E5%85%A8%E5%B1%80%E6%A6%82%E8%A7%88"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、比赛需掌握技巧：全局概览</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、数据处理</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-EDA%EF%BC%88Exploratory-Data-Analysis%EF%BC%89%E6%A3%80%E6%9F%A5%E6%B8%85%E5%8D%95"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 EDA（Exploratory Data Analysis）检查清单</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E5%85%B3%E9%94%AE-Python-%E5%BA%93"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 关键 Python 库</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81%E7%BB%98%E5%9B%BE%E6%8A%80%E5%B7%A7"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、绘图技巧</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E5%B8%B8%E7%94%A8%E5%8F%AF%E8%A7%86%E5%8C%96%E5%9C%BA%E6%99%AF%E9%80%9F%E6%9F%A5"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 常用可视化场景速查</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E5%85%A8%E5%B1%80%E6%A0%B7%E5%BC%8F%E8%AE%BE%E7%BD%AE"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 全局样式设置</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E7%89%B9%E5%BE%81%E5%B7%A5%E7%A8%8B"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、特征工程</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E7%89%B9%E5%BE%81%E5%B7%A5%E7%A8%8B%E7%B3%BB%E7%BB%9F%E5%8C%96%E5%B7%A5%E4%BD%9C%E6%B5%81"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 特征工程系统化工作流</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E6%95%B0%E5%80%BC%E7%89%B9%E5%BE%81%E5%A4%84%E7%90%86"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 数值特征处理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-%E7%B1%BB%E5%88%AB%E7%89%B9%E5%BE%81%E7%BC%96%E7%A0%81"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 类别特征编码</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-4-%E8%81%9A%E5%90%88%E7%89%B9%E5%BE%81%EF%BC%88%E5%AF%B9%E8%A1%A8%E6%A0%BC%E6%95%B0%E6%8D%AE%E5%B0%A4%E5%85%B6%E5%BC%BA%E5%A4%A7%EF%BC%89"><span class="toc_mobile_items-number">4.4.</span> <span class="toc_mobile_items-text">4.4 聚合特征（对表格数据尤其强大）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-5-%E6%97%B6%E5%BA%8F%E7%89%B9%E5%BE%81"><span class="toc_mobile_items-number">4.5.</span> <span class="toc_mobile_items-text">4.5 时序特征</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-6-%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9%E6%96%B9%E6%B3%95"><span class="toc_mobile_items-number">4.6.</span> <span class="toc_mobile_items-text">4.6 特征选择方法</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%9E%8B%E4%B8%8E%E6%A8%A1%E5%9E%8B%E9%80%89%E6%8B%A9"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、常用模型与模型选择</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E8%A1%A8%E6%A0%BC%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9E%8B%E9%80%89%E5%9E%8B%E6%8C%87%E5%8D%97"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 表格数据模型选型指南</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89%E6%A8%A1%E5%9E%8B%E9%80%89%E5%9E%8B"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 计算机视觉模型选型</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-NLP-%E6%96%87%E6%9C%AC%E6%A8%A1%E5%9E%8B%E9%80%89%E5%9E%8B"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 NLP &#x2F; 文本模型选型</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-4-%E6%A8%A1%E5%9E%8B%E9%80%89%E6%8B%A9%E7%9A%84%E5%86%B3%E7%AD%96%E6%A0%91"><span class="toc_mobile_items-number">5.4.</span> <span class="toc_mobile_items-text">5.4 模型选择的决策树</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E4%BA%A4%E5%8F%89%E9%AA%8C%E8%AF%81%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、交叉验证策略</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E5%B8%B8%E7%94%A8-CV-%E7%AD%96%E7%95%A5%E9%80%9F%E6%9F%A5"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 常用 CV 策略速查</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-CV-%E5%AE%9E%E7%8E%B0%E6%A8%A1%E6%9D%BF"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 CV 实现模板</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-CV-vs-Public-LB-vs-Private-LB"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">6.3 CV vs Public LB vs Private LB</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E8%B6%85%E5%8F%82%E6%95%B0%E4%BC%98%E5%8C%96"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、超参数优化</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">7.1 优化方法对比</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-Optuna-%E5%AE%9E%E6%88%98"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">7.2 Optuna 实战</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-3-Optuna-%E9%AB%98%E7%BA%A7%E5%8A%9F%E8%83%BD"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">7.3 Optuna 高级功能</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81%E9%9B%86%E6%88%90%E6%96%B9%E6%B3%95"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、集成方法</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-%E6%A0%B8%E5%BF%83%E9%9B%86%E6%88%90%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">8.1 核心集成策略</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-Stacking-%E5%AE%9E%E7%8E%B0%EF%BC%88OOF-%E6%96%B9%E5%BC%8F%EF%BC%89"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">8.2 Stacking 实现（OOF 方式）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-3-%E9%9B%86%E6%88%90%E5%A4%9A%E6%A0%B7%E6%80%A7"><span class="toc_mobile_items-number">8.3.</span> <span class="toc_mobile_items-text">8.3 集成多样性</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-4-Ensemble-%E7%9A%84-ROI"><span class="toc_mobile_items-number">8.4.</span> <span class="toc_mobile_items-text">8.4 Ensemble 的 ROI</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E5%90%8E%E5%A4%84%E7%90%86"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、后处理</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-1-%E5%B8%B8%E8%A7%81%E5%90%8E%E5%A4%84%E7%90%86%E6%8A%80%E6%9C%AF"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">9.1 常见后处理技术</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81%E7%AE%A1%E9%81%93%E7%AE%A1%E7%90%86%E4%B8%8E%E5%AE%9E%E9%AA%8C%E8%BF%BD%E8%B8%AA"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">十、管道管理与实验追踪</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-1-%E5%AE%9E%E9%AA%8C%E7%AE%A1%E7%90%86"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">10.1 实验管理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-2-%E7%AE%A1%E9%81%93%E7%AE%A1%E7%90%86"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">10.2 管道管理</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E5%B8%B8%E8%A7%81%E9%99%B7%E9%98%B1"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">十一、常见陷阱</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-1-%E6%95%B0%E6%8D%AE%E6%B3%84%E6%BC%8F%EF%BC%88Data-Leakage%EF%BC%89"><span class="toc_mobile_items-number">11.1.</span> <span class="toc_mobile_items-text">11.1 数据泄漏（Data Leakage）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-2-%E5%85%B6%E4%BB%96%E5%B8%B8%E8%A7%81%E9%94%99%E8%AF%AF"><span class="toc_mobile_items-number">11.2.</span> <span class="toc_mobile_items-text">11.2 其他常见错误</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E7%AD%94"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">十二、面试高频问答</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%AF%94%E8%B5%9B%E9%9C%80%E6%8E%8C%E6%8F%A1%E6%8A%80%E5%B7%A7%EF%BC%9A%E5%85%A8%E5%B1%80%E6%A6%82%E8%A7%88"><span class="toc-number">1.</span> <span class="toc-text">一、比赛需掌握技巧：全局概览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text">二、数据处理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-EDA%EF%BC%88Exploratory-Data-Analysis%EF%BC%89%E6%A3%80%E6%9F%A5%E6%B8%85%E5%8D%95"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 EDA（Exploratory Data Analysis）检查清单</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%85%B3%E9%94%AE-Python-%E5%BA%93"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 关键 Python 库</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%BB%98%E5%9B%BE%E6%8A%80%E5%B7%A7"><span class="toc-number">3.</span> <span class="toc-text">三、绘图技巧</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%B8%B8%E7%94%A8%E5%8F%AF%E8%A7%86%E5%8C%96%E5%9C%BA%E6%99%AF%E9%80%9F%E6%9F%A5"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 常用可视化场景速查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%85%A8%E5%B1%80%E6%A0%B7%E5%BC%8F%E8%AE%BE%E7%BD%AE"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 全局样式设置</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E7%89%B9%E5%BE%81%E5%B7%A5%E7%A8%8B"><span class="toc-number">4.</span> <span class="toc-text">四、特征工程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E7%89%B9%E5%BE%81%E5%B7%A5%E7%A8%8B%E7%B3%BB%E7%BB%9F%E5%8C%96%E5%B7%A5%E4%BD%9C%E6%B5%81"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 特征工程系统化工作流</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%95%B0%E5%80%BC%E7%89%B9%E5%BE%81%E5%A4%84%E7%90%86"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 数值特征处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E7%B1%BB%E5%88%AB%E7%89%B9%E5%BE%81%E7%BC%96%E7%A0%81"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 类别特征编码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E8%81%9A%E5%90%88%E7%89%B9%E5%BE%81%EF%BC%88%E5%AF%B9%E8%A1%A8%E6%A0%BC%E6%95%B0%E6%8D%AE%E5%B0%A4%E5%85%B6%E5%BC%BA%E5%A4%A7%EF%BC%89"><span class="toc-number">4.4.</span> <span class="toc-text">4.4 聚合特征（对表格数据尤其强大）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-%E6%97%B6%E5%BA%8F%E7%89%B9%E5%BE%81"><span class="toc-number">4.5.</span> <span class="toc-text">4.5 时序特征</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9%E6%96%B9%E6%B3%95"><span class="toc-number">4.6.</span> <span class="toc-text">4.6 特征选择方法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%9E%8B%E4%B8%8E%E6%A8%A1%E5%9E%8B%E9%80%89%E6%8B%A9"><span class="toc-number">5.</span> <span class="toc-text">五、常用模型与模型选择</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E8%A1%A8%E6%A0%BC%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9E%8B%E9%80%89%E5%9E%8B%E6%8C%87%E5%8D%97"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 表格数据模型选型指南</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89%E6%A8%A1%E5%9E%8B%E9%80%89%E5%9E%8B"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 计算机视觉模型选型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-NLP-%E6%96%87%E6%9C%AC%E6%A8%A1%E5%9E%8B%E9%80%89%E5%9E%8B"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 NLP &#x2F; 文本模型选型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E6%A8%A1%E5%9E%8B%E9%80%89%E6%8B%A9%E7%9A%84%E5%86%B3%E7%AD%96%E6%A0%91"><span class="toc-number">5.4.</span> <span class="toc-text">5.4 模型选择的决策树</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E4%BA%A4%E5%8F%89%E9%AA%8C%E8%AF%81%E7%AD%96%E7%95%A5"><span class="toc-number">6.</span> <span class="toc-text">六、交叉验证策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%B8%B8%E7%94%A8-CV-%E7%AD%96%E7%95%A5%E9%80%9F%E6%9F%A5"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 常用 CV 策略速查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-CV-%E5%AE%9E%E7%8E%B0%E6%A8%A1%E6%9D%BF"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 CV 实现模板</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-CV-vs-Public-LB-vs-Private-LB"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 CV vs Public LB vs Private LB</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E8%B6%85%E5%8F%82%E6%95%B0%E4%BC%98%E5%8C%96"><span class="toc-number">7.</span> <span class="toc-text">七、超参数优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95%E5%AF%B9%E6%AF%94"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 优化方法对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-Optuna-%E5%AE%9E%E6%88%98"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 Optuna 实战</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-Optuna-%E9%AB%98%E7%BA%A7%E5%8A%9F%E8%83%BD"><span class="toc-number">7.3.</span> <span class="toc-text">7.3 Optuna 高级功能</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E9%9B%86%E6%88%90%E6%96%B9%E6%B3%95"><span class="toc-number">8.</span> <span class="toc-text">八、集成方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E6%A0%B8%E5%BF%83%E9%9B%86%E6%88%90%E7%AD%96%E7%95%A5"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 核心集成策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-Stacking-%E5%AE%9E%E7%8E%B0%EF%BC%88OOF-%E6%96%B9%E5%BC%8F%EF%BC%89"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 Stacking 实现（OOF 方式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-%E9%9B%86%E6%88%90%E5%A4%9A%E6%A0%B7%E6%80%A7"><span class="toc-number">8.3.</span> <span class="toc-text">8.3 集成多样性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-4-Ensemble-%E7%9A%84-ROI"><span class="toc-number">8.4.</span> <span class="toc-text">8.4 Ensemble 的 ROI</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E5%90%8E%E5%A4%84%E7%90%86"><span class="toc-number">9.</span> <span class="toc-text">九、后处理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E5%B8%B8%E8%A7%81%E5%90%8E%E5%A4%84%E7%90%86%E6%8A%80%E6%9C%AF"><span class="toc-number">9.1.</span> <span class="toc-text">9.1 常见后处理技术</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E7%AE%A1%E9%81%93%E7%AE%A1%E7%90%86%E4%B8%8E%E5%AE%9E%E9%AA%8C%E8%BF%BD%E8%B8%AA"><span class="toc-number">10.</span> <span class="toc-text">十、管道管理与实验追踪</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-%E5%AE%9E%E9%AA%8C%E7%AE%A1%E7%90%86"><span class="toc-number">10.1.</span> <span class="toc-text">10.1 实验管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-%E7%AE%A1%E9%81%93%E7%AE%A1%E7%90%86"><span class="toc-number">10.2.</span> <span class="toc-text">10.2 管道管理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E5%B8%B8%E8%A7%81%E9%99%B7%E9%98%B1"><span class="toc-number">11.</span> <span class="toc-text">十一、常见陷阱</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-1-%E6%95%B0%E6%8D%AE%E6%B3%84%E6%BC%8F%EF%BC%88Data-Leakage%EF%BC%89"><span class="toc-number">11.1.</span> <span class="toc-text">11.1 数据泄漏（Data Leakage）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-2-%E5%85%B6%E4%BB%96%E5%B8%B8%E8%A7%81%E9%94%99%E8%AF%AF"><span class="toc-number">11.2.</span> <span class="toc-text">11.2 其他常见错误</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E7%AD%94"><span class="toc-number">12.</span> <span class="toc-text">十二、面试高频问答</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【竞赛专题】比赛技巧.md</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2020-03-20<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E6%95%B0%E6%8D%AE%E7%AB%9E%E8%B5%9B/">数据竞赛</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">4.9k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 20 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、比赛需掌握技巧：全局概览"><a href="#一、比赛需掌握技巧：全局概览" class="headerlink" title="一、比赛需掌握技巧：全局概览"></a>一、比赛需掌握技巧：全局概览</h2><p>一场成功的机器学习比赛遵循一条清晰的流水线：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">数据探索（EDA）→ 数据清洗 → 特征工程 → 模型选择 → 交叉验证 → 超参数优化 → 集成 → 后处理 → 提交</span><br></pre></td></tr></table></figure>
+
+<p>本文按上述顺序，系统介绍每个阶段的核心技巧、常见陷阱和业界最佳实践。</p>
+<span id="more"></span>
+
+<hr>
+<h2 id="二、数据处理"><a href="#二、数据处理" class="headerlink" title="二、数据处理"></a>二、数据处理</h2><h3 id="2-1-EDA（Exploratory-Data-Analysis）检查清单"><a href="#2-1-EDA（Exploratory-Data-Analysis）检查清单" class="headerlink" title="2.1 EDA（Exploratory Data Analysis）检查清单"></a>2.1 EDA（Exploratory Data Analysis）检查清单</h3><p>EDA 是最关键的起步阶段，一个彻底的 EDA 能节省后续数倍的时间。标准检查清单：</p>
+<p><strong>数据概览</strong>：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> seaborn <span class="keyword">as</span> sns</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. 基本形状和类型</span></span><br><span class="line"><span class="built_in">print</span>(df.shape)</span><br><span class="line"><span class="built_in">print</span>(df.info())</span><br><span class="line"><span class="built_in">print</span>(df.dtypes.value_counts())</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 缺失值分析</span></span><br><span class="line">missing = df.isna().<span class="built_in">sum</span>()</span><br><span class="line">missing_pct = (missing / <span class="built_in">len</span>(df)) * <span class="number">100</span></span><br><span class="line"><span class="built_in">print</span>(missing_pct[missing_pct &gt; <span class="number">0</span>].sort_values(ascending=<span class="literal">False</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 目标变量分布</span></span><br><span class="line">plt.figure(figsize=(<span class="number">12</span>, <span class="number">4</span>))</span><br><span class="line">plt.subplot(<span class="number">1</span>, <span class="number">3</span>, <span class="number">1</span>)</span><br><span class="line">df[<span class="string">&#x27;target&#x27;</span>].hist(bins=<span class="number">50</span>)  <span class="comment"># 回归任务：检查偏度、离群值</span></span><br><span class="line">plt.subplot(<span class="number">1</span>, <span class="number">3</span>, <span class="number">2</span>)</span><br><span class="line">df[<span class="string">&#x27;target&#x27;</span>].value_counts().plot.bar()  <span class="comment"># 分类任务：检查类别平衡</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 重复行</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Duplicate rows: <span class="subst">&#123;df.duplicated().<span class="built_in">sum</span>()&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 数值列统计</span></span><br><span class="line"><span class="built_in">print</span>(df.describe().T)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6. 高基数列</span></span><br><span class="line"><span class="keyword">for</span> col <span class="keyword">in</span> df.select_dtypes(<span class="string">&#x27;object&#x27;</span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;<span class="subst">&#123;col&#125;</span>: <span class="subst">&#123;df[col].nunique()&#125;</span> unique values&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>每个特征的深度探索</strong>：</p>
+<ul>
+<li>分布形状（histplot + boxplot）</li>
+<li>与目标的关系（回归：散点图&#x2F;相关性矩阵；分类：箱线图&#x2F;小提琴图）</li>
+<li>异常值（IQR &#x2F; Z-score &#x2F; 业务常识）</li>
+<li>时间和周期性模式（如果有时序数据）</li>
+</ul>
+<h3 id="2-2-关键-Python-库"><a href="#2-2-关键-Python-库" class="headerlink" title="2.2 关键 Python 库"></a>2.2 关键 Python 库</h3><table>
+<thead>
+<tr>
+<th>库</th>
+<th>用途</th>
+<th>核心 API</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Pandas</td>
+<td>数据读取、清洗、转换</td>
+<td><code>read_csv</code>, <code>merge</code>, <code>groupby</code>, <code>pivot_table</code></td>
+</tr>
+<tr>
+<td>NumPy</td>
+<td>数值计算、矩阵运算</td>
+<td><code>np.where</code>, <code>np.percentile</code>, <code>np.log</code>, <code>np.clip</code></td>
+</tr>
+<tr>
+<td>Matplotlib</td>
+<td>基础绘图</td>
+<td><code>plt.plot</code>, <code>plt.hist</code>, <code>plt.subplots</code></td>
+</tr>
+<tr>
+<td>Seaborn</td>
+<td>高级统计图</td>
+<td><code>sns.heatmap</code>, <code>sns.distplot</code>, <code>sns.boxplot</code></td>
+</tr>
+<tr>
+<td>Plotly</td>
+<td>交互式图表</td>
+<td><code>px.scatter</code>, <code>px.line</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="三、绘图技巧"><a href="#三、绘图技巧" class="headerlink" title="三、绘图技巧"></a>三、绘图技巧</h2><h3 id="3-1-常用可视化场景速查"><a href="#3-1-常用可视化场景速查" class="headerlink" title="3.1 常用可视化场景速查"></a>3.1 常用可视化场景速查</h3><table>
+<thead>
+<tr>
+<th>分析目标</th>
+<th>推荐图表</th>
+<th>代码示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数值分布</td>
+<td>直方图 + 密度曲线</td>
+<td><code>sns.histplot(df[&#39;col&#39;], kde=True)</code></td>
+</tr>
+<tr>
+<td>类别分布</td>
+<td>计数柱状图</td>
+<td><code>df[&#39;cat&#39;].value_counts().plot.bar()</code></td>
+</tr>
+<tr>
+<td>双变量关系</td>
+<td>散点图 &#x2F; 六边形图</td>
+<td><code>sns.scatterplot(x=&#39;a&#39;, y=&#39;b&#39;, hue=&#39;cat&#39;, data=df)</code></td>
+</tr>
+<tr>
+<td>相关性矩阵</td>
+<td>热力图</td>
+<td><code>sns.heatmap(df.corr(), annot=True, cmap=&#39;coolwarm&#39;)</code></td>
+</tr>
+<tr>
+<td>多类别对比</td>
+<td>分组箱线图</td>
+<td><code>sns.boxplot(x=&#39;cat&#39;, y=&#39;num&#39;, data=df)</code></td>
+</tr>
+<tr>
+<td>时间序列</td>
+<td>折线图</td>
+<td><code>df.plot(x=&#39;date&#39;, y=&#39;value&#39;)</code></td>
+</tr>
+<tr>
+<td>缺失值分布</td>
+<td>missingno 矩阵&#x2F;柱状图</td>
+<td><code>import missingno as msno; msno.matrix(df)</code></td>
+</tr>
+<tr>
+<td>地理数据</td>
+<td>散点地图</td>
+<td><code>df.plot.scatter(x=&#39;lon&#39;, y=&#39;lat&#39;)</code></td>
+</tr>
+</tbody></table>
+<h3 id="3-2-全局样式设置"><a href="#3-2-全局样式设置" class="headerlink" title="3.2 全局样式设置"></a>3.2 全局样式设置</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> seaborn <span class="keyword">as</span> sns</span><br><span class="line"></span><br><span class="line">plt.style.use(<span class="string">&#x27;seaborn-v0_8-darkgrid&#x27;</span>)</span><br><span class="line">sns.set_palette(<span class="string">&#x27;muted&#x27;</span>)</span><br><span class="line">plt.rcParams[<span class="string">&#x27;figure.dpi&#x27;</span>] = <span class="number">120</span></span><br><span class="line">plt.rcParams[<span class="string">&#x27;savefig.dpi&#x27;</span>] = <span class="number">300</span></span><br><span class="line">plt.rcParams[<span class="string">&#x27;font.size&#x27;</span>] = <span class="number">12</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="四、特征工程"><a href="#四、特征工程" class="headerlink" title="四、特征工程"></a>四、特征工程</h2><p>特征工程是竞赛中区分金牌方案和铜牌方案的关键环节。</p>
+<h3 id="4-1-特征工程系统化工作流"><a href="#4-1-特征工程系统化工作流" class="headerlink" title="4.1 特征工程系统化工作流"></a>4.1 特征工程系统化工作流</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Step 1: 理解每个特征的业务/物理含义</span><br><span class="line">Step 2: 修复数据问题（缺失值、异常值、不一致编码）</span><br><span class="line">Step 3: 创建基础转换（log, sqrt, binning, one-hot）</span><br><span class="line">Step 4: 创建交互特征（加减乘除、A/B ratio, A*B, concat）</span><br><span class="line">Step 5: 创建聚合特征（groupby → agg: mean, std, min, max, count, nunique）</span><br><span class="line">Step 6: 创建时序特征（lag, diff, rolling stats, expanding stats）</span><br><span class="line">Step 7: 特征选择（移除低方差、高相关、低重要性的特征）</span><br><span class="line">Step 8: 验证新特征在交叉验证中的增益</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-数值特征处理"><a href="#4-2-数值特征处理" class="headerlink" title="4.2 数值特征处理"></a>4.2 数值特征处理</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># log 变换（处理右偏分布）</span></span><br><span class="line">df[<span class="string">&#x27;log_col&#x27;</span>] = np.log1p(df[<span class="string">&#x27;col&#x27;</span>])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 分箱</span></span><br><span class="line">df[<span class="string">&#x27;bin&#x27;</span>] = pd.cut(df[<span class="string">&#x27;col&#x27;</span>], bins=<span class="number">10</span>, labels=<span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 标准化</span></span><br><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> StandardScaler, MinMaxScaler</span><br><span class="line">scaler = StandardScaler()</span><br><span class="line">df_scaled = scaler.fit_transform(df[[<span class="string">&#x27;col&#x27;</span>]])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 多项式特征</span></span><br><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> PolynomialFeatures</span><br><span class="line">poly = PolynomialFeatures(degree=<span class="number">2</span>, interaction_only=<span class="literal">True</span>)</span><br><span class="line">poly_features = poly.fit_transform(df[[<span class="string">&#x27;a&#x27;</span>, <span class="string">&#x27;b&#x27;</span>]])</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-类别特征编码"><a href="#4-3-类别特征编码" class="headerlink" title="4.3 类别特征编码"></a>4.3 类别特征编码</h3><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>适用场景</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>One-Hot Encoding</td>
+<td>低基数（&lt; 10 unique values）</td>
+<td><code>pd.get_dummies(df[&#39;color&#39;])</code></td>
+</tr>
+<tr>
+<td>Label Encoding</td>
+<td>有序类别、高基数预处理</td>
+<td><code>df[&#39;cat&#39;].astype(&#39;category&#39;).cat.codes</code></td>
+</tr>
+<tr>
+<td>Target Encoding</td>
+<td>高基数，与目标相关</td>
+<td>见下方代码</td>
+</tr>
+<tr>
+<td>Frequency Encoding</td>
+<td>高基数，值频率有信息量</td>
+<td><code>df[&#39;cat&#39;].map(df[&#39;cat&#39;].value_counts())</code></td>
+</tr>
+<tr>
+<td>Count Encoding</td>
+<td>类似频率编码但用计数</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>CatBoost 原生处理</td>
+<td>极高基数，不想手动处理</td>
+<td>直接传入 category 列名到 <code>cat_features</code></td>
+</tr>
+</tbody></table>
+<p><strong>Target Encoding（均值编码）</strong>：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 重要：必须使用交叉验证来避免数据泄漏</span></span><br><span class="line"><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> KFold</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">target_encode</span>(<span class="params">train, test, col, target, folds=<span class="number">5</span>, smoothing=<span class="number">10</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    col: categorical column name</span></span><br><span class="line"><span class="string">    target: target column name</span></span><br><span class="line"><span class="string">    smoothing: Laplace smoothing strength</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    train[<span class="string">&#x27;encoded&#x27;</span>] = <span class="number">0</span></span><br><span class="line">    kf = KFold(n_splits=folds, shuffle=<span class="literal">True</span>, random_state=<span class="number">42</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> trn_idx, val_idx <span class="keyword">in</span> kf.split(train):</span><br><span class="line">        trn, val = train.iloc[trn_idx], train.iloc[val_idx]</span><br><span class="line"></span><br><span class="line">        global_mean = trn[target].mean()</span><br><span class="line">        agg = trn.groupby(col)[target].agg([<span class="string">&#x27;count&#x27;</span>, <span class="string">&#x27;mean&#x27;</span>])</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 平滑编码</span></span><br><span class="line">        smoothed = (agg[<span class="string">&#x27;count&#x27;</span>] * agg[<span class="string">&#x27;mean&#x27;</span>] + smoothing * global_mean) \</span><br><span class="line">                   / (agg[<span class="string">&#x27;count&#x27;</span>] + smoothing)</span><br><span class="line"></span><br><span class="line">        train.loc[val_idx, <span class="string">&#x27;encoded&#x27;</span>] = val[col].<span class="built_in">map</span>(smoothed)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 对 test 集使用全量训练的编码</span></span><br><span class="line">    full_agg = train.groupby(col)[target].agg([<span class="string">&#x27;count&#x27;</span>, <span class="string">&#x27;mean&#x27;</span>])</span><br><span class="line">    global_mean = train[target].mean()</span><br><span class="line">    full_smoothed = (full_agg[<span class="string">&#x27;count&#x27;</span>] * full_agg[<span class="string">&#x27;mean&#x27;</span>] + smoothing * global_mean) \</span><br><span class="line">                    / (full_agg[<span class="string">&#x27;count&#x27;</span>] + smoothing)</span><br><span class="line">    test[<span class="string">&#x27;encoded&#x27;</span>] = test[col].<span class="built_in">map</span>(full_smoothed)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> train[[<span class="string">&#x27;encoded&#x27;</span>]], test[[<span class="string">&#x27;encoded&#x27;</span>]]</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-4-聚合特征（对表格数据尤其强大）"><a href="#4-4-聚合特征（对表格数据尤其强大）" class="headerlink" title="4.4 聚合特征（对表格数据尤其强大）"></a>4.4 聚合特征（对表格数据尤其强大）</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 对 &#x27;user_id&#x27; 分组，统计其交易行为特征</span></span><br><span class="line">agg_features = df.groupby(<span class="string">&#x27;user_id&#x27;</span>).agg(</span><br><span class="line">    transaction_count=(<span class="string">&#x27;amount&#x27;</span>, <span class="string">&#x27;count&#x27;</span>),</span><br><span class="line">    amount_mean=(<span class="string">&#x27;amount&#x27;</span>, <span class="string">&#x27;mean&#x27;</span>),</span><br><span class="line">    amount_std=(<span class="string">&#x27;amount&#x27;</span>, <span class="string">&#x27;std&#x27;</span>),</span><br><span class="line">    amount_sum=(<span class="string">&#x27;amount&#x27;</span>, <span class="string">&#x27;sum&#x27;</span>),</span><br><span class="line">    unique_merchants=(<span class="string">&#x27;merchant_id&#x27;</span>, <span class="string">&#x27;nunique&#x27;</span>),</span><br><span class="line">    last_amount=(<span class="string">&#x27;amount&#x27;</span>, <span class="string">&#x27;last&#x27;</span>)</span><br><span class="line">).reset_index()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 合并回主表</span></span><br><span class="line">df = df.merge(agg_features, on=<span class="string">&#x27;user_id&#x27;</span>, how=<span class="string">&#x27;left&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-5-时序特征"><a href="#4-5-时序特征" class="headerlink" title="4.5 时序特征"></a>4.5 时序特征</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 滞后特征</span></span><br><span class="line"><span class="keyword">for</span> lag <span class="keyword">in</span> [<span class="number">1</span>, <span class="number">3</span>, <span class="number">7</span>, <span class="number">14</span>]:</span><br><span class="line">    df[<span class="string">f&#x27;sales_lag_<span class="subst">&#123;lag&#125;</span>&#x27;</span>] = df.groupby(<span class="string">&#x27;store&#x27;</span>)[<span class="string">&#x27;sales&#x27;</span>].shift(lag)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 滚动统计</span></span><br><span class="line"><span class="keyword">for</span> window <span class="keyword">in</span> [<span class="number">7</span>, <span class="number">14</span>, <span class="number">30</span>]:</span><br><span class="line">    df[<span class="string">f&#x27;sales_rolling_mean_<span class="subst">&#123;window&#125;</span>&#x27;</span>] = df.groupby(<span class="string">&#x27;store&#x27;</span>)[<span class="string">&#x27;sales&#x27;</span>].rolling(window).mean().values</span><br><span class="line">    df[<span class="string">f&#x27;sales_rolling_std_<span class="subst">&#123;window&#125;</span>&#x27;</span>] = df.groupby(<span class="string">&#x27;store&#x27;</span>)[<span class="string">&#x27;sales&#x27;</span>].rolling(window).std().values</span><br><span class="line"></span><br><span class="line"><span class="comment"># 日期特征分解</span></span><br><span class="line">df[<span class="string">&#x27;dayofweek&#x27;</span>] = df[<span class="string">&#x27;date&#x27;</span>].dt.dayofweek</span><br><span class="line">df[<span class="string">&#x27;is_weekend&#x27;</span>] = df[<span class="string">&#x27;dayofweek&#x27;</span>].isin([<span class="number">5</span>, <span class="number">6</span>]).astype(<span class="built_in">int</span>)</span><br><span class="line">df[<span class="string">&#x27;month&#x27;</span>] = df[<span class="string">&#x27;date&#x27;</span>].dt.month</span><br><span class="line">df[<span class="string">&#x27;day_of_month&#x27;</span>] = df[<span class="string">&#x27;date&#x27;</span>].dt.day</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-6-特征选择方法"><a href="#4-6-特征选择方法" class="headerlink" title="4.6 特征选择方法"></a>4.6 特征选择方法</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 1. 移除低方差特征</span></span><br><span class="line"><span class="keyword">from</span> sklearn.feature_selection <span class="keyword">import</span> VarianceThreshold</span><br><span class="line">sel = VarianceThreshold(threshold=<span class="number">0.01</span>)</span><br><span class="line">X_selected = sel.fit_transform(X)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 移除高相关特征（&gt; 0.95 的保留一个）</span></span><br><span class="line">corr_matrix = df.corr().<span class="built_in">abs</span>()</span><br><span class="line">upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=<span class="number">1</span>).astype(<span class="built_in">bool</span>))</span><br><span class="line">to_drop = [col <span class="keyword">for</span> col <span class="keyword">in</span> upper.columns <span class="keyword">if</span> <span class="built_in">any</span>(upper[col] &gt; <span class="number">0.95</span>)]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 基于模型的特征重要性</span></span><br><span class="line"><span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> RandomForestClassifier</span><br><span class="line">rf = RandomForestClassifier(n_estimators=<span class="number">100</span>, random_state=<span class="number">42</span>)</span><br><span class="line">rf.fit(X, y)</span><br><span class="line">importances = pd.Series(rf.feature_importances_, index=X.columns).sort_values(ascending=<span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. Null Importance（更可靠，来自 Kaggle）</span></span><br><span class="line"><span class="comment"># 比较真实标签训练的 importance 和随机标签训练的 importance</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="五、常用模型与模型选择"><a href="#五、常用模型与模型选择" class="headerlink" title="五、常用模型与模型选择"></a>五、常用模型与模型选择</h2><h3 id="5-1-表格数据模型选型指南"><a href="#5-1-表格数据模型选型指南" class="headerlink" title="5.1 表格数据模型选型指南"></a>5.1 表格数据模型选型指南</h3><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>模型</th>
+<th>适用场景</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Baseline</td>
+<td>Logistic Regression &#x2F; Ridge</td>
+<td>任何表格问题</td>
+<td>极快、可解释</td>
+<td>精度上限低</td>
+</tr>
+<tr>
+<td>主力 1</td>
+<td><strong>XGBoost</strong></td>
+<td>通用表格数据</td>
+<td>强大、社区大、GPU 加速</td>
+<td>超参数多</td>
+</tr>
+<tr>
+<td>主力 2</td>
+<td><strong>LightGBM</strong></td>
+<td>高维特征、大数据</td>
+<td>训练快、内存省、原生类别支持</td>
+<td>对噪声敏感</td>
+</tr>
+<tr>
+<td>主力 3</td>
+<td><strong>CatBoost</strong></td>
+<td>高基数类别特征</td>
+<td>最好的类别特征处理、默认参数好</td>
+<td>训练慢</td>
+</tr>
+<tr>
+<td>高级</td>
+<td>TabNet &#x2F; FT-Transformer</td>
+<td>大规模表格数据</td>
+<td>可表征学习</td>
+<td>调参困难、不一致</td>
+</tr>
+<tr>
+<td>线性基准</td>
+<td>ElasticNet, RidgeCV</td>
+<td>子任务、校准层</td>
+<td>稳定、可解释</td>
+<td>需要更多特征工程</td>
+</tr>
+</tbody></table>
+<h3 id="5-2-计算机视觉模型选型"><a href="#5-2-计算机视觉模型选型" class="headerlink" title="5.2 计算机视觉模型选型"></a>5.2 计算机视觉模型选型</h3><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>模型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>分类&#x2F;特征提取</td>
+<td>EfficientNet V2</td>
+<td>目前准确度&#x2F;速度综合最佳的选择之一</td>
+</tr>
+<tr>
+<td>分类</td>
+<td>ConvNeXt</td>
+<td>现代化 CNN，精度接近 ViT</td>
+</tr>
+<tr>
+<td>分类&#x2F;检测</td>
+<td>ViT &#x2F; Swin Transformer</td>
+<td>纯 Transformer 架构，需要更多数据</td>
+</tr>
+<tr>
+<td>检测</td>
+<td>YOLOv8 &#x2F; YOLOv10</td>
+<td>One-stage，工业部署首选</td>
+</tr>
+<tr>
+<td>检测（高精度）</td>
+<td>DETR &#x2F; Co-DETR</td>
+<td>Transformer-based detector</td>
+</tr>
+<tr>
+<td>分割</td>
+<td>Mask2Former &#x2F; SAM</td>
+<td>全景&#x2F;实例分割</td>
+</tr>
+<tr>
+<td>预训练权重</td>
+<td>Timm library</td>
+<td><code>import timm; model = timm.create_model(&#39;convnext_base&#39;, pretrained=True)</code></td>
+</tr>
+</tbody></table>
+<h3 id="5-3-NLP-文本模型选型"><a href="#5-3-NLP-文本模型选型" class="headerlink" title="5.3 NLP &#x2F; 文本模型选型"></a>5.3 NLP &#x2F; 文本模型选型</h3><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>模型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>轻量级</td>
+<td>DeBERTa-V3-base&#x2F;xsmall</td>
+<td>比 BERT-base 精度高，速度快</td>
+</tr>
+<tr>
+<td>中等</td>
+<td>DeBERTa-V3-large</td>
+<td>Kaggle NLP 竞赛热门选择</td>
+</tr>
+<tr>
+<td>大模型</td>
+<td>Llama 3 &#x2F; Mistral &#x2F; Qwen</td>
+<td>开源 LLM，适合复杂推理</td>
+</tr>
+<tr>
+<td>嵌入</td>
+<td>BGE &#x2F; E5 &#x2F; Instructor</td>
+<td>文本相似度&#x2F;检索</td>
+</tr>
+<tr>
+<td>传统基线</td>
+<td>TF-IDF + Logistic Regression</td>
+<td>快速 benchmark</td>
+</tr>
+</tbody></table>
+<h3 id="5-4-模型选择的决策树"><a href="#5-4-模型选择的决策树" class="headerlink" title="5.4 模型选择的决策树"></a>5.4 模型选择的决策树</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">问题类型？</span><br><span class="line">  ├─ 表格数据 → 特征有高基数类别吗？</span><br><span class="line">  │   ├─ 有 → CatBoost</span><br><span class="line">  │   ├─ 否 → 特征维度 &gt; 1000？</span><br><span class="line">  │   │   ├─ 是 → LightGBM</span><br><span class="line">  │   │   └─ 否 → XGBoost + 二者都试试</span><br><span class="line">  │   └─ 最终方案 = XGB+LightGBM+CatBoost 的 ensemble</span><br><span class="line">  │</span><br><span class="line">  ├─ 图像 → 数据量 &gt; 10万？</span><br><span class="line">  │   ├─ 是 → ViT / Swin</span><br><span class="line">  │   └─ 否 → EfficientNet / ConvNeXt + 迁移学习</span><br><span class="line">  │</span><br><span class="line">  ├─ 文本 → 需要生成/推理？</span><br><span class="line">  │   ├─ 是 → LLM (Llama-3 / GPT-4)</span><br><span class="line">  │   └─ 否 → DeBERTa-V3 + fine-tune</span><br><span class="line">  │</span><br><span class="line">  └─ 多模态 → CLIP / BLIP-2 → 各自的 encoder + 融合层</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="六、交叉验证策略"><a href="#六、交叉验证策略" class="headerlink" title="六、交叉验证策略"></a>六、交叉验证策略</h2><h3 id="6-1-常用-CV-策略速查"><a href="#6-1-常用-CV-策略速查" class="headerlink" title="6.1 常用 CV 策略速查"></a>6.1 常用 CV 策略速查</h3><table>
+<thead>
+<tr>
+<th>策略</th>
+<th>适用场景</th>
+<th>注意事项</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>K-Fold (k&#x3D;5)</td>
+<td>通用场景</td>
+<td>最常用，需 shuffle</td>
+</tr>
+<tr>
+<td>Stratified K-Fold</td>
+<td>分类问题（尤其类别不平衡）</td>
+<td>保持每折的类别分布一致</td>
+</tr>
+<tr>
+<td>Group K-Fold</td>
+<td>同一 group 不应跨越 train&#x2F;val</td>
+<td>用户级预测、医疗数据</td>
+</tr>
+<tr>
+<td>TimeSeriesSplit</td>
+<td>时间序列</td>
+<td>训练集始终在验证集之前</td>
+</tr>
+<tr>
+<td>StratifiedGroupKFold</td>
+<td>有 group 且需要分层</td>
+<td>较新的 sklearn 功能</td>
+</tr>
+<tr>
+<td>Repeated K-Fold</td>
+<td>小数据集（&lt; 1000 行）</td>
+<td>多次随机分折取平均</td>
+</tr>
+</tbody></table>
+<h3 id="6-2-CV-实现模板"><a href="#6-2-CV-实现模板" class="headerlink" title="6.2 CV 实现模板"></a>6.2 CV 实现模板</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> StratifiedKFold, GroupKFold, TimeSeriesSplit</span><br><span class="line"></span><br><span class="line"><span class="comment"># 标准 K-Fold</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">run_cv</span>(<span class="params">X, y, model_factory, n_splits=<span class="number">5</span></span>):</span><br><span class="line">    cv = StratifiedKFold(n_splits=n_splits, shuffle=<span class="literal">True</span>, random_state=<span class="number">42</span>)</span><br><span class="line">    oof_preds = np.zeros(<span class="built_in">len</span>(y))</span><br><span class="line">    scores = []</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> fold, (trn_idx, val_idx) <span class="keyword">in</span> <span class="built_in">enumerate</span>(cv.split(X, y)):</span><br><span class="line">        X_trn, X_val = X.iloc[trn_idx], X.iloc[val_idx]</span><br><span class="line">        y_trn, y_val = y.iloc[trn_idx], y.iloc[val_idx]</span><br><span class="line"></span><br><span class="line">        model = model_factory()</span><br><span class="line">        model.fit(X_trn, y_trn, eval_set=[(X_val, y_val)],</span><br><span class="line">                  early_stopping_rounds=<span class="number">50</span>, verbose=<span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line">        oof_preds[val_idx] = model.predict(X_val)</span><br><span class="line">        scores.append(some_metric(y_val, oof_preds[val_idx]))</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;Fold <span class="subst">&#123;fold+<span class="number">1</span>&#125;</span>: <span class="subst">&#123;scores[-<span class="number">1</span>]:<span class="number">.4</span>f&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;CV Mean: <span class="subst">&#123;np.mean(scores):<span class="number">.4</span>f&#125;</span> ± <span class="subst">&#123;np.std(scores):<span class="number">.4</span>f&#125;</span>&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> oof_preds, scores</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-3-CV-vs-Public-LB-vs-Private-LB"><a href="#6-3-CV-vs-Public-LB-vs-Private-LB" class="headerlink" title="6.3 CV vs Public LB vs Private LB"></a>6.3 CV vs Public LB vs Private LB</h3><p>常见陷阱：<strong>Shake-up（排行榜抖动）</strong>——Public LB 排名很高，但 Private LB 排名大幅下降。原因：</p>
+<ul>
+<li>Public LB 数据占比较小（如 30%），且可能与 Private LB 的数据分布不同</li>
+<li>过度拟合 Public LB（通过大量提交试错）</li>
+<li>CV 和 LB 不一致（CV 稳定但 LB 波动 → 可能 CV 设置有问题）</li>
+</ul>
+<p><strong>黄金法则</strong>：永远信任 CV 而非 Public LB。CV 和 LB 一致时才能信任 LB 趋势。</p>
+<hr>
+<h2 id="七、超参数优化"><a href="#七、超参数优化" class="headerlink" title="七、超参数优化"></a>七、超参数优化</h2><h3 id="7-1-优化方法对比"><a href="#7-1-优化方法对比" class="headerlink" title="7.1 优化方法对比"></a>7.1 优化方法对比</h3><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>说明</th>
+<th>库</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Grid Search</td>
+<td>穷举所有组合</td>
+<td>sklearn</td>
+<td>参数少时的验证</td>
+</tr>
+<tr>
+<td>Random Search</td>
+<td>随机采样搜索空间</td>
+<td>sklearn</td>
+<td>中规模参数搜索</td>
+</tr>
+<tr>
+<td>Bayesian Optimization</td>
+<td>用 GP 建模参数-性能关系</td>
+<td>Optuna, Hyperopt</td>
+<td>大规模搜索，最优方案</td>
+</tr>
+<tr>
+<td>TPE（Tree-structured Parzen Estimator）</td>
+<td>基于密度估计的贝叶斯方法</td>
+<td>Optuna</td>
+<td>集成在 Optuna 中</td>
+</tr>
+<tr>
+<td>CMA-ES</td>
+<td>进化策略</td>
+<td>Optuna sampler</td>
+<td>对某些连续参数敏感</td>
+</tr>
+<tr>
+<td>Successive Halving &#x2F; Hyperband</td>
+<td>快速淘汰差参数</td>
+<td>Optuna pruner</td>
+<td>节省时间</td>
+</tr>
+</tbody></table>
+<h3 id="7-2-Optuna-实战"><a href="#7-2-Optuna-实战" class="headerlink" title="7.2 Optuna 实战"></a>7.2 Optuna 实战</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> optuna</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">objective</span>(<span class="params">trial</span>):</span><br><span class="line">    params = &#123;</span><br><span class="line">        <span class="string">&#x27;max_depth&#x27;</span>: trial.suggest_int(<span class="string">&#x27;max_depth&#x27;</span>, <span class="number">3</span>, <span class="number">12</span>),</span><br><span class="line">        <span class="string">&#x27;learning_rate&#x27;</span>: trial.suggest_float(<span class="string">&#x27;learning_rate&#x27;</span>, <span class="number">0.005</span>, <span class="number">0.3</span>, log=<span class="literal">True</span>),</span><br><span class="line">        <span class="string">&#x27;subsample&#x27;</span>: trial.suggest_float(<span class="string">&#x27;subsample&#x27;</span>, <span class="number">0.5</span>, <span class="number">1.0</span>),</span><br><span class="line">        <span class="string">&#x27;colsample_bytree&#x27;</span>: trial.suggest_float(<span class="string">&#x27;colsample_bytree&#x27;</span>, <span class="number">0.3</span>, <span class="number">1.0</span>),</span><br><span class="line">        <span class="string">&#x27;min_child_weight&#x27;</span>: trial.suggest_float(<span class="string">&#x27;min_child_weight&#x27;</span>, <span class="number">0.5</span>, <span class="number">10.0</span>),</span><br><span class="line">        <span class="string">&#x27;reg_alpha&#x27;</span>: trial.suggest_float(<span class="string">&#x27;reg_alpha&#x27;</span>, <span class="number">1e-8</span>, <span class="number">10.0</span>, log=<span class="literal">True</span>),</span><br><span class="line">        <span class="string">&#x27;reg_lambda&#x27;</span>: trial.suggest_float(<span class="string">&#x27;reg_lambda&#x27;</span>, <span class="number">1e-8</span>, <span class="number">10.0</span>, log=<span class="literal">True</span>),</span><br><span class="line">        <span class="string">&#x27;n_estimators&#x27;</span>: trial.suggest_int(<span class="string">&#x27;n_estimators&#x27;</span>, <span class="number">500</span>, <span class="number">5000</span>),</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    model = XGBRegressor(**params, tree_method=<span class="string">&#x27;hist&#x27;</span>, random_state=<span class="number">42</span>)</span><br><span class="line">    score = cross_val_score(model, X_train, y_train,</span><br><span class="line">                            cv=<span class="number">5</span>, scoring=<span class="string">&#x27;neg_mean_squared_error&#x27;</span>).mean()</span><br><span class="line">    <span class="keyword">return</span> -score  <span class="comment"># Optuna 默认最大化</span></span><br><span class="line"></span><br><span class="line">study = optuna.create_study(direction=<span class="string">&#x27;minimize&#x27;</span>)  <span class="comment"># 最小化 MSE</span></span><br><span class="line">study.optimize(objective, n_trials=<span class="number">100</span>, show_progress_bar=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Best params: <span class="subst">&#123;study.best_params&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Best score: <span class="subst">&#123;study.best_value:<span class="number">.4</span>f&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看参数重要性</span></span><br><span class="line">optuna.visualization.plot_param_importances(study)</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-3-Optuna-高级功能"><a href="#7-3-Optuna-高级功能" class="headerlink" title="7.3 Optuna 高级功能"></a>7.3 Optuna 高级功能</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 剪枝（pruning）— 训练中期淘汰明显差的三方</span></span><br><span class="line">study = optuna.create_study(direction=<span class="string">&#x27;minimize&#x27;</span>,</span><br><span class="line">                            pruner=optuna.pruners.MedianPruner())</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在 objective 中：</span></span><br><span class="line"><span class="keyword">for</span> step <span class="keyword">in</span> <span class="built_in">range</span>(n_estimators):</span><br><span class="line">    model.fit_step(...)</span><br><span class="line">    intermediate_value = evaluate(...)</span><br><span class="line">    trial.report(intermediate_value, step)</span><br><span class="line">    <span class="keyword">if</span> trial.should_prune():</span><br><span class="line">        <span class="keyword">raise</span> optuna.TrialPruned()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 从上次搜索结果恢复（持续搜参）</span></span><br><span class="line">study = optuna.load_study(study_name=<span class="string">&#x27;xgboost_opt&#x27;</span>, storage=<span class="string">&#x27;sqlite:///study.db&#x27;</span>)</span><br><span class="line">study.optimize(objective, n_trials=<span class="number">50</span>)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="八、集成方法"><a href="#八、集成方法" class="headerlink" title="八、集成方法"></a>八、集成方法</h2><h3 id="8-1-核心集成策略"><a href="#8-1-核心集成策略" class="headerlink" title="8.1 核心集成策略"></a>8.1 核心集成策略</h3><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>描述</th>
+<th>所需模型数</th>
+<th>效果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Averaging</strong></td>
+<td>直接对预测求算术平均</td>
+<td>2-5</td>
+<td>好</td>
+</tr>
+<tr>
+<td><strong>Weighted Averaging</strong></td>
+<td>按 CV 分数加权平均</td>
+<td>2-5</td>
+<td>更好</td>
+</tr>
+<tr>
+<td><strong>Rank Averaging</strong></td>
+<td>对排名取平均后转回值</td>
+<td>2-5</td>
+<td>对异常预测鲁棒</td>
+</tr>
+<tr>
+<td><strong>Stacking</strong></td>
+<td>用元模型学习各基模型的权重</td>
+<td>5+</td>
+<td>最好（但有数据泄漏风险）</td>
+</tr>
+<tr>
+<td><strong>Blending</strong></td>
+<td>单折 Hold-out 的简化 Stacking</td>
+<td>3-5</td>
+<td>快但可能过拟合</td>
+</tr>
+</tbody></table>
+<h3 id="8-2-Stacking-实现（OOF-方式）"><a href="#8-2-Stacking-实现（OOF-方式）" class="headerlink" title="8.2 Stacking 实现（OOF 方式）"></a>8.2 Stacking 实现（OOF 方式）</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">get_stacking_features</span>(<span class="params">models, X, y, X_test, n_folds=<span class="number">5</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    使用 OOF（Out-of-Fold）预测作为 stacking 的特征，避免数据泄漏。</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    oof = np.zeros((<span class="built_in">len</span>(X), <span class="built_in">len</span>(models)))</span><br><span class="line">    test_preds = np.zeros((<span class="built_in">len</span>(X_test), <span class="built_in">len</span>(models)))</span><br><span class="line"></span><br><span class="line">    kf = KFold(n_splits=n_folds, shuffle=<span class="literal">True</span>, random_state=<span class="number">42</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i, model_factory <span class="keyword">in</span> <span class="built_in">enumerate</span>(models):</span><br><span class="line">        model = model_factory()</span><br><span class="line">        test_fold_preds = np.zeros(<span class="built_in">len</span>(X_test))</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> fold, (trn_idx, val_idx) <span class="keyword">in</span> <span class="built_in">enumerate</span>(kf.split(X)):</span><br><span class="line">            X_trn, X_val = X.iloc[trn_idx], X.iloc[val_idx]</span><br><span class="line">            y_trn, y_val = y.iloc[trn_idx], y.iloc[val_idx]</span><br><span class="line"></span><br><span class="line">            model = model_factory()</span><br><span class="line">            model.fit(X_trn, y_trn)</span><br><span class="line">            oof[val_idx, i] = model.predict(X_val)</span><br><span class="line">            test_fold_preds += model.predict(X_test) / n_folds</span><br><span class="line"></span><br><span class="line">        test_preds[:, i] = test_fold_preds</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> oof, test_preds</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用 OOF 特征训练第二层元模型</span></span><br><span class="line">oof_train, test_feat = get_stacking_features(base_models, X, y, X_test)</span><br><span class="line">meta_model = Ridge(alpha=<span class="number">1.0</span>)</span><br><span class="line">meta_model.fit(oof_train, y)</span><br><span class="line">final_preds = meta_model.predict(test_feat)</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-3-集成多样性"><a href="#8-3-集成多样性" class="headerlink" title="8.3 集成多样性"></a>8.3 集成多样性</h3><p>有效的集成要求基模型之间有足够的多样性。增加多样性的方法：</p>
+<ol>
+<li><strong>不同算法</strong>：XGBoost + LightGBM + CatBoost + RandomForest</li>
+<li><strong>不同参数</strong>：同一个算法使用不同的超参数（深度不同、采样不同）</li>
+<li><strong>不同特征子集</strong>：每折用不同的特征子集训练</li>
+<li><strong>不同种子</strong>：相同的参数但不同的 random seed</li>
+<li><strong>不同数据版本</strong>：不同的数据清洗&#x2F;特征工程版本</li>
+<li><strong>不同标签处理</strong>：回归 vs 分箱+分类</li>
+</ol>
+<h3 id="8-4-Ensemble-的-ROI"><a href="#8-4-Ensemble-的-ROI" class="headerlink" title="8.4 Ensemble 的 ROI"></a>8.4 Ensemble 的 ROI</h3><p>一个常见经验法则：</p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>额外提升（典型）</th>
+<th>额外时间成本</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2 个不同模型加权平均</td>
+<td>+0.1% ~ 0.3%</td>
+<td>2x</td>
+</tr>
+<tr>
+<td>5 个模型加权平均</td>
+<td>+0.2% ~ 0.5%</td>
+<td>5x</td>
+</tr>
+<tr>
+<td>3 模型 + Stacking</td>
+<td>+0.2% ~ 0.4%</td>
+<td>4x ~ 10x</td>
+</tr>
+<tr>
+<td>单模型调参更久</td>
+<td>+0.1% ~ 0.2%</td>
+<td>1.2x</td>
+</tr>
+<tr>
+<td>更深入的特征工程</td>
+<td>+0.5% ~ 2%</td>
+<td>视复杂程度</td>
+</tr>
+</tbody></table>
+<p>结论：<strong>特征工程 &gt; 模型集成 &gt; 超参数微调</strong>。</p>
+<hr>
+<h2 id="九、后处理"><a href="#九、后处理" class="headerlink" title="九、后处理"></a>九、后处理</h2><h3 id="9-1-常见后处理技术"><a href="#9-1-常见后处理技术" class="headerlink" title="9.1 常见后处理技术"></a>9.1 常见后处理技术</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 1. 预测校准（分类问题）</span></span><br><span class="line"><span class="keyword">from</span> sklearn.calibration <span class="keyword">import</span> CalibratedClassifierCV</span><br><span class="line">calibrated = CalibratedClassifierCV(model, method=<span class="string">&#x27;isotonic&#x27;</span>, cv=<span class="number">5</span>)</span><br><span class="line">calibrated.fit(X, y)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 概率裁剪（防止 logloss 的极端预测）</span></span><br><span class="line">preds = np.clip(preds, <span class="number">1e-15</span>, <span class="number">1</span> - <span class="number">1e-15</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 阈值调整（最大化特定指标）</span></span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> f1_score</span><br><span class="line">thresholds = np.arange(<span class="number">0.3</span>, <span class="number">0.7</span>, <span class="number">0.01</span>)</span><br><span class="line">best_threshold = <span class="built_in">max</span>(thresholds, key=<span class="keyword">lambda</span> t: f1_score(y_true, preds &gt; t))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 异常值回退（回归问题）</span></span><br><span class="line"><span class="comment"># 如果预测值超出合理的物理范围，回退到合理的边界</span></span><br><span class="line">preds = np.clip(preds, lower_bound, upper_bound)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 数据分布匹配（quantile normalization）</span></span><br><span class="line"><span class="comment"># 使预测分布匹配训练标签的分布</span></span><br><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> QuantileTransformer</span><br><span class="line">qt = QuantileTransformer(output_distribution=<span class="string">&#x27;normal&#x27;</span>)</span><br><span class="line">preds = qt.fit_transform(preds.reshape(-<span class="number">1</span>, <span class="number">1</span>)).ravel()</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="十、管道管理与实验追踪"><a href="#十、管道管理与实验追踪" class="headerlink" title="十、管道管理与实验追踪"></a>十、管道管理与实验追踪</h2><h3 id="10-1-实验管理"><a href="#10-1-实验管理" class="headerlink" title="10.1 实验管理"></a>10.1 实验管理</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 使用 MLflow 追踪实验</span></span><br><span class="line"><span class="keyword">import</span> mlflow</span><br><span class="line"></span><br><span class="line">mlflow.set_experiment(<span class="string">&quot;kaggle-competition-name&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> mlflow.start_run(run_name=<span class="string">&quot;xgb_baseline_v1&quot;</span>):</span><br><span class="line">    mlflow.log_params(params)</span><br><span class="line">    mlflow.log_metric(<span class="string">&quot;cv_score&quot;</span>, cv_score)</span><br><span class="line">    mlflow.xgboost.log_model(model, <span class="string">&quot;model&quot;</span>)</span><br><span class="line">    mlflow.log_artifact(<span class="string">&quot;feature_importance.png&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="10-2-管道管理"><a href="#10-2-管道管理" class="headerlink" title="10.2 管道管理"></a>10.2 管道管理</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 使用 sklearn Pipeline 确保训练/测试的一致性</span></span><br><span class="line"><span class="keyword">from</span> sklearn.pipeline <span class="keyword">import</span> Pipeline</span><br><span class="line"><span class="keyword">from</span> sklearn.compose <span class="keyword">import</span> ColumnTransformer</span><br><span class="line"></span><br><span class="line">preprocessor = ColumnTransformer([</span><br><span class="line">    (<span class="string">&#x27;num&#x27;</span>, Pipeline([</span><br><span class="line">        (<span class="string">&#x27;imputer&#x27;</span>, SimpleImputer(strategy=<span class="string">&#x27;median&#x27;</span>)),</span><br><span class="line">        (<span class="string">&#x27;scaler&#x27;</span>, StandardScaler())</span><br><span class="line">    ]), numerical_cols),</span><br><span class="line">    (<span class="string">&#x27;cat&#x27;</span>, Pipeline([</span><br><span class="line">        (<span class="string">&#x27;imputer&#x27;</span>, SimpleImputer(strategy=<span class="string">&#x27;constant&#x27;</span>, fill_value=<span class="string">&#x27;missing&#x27;</span>)),</span><br><span class="line">        (<span class="string">&#x27;encoder&#x27;</span>, OneHotEncoder(handle_unknown=<span class="string">&#x27;ignore&#x27;</span>))</span><br><span class="line">    ]), categorical_cols)</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line">pipeline = Pipeline([</span><br><span class="line">    (<span class="string">&#x27;preprocessor&#x27;</span>, preprocessor),</span><br><span class="line">    (<span class="string">&#x27;model&#x27;</span>, XGBClassifier())</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line">pipeline.fit(X_train, y_train)</span><br><span class="line">preds = pipeline.predict(X_test)  <span class="comment"># 保证 train 和 test 经过相同的变换</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="十一、常见陷阱"><a href="#十一、常见陷阱" class="headerlink" title="十一、常见陷阱"></a>十一、常见陷阱</h2><h3 id="11-1-数据泄漏（Data-Leakage）"><a href="#11-1-数据泄漏（Data-Leakage）" class="headerlink" title="11.1 数据泄漏（Data Leakage）"></a>11.1 数据泄漏（Data Leakage）</h3><table>
+<thead>
+<tr>
+<th>泄漏类型</th>
+<th>示例</th>
+<th>后果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>时间泄漏</td>
+<td>用未来信息预测过去</td>
+<td>模型失效（实盘中完全不可用）</td>
+</tr>
+<tr>
+<td>目标泄漏</td>
+<td>特征中含目标变量的某种变换</td>
+<td>超高的 CV 和 LB，但在真实场景中为 0</td>
+</tr>
+<tr>
+<td>Group 泄漏</td>
+<td>同一 entity 的训练&#x2F;测试数据分到了 train 和 val</td>
+<td>CV 虚高</td>
+</tr>
+<tr>
+<td>预处理泄漏</td>
+<td>在分割前对全量数据做标准化&#x2F;编码&#x2F;填充</td>
+<td>CV 虚高（应仅在训练集上 fit，然后 transform 验证集）</td>
+</tr>
+</tbody></table>
+<h3 id="11-2-其他常见错误"><a href="#11-2-其他常见错误" class="headerlink" title="11.2 其他常见错误"></a>11.2 其他常见错误</h3><ul>
+<li>使用 <code>train_test_split</code> 而不是合理的 CV 策略</li>
+<li>仅看 Public LB 而不关注 CV-LB 一致性</li>
+<li>随机种子不一致导致无法复现</li>
+<li>在 CV 期间使用了 <code>random_state=42</code>，但从未检查不同种子的 CV 稳定性</li>
+<li>提交文件格式错误（排序、列名、数据类型）</li>
+</ul>
+<hr>
+<h2 id="十二、面试高频问答"><a href="#十二、面试高频问答" class="headerlink" title="十二、面试高频问答"></a>十二、面试高频问答</h2><p><strong>Q1: 在一个 Kaggle 竞赛中，你的 CV 很稳定（5折 0.85±0.005），但 Public LB 只有 0.80。你会优先信任哪个？</strong></p>
+<p>优先信任 CV。这种差异（CV &gt;&gt; LB）可能的原因是：(1) Public LB 的样本太小（如只有 30%），采样偏差导致分数偏低；(2) Public LB 的数据分布与训练集不同（如时间维度上 LB 是更晚的数据）。在信任 CV 的前提下，应该去分析 LB 和 CV 之间差异的模式——如果 CV 的提升能反映在 LB 上（CV +0.01 → LB +0.005），即使绝对值不同，趋势可靠就可以继续优化。</p>
+<p><strong>Q2: 如何处理类别极度不平衡（正负比 1:1000）？</strong></p>
+<p>多管齐下：(1) 使用适合不平衡数据的评估指标（Precision-Recall AUC 而非 Accuracy）；(2) 模型层面：<code>scale_pos_weight</code>（XGBoost）、<code>class_weight</code>（sklearn）、Focal Loss；(3) 重采样：对负类欠采样（通常比过采样更有效，因为不引入合成数据）；(4) 阈值调优：在 CV 上寻找最优分类阈值；(5) 异常检测视角：将正类视为异常点，使用 One-Class SVM &#x2F; Isolation Forest。</p>
+<p><strong>Q3: 特征工程和模型集成，哪个投入产出比更高？</strong></p>
+<p>特征工程。在大多数竞赛中，前 20% 的排名提升来自优质的特征工程，而集成通常只在 top 1% 的牌子争夺中起决定性作用。一个精心设计的特征是”免费”的（不增加推理时间），而集成通常线性地增加计算成本。高效做法：先全力做特征工程到饱和，最后用集成收割最后的 0.1%-0.3%。</p>
+<p><strong>Q4: Stacking 和 Blending 有什么区别？各自的优缺点？</strong></p>
+<ul>
+<li><strong>Stacking</strong>：用 K-Fold 的 OOF（出折）预测作为元特征，每个训练样本有来自基模型的 OOF 预测。优点：使用全量数据训练元模型，更稳健。缺点：需要 K 次训练每个基模型，训练时间长。</li>
+<li><strong>Blending</strong>：用一个简单的 Hold-out（如 80% train &#x2F; 20% blend）训练基模型，用 hold-out 上的预测作为元特征。优点：简单快速。缺点：元模型仅使用了 20% 的数据训练，可能不够稳定；基模型也未在 20% 的数据上训练，浪费了数据。</li>
+</ul>
+<p>在数据量足够（&gt;10万行）时 blending 通常够用；在数据量较少时 stacking 更可靠。</p>
+<p><strong>Q5: 如何发现和处理数据泄漏？</strong></p>
+<p>检测数据泄漏的方法：(1) 检查每个特征的预测能力——如果一个特征单独使用就能达到接近完美的 AUC (&gt; 0.99)，极可能是泄漏特征；(2) 检查特征与目标的时间先后——特征的数据应该在实际发生后才能得到；(3) 对怀疑的特征做 shuffle 分析——如果随机打乱某个特征导致模型性能大幅下降，说明模型严重依赖该特征（如果该特征应该是独立的，那就是泄漏）。</p>
+<p>处理方法：(1) 如果在比赛中且规则允许，可以在讨论区提出讨论；(2) 如果不确定是否泄漏，准备一个”含泄漏特征”和”不含泄漏特征”两个版本的方案；(3) 在 CV 中加入”时间回测”来模拟真实场景——按时间分割训练&#x2F;验证集，看依赖泄漏特征的模型是否在时间外推时崩掉。</p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2020/03/20/%E3%80%90%E7%AB%9E%E8%B5%9B%E4%B8%93%E9%A2%98%E3%80%91%E6%AF%94%E8%B5%9B%E6%8A%80%E5%B7%A7/">http://tufusi.com/2020/03/20/%E3%80%90%E7%AB%9E%E8%B5%9B%E4%B8%93%E9%A2%98%E3%80%91%E6%AF%94%E8%B5%9B%E6%8A%80%E5%B7%A7/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Kaggle/">Kaggle    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2020/04/01/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E2%85%A1%E3%80%91%E5%A5%87%E5%BC%82%E5%80%BC%E5%88%86%E8%A7%A3/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【统计学习方法死磕系列Ⅱ】奇异值分解</span></div></a></div><div class="next-post pull_right"><a href="/2020/03/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF%E6%B3%95/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【统计学习方法死磕系列】朴素贝叶斯法</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2020/03/10/【竞赛专题】特征工程/" title="【竞赛专题】特征工程"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/ligita-borkovska-OuVkyuGAM58-unsplash.jpg"><div class="relatedPosts_title">【竞赛专题】特征工程</div></a></div><div class="relatedPosts_item"><a href="/2019/11/25/【竞赛专题】Kaggle Titanic入门/" title="【竞赛专题】Kaggle Titanic入门"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/fabio-oyXis2kALVg-unsplash.jpg"><div class="relatedPosts_title">【竞赛专题】Kaggle Titanic入门</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

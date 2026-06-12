@@ -1,0 +1,1174 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【深入理解TCP协议】TCP/IP分层模型 | ONE·PIECE</title><meta name="description" content="【深入理解TCP协议】TCP/IP分层模型"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【深入理解TCP协议】TCP/IP分层模型"><meta name="twitter:description" content="【深入理解TCP协议】TCP/IP分层模型"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/304.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【深入理解TCP协议】TCP/IP分层模型"><meta property="og:url" content="http://tufusi.com/2021/12/20/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3TCP%E5%8D%8F%E8%AE%AE%E3%80%91%E5%88%86%E5%B1%82%E6%A8%A1%E5%9E%8B/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【深入理解TCP协议】TCP/IP分层模型"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/304.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2021/12/20/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3TCP%E5%8D%8F%E8%AE%AE%E3%80%91%E5%88%86%E5%B1%82%E6%A8%A1%E5%9E%8B/"><link rel="prev" title="UI进阶之绘制流程及原理" href="http://tufusi.com/2022/01/05/%E9%87%8D%E6%8B%BEAndroid-UI%E8%BF%9B%E9%98%B6%E4%B9%8B%E7%BB%98%E5%88%B6%E6%B5%81%E7%A8%8B%E5%8F%8A%E5%8E%9F%E7%90%86/"><link rel="next" title="【深入理解TCP协议】TCP协议介绍" href="http://tufusi.com/2021/12/15/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3TCP%E5%8D%8F%E8%AE%AE%E3%80%91TCP%E5%8D%8F%E8%AE%AE%E4%BB%8B%E7%BB%8D/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%88%86%E5%B1%82%E6%A8%A1%E5%9E%8B"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、为什么需要分层模型</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81OSI-%E4%B8%83%E5%B1%82%E6%A8%A1%E5%9E%8B%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、OSI 七层模型详解</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%AC%AC-1-%E5%B1%82%EF%BC%9A%E7%89%A9%E7%90%86%E5%B1%82%EF%BC%88Physical-Layer%EF%BC%89"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">第 1 层：物理层（Physical Layer）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%AC%AC-2-%E5%B1%82%EF%BC%9A%E6%95%B0%E6%8D%AE%E9%93%BE%E8%B7%AF%E5%B1%82%EF%BC%88Data-Link-Layer%EF%BC%89"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">第 2 层：数据链路层（Data Link Layer）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%AC%AC-3-%E5%B1%82%EF%BC%9A%E7%BD%91%E7%BB%9C%E5%B1%82%EF%BC%88Network-Layer%EF%BC%89"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">第 3 层：网络层（Network Layer）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%AC%AC-4-%E5%B1%82%EF%BC%9A%E4%BC%A0%E8%BE%93%E5%B1%82%EF%BC%88Transport-Layer%EF%BC%89"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">第 4 层：传输层（Transport Layer）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%AC%AC-5-%E5%B1%82%EF%BC%9A%E4%BC%9A%E8%AF%9D%E5%B1%82%EF%BC%88Session-Layer%EF%BC%89"><span class="toc_mobile_items-number">2.5.</span> <span class="toc_mobile_items-text">第 5 层：会话层（Session Layer）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%AC%AC-6-%E5%B1%82%EF%BC%9A%E8%A1%A8%E7%A4%BA%E5%B1%82%EF%BC%88Presentation-Layer%EF%BC%89"><span class="toc_mobile_items-number">2.6.</span> <span class="toc_mobile_items-text">第 6 层：表示层（Presentation Layer）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%AC%AC-7-%E5%B1%82%EF%BC%9A%E5%BA%94%E7%94%A8%E5%B1%82%EF%BC%88Application-Layer%EF%BC%89"><span class="toc_mobile_items-number">2.7.</span> <span class="toc_mobile_items-text">第 7 层：应用层（Application Layer）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81TCP-IP-%E5%9B%9B%E5%B1%82%E6%A8%A1%E5%9E%8B%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、TCP&#x2F;IP 四层模型详解</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E7%BD%91%E7%BB%9C%E6%8E%A5%E5%8F%A3%E5%B1%82%EF%BC%88Link-Layer-Network-Interface-Layer%EF%BC%89"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 网络接口层（Link Layer &#x2F; Network Interface Layer）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E7%BD%91%E9%99%85%E5%B1%82%EF%BC%88Internet-Layer%EF%BC%89"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 网际层（Internet Layer）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-%E4%BC%A0%E8%BE%93%E5%B1%82%EF%BC%88Transport-Layer%EF%BC%89"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 传输层（Transport Layer）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-%E5%BA%94%E7%94%A8%E5%B1%82%EF%BC%88Application-Layer%EF%BC%89"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">3.4 应用层（Application Layer）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81OSI-%E4%B8%83%E5%B1%82-vs-TCP-IP-%E5%9B%9B%E5%B1%82%EF%BC%9A%E6%B7%B1%E5%BA%A6%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、OSI 七层 vs TCP&#x2F;IP 四层：深度对比</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81%E5%BA%94%E7%94%A8%E5%B1%82%E5%8D%8F%E8%AE%AE%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、应用层协议深度解析</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-HTTP-1-1-%E2%80%94%E2%80%94-%E4%B8%87%E7%BB%B4%E7%BD%91%E7%9A%84%E5%9F%BA%E7%9F%B3"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 HTTP&#x2F;1.1 —— 万维网的基石</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-HTTP-2-%E2%80%94%E2%80%94-%E4%BA%8C%E8%BF%9B%E5%88%B6%E9%9D%A9%E5%91%BD"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 HTTP&#x2F;2 —— 二进制革命</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-HTTP-3-%E2%80%94%E2%80%94-%E5%9F%BA%E4%BA%8E-QUIC-%E7%9A%84%E6%96%B0%E4%B8%80%E4%BB%A3%E5%8D%8F%E8%AE%AE"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 HTTP&#x2F;3 —— 基于 QUIC 的新一代协议</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-4-DNS-%E2%80%94%E2%80%94-%E4%BA%92%E8%81%94%E7%BD%91%E7%9A%84%E7%94%B5%E8%AF%9D%E7%B0%BF"><span class="toc_mobile_items-number">5.4.</span> <span class="toc_mobile_items-text">5.4 DNS —— 互联网的电话簿</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-5-TLS-1-3-%E2%80%94%E2%80%94-%E5%AE%89%E5%85%A8%E4%BC%A0%E8%BE%93%E7%9A%84%E7%8E%B0%E4%BB%A3%E6%A0%87%E5%87%86"><span class="toc_mobile_items-number">5.5.</span> <span class="toc_mobile_items-text">5.5 TLS 1.3 —— 安全传输的现代标准</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-6-WebSocket-%E2%80%94%E2%80%94-%E5%85%A8%E5%8F%8C%E5%B7%A5%E5%AE%9E%E6%97%B6%E9%80%9A%E4%BF%A1"><span class="toc_mobile_items-number">5.6.</span> <span class="toc_mobile_items-text">5.6 WebSocket —— 全双工实时通信</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E4%BC%A0%E8%BE%93%E5%B1%82%E5%8D%8F%E8%AE%AE%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、传输层协议深度解析</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-TCP-%E8%BF%9E%E6%8E%A5%E7%8A%B6%E6%80%81%E6%9C%BA%EF%BC%88%E5%85%A8%E7%8A%B6%E6%80%81%E4%B8%8E%E8%BD%AC%E6%8D%A2%EF%BC%89"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 TCP 连接状态机（全状态与转换）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-TCP-%E5%8F%AF%E9%9D%A0%E4%BC%A0%E8%BE%93%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 TCP 可靠传输机制</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-UDP-%E2%80%94%E2%80%94-%E7%AE%80%E5%8D%95%E5%8D%B3%E6%98%AF%E5%8A%9B%E9%87%8F"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">6.3 UDP —— 简单即是力量</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-4-QUIC-%E2%80%94%E2%80%94-%E9%87%8D%E6%96%B0%E5%AE%9A%E4%B9%89%E4%BC%A0%E8%BE%93%E5%B1%82"><span class="toc_mobile_items-number">6.4.</span> <span class="toc_mobile_items-text">6.4 QUIC —— 重新定义传输层</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E7%BD%91%E9%99%85%E5%B1%82%E5%8D%8F%E8%AE%AE%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、网际层协议详解</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-IPv4-%E5%9C%B0%E5%9D%80%E4%B8%8E%E5%AF%BB%E5%9D%80"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">7.1 IPv4 地址与寻址</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-IPv6-%E2%80%94%E2%80%94-%E4%B8%8B%E4%B8%80%E4%BB%A3%E4%BA%92%E8%81%94%E7%BD%91%E5%8D%8F%E8%AE%AE"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">7.2 IPv6 —— 下一代互联网协议</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-3-ICMP-%E2%80%94%E2%80%94-%E4%BA%92%E8%81%94%E7%BD%91%E8%AF%8A%E6%96%AD%E5%8D%8F%E8%AE%AE"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">7.3 ICMP —— 互联网诊断协议</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-4-BGP-%E5%9F%BA%E7%A1%80-%E2%80%94%E2%80%94-%E4%BA%92%E8%81%94%E7%BD%91%E7%9A%84%E8%B7%AF%E7%94%B1%E5%8D%8F%E8%AE%AE"><span class="toc_mobile_items-number">7.4.</span> <span class="toc_mobile_items-text">7.4 BGP 基础 —— 互联网的路由协议</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81%E9%93%BE%E8%B7%AF%E5%B1%82%E5%8D%8F%E8%AE%AE%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、链路层协议详解</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-%E4%BB%A5%E5%A4%AA%E7%BD%91-%E2%80%94%E2%80%94-%E5%B1%80%E5%9F%9F%E7%BD%91%E7%9A%84%E4%B8%BB%E5%AE%B0"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">8.1 以太网 —— 局域网的主宰</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-ARP-%E2%80%94%E2%80%94-%E4%BB%8E-IP-%E5%88%B0-MAC"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">8.2 ARP —— 从 IP 到 MAC</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-3-802-11-WiFi-%E2%80%94%E2%80%94-%E6%97%A0%E7%BA%BF%E7%BD%91%E7%BB%9C%E7%9A%84%E5%9F%BA%E7%9F%B3"><span class="toc_mobile_items-number">8.3.</span> <span class="toc_mobile_items-text">8.3 802.11 WiFi —— 无线网络的基石</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E6%95%B0%E6%8D%AE%E5%B0%81%E8%A3%85%E8%BF%87%E7%A8%8B%EF%BC%9A%E5%AD%97%E8%8A%82%E7%BA%A7%E9%80%90%E6%AD%A5%E8%B5%B0%E8%AF%BB"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、数据封装过程：字节级逐步走读</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%A4%BA%E4%BE%8B%E5%9C%BA%E6%99%AF"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">示例场景</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Step-1-%E5%BA%94%E7%94%A8%E5%B1%82-%E2%86%92-QUIC-%E5%B8%A7"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">Step 1: 应用层 → QUIC 帧</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Step-2-QUIC-%E5%8C%85%E5%B0%81%E8%A3%85"><span class="toc_mobile_items-number">9.3.</span> <span class="toc_mobile_items-text">Step 2: QUIC 包封装</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Step-3-UDP-%E5%B0%81%E8%A3%85"><span class="toc_mobile_items-number">9.4.</span> <span class="toc_mobile_items-text">Step 3: UDP 封装</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Step-4-IP-%E5%B0%81%E8%A3%85"><span class="toc_mobile_items-number">9.5.</span> <span class="toc_mobile_items-text">Step 4: IP 封装</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Step-5-%E4%BB%A5%E5%A4%AA%E7%BD%91%E5%B8%A7%E5%B0%81%E8%A3%85%EF%BC%88WiFi-%E5%9C%BA%E6%99%AF%E4%B8%8B%E6%9B%B4%E5%A4%8D%E6%9D%82%EF%BC%8C%E8%BF%99%E9%87%8C%E4%BB%A5%E6%9C%89%E7%BA%BF%E4%BB%A5%E5%A4%AA%E7%BD%91%E4%B8%BA%E4%BE%8B%EF%BC%89"><span class="toc_mobile_items-number">9.6.</span> <span class="toc_mobile_items-text">Step 5: 以太网帧封装（WiFi 场景下更复杂，这里以有线以太网为例）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Step-6-%E7%89%A9%E7%90%86%E5%B1%82%E7%BC%96%E7%A0%81%EF%BC%88%E4%BB%A5-1000BASE-T-%E4%B8%BA%E4%BE%8B%EF%BC%89"><span class="toc_mobile_items-number">9.7.</span> <span class="toc_mobile_items-text">Step 6: 物理层编码（以 1000BASE-T 为例）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%B0%81%E8%A3%85%E5%B1%82%E6%AC%A1%E6%80%BB%E8%A7%88"><span class="toc_mobile_items-number">9.8.</span> <span class="toc_mobile_items-text">封装层次总览</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81Android-%E7%BD%91%E7%BB%9C%E6%A0%88%EF%BC%9A%E4%BB%8E%E5%BA%94%E7%94%A8%E5%88%B0%E5%86%85%E6%A0%B8"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">十、Android 网络栈：从应用到内核</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-1-%E5%BA%94%E7%94%A8%E5%B1%82%EF%BC%9AOkHttp-%E6%9E%B6%E6%9E%84"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">10.1 应用层：OkHttp 架构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-2-%E7%B3%BB%E7%BB%9F%E6%9C%8D%E5%8A%A1%E5%B1%82%EF%BC%9AConnectivityManager"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">10.2 系统服务层：ConnectivityManager</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-3-%E5%AE%88%E6%8A%A4%E8%BF%9B%E7%A8%8B%E5%B1%82%EF%BC%9Anetd"><span class="toc_mobile_items-number">10.3.</span> <span class="toc_mobile_items-text">10.3 守护进程层：netd</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-4-%E5%86%85%E6%A0%B8%E5%B1%82%EF%BC%9Aiptables-%E4%B8%8E-netfilter"><span class="toc_mobile_items-number">10.4.</span> <span class="toc_mobile_items-text">10.4 内核层：iptables 与 netfilter</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%80%E3%80%81QUIC-%E6%B7%B1%E5%BA%A6%E5%89%96%E6%9E%90"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">十一、QUIC 深度剖析</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-1-%E4%B8%BA%E4%BB%80%E4%B9%88-Google-%E9%80%A0%E4%BA%86-QUIC%EF%BC%9F"><span class="toc_mobile_items-number">11.1.</span> <span class="toc_mobile_items-text">11.1 为什么 Google 造了 QUIC？</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-2-QUIC-%E7%9A%84%E6%A0%B8%E5%BF%83%E8%AE%BE%E8%AE%A1"><span class="toc_mobile_items-number">11.2.</span> <span class="toc_mobile_items-text">11.2 QUIC 的核心设计</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-3-QUIC-%E7%9A%84%E8%BF%9E%E6%8E%A5%E5%BB%BA%E7%AB%8B%E8%BF%87%E7%A8%8B"><span class="toc_mobile_items-number">11.3.</span> <span class="toc_mobile_items-text">11.3 QUIC 的连接建立过程</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-4-QUIC-%E7%9A%84%E8%BF%9E%E6%8E%A5%E8%BF%81%E7%A7%BB"><span class="toc_mobile_items-number">11.4.</span> <span class="toc_mobile_items-text">11.4 QUIC 的连接迁移</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-5-QUIC-%E7%9A%84%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6"><span class="toc_mobile_items-number">11.5.</span> <span class="toc_mobile_items-text">11.5 QUIC 的拥塞控制</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-6-QUIC-vs-TCP-TLS-%E6%80%A7%E8%83%BD%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">11.6.</span> <span class="toc_mobile_items-text">11.6 QUIC vs TCP+TLS 性能对比</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81Socket-%E7%BC%96%E7%A8%8B%EF%BC%9A%E4%BB%8E%E7%90%86%E8%AE%BA%E5%88%B0%E5%AE%9E%E8%B7%B5"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">十二、Socket 编程：从理论到实践</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#12-1-BSD-Socket-API"><span class="toc_mobile_items-number">12.1.</span> <span class="toc_mobile_items-text">12.1 BSD Socket API</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#12-2-%E9%9D%9E%E9%98%BB%E5%A1%9E-I-O"><span class="toc_mobile_items-number">12.2.</span> <span class="toc_mobile_items-text">12.2 非阻塞 I&#x2F;O</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#12-3-epoll-%E2%80%94%E2%80%94-Linux-%E9%AB%98%E6%80%A7%E8%83%BD%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B%E7%9A%84%E6%A0%B8%E5%BF%83"><span class="toc_mobile_items-number">12.3.</span> <span class="toc_mobile_items-text">12.3 epoll —— Linux 高性能网络编程的核心</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%89%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc_mobile_items-number">13.</span> <span class="toc_mobile_items-text">十三、总结</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%88%86%E5%B1%82%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.</span> <span class="toc-text">一、为什么需要分层模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81OSI-%E4%B8%83%E5%B1%82%E6%A8%A1%E5%9E%8B%E8%AF%A6%E8%A7%A3"><span class="toc-number">2.</span> <span class="toc-text">二、OSI 七层模型详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-1-%E5%B1%82%EF%BC%9A%E7%89%A9%E7%90%86%E5%B1%82%EF%BC%88Physical-Layer%EF%BC%89"><span class="toc-number">2.1.</span> <span class="toc-text">第 1 层：物理层（Physical Layer）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-2-%E5%B1%82%EF%BC%9A%E6%95%B0%E6%8D%AE%E9%93%BE%E8%B7%AF%E5%B1%82%EF%BC%88Data-Link-Layer%EF%BC%89"><span class="toc-number">2.2.</span> <span class="toc-text">第 2 层：数据链路层（Data Link Layer）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-3-%E5%B1%82%EF%BC%9A%E7%BD%91%E7%BB%9C%E5%B1%82%EF%BC%88Network-Layer%EF%BC%89"><span class="toc-number">2.3.</span> <span class="toc-text">第 3 层：网络层（Network Layer）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-4-%E5%B1%82%EF%BC%9A%E4%BC%A0%E8%BE%93%E5%B1%82%EF%BC%88Transport-Layer%EF%BC%89"><span class="toc-number">2.4.</span> <span class="toc-text">第 4 层：传输层（Transport Layer）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-5-%E5%B1%82%EF%BC%9A%E4%BC%9A%E8%AF%9D%E5%B1%82%EF%BC%88Session-Layer%EF%BC%89"><span class="toc-number">2.5.</span> <span class="toc-text">第 5 层：会话层（Session Layer）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-6-%E5%B1%82%EF%BC%9A%E8%A1%A8%E7%A4%BA%E5%B1%82%EF%BC%88Presentation-Layer%EF%BC%89"><span class="toc-number">2.6.</span> <span class="toc-text">第 6 层：表示层（Presentation Layer）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-7-%E5%B1%82%EF%BC%9A%E5%BA%94%E7%94%A8%E5%B1%82%EF%BC%88Application-Layer%EF%BC%89"><span class="toc-number">2.7.</span> <span class="toc-text">第 7 层：应用层（Application Layer）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81TCP-IP-%E5%9B%9B%E5%B1%82%E6%A8%A1%E5%9E%8B%E8%AF%A6%E8%A7%A3"><span class="toc-number">3.</span> <span class="toc-text">三、TCP&#x2F;IP 四层模型详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%BD%91%E7%BB%9C%E6%8E%A5%E5%8F%A3%E5%B1%82%EF%BC%88Link-Layer-Network-Interface-Layer%EF%BC%89"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 网络接口层（Link Layer &#x2F; Network Interface Layer）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E7%BD%91%E9%99%85%E5%B1%82%EF%BC%88Internet-Layer%EF%BC%89"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 网际层（Internet Layer）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E4%BC%A0%E8%BE%93%E5%B1%82%EF%BC%88Transport-Layer%EF%BC%89"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 传输层（Transport Layer）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%BA%94%E7%94%A8%E5%B1%82%EF%BC%88Application-Layer%EF%BC%89"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 应用层（Application Layer）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81OSI-%E4%B8%83%E5%B1%82-vs-TCP-IP-%E5%9B%9B%E5%B1%82%EF%BC%9A%E6%B7%B1%E5%BA%A6%E5%AF%B9%E6%AF%94"><span class="toc-number">4.</span> <span class="toc-text">四、OSI 七层 vs TCP&#x2F;IP 四层：深度对比</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%BA%94%E7%94%A8%E5%B1%82%E5%8D%8F%E8%AE%AE%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc-number">5.</span> <span class="toc-text">五、应用层协议深度解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-HTTP-1-1-%E2%80%94%E2%80%94-%E4%B8%87%E7%BB%B4%E7%BD%91%E7%9A%84%E5%9F%BA%E7%9F%B3"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 HTTP&#x2F;1.1 —— 万维网的基石</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-HTTP-2-%E2%80%94%E2%80%94-%E4%BA%8C%E8%BF%9B%E5%88%B6%E9%9D%A9%E5%91%BD"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 HTTP&#x2F;2 —— 二进制革命</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-HTTP-3-%E2%80%94%E2%80%94-%E5%9F%BA%E4%BA%8E-QUIC-%E7%9A%84%E6%96%B0%E4%B8%80%E4%BB%A3%E5%8D%8F%E8%AE%AE"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 HTTP&#x2F;3 —— 基于 QUIC 的新一代协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-DNS-%E2%80%94%E2%80%94-%E4%BA%92%E8%81%94%E7%BD%91%E7%9A%84%E7%94%B5%E8%AF%9D%E7%B0%BF"><span class="toc-number">5.4.</span> <span class="toc-text">5.4 DNS —— 互联网的电话簿</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-TLS-1-3-%E2%80%94%E2%80%94-%E5%AE%89%E5%85%A8%E4%BC%A0%E8%BE%93%E7%9A%84%E7%8E%B0%E4%BB%A3%E6%A0%87%E5%87%86"><span class="toc-number">5.5.</span> <span class="toc-text">5.5 TLS 1.3 —— 安全传输的现代标准</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-6-WebSocket-%E2%80%94%E2%80%94-%E5%85%A8%E5%8F%8C%E5%B7%A5%E5%AE%9E%E6%97%B6%E9%80%9A%E4%BF%A1"><span class="toc-number">5.6.</span> <span class="toc-text">5.6 WebSocket —— 全双工实时通信</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E4%BC%A0%E8%BE%93%E5%B1%82%E5%8D%8F%E8%AE%AE%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc-number">6.</span> <span class="toc-text">六、传输层协议深度解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-TCP-%E8%BF%9E%E6%8E%A5%E7%8A%B6%E6%80%81%E6%9C%BA%EF%BC%88%E5%85%A8%E7%8A%B6%E6%80%81%E4%B8%8E%E8%BD%AC%E6%8D%A2%EF%BC%89"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 TCP 连接状态机（全状态与转换）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-TCP-%E5%8F%AF%E9%9D%A0%E4%BC%A0%E8%BE%93%E6%9C%BA%E5%88%B6"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 TCP 可靠传输机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-UDP-%E2%80%94%E2%80%94-%E7%AE%80%E5%8D%95%E5%8D%B3%E6%98%AF%E5%8A%9B%E9%87%8F"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 UDP —— 简单即是力量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-QUIC-%E2%80%94%E2%80%94-%E9%87%8D%E6%96%B0%E5%AE%9A%E4%B9%89%E4%BC%A0%E8%BE%93%E5%B1%82"><span class="toc-number">6.4.</span> <span class="toc-text">6.4 QUIC —— 重新定义传输层</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E7%BD%91%E9%99%85%E5%B1%82%E5%8D%8F%E8%AE%AE%E8%AF%A6%E8%A7%A3"><span class="toc-number">7.</span> <span class="toc-text">七、网际层协议详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-IPv4-%E5%9C%B0%E5%9D%80%E4%B8%8E%E5%AF%BB%E5%9D%80"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 IPv4 地址与寻址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-IPv6-%E2%80%94%E2%80%94-%E4%B8%8B%E4%B8%80%E4%BB%A3%E4%BA%92%E8%81%94%E7%BD%91%E5%8D%8F%E8%AE%AE"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 IPv6 —— 下一代互联网协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-ICMP-%E2%80%94%E2%80%94-%E4%BA%92%E8%81%94%E7%BD%91%E8%AF%8A%E6%96%AD%E5%8D%8F%E8%AE%AE"><span class="toc-number">7.3.</span> <span class="toc-text">7.3 ICMP —— 互联网诊断协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-4-BGP-%E5%9F%BA%E7%A1%80-%E2%80%94%E2%80%94-%E4%BA%92%E8%81%94%E7%BD%91%E7%9A%84%E8%B7%AF%E7%94%B1%E5%8D%8F%E8%AE%AE"><span class="toc-number">7.4.</span> <span class="toc-text">7.4 BGP 基础 —— 互联网的路由协议</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E9%93%BE%E8%B7%AF%E5%B1%82%E5%8D%8F%E8%AE%AE%E8%AF%A6%E8%A7%A3"><span class="toc-number">8.</span> <span class="toc-text">八、链路层协议详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E4%BB%A5%E5%A4%AA%E7%BD%91-%E2%80%94%E2%80%94-%E5%B1%80%E5%9F%9F%E7%BD%91%E7%9A%84%E4%B8%BB%E5%AE%B0"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 以太网 —— 局域网的主宰</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-ARP-%E2%80%94%E2%80%94-%E4%BB%8E-IP-%E5%88%B0-MAC"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 ARP —— 从 IP 到 MAC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-802-11-WiFi-%E2%80%94%E2%80%94-%E6%97%A0%E7%BA%BF%E7%BD%91%E7%BB%9C%E7%9A%84%E5%9F%BA%E7%9F%B3"><span class="toc-number">8.3.</span> <span class="toc-text">8.3 802.11 WiFi —— 无线网络的基石</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E6%95%B0%E6%8D%AE%E5%B0%81%E8%A3%85%E8%BF%87%E7%A8%8B%EF%BC%9A%E5%AD%97%E8%8A%82%E7%BA%A7%E9%80%90%E6%AD%A5%E8%B5%B0%E8%AF%BB"><span class="toc-number">9.</span> <span class="toc-text">九、数据封装过程：字节级逐步走读</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B%E5%9C%BA%E6%99%AF"><span class="toc-number">9.1.</span> <span class="toc-text">示例场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-1-%E5%BA%94%E7%94%A8%E5%B1%82-%E2%86%92-QUIC-%E5%B8%A7"><span class="toc-number">9.2.</span> <span class="toc-text">Step 1: 应用层 → QUIC 帧</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-2-QUIC-%E5%8C%85%E5%B0%81%E8%A3%85"><span class="toc-number">9.3.</span> <span class="toc-text">Step 2: QUIC 包封装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-3-UDP-%E5%B0%81%E8%A3%85"><span class="toc-number">9.4.</span> <span class="toc-text">Step 3: UDP 封装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-4-IP-%E5%B0%81%E8%A3%85"><span class="toc-number">9.5.</span> <span class="toc-text">Step 4: IP 封装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-5-%E4%BB%A5%E5%A4%AA%E7%BD%91%E5%B8%A7%E5%B0%81%E8%A3%85%EF%BC%88WiFi-%E5%9C%BA%E6%99%AF%E4%B8%8B%E6%9B%B4%E5%A4%8D%E6%9D%82%EF%BC%8C%E8%BF%99%E9%87%8C%E4%BB%A5%E6%9C%89%E7%BA%BF%E4%BB%A5%E5%A4%AA%E7%BD%91%E4%B8%BA%E4%BE%8B%EF%BC%89"><span class="toc-number">9.6.</span> <span class="toc-text">Step 5: 以太网帧封装（WiFi 场景下更复杂，这里以有线以太网为例）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-6-%E7%89%A9%E7%90%86%E5%B1%82%E7%BC%96%E7%A0%81%EF%BC%88%E4%BB%A5-1000BASE-T-%E4%B8%BA%E4%BE%8B%EF%BC%89"><span class="toc-number">9.7.</span> <span class="toc-text">Step 6: 物理层编码（以 1000BASE-T 为例）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%81%E8%A3%85%E5%B1%82%E6%AC%A1%E6%80%BB%E8%A7%88"><span class="toc-number">9.8.</span> <span class="toc-text">封装层次总览</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81Android-%E7%BD%91%E7%BB%9C%E6%A0%88%EF%BC%9A%E4%BB%8E%E5%BA%94%E7%94%A8%E5%88%B0%E5%86%85%E6%A0%B8"><span class="toc-number">10.</span> <span class="toc-text">十、Android 网络栈：从应用到内核</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-%E5%BA%94%E7%94%A8%E5%B1%82%EF%BC%9AOkHttp-%E6%9E%B6%E6%9E%84"><span class="toc-number">10.1.</span> <span class="toc-text">10.1 应用层：OkHttp 架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-%E7%B3%BB%E7%BB%9F%E6%9C%8D%E5%8A%A1%E5%B1%82%EF%BC%9AConnectivityManager"><span class="toc-number">10.2.</span> <span class="toc-text">10.2 系统服务层：ConnectivityManager</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-3-%E5%AE%88%E6%8A%A4%E8%BF%9B%E7%A8%8B%E5%B1%82%EF%BC%9Anetd"><span class="toc-number">10.3.</span> <span class="toc-text">10.3 守护进程层：netd</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-4-%E5%86%85%E6%A0%B8%E5%B1%82%EF%BC%9Aiptables-%E4%B8%8E-netfilter"><span class="toc-number">10.4.</span> <span class="toc-text">10.4 内核层：iptables 与 netfilter</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81QUIC-%E6%B7%B1%E5%BA%A6%E5%89%96%E6%9E%90"><span class="toc-number">11.</span> <span class="toc-text">十一、QUIC 深度剖析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-1-%E4%B8%BA%E4%BB%80%E4%B9%88-Google-%E9%80%A0%E4%BA%86-QUIC%EF%BC%9F"><span class="toc-number">11.1.</span> <span class="toc-text">11.1 为什么 Google 造了 QUIC？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-2-QUIC-%E7%9A%84%E6%A0%B8%E5%BF%83%E8%AE%BE%E8%AE%A1"><span class="toc-number">11.2.</span> <span class="toc-text">11.2 QUIC 的核心设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-3-QUIC-%E7%9A%84%E8%BF%9E%E6%8E%A5%E5%BB%BA%E7%AB%8B%E8%BF%87%E7%A8%8B"><span class="toc-number">11.3.</span> <span class="toc-text">11.3 QUIC 的连接建立过程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-4-QUIC-%E7%9A%84%E8%BF%9E%E6%8E%A5%E8%BF%81%E7%A7%BB"><span class="toc-number">11.4.</span> <span class="toc-text">11.4 QUIC 的连接迁移</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-5-QUIC-%E7%9A%84%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6"><span class="toc-number">11.5.</span> <span class="toc-text">11.5 QUIC 的拥塞控制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-6-QUIC-vs-TCP-TLS-%E6%80%A7%E8%83%BD%E5%AF%B9%E6%AF%94"><span class="toc-number">11.6.</span> <span class="toc-text">11.6 QUIC vs TCP+TLS 性能对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81Socket-%E7%BC%96%E7%A8%8B%EF%BC%9A%E4%BB%8E%E7%90%86%E8%AE%BA%E5%88%B0%E5%AE%9E%E8%B7%B5"><span class="toc-number">12.</span> <span class="toc-text">十二、Socket 编程：从理论到实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#12-1-BSD-Socket-API"><span class="toc-number">12.1.</span> <span class="toc-text">12.1 BSD Socket API</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-2-%E9%9D%9E%E9%98%BB%E5%A1%9E-I-O"><span class="toc-number">12.2.</span> <span class="toc-text">12.2 非阻塞 I&#x2F;O</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-3-epoll-%E2%80%94%E2%80%94-Linux-%E9%AB%98%E6%80%A7%E8%83%BD%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B%E7%9A%84%E6%A0%B8%E5%BF%83"><span class="toc-number">12.3.</span> <span class="toc-text">12.3 epoll —— Linux 高性能网络编程的核心</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%89%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-number">13.</span> <span class="toc-text">十三、总结</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/304.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【深入理解TCP协议】TCP/IP分层模型</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-12-20<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">17.6k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 66 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、为什么需要分层模型"><a href="#一、为什么需要分层模型" class="headerlink" title="一、为什么需要分层模型"></a>一、为什么需要分层模型</h2><p>计算机网络是一个极其复杂的系统。设想一下，你需要让两台位于地球两端的机器可靠地交换数据，这中间涉及物理信号传输、数据编码、路由选择、拥塞控制、应用协议解析等无数细节。如果不加以抽象，任何开发者都无法完整理解并实现一个网络应用。</p>
+<p><strong>分层模型</strong>的核心思想是：将复杂的网络通信过程拆解为若干个独立但又相互协作的层次。每一层：</p>
+<ul>
+<li>为上一层提供服务</li>
+<li>使用下一层提供的服务</li>
+<li>只关心本层的职责，不关心其他层的内部实现</li>
+</ul>
+<p>这种设计哲学带来了三大好处：</p>
+<p><strong>1. 模块化与解耦。</strong> 每一层可以独立演进。例如，物理介质从铜缆升级到光纤不影响 IP 层工作；HTTP 协议从 1.1 升级到 3.0 不需要修改 TCP 层的代码。</p>
+<p><strong>2. 互操作性。</strong> 不同厂商的设备只要实现了相同的协议规范，就可以互联互通。你的 Android 手机可以无障碍访问运行在 Linux 服务器上的 Nginx，因为它们都遵循 TCP&#x2F;IP 协议族。</p>
+<p><strong>3. 可替换性。</strong> 链路层可以在以太网和 WiFi 之间切换，而传输层以上的应用完全无感知——这就是你在家里走动时，手机从 WiFi 自动切换到 4G&#x2F;5G 而视频通话不中断的根本原因（当然，这里还涉及 QUIC 的连接迁移等更高级的机制，后文会深入讨论）。</p>
+<p>目前存在两个主要的网络分层参考模型：国际标准化组织（ISO）提出的 <strong>OSI 七层模型</strong>，以及实际部署中广泛使用的 <strong>TCP&#x2F;IP 四层模型</strong>。</p>
+<hr>
+<h2 id="二、OSI-七层模型详解"><a href="#二、OSI-七层模型详解" class="headerlink" title="二、OSI 七层模型详解"></a>二、OSI 七层模型详解</h2><p>OSI（Open Systems Interconnection）模型由 ISO 于 1984 年发布，它将网络通信分为七个层次。虽然它在工程实践中从未被完整实现过，但其概念框架至今仍是理解网络协议的黄金标准。</p>
+<h3 id="第-1-层：物理层（Physical-Layer）"><a href="#第-1-层：物理层（Physical-Layer）" class="headerlink" title="第 1 层：物理层（Physical Layer）"></a>第 1 层：物理层（Physical Layer）</h3><p>物理层定义了比特流在物理介质上的传输方式。它回答的是最底层的问题：0 和 1 如何变成信号？</p>
+<p><strong>核心概念：</strong></p>
+<ul>
+<li><strong>信号编码：</strong> 曼彻斯特编码、NRZ（Non-Return-to-Zero）、4B&#x2F;5B 编码等</li>
+<li><strong>传输介质：</strong> 双绞线（Cat5e&#x2F;Cat6&#x2F;Cat7）、光纤（单模&#x2F;多模）、同轴电缆、无线电波</li>
+<li><strong>物理拓扑：</strong> 总线型、星型、环型、网状</li>
+<li><strong>设备：</strong> 集线器（Hub）、中继器（Repeater）——它们只处理信号，不理解数据</li>
+</ul>
+<p>在物理层，数据单元是<strong>比特（bit）</strong>。一个典型的物理层标准是以太网的 1000BASE-T（千兆以太网，使用 Cat5e 以上双绞线，采用 PAM-5 编码，每符号携带 2 比特信息，在 4 对线上同时传输）。</p>
+<h3 id="第-2-层：数据链路层（Data-Link-Layer）"><a href="#第-2-层：数据链路层（Data-Link-Layer）" class="headerlink" title="第 2 层：数据链路层（Data Link Layer）"></a>第 2 层：数据链路层（Data Link Layer）</h3><p>数据链路层解决了<strong>在相邻节点之间可靠传输帧</strong>的问题。它把物理层不可靠的比特流变成了有结构的、可验证的数据帧。</p>
+<p>数据链路层又分为两个子层：</p>
+<ul>
+<li><strong>MAC（Media Access Control）子层：</strong> 控制对共享介质的访问</li>
+<li><strong>LLC（Logical Link Control）子层：</strong> 提供与上层的统一接口，负责流控和差错控制</li>
+</ul>
+<p><strong>核心概念：</strong></p>
+<ul>
+<li><strong>帧（Frame）：</strong> 链路层的数据单元，包含源&#x2F;目标 MAC 地址和 FCS（Frame Check Sequence）</li>
+<li><strong>MAC 地址：</strong> 48 位全球唯一标识符，如 <code>aa:bb:cc:dd:ee:ff</code></li>
+<li><strong>设备：</strong> 交换机（Switch）、网桥（Bridge）——它们基于 MAC 地址转发帧，维护 MAC 地址表</li>
+<li><strong>典型协议：</strong> 以太网、802.11 WiFi、PPP、ARP（地址解析协议）</li>
+</ul>
+<h3 id="第-3-层：网络层（Network-Layer）"><a href="#第-3-层：网络层（Network-Layer）" class="headerlink" title="第 3 层：网络层（Network Layer）"></a>第 3 层：网络层（Network Layer）</h3><p>网络层负责<strong>在任意两个主机之间选择路径并转发数据</strong>。它解决了”数据怎么从 A 到达 B”的问题，无论 A 和 B 之间隔着多少个路由器。</p>
+<p><strong>核心概念：</strong></p>
+<ul>
+<li><strong>分组（Packet）：</strong> 网络层的数据单元，包含源&#x2F;目标 IP 地址</li>
+<li><strong>IP 地址：</strong> 逻辑地址，与物理位置相关（非硬件绑定），有 IPv4（32 位）和 IPv6（128 位）</li>
+<li><strong>路由：</strong> 路由器根据路由表决定分组的下一跳</li>
+<li><strong>设备：</strong> 路由器（Router）、三层交换机</li>
+<li><strong>典型协议：</strong> IPv4、IPv6、ICMP、IGMP、OSPF、BGP</li>
+</ul>
+<h3 id="第-4-层：传输层（Transport-Layer）"><a href="#第-4-层：传输层（Transport-Layer）" class="headerlink" title="第 4 层：传输层（Transport Layer）"></a>第 4 层：传输层（Transport Layer）</h3><p>传输层提供<strong>端到端（end-to-end）的数据传输服务</strong>。它不关心数据在中间经过了多少个路由器，只管源主机上某个进程发出的数据是否完整、有序地到达目标主机上对应的进程。</p>
+<p><strong>核心概念：</strong></p>
+<ul>
+<li><strong>端口号：</strong> 16 位整数（0-65535），标识主机上的具体进程</li>
+<li><strong>段（Segment）：</strong> 传输层的数据单元</li>
+<li><strong>典型协议：</strong> TCP（面向连接、可靠传输）、UDP（无连接、尽力而为）</li>
+</ul>
+<h3 id="第-5-层：会话层（Session-Layer）"><a href="#第-5-层：会话层（Session-Layer）" class="headerlink" title="第 5 层：会话层（Session Layer）"></a>第 5 层：会话层（Session Layer）</h3><p>会话层负责<strong>建立、管理和终止应用之间的会话</strong>。在 TCP&#x2F;IP 模型中，会话管理通常由应用层协议自行处理。</p>
+<p><strong>职责包括：</strong></p>
+<ul>
+<li>会话的建立与拆除</li>
+<li>对话控制（全双工&#x2F;半双工）</li>
+<li>同步点的插入（用于大文件传输中断后的恢复）</li>
+<li>令牌管理</li>
+</ul>
+<p>现实中，TLS 握手过程中的会话恢复（Session Resumption）、HTTP 的 Cookie&#x2F;Session 机制、RPC 框架中的连接管理，都可以视为广义的会话层功能。</p>
+<h3 id="第-6-层：表示层（Presentation-Layer）"><a href="#第-6-层：表示层（Presentation-Layer）" class="headerlink" title="第 6 层：表示层（Presentation Layer）"></a>第 6 层：表示层（Presentation Layer）</h3><p>表示层处理<strong>数据的语法和语义</strong>，确保一端发送的数据能被另一端正确理解。</p>
+<p><strong>职责包括：</strong></p>
+<ul>
+<li><strong>数据格式转换：</strong> 字符编码（ASCII、UTF-8）、字节序（大端&#x2F;小端）</li>
+<li><strong>数据压缩：</strong> 减少传输数据量</li>
+<li><strong>数据加密&#x2F;解密：</strong> TLS&#x2F;SSL 协议在 OSI 模型中属于这一层</li>
+</ul>
+<p>在 Web 开发中，JSON、XML 序列化&#x2F;反序列化、<code>Content-Encoding: gzip</code>、TLS 加密，都是表示层的典型实践。</p>
+<h3 id="第-7-层：应用层（Application-Layer）"><a href="#第-7-层：应用层（Application-Layer）" class="headerlink" title="第 7 层：应用层（Application Layer）"></a>第 7 层：应用层（Application Layer）</h3><p>应用层是离用户最近的一层，它直接为应用程序提供网络服务。注意：应用层<strong>不是</strong>应用程序本身，而是应用程序所使用的通信协议。</p>
+<p><strong>典型协议：</strong></p>
+<ul>
+<li>HTTP&#x2F;HTTPS —— Web 浏览</li>
+<li>SMTP&#x2F;IMAP&#x2F;POP3 —— 电子邮件</li>
+<li>FTP —— 文件传输</li>
+<li>DNS —— 域名解析</li>
+<li>SSH —— 安全远程登录</li>
+<li>WebSocket —— 全双工实时通信</li>
+</ul>
+<hr>
+<h2 id="三、TCP-IP-四层模型详解"><a href="#三、TCP-IP-四层模型详解" class="headerlink" title="三、TCP&#x2F;IP 四层模型详解"></a>三、TCP&#x2F;IP 四层模型详解</h2><p>TCP&#x2F;IP 模型不是先有模型后有协议，而是<strong>先有协议实现，后归纳出模型</strong>。ARPANET 的研究者们先写出了 TCP&#x2F;IP 协议栈，后来才抽象出四层模型。因此它不像 OSI 模型那样”完美”和”对称”，但它是<strong>事实上的互联网标准</strong>。</p>
+<p>TCP&#x2F;IP 四层（自上而下）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌─────────────────────────────────┐</span><br><span class="line">│        应用层 (Application)       │  HTTP, DNS, TLS, WebSocket, FTP, SMTP...</span><br><span class="line">├─────────────────────────────────┤</span><br><span class="line">│         传输层 (Transport)        │  TCP, UDP, QUIC, SCTP...</span><br><span class="line">├─────────────────────────────────┤</span><br><span class="line">│         网际层 (Internet)         │  IP (v4/v6), ICMP, ARP, BGP, OSPF...</span><br><span class="line">├─────────────────────────────────┤</span><br><span class="line">│      网络接口层 (Link/Network)    │  Ethernet, WiFi (802.11), PPP...</span><br><span class="line">└─────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-1-网络接口层（Link-Layer-Network-Interface-Layer）"><a href="#3-1-网络接口层（Link-Layer-Network-Interface-Layer）" class="headerlink" title="3.1 网络接口层（Link Layer &#x2F; Network Interface Layer）"></a>3.1 网络接口层（Link Layer &#x2F; Network Interface Layer）</h3><p>这一层对应于 OSI 的物理层和数据链路层的合并。它处理与特定物理网络技术的交互。</p>
+<p>TCP&#x2F;IP 设计的一个精妙之处在于：它没有定义自己的链路层协议，而是<strong>复用了现有的各种网络技术</strong>。IP 协议被设计成可以在以太网、WiFi、PPP、帧中继等任意链路层技术上运行——这种”IP over Everything”的思想是互联网成功的基石。</p>
+<p>在 Linux 内核中，链路层设备抽象为 <code>struct net_device</code>，网络驱动程序通过 <code>register_netdev()</code> 注册设备，通过 NAPI（New API）机制混合中断和轮询来处理数据包接收。</p>
+<h3 id="3-2-网际层（Internet-Layer）"><a href="#3-2-网际层（Internet-Layer）" class="headerlink" title="3.2 网际层（Internet Layer）"></a>3.2 网际层（Internet Layer）</h3><p>网际层是整个 TCP&#x2F;IP 架构的核心。它的主要协议是 <strong>IP（Internet Protocol）</strong>。</p>
+<p>IP 协议的关键特性：</p>
+<ul>
+<li><strong>无连接（Connectionless）：</strong> 每个数据包独立路由，不需要预先建立连接</li>
+<li><strong>尽力而为（Best-effort）：</strong> 不保证数据一定到达，不保证有序，不保证不重复</li>
+<li><strong>分片与重组：</strong> 当数据包超过链路 MTU 时，IP 层负责分片，目标端负责重组</li>
+</ul>
+<p>IP 层之上的辅助协议：</p>
+<ul>
+<li><strong>ICMP（Internet Control Message Protocol）：</strong> 用于诊断和错误报告（<code>ping</code>、<code>traceroute</code>）</li>
+<li><strong>IGMP（Internet Group Management Protocol）：</strong> 管理多播组成员</li>
+<li><strong>ARP（Address Resolution Protocol）：</strong> IPv4 地址到 MAC 地址的映射</li>
+</ul>
+<h3 id="3-3-传输层（Transport-Layer）"><a href="#3-3-传输层（Transport-Layer）" class="headerlink" title="3.3 传输层（Transport Layer）"></a>3.3 传输层（Transport Layer）</h3><p>传输层在 IP 层提供的”主机到主机”通信基础上，实现了**”进程到进程”的通信**。它使用端口号来区分同一主机上的不同进程。</p>
+<p>TCP&#x2F;IP 协议族中最重要的两个传输层协议是 <strong>TCP</strong> 和 <strong>UDP</strong>。此外，近年来 <strong>QUIC</strong> 作为一个运行在 UDP 之上的新型传输协议正在快速普及。</p>
+<h3 id="3-4-应用层（Application-Layer）"><a href="#3-4-应用层（Application-Layer）" class="headerlink" title="3.4 应用层（Application Layer）"></a>3.4 应用层（Application Layer）</h3><p>TCP&#x2F;IP 的应用层合并了 OSI 的会话层、表示层和应用层。这意味着在 TCP&#x2F;IP 模型中，会话管理和数据表示的责任落在了具体的应用协议上——这正是为什么 HTTP 协议需要自己处理状态管理（Cookie）、内容协商（Content Negotiation）和压缩编码。</p>
+<hr>
+<h2 id="四、OSI-七层-vs-TCP-IP-四层：深度对比"><a href="#四、OSI-七层-vs-TCP-IP-四层：深度对比" class="headerlink" title="四、OSI 七层 vs TCP&#x2F;IP 四层：深度对比"></a>四、OSI 七层 vs TCP&#x2F;IP 四层：深度对比</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>OSI 七层模型</th>
+<th>TCP&#x2F;IP 四层模型</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>层数</td>
+<td>7</td>
+<td>4</td>
+</tr>
+<tr>
+<td>来源</td>
+<td>ISO 先制定模型，后实现协议</td>
+<td>先有协议实践，后归纳模型</td>
+</tr>
+<tr>
+<td>会话层&#x2F;表示层</td>
+<td>独立两层</td>
+<td>并入应用层</td>
+</tr>
+<tr>
+<td>物理层&#x2F;链路层</td>
+<td>分开</td>
+<td>合并为网络接口层</td>
+</tr>
+<tr>
+<td>理论 vs 实践</td>
+<td>理论完备，概念清晰</td>
+<td>工程实用，略有粗糙</td>
+</tr>
+<tr>
+<td>协议独立性</td>
+<td>强调协议无关</td>
+<td>紧密绑定 TCP&#x2F;IP 协议族</td>
+</tr>
+<tr>
+<td>实际使用</td>
+<td>教学参考</td>
+<td>互联网实际标准</td>
+</tr>
+</tbody></table>
+<p><strong>关键差异解析：</strong></p>
+<ol>
+<li><p><strong>层数差异的本质。</strong> OSI 之所以比 TCP&#x2F;IP 多三层，是因为它将”会话管理”和”数据表示”从应用层中独立出来了。这在理论上很美——关注点分离——但在实践中，大多数应用协议（HTTP、SMTP、FTP）已经内建了这些功能，拆分反而增加了不必要的复杂性。</p>
+</li>
+<li><p><strong>协议设计的哲学不同。</strong> OSI 倾向于”先设计完美的模型，再填充协议”（自上而下）。TCP&#x2F;IP 则遵循”先写出能工作的代码，再抽象为模型”（自下而上）。后者更务实，也更符合互联网的演进方式。</p>
+</li>
+<li><p><strong>物理层与链路层分合的考量。</strong> OSI 将物理层和链路层分开，强调了信号传输和帧传输是两个不同层面的事情。TCP&#x2F;IP 将它们合并，因为在实际工程中，这两层的实现通常紧密耦合（例如以太网卡驱动同时处理物理信号和 MAC 帧）。</p>
+</li>
+<li><p><strong>跨层设计（Cross-layer Design）。</strong> 在真实的 TCP&#x2F;IP 实现中，常常存在”跨层”行为。例如，TCP 的拥塞控制需要感知网络层的丢包事件；QUIC 在应用层实现了传输层的可靠性和拥塞控制。这打破了严格的分层原则，但换来了更高的性能和灵活性。</p>
+</li>
+</ol>
+<hr>
+<h2 id="五、应用层协议深度解析"><a href="#五、应用层协议深度解析" class="headerlink" title="五、应用层协议深度解析"></a>五、应用层协议深度解析</h2><h3 id="5-1-HTTP-1-1-——-万维网的基石"><a href="#5-1-HTTP-1-1-——-万维网的基石" class="headerlink" title="5.1 HTTP&#x2F;1.1 —— 万维网的基石"></a>5.1 HTTP&#x2F;1.1 —— 万维网的基石</h3><p>HTTP&#x2F;1.1（RFC 2616, 后由 RFC 7230-7235 取代）是使用最广泛的 HTTP 版本。相比 HTTP&#x2F;1.0，它引入了几个关键改进：</p>
+<p><strong>持久连接（Keep-Alive）：</strong><br>HTTP&#x2F;1.0 默认每次请求&#x2F;响应后关闭 TCP 连接。HTTP&#x2F;1.1 默认启用 <code>Connection: keep-alive</code>，允许在同一个 TCP 连接上发送多个请求&#x2F;响应。这避免了重复的 TCP 三次握手和慢启动过程。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">HTTP/1.0（无 Keep-Alive）:</span><br><span class="line">Client ──SYN──► Server</span><br><span class="line">Client ◄──SYN+ACK── Server</span><br><span class="line">Client ──ACK──► Server     ← 三次握手完成</span><br><span class="line">Client ──GET /a──► Server</span><br><span class="line">Client ◄──200 OK── Server</span><br><span class="line">Client ──FIN──► Server    ← 连接关闭</span><br><span class="line"></span><br><span class="line">HTTP/1.1（Keep-Alive）:</span><br><span class="line">Client ──SYN──► Server</span><br><span class="line">...三次握手...</span><br><span class="line">Client ──GET /a──► Server</span><br><span class="line">Client ◄──200 OK── Server</span><br><span class="line">Client ──GET /b──► Server   ← 复用同一连接</span><br><span class="line">Client ◄──200 OK── Server</span><br><span class="line">Client ──GET /c──► Server</span><br><span class="line">Client ◄──200 OK── Server</span><br><span class="line">...可继续复用...</span><br></pre></td></tr></table></figure>
+
+<p><strong>管道化（Pipelining）：</strong><br>客户端可以在收到前一个响应之前发送后续请求。理论上这能减少延迟，但实践中由于<strong>队头阻塞（Head-of-Line Blocking）</strong>问题——第一个请求的响应如果慢，会阻塞后续所有响应的传递——大多数浏览器默认禁用了管道化。</p>
+<p><strong>分块传输编码（Chunked Transfer Encoding）：</strong><br><code>Transfer-Encoding: chunked</code> 允许服务器在不知道内容总长度的情况下开始发送响应。这对于动态生成的内容、流式数据非常有用。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Transfer-Encoding: chunked</span><br><span class="line"></span><br><span class="line">1A\r\n                           ← 十六进制表示块大小 (26 字节)</span><br><span class="line">This is the first chunk.\r\n</span><br><span class="line">1B\r\n</span><br><span class="line">This is the second chunk data.\r\n</span><br><span class="line">0\r\n                            ← 0 表示传输结束</span><br><span class="line">\r\n</span><br></pre></td></tr></table></figure>
+
+<p><strong>缓存控制：</strong><br>HTTP&#x2F;1.1 引入了 <code>Cache-Control</code> 头部，提供了比 HTTP&#x2F;1.0 的 <code>Expires</code> 更精细的缓存策略：</p>
+<ul>
+<li><code>Cache-Control: max-age=3600</code> —— 资源在 3600 秒内有效</li>
+<li><code>Cache-Control: no-cache</code> —— 需要每次向服务器验证（使用 ETag&#x2F;If-None-Match）</li>
+<li><code>Cache-Control: no-store</code> —— 完全不缓存</li>
+<li><code>Cache-Control: public</code> —— 允许中间代理缓存</li>
+<li><code>Cache-Control: private</code> —— 只允许浏览器缓存</li>
+<li><code>Cache-Control: immutable</code> —— 资源永不变更，不需要验证（用于带指纹的静态资源）</li>
+</ul>
+<h3 id="5-2-HTTP-2-——-二进制革命"><a href="#5-2-HTTP-2-——-二进制革命" class="headerlink" title="5.2 HTTP&#x2F;2 —— 二进制革命"></a>5.2 HTTP&#x2F;2 —— 二进制革命</h3><p>HTTP&#x2F;2（RFC 7540）由 Google 的 SPDY 协议演进而来，于 2015 年发布。它没有修改 HTTP 的语义（方法、头部、状态码保持不变），而是完全改变了传输方式。</p>
+<p><strong>二进制分帧层（Binary Framing Layer）：</strong><br>这是 HTTP&#x2F;2 最核心的变革。HTTP&#x2F;1.1 是纯文本协议，可读性好但解析效率低。HTTP&#x2F;2 将所有通信拆分为二进制帧：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"> HTTP/2 帧结构:</span><br><span class="line">┌──────────────────────────────────────┐</span><br><span class="line">│ Length (24 bits)     │ Type (8 bits) │</span><br><span class="line">├──────────────────────┼───────────────┤</span><br><span class="line">│ Flags (8 bits)       │               │</span><br><span class="line">├──────────────────────┤  R (1 bit)    │</span><br><span class="line">│ Stream ID (31 bits)  │               │</span><br><span class="line">├──────────────────────┴───────────────┤</span><br><span class="line">│ Frame Payload (可变长度)              │</span><br><span class="line">└──────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p><strong>帧类型：</strong></p>
+<ul>
+<li><code>DATA</code>（0x0）：传输请求或响应体</li>
+<li><code>HEADERS</code>（0x1）：传输 HTTP 头部</li>
+<li><code>PRIORITY</code>（0x2）：指定流的优先级</li>
+<li><code>RST_STREAM</code>（0x3）：终止一个流</li>
+<li><code>SETTINGS</code>（0x4）：协商连接参数（如最大并发流数、初始窗口大小）</li>
+<li><code>PUSH_PROMISE</code>（0x5）：服务器推送承诺</li>
+<li><code>PING</code>（0x6）：心跳检测与 RTT 测量</li>
+<li><code>GOAWAY</code>（0x7）：优雅关闭连接</li>
+<li><code>WINDOW_UPDATE</code>（0x8）：流控窗口更新</li>
+<li><code>CONTINUATION</code>（0x9）：延续未完成的 HEADERS 块</li>
+</ul>
+<p><strong>多路复用（Multiplexing）：</strong><br>在一个 TCP 连接上同时运行多个<strong>流（Stream）</strong>。每个流有独立的 Stream ID，帧可以交错发送。接收端根据 Stream ID 将帧重组——这从根本上解决了 HTTP&#x2F;1.x 的队头阻塞问题。</p>
+<p>但注意：HTTP&#x2F;2 仍然存在 TCP 层面的队头阻塞。如果 TCP 层的一个数据包丢失，所有流的传输都会暂停等待重传——因为 TCP 保证字节流的严格有序性。</p>
+<p><strong>头部压缩（HPACK）：</strong><br>HTTP&#x2F;1.x 每次请求都携带完整的文本头部（Cookie 经常超过 1KB）。HPACK 使用以下技术压缩头部：</p>
+<ul>
+<li><strong>静态字典：</strong> 预定义了 61 个常见的头部名称&#x2F;值（如 <code>:method: GET</code>、<code>:status: 200</code>）</li>
+<li><strong>动态字典：</strong> 连接双方各自维护一个动态表，存储实际看到的头部组合，后续只需发送索引号</li>
+<li><strong>霍夫曼编码：</strong> 对字符串进行压缩</li>
+</ul>
+<p><strong>服务器推送（Server Push）：</strong><br>服务器可以主动向客户端推送资源，而无需客户端显式请求。例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Client: GET /index.html</span><br><span class="line">Server: 返回 index.html + PUSH_PROMISE（/style.css）+ PUSH_PROMISE（/app.js）</span><br><span class="line">        主动推送 style.css 和 app.js</span><br></pre></td></tr></table></figure>
+<p>服务器推送在实践中效果有限——浏览器可能已有缓存，过度推送会浪费带宽。Chrome 在 2022 年甚至移除了 HTTP&#x2F;2 服务器推送的支持。</p>
+<h3 id="5-3-HTTP-3-——-基于-QUIC-的新一代协议"><a href="#5-3-HTTP-3-——-基于-QUIC-的新一代协议" class="headerlink" title="5.3 HTTP&#x2F;3 —— 基于 QUIC 的新一代协议"></a>5.3 HTTP&#x2F;3 —— 基于 QUIC 的新一代协议</h3><p>HTTP&#x2F;3（RFC 9114）是最新的 HTTP 版本，它不再使用 TCP，而是基于 <strong>QUIC</strong> 协议运行在 UDP 之上。</p>
+<p><strong>为什么需要 HTTP&#x2F;3？</strong><br>HTTP&#x2F;2 虽然解决了应用层的队头阻塞，但 TCP 层的队头阻塞依然存在。在高速、高延迟或丢包率较高的网络（如移动网络）中，单个 TCP 包的丢失就会阻塞整个 HTTP&#x2F;2 连接上的所有流。HTTP&#x2F;3 通过 QUIC 的多流独立传输彻底消除了这一问题。</p>
+<p><strong>HTTP&#x2F;3 的关键变化：</strong></p>
+<ul>
+<li>传输层从 TCP 切换到 QUIC（基于 UDP）</li>
+<li>头部压缩从 HPACK 切换到 <strong>QPACK</strong>（适应 QUIC 的无序交付特性）</li>
+<li>连接不再由 IP:Port 元组标识，而是由 QUIC 的 Connection ID 标识——支持连接迁移</li>
+<li>0-RTT 握手：以前连接过的客户端可以立即发送数据</li>
+</ul>
+<p><strong>QPACK vs HPACK：</strong><br>HPACK 假设接收端按顺序处理头部帧（因为 TCP 保证有序），动态表中的引用是同步的。但 QUIC 的流是无序的，QPACK 因此引入了双向流来传递动态表更新，避免了流的依赖。</p>
+<h3 id="5-4-DNS-——-互联网的电话簿"><a href="#5-4-DNS-——-互联网的电话簿" class="headerlink" title="5.4 DNS —— 互联网的电话簿"></a>5.4 DNS —— 互联网的电话簿</h3><p>DNS（Domain Name System）将人类可读的域名转换为机器可读的 IP 地址。</p>
+<p><strong>DNS 查询过程：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">用户输入 www.example.com</span><br><span class="line">    │</span><br><span class="line">    ▼</span><br><span class="line">浏览器检查本地 DNS 缓存（Chrome 有自己的 DNS 缓存，约 1 分钟）</span><br><span class="line">    │ (未命中)</span><br><span class="line">    ▼</span><br><span class="line">操作系统检查 hosts 文件（/etc/hosts 或 C:\Windows\System32\drivers\etc\hosts）</span><br><span class="line">    │ (未命中)</span><br><span class="line">    ▼</span><br><span class="line">向本地 DNS 解析器发起查询（通常由 DHCP 配置，如 8.8.8.8 或 192.168.1.1）</span><br><span class="line">    │</span><br><span class="line">    ▼</span><br><span class="line">┌─── 递归查询 ───┐</span><br><span class="line">│ 本地 DNS 解析器  │</span><br><span class="line">│    │            │</span><br><span class="line">│    ▼            │</span><br><span class="line">│ 根域名服务器     │  → 返回 .com 的 TLD 服务器地址</span><br><span class="line">│    │            │</span><br><span class="line">│    ▼            │</span><br><span class="line">│ .com TLD 服务器  │  → 返回 example.com 的权威 DNS 地址</span><br><span class="line">│    │            │</span><br><span class="line">│    ▼            │</span><br><span class="line">│ example.com     │  → 返回 www.example.com 的 A 记录: 93.184.216.34</span><br><span class="line">│ 权威 DNS 服务器  │</span><br><span class="line">└─────────────────┘</span><br><span class="line">    │</span><br><span class="line">    ▼</span><br><span class="line">结果缓存并返回给客户端（附带 TTL）</span><br></pre></td></tr></table></figure>
+
+<p><strong>DNS 记录类型：</strong></p>
+<ul>
+<li><strong>A（Address）：</strong> 域名 → IPv4 地址</li>
+<li><strong>AAAA（Quad-A）：</strong> 域名 → IPv6 地址</li>
+<li><strong>CNAME（Canonical Name）：</strong> 域名别名 → 规范域名</li>
+<li><strong>MX（Mail Exchange）：</strong> 邮件服务器地址（带优先级）</li>
+<li><strong>NS（Name Server）：</strong> 域名的权威 DNS 服务器</li>
+<li><strong>TXT：</strong> 任意文本，常用于 SPF、DKIM、域名验证</li>
+<li><strong>SOA（Start of Authority）：</strong> 域的管理信息</li>
+<li><strong>PTR（Pointer）：</strong> 反向 DNS 查询（IP → 域名）</li>
+<li><strong>SRV（Service）：</strong> 指定服务的地址和端口</li>
+</ul>
+<p><strong>DNS over HTTPS（DoH）与 DNS over TLS（DoT）：</strong><br>传统的 DNS 查询是明文传输（UDP&#x2F;53），容易被运营商劫持或篡改。DoH（RFC 8484）将 DNS 查询封装在 HTTPS 请求中，DoT（RFC 7858）则使用 TLS 加密 DNS 连接。这两种方式都能防止 DNS 污染和中间人攻击。</p>
+<p><strong>DNS 报文格式（以 A 记录查询为例，字节级走读）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">DNS 查询报文（请求 www.example.com 的 A 记录）:</span><br><span class="line">┌────────────────────────────────────────────────────────┐</span><br><span class="line">│ Transaction ID (2 bytes): 0x1234                       │  标识字段，匹配请求与响应</span><br><span class="line">├────────────────────────────────────────────────────────┤</span><br><span class="line">│ Flags (2 bytes): 0x0100                                │  标准查询，期望递归</span><br><span class="line">│   QR=0 (查询)  Opcode=0000 (标准)  AA=0  TC=0  RD=1    │</span><br><span class="line">├────────────────────────────────────────────────────────┤</span><br><span class="line">│ Questions: 0x0001 (1 个问题)                            │</span><br><span class="line">│ Answer RRs: 0x0000                                     │</span><br><span class="line">│ Authority RRs: 0x0000                                  │</span><br><span class="line">│ Additional RRs: 0x0000                                 │</span><br><span class="line">├────────────────────────────────────────────────────────┤</span><br><span class="line">│ Query:                                                 │</span><br><span class="line">│   3 &#x27;w&#x27; &#x27;w&#x27; &#x27;w&#x27;  7 &#x27;e&#x27; &#x27;x&#x27; &#x27;a&#x27; &#x27;m&#x27; &#x27;p&#x27; &#x27;l&#x27; &#x27;e&#x27;        │  域名以 length-value 编码</span><br><span class="line">│   3 &#x27;c&#x27; &#x27;o&#x27; &#x27;m&#x27;  0x00                                  │  每个标签前一个字节标明长度</span><br><span class="line">│   Type: 0x0001 (A)                                     │</span><br><span class="line">│   Class: 0x0001 (IN)                                   │</span><br><span class="line">└────────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-5-TLS-1-3-——-安全传输的现代标准"><a href="#5-5-TLS-1-3-——-安全传输的现代标准" class="headerlink" title="5.5 TLS 1.3 —— 安全传输的现代标准"></a>5.5 TLS 1.3 —— 安全传输的现代标准</h3><p>TLS（Transport Layer Security）在 OSI 模型中位于传输层之上（或表示层），在 TCP&#x2F;IP 模型中位于应用层和传输层之间。TLS 1.3（RFC 8446, 2018 年发布）相比 TLS 1.2 做了重大简化和强化。</p>
+<p><strong>TLS 1.2 的握手缺陷：</strong><br>TLS 1.2 完成握手需要 <strong>2-RTT</strong>（两个往返时延）：</p>
+<ol>
+<li>ClientHello → ServerHello + Certificate + ServerKeyExchange + ServerHelloDone（0.5 RTT）</li>
+<li>ClientKeyExchange + ChangeCipherSpec + Finished → ChangeCipherSpec + Finished（0.5 RTT）<br>此时才能开始发送应用数据。在 100ms RTT 的网络上，光握手就需要 200ms。</li>
+</ol>
+<p><strong>TLS 1.3 的 1-RTT 握手：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Client                                    Server</span><br><span class="line">  │                                          │</span><br><span class="line">  │── ClientHello ──────────────────────►    │</span><br><span class="line">  │   + key_share (X25519/ECDHE 公钥)        │</span><br><span class="line">  │   + supported_ciphersuites               │</span><br><span class="line">  │   + signature_algorithms                 │</span><br><span class="line">  │                                          │</span><br><span class="line">  │                    ◄── ServerHello +     │</span><br><span class="line">  │                        &#123;EncryptedExtensions&#125; │</span><br><span class="line">  │                        &#123;Certificate&#125;     │</span><br><span class="line">  │                        &#123;CertificateVerify&#125; │</span><br><span class="line">  │                        &#123;Finished&#125; ──────  │</span><br><span class="line">  │                                          │</span><br><span class="line">  │── &#123;Finished&#125; ────────────────────────►   │</span><br><span class="line">  │── &#123;Application Data&#125; ───────────────►    │  ← 此时已可发送应用数据</span><br><span class="line">  │                                          │</span><br></pre></td></tr></table></figure>
+
+<p>TLS 1.3 将握手精简为 <strong>1-RTT</strong>：</p>
+<ol>
+<li>客户端在 <code>ClientHello</code> 中直接发送密钥交换的公钥（不再协商后再交换）</li>
+<li>服务器在第二个飞行包中同时发送 ServerHello + 证书 + 验证 + Finished</li>
+<li>客户端验证后立即发送 Finished 和应用数据</li>
+</ol>
+<p><strong>TLS 1.3 的 0-RTT 握手（Early Data &#x2F; PSK 模式）：</strong></p>
+<p>如果客户端之前与服务器建立过连接并保存了 PSK（Pre-Shared Key），它可以在第一个飞行包中就发送应用数据：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Client                                    Server</span><br><span class="line">  │                                          │</span><br><span class="line">  │── ClientHello ──────────────────────►    │</span><br><span class="line">  │   + pre_shared_key (psk_identity)        │</span><br><span class="line">  │   + key_share                            │</span><br><span class="line">  │   + &#123;Early Application Data&#125; ← 0-RTT!    │  ← 第一个飞行包就必须携带应用数据</span><br><span class="line">  │                                          │</span><br><span class="line">  │                    ◄── ServerHello +     │</span><br><span class="line">  │                        &#123;EncryptedExtensions&#125; │</span><br><span class="line">  │                        &#123;Finished&#125; ──────  │</span><br><span class="line">  │                                          │</span><br><span class="line">  │── &#123;Finished&#125; ────────────────────────►   │</span><br><span class="line">  │── &#123;Application Data&#125; ───────────────►    │</span><br></pre></td></tr></table></figure>
+
+<p><strong>0-RTT 的安全警告：</strong> 0-RTT 数据缺乏前向安全性——攻击者可以录制并重放 0-RTT 数据包。因此服务器应限制 0-RTT 的操作范围（只允许幂等的 GET 请求，不允许 POST&#x2F;PUT&#x2F;DELETE）。</p>
+<p><strong>TLS 1.3 移除的陈旧功能：</strong></p>
+<ul>
+<li>静态 RSA 密钥交换（无前向安全性）</li>
+<li>CBC 模式密码套件（受 Padding Oracle 攻击困扰）</li>
+<li>RC4、3DES、MD5、SHA-1</li>
+<li>压缩（因 CRIME 攻击而移除）</li>
+<li>重协商（Renegotiation）</li>
+</ul>
+<p><strong>TLS 1.3 强制使用的算法：</strong></p>
+<ul>
+<li>密钥交换：ECDHE（椭圆曲线迪菲-赫尔曼，前向安全）</li>
+<li>身份认证：RSA-PSS 或 ECDSA</li>
+<li>对称加密：AEAD（Authenticated Encryption with Associated Data），如 AES-GCM、ChaCha20-Poly1305</li>
+<li>哈希：SHA-256 或 SHA-384</li>
+</ul>
+<h3 id="5-6-WebSocket-——-全双工实时通信"><a href="#5-6-WebSocket-——-全双工实时通信" class="headerlink" title="5.6 WebSocket —— 全双工实时通信"></a>5.6 WebSocket —— 全双工实时通信</h3><p>WebSocket（RFC 6455）在单个 TCP 连接上提供全双工、低延迟的消息通道。</p>
+<p><strong>WebSocket 升级握手（Upgrade Handshake）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">客户端请求:</span><br><span class="line">GET /chat HTTP/1.1</span><br><span class="line">Host: server.example.com</span><br><span class="line">Upgrade: websocket</span><br><span class="line">Connection: Upgrade</span><br><span class="line">Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==</span><br><span class="line">Sec-WebSocket-Version: 13</span><br><span class="line">Origin: http://example.com</span><br><span class="line"></span><br><span class="line">服务器响应:</span><br><span class="line">HTTP/1.1 101 Switching Protocols</span><br><span class="line">Upgrade: websocket</span><br><span class="line">Connection: Upgrade</span><br><span class="line">Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=</span><br></pre></td></tr></table></figure>
+
+<p><code>Sec-WebSocket-Accept</code> 的计算方式：将客户端 <code>Sec-WebSocket-Key</code> 与固定 GUID <code>258EAFA5-E914-47DA-95CA-C5AB0DC85B11</code> 拼接，计算 SHA-1 哈希，再 Base64 编码。这确保了服务器确实理解 WebSocket 协议。</p>
+<p><strong>WebSocket 帧格式：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">WebSocket 帧结构:</span><br><span class="line"> 0                   1                   2                   3</span><br><span class="line"> 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1</span><br><span class="line">+-+-+-+-+-------+-+-------------+-------------------------------+</span><br><span class="line">|F|R|R|R| opcode|M| Payload len |    Extended payload length    |</span><br><span class="line">|I|S|S|S|  (4)  |A|     (7)     |         (16/64, if len=126/127) |</span><br><span class="line">|N|V|V|V|       |S|             |                               |</span><br><span class="line">| |1|2|3|       |K|             |                               |</span><br><span class="line">+-+-+-+-+-------+-+-------------+-------------------------------+</span><br><span class="line">|     Masking-key (4 字节，仅客户端→服务器消息需要，MASK=1 时存在)  |</span><br><span class="line">+---------------------------------------------------------------+</span><br><span class="line">|                     Payload Data                              |</span><br><span class="line">+---------------------------------------------------------------+</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>FIN（1 bit）：</strong> 是否为消息的最后一帧</li>
+<li><strong>Opcode（4 bits）：</strong> 0x1&#x3D;文本，0x2&#x3D;二进制，0x8&#x3D;关闭连接，0x9&#x3D;Ping，0xA&#x3D;Pong</li>
+<li><strong>MASK（1 bit）：</strong> 帧是否被掩码。客户端→服务器的消息<strong>必须</strong>掩码（防止缓存投毒攻击）</li>
+<li><strong>Payload Length（7 bits &#x2F; 7+16 bits &#x2F; 7+64 bits）：</strong> 可变长度编码</li>
+</ul>
+<p><strong>WebSocket 心跳机制：</strong><br>WebSocket 协议内置了 Ping&#x2F;Pong 帧用于保活检测。服务器或客户端可随时发送 Ping 帧，接收方必须回复 Pong 帧。如果连续多次 Ping 无 Pong 响应，即可判定连接断开。</p>
+<hr>
+<h2 id="六、传输层协议深度解析"><a href="#六、传输层协议深度解析" class="headerlink" title="六、传输层协议深度解析"></a>六、传输层协议深度解析</h2><h3 id="6-1-TCP-连接状态机（全状态与转换）"><a href="#6-1-TCP-连接状态机（全状态与转换）" class="headerlink" title="6.1 TCP 连接状态机（全状态与转换）"></a>6.1 TCP 连接状态机（全状态与转换）</h3><p>TCP 的连接管理是整个协议最精密的部分之一。TCP 连接在两端的生命周期中有 <strong>11 种状态</strong>。理解状态机是诊断网络问题的基础。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">                  ┌──────────┐</span><br><span class="line">                  │  CLOSED  │</span><br><span class="line">                  └────┬─────┘</span><br><span class="line">                       │</span><br><span class="line">          被动打开      │      主动打开</span><br><span class="line">         (listen())    │    (connect())</span><br><span class="line">                       │</span><br><span class="line">                  ┌────▼─────┐</span><br><span class="line">                  │  LISTEN   │</span><br><span class="line">                  └────┬─────┘</span><br><span class="line">                       │ recv SYN</span><br><span class="line">                       │ send SYN+ACK</span><br><span class="line">                       │</span><br><span class="line">                  ┌────▼──────────┐</span><br><span class="line">           ┌──────│ SYN-RECEIVED  │◄──────────────┐</span><br><span class="line">           │      └────┬──────────┘               │</span><br><span class="line">           │           │ recv ACK                  │ 同时打开:</span><br><span class="line">           │           │                           │ recv SYN</span><br><span class="line">           │      ┌────▼──────────┐               │ send SYN+ACK</span><br><span class="line">           │      │  ESTABLISHED  │               │</span><br><span class="line">           │      └─┬─────────┬──┘               │</span><br><span class="line">           │        │         │                   │</span><br><span class="line"> 主动关闭  │        │         │ 被动关闭          │</span><br><span class="line"> (close())│        │         │ recv FIN           │</span><br><span class="line">send FIN  │        │         │ send ACK            │</span><br><span class="line">           │   ┌────▼──┐  ┌───▼──────┐           │</span><br><span class="line">           │   │FIN-WAIT-1│ │CLOSE-WAIT│           │</span><br><span class="line">           │   └─┬───┬──┘  └───┬──────┘           │</span><br><span class="line">           │     │   │         │ 被动方 close()    │</span><br><span class="line">           │     │   │         │ send FIN          │</span><br><span class="line">           │     │   │    ┌────▼──────┐            │</span><br><span class="line">           │     │   │    │ LAST-ACK   │           │</span><br><span class="line">           │     │   │    └────┬──────┘            │</span><br><span class="line">  recv ACK │     │   │         │ recv ACK          │</span><br><span class="line">           │ ┌───▼──┐ │         ▼                  │</span><br><span class="line">           │ │FIN-WAIT-2│   ┌──────┐              │</span><br><span class="line">           │ └───┬──┘   │ CLOSED │              │</span><br><span class="line">           │     │      └──▲──┬─▲┘              │</span><br><span class="line">           │     │         │  │  │               │</span><br><span class="line">           │     │ recv FIN│  │  │Timeout=2MSL   │</span><br><span class="line">           │     │ send ACK│  │  │               │</span><br><span class="line">           │  ┌──▼──────┐  │  │  │               │</span><br><span class="line">           │  │TIME-WAIT├──┘  │  │               │</span><br><span class="line">           │  └─────────┘     │  │               │</span><br><span class="line">           │                  │  │               │</span><br><span class="line">           │ 同时关闭:         │  │               │</span><br><span class="line">           │ FIN-WAIT-1       │  │               │</span><br><span class="line">           │ recv FIN         │  │               │</span><br><span class="line">           │ send ACK         │  │               │</span><br><span class="line">           └─►┌────────┐      │  │               │</span><br><span class="line">               │CLOSING │      │  │               │</span><br><span class="line">               └───┬────┘      │  │               │</span><br><span class="line">                   │ recv ACK   │  │               │</span><br><span class="line">                   └────────────┘  │               │</span><br><span class="line">                    ┌──────────────┘               │</span><br><span class="line">                    │ recv SYN+ACK                 │</span><br><span class="line">                    │ send ACK                     │</span><br><span class="line">                    └──────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p><strong>状态详解：</strong></p>
+<p><strong>CLOSED（关闭）</strong><br>连接的初始状态和最终状态。此时没有活跃连接，不占用任何系统资源。</p>
+<p><strong>LISTEN（监听）</strong><br>服务器端调用 <code>listen()</code> 后进入此状态，等待客户端的连接请求。在 Linux 内核中，LISTEN 状态的 socket 维护两个队列：</p>
+<ul>
+<li><strong>SYN 队列（半连接队列）：</strong> 存放收到 SYN 但尚未完成三次握手的连接。队列大小由 <code>net.ipv4.tcp_max_syn_backlog</code> 和 <code>somaxconn</code> 控制。当队列满时，新的 SYN 将被丢弃（导致客户端 SYN 重传）或发送 SYN Cookie。</li>
+<li><strong>Accept 队列（全连接队列）：</strong> 存放已完成三次握手但尚未被 <code>accept()</code> 取走的连接。队列大小由 <code>listen()</code> 的 <code>backlog</code> 参数指定。当队列满时，新连接将被丢弃。</li>
+</ul>
+<p><strong>SYN-SENT（已发送 SYN）</strong><br>客户端调用 <code>connect()</code> 后进入此状态，已发送 SYN 报文，等待服务器的 SYN+ACK。</p>
+<ul>
+<li>如果没有收到响应，TCP 会进行指数退避重传（典型重试次数：<code>net.ipv4.tcp_syn_retries = 6</code>，总等待时间约 127 秒）</li>
+<li>这是最容易遭受 SYN Flood 攻击的阶段</li>
+</ul>
+<p><strong>SYN-RECEIVED（已收到 SYN）</strong><br>服务器收到 SYN 并回复 SYN+ACK 后进入此状态，等待客户端的 ACK。如果此时大量连接处于 SYN-RECEIVED 状态，通常意味着受到了 SYN Flood 攻击（攻击者只发 SYN 不回 ACK）。Linux 内核的 SYN Cookie 机制可以有效防御此类攻击，其原理是在 SYN+ACK 的初始序列号中编码连接信息，无需在服务端存储半连接状态。</p>
+<p><strong>ESTABLISHED（已建立）</strong><br>三次握手完成，双方可以自由发送数据。这是连接正常工作的状态。</p>
+<p><strong>FIN-WAIT-1（等待 FIN 确认 1）</strong><br>主动关闭方调用 <code>close()</code> 并发送 FIN 后进入此状态。此时仍可以接收数据。</p>
+<ul>
+<li>如果收到 ACK → 进入 FIN-WAIT-2</li>
+<li>如果收到 FIN → 进入 CLOSING（同时关闭）</li>
+<li>如果收到 FIN+ACK → 直接进入 TIME-WAIT</li>
+</ul>
+<p><strong>FIN-WAIT-2（等待 FIN 确认 2）</strong><br>主动关闭方已收到对自己 FIN 的 ACK，等待对端发送 FIN。如果对端不关闭（半关闭状态），此状态可能持续很久。Linux 提供了 <code>tcp_fin_timeout</code> 参数（默认 60 秒）来超时关闭这样的连接。</p>
+<p><strong>CLOSE-WAIT（等待关闭）</strong><br>被动关闭方收到 FIN 并回复 ACK 后进入此状态。此时被动方<strong>仍然可以发送数据</strong>。只有当被动方的应用程序也调用 <code>close()</code> 时，才会发送 FIN 并进入 LAST-ACK。</p>
+<p>CLOSE-WAIT 是生产环境中最常见的连接泄露状态。如果在 <code>netstat -antp</code> 的输出中看到大量 CLOSE-WAIT 连接，通常说明应用程序没有正确关闭 socket——可能是代码中忘记调用 <code>close()</code>。</p>
+<p><strong>LAST-ACK（等待最终确认）</strong><br>被动关闭方调用 <code>close()</code> 发送 FIN 后进入此状态，等待主动方的最后一个 ACK。收到 ACK 后进入 CLOSED。</p>
+<p><strong>TIME-WAIT（等待超时）</strong><br>主动关闭方收到对端的 FIN 并发送 ACK 后进入此状态。TIME-WAIT 持续 <strong>2MSL</strong>（Maximum Segment Lifetime，通常为 60 秒到 120 秒）。为什么需要 TIME-WAIT？</p>
+<ol>
+<li><strong>确保最后的 ACK 能到达对端。</strong> 如果最后一个 ACK 丢失，对端会重传 FIN，主动方需要能够重传 ACK。</li>
+<li><strong>防止旧连接的数据包干扰新连接。</strong> 让网络中所有属于此连接的”游荡”数据包在网络中超时。</li>
+</ol>
+<p>高并发服务器上可能出现大量 TIME-WAIT 连接，可以通过以下手段优化：</p>
+<ul>
+<li>启用 <code>tcp_tw_reuse</code>（允许将 TIME-WAIT 连接重用于新的出站连接）</li>
+<li>调整 <code>tcp_max_tw_buckets</code>（限制 TIME-WAIT 连接总数）</li>
+<li>应用层使用 SO_LINGER 配置异常关闭的行为</li>
+</ul>
+<p><strong>CLOSING（同时关闭中）</strong><br>两端同时发送 FIN 时进入的短暂状态。收到对方的 ACK 后进入 TIME-WAIT。</p>
+<h3 id="6-2-TCP-可靠传输机制"><a href="#6-2-TCP-可靠传输机制" class="headerlink" title="6.2 TCP 可靠传输机制"></a>6.2 TCP 可靠传输机制</h3><p><strong>序号与确认：</strong><br>TCP 将数据流中的每个字节编号。连接建立时双方各自随机选择一个初始序号（ISN, Initial Sequence Number）。</p>
+<ul>
+<li><strong>序号（Sequence Number）：</strong> 本报文段第一个数据字节的编号</li>
+<li><strong>确认号（Acknowledgment Number）：</strong> 期望收到的下一个字节的序号（累积确认）</li>
+</ul>
+<p>例：A 发送了字节 1001-2000，B 回复 ACK 2001 表示”我已经收到了 1001-2000，期望下一个字节是 2001”。</p>
+<p><strong>滑动窗口（Sliding Window）：</strong><br>TCP 使用滑动窗口实现流量控制。窗口大小由接收方在 ACK 报文的 <code>Window Size</code> 字段中通告，告诉发送方”我还能接收多少字节”。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">发送方的滑动窗口:</span><br><span class="line">字节编号:  ...| 已发送已确认 | 已发送未确认 | 可发送未发送 | 不可发送 |...</span><br><span class="line">              ← 窗口左沿      ← 窗口右沿                ← 窗口右沿 + 窗口大小</span><br><span class="line">                              ←──── 发送窗口 ────→</span><br></pre></td></tr></table></figure>
+
+<p>当窗口大小为 0 时，发送方停止发送（Zero Window Probe 除外，会定期发送探测包）。</p>
+<p><strong>拥塞控制（Congestion Control）：</strong><br>TCP 的拥塞控制由四个核心算法组成：</p>
+<p><strong>1. 慢启动（Slow Start）：</strong><br>连接建立或超时重传后，<code>cwnd</code>（拥塞窗口）从一个较小的值开始（Linux 中初始为 10 个 MSS，<code>initcwnd</code>）。每收到一个 ACK，<code>cwnd</code> 增加 1 个 MSS——相当于每个 RTT 翻倍（指数增长）。当 <code>cwnd</code> 达到 <code>ssthresh</code>（慢启动阈值）时，进入拥塞避免阶段。</p>
+<p><strong>2. 拥塞避免（Congestion Avoidance）：</strong><br><code>cwnd</code> 每个 RTT 线性增加约 1 个 MSS（实际实现通常是 <code>cwnd += MSS * (MSS / cwnd)</code>，每收到一个 ACK 增加一个小增量）。这是 AIMD（Additive Increase, Multiplicative Decrease）的”加性增加”部分。</p>
+<p><strong>3. 快速重传（Fast Retransmit）：</strong><br>当发送方连续收到 3 个重复的 ACK（Dup ACK）时，它认为该报文段已丢失，立即重传而不等待超时。三个重复 ACK 的阈值的合理之处在于：少量重复 ACK 可能由数据包乱序引起（在网络中并不罕见），但连续 3 个重复 ACK 几乎可以确定是丢包。</p>
+<p><strong>4. 快速恢复（Fast Recovery）：</strong><br>执行快速重传后，TCP 不会回到慢启动（那样会将 <code>cwnd</code> 重置为初始值），而是：</p>
+<ul>
+<li><code>ssthresh = cwnd / 2</code>（乘性减半）</li>
+<li><code>cwnd = ssthresh + 3 * MSS</code>（因为收到了 3 个重复 ACK，说明有 3 个包已被接收）</li>
+<li>进入拥塞避免阶段，线性增长</li>
+</ul>
+<p>这种机制避免了单个丢包导致吞吐量剧烈下降。但如果是超时重传（RTO, Retransmission Timeout），说明网络拥塞严重，TCP 会回到慢启动。</p>
+<p><strong>TCP 拥塞控制算法演进：</strong></p>
+<ul>
+<li><strong>Reno（1990）：</strong> 实现了快速重传和快速恢复</li>
+<li><strong>New Reno（2004）：</strong> 改进了在一个窗口内多个丢包时的恢复</li>
+<li><strong>CUBIC（2008，Linux 默认）：</strong> 使用三次函数代替 AIMD 的线性增长，在高带宽高延迟网络（LFN）中表现更好</li>
+<li><strong>BBR（2016，Google）：</strong> 基于瓶颈带宽和 RTT 来建模，不再依赖丢包作为拥塞信号</li>
+</ul>
+<h3 id="6-3-UDP-——-简单即是力量"><a href="#6-3-UDP-——-简单即是力量" class="headerlink" title="6.3 UDP —— 简单即是力量"></a>6.3 UDP —— 简单即是力量</h3><p>UDP（User Datagram Protocol, RFC 768）是最简单的传输层协议。它只做了两件事：<strong>端口复用</strong>和<strong>校验和</strong>。</p>
+<p><strong>UDP 报文头（仅 8 字节）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"> 0      7 8     15 16    23 24    31</span><br><span class="line">+--------+--------+--------+--------+</span><br><span class="line">|   Source Port   |  Destination Port |</span><br><span class="line">+--------+--------+--------+--------+</span><br><span class="line">|   Length        |    Checksum       |</span><br><span class="line">+--------+--------+--------+--------+</span><br><span class="line">|           data bytes ...</span><br><span class="line">+-------------------------------------</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>无连接：</strong> 不需要握手，直接发送</li>
+<li><strong>无状态：</strong> 不需要维护连接状态</li>
+<li><strong>不保证交付：</strong> 丢包不重传</li>
+<li><strong>不保证顺序：</strong> 后发的包可能先到</li>
+<li><strong>不拥塞控制：</strong> 可以按任意速率发送</li>
+</ul>
+<p><strong>UDP 的适用场景：</strong></p>
+<ul>
+<li><strong>实时音视频：</strong> 丢几个包不影响观看，但延迟必须低（WebRTC）</li>
+<li><strong>DNS 查询：</strong> 请求和响应通常各是一个包，不需要连接</li>
+<li><strong>DHCP：</strong> 获取 IP 地址时还没有 IP 地址，更谈不上建立 TCP 连接</li>
+<li><strong>QUIC&#x2F;HTTP&#x2F;3：</strong> 在 UDP 之上重新实现可靠性</li>
+<li><strong>游戏：</strong> 位置更新需要低延迟，丢一两帧无所谓</li>
+</ul>
+<h3 id="6-4-QUIC-——-重新定义传输层"><a href="#6-4-QUIC-——-重新定义传输层" class="headerlink" title="6.4 QUIC —— 重新定义传输层"></a>6.4 QUIC —— 重新定义传输层</h3><p>QUIC（Quick UDP Internet Connections）是 Google 设计的新一代传输协议，最初用于加速 Chrome 与 Google 服务器的连接。2021 年，QUIC 被标准化为 RFC 9000，成为 HTTP&#x2F;3 的底层传输协议。</p>
+<p>QUIC 本质上是在 UDP 之上实现了一套完整的传输层：可靠交付、拥塞控制、TLS 1.3 加密、多路复用——所有这些都集成在同一个协议中。后续的 QUIC 深度剖析章节将全面展开。</p>
+<hr>
+<h2 id="七、网际层协议详解"><a href="#七、网际层协议详解" class="headerlink" title="七、网际层协议详解"></a>七、网际层协议详解</h2><h3 id="7-1-IPv4-地址与寻址"><a href="#7-1-IPv4-地址与寻址" class="headerlink" title="7.1 IPv4 地址与寻址"></a>7.1 IPv4 地址与寻址</h3><p>IPv4 使用 32 位地址空间，理论上可提供约 43 亿个地址，在 2011 年已基本耗尽。</p>
+<p><strong>地址分类（有类寻址，历史概念）：</strong></p>
+<ul>
+<li><strong>A 类：</strong> <code>0.0.0.0 ~ 127.255.255.255</code>，前 8 位网络号，后 24 位主机号（如 <code>10.0.0.0/8</code>）</li>
+<li><strong>B 类：</strong> <code>128.0.0.0 ~ 191.255.255.255</code>，前 16 位网络号，后 16 位主机号（如 <code>172.16.0.0/12</code>）</li>
+<li><strong>C 类：</strong> <code>192.0.0.0 ~ 223.255.255.255</code>，前 24 位网络号，后 8 位主机号（如 <code>192.168.0.0/16</code>）</li>
+<li><strong>D 类：</strong> <code>224.0.0.0 ~ 239.255.255.255</code>，用于多播</li>
+<li><strong>E 类：</strong> <code>240.0.0.0 ~ 255.255.255.255</code>，保留</li>
+</ul>
+<p><strong>CIDR（无类别域间路由）：</strong><br>CIDR 废弃了有类寻址，使用<strong>子网掩码</strong>（或前缀长度）来划分网络。例如 <code>192.168.1.0/24</code> 表示前 24 位是网络号，后 8 位是主机号。这让 IP 地址分配更加灵活，也是 NAT 等技术的基础。</p>
+<p><strong>NAT（网络地址转换）：</strong><br>由于 IPv4 地址严重不足，NAT 允许多个设备共享一个公网 IP。常见的 NAT 类型：</p>
+<ul>
+<li><strong>SNAT（Source NAT）：</strong> 修改源 IP 地址（出站流量）</li>
+<li><strong>DNAT（Destination NAT）：</strong> 修改目标 IP 地址（入站流量，如端口映射）</li>
+<li><strong>PAT（Port Address Translation）&#x2F;NAPT：</strong> 使用不同端口区分不同内部主机</li>
+</ul>
+<p>NAT 的工作原理（以典型的家庭路由器为例）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">内部主机 192.168.1.10:45678 → 外部服务器 8.8.8.8:53</span><br><span class="line"></span><br><span class="line">路由器 NAT 表:</span><br><span class="line">内部地址:端口       外部地址:端口       远程地址:端口</span><br><span class="line">192.168.1.10:45678 → 203.0.113.5:50001 → 8.8.8.8:53</span><br><span class="line"></span><br><span class="line">响应包: 8.8.8.8:53 → 203.0.113.5:50001</span><br><span class="line">路由器查 NAT 表，转换为: 8.8.8.8:53 → 192.168.1.10:45678</span><br></pre></td></tr></table></figure>
+
+<p><strong>NAT 穿透问题：</strong> NAT 阻断了外部主动发起的连接。P2P 应用（如 WebRTC）需要使用 STUN、TURN、ICE 等技术进行 NAT 穿透。这也正是 QUIC 选择基于 UDP 的原因之一——UDP 的 NAT 超时和穿透机制比 TCP 更成熟。</p>
+<h3 id="7-2-IPv6-——-下一代互联网协议"><a href="#7-2-IPv6-——-下一代互联网协议" class="headerlink" title="7.2 IPv6 —— 下一代互联网协议"></a>7.2 IPv6 —— 下一代互联网协议</h3><p>IPv6 使用 128 位地址空间（理论数量 2^128，约 3.4x10^38 个），彻底解决了地址枯竭问题。</p>
+<p><strong>IPv6 的改进：</strong></p>
+<ul>
+<li><strong>更大的地址空间</strong>（128 位 vs 32 位）</li>
+<li><strong>简化的头部结构</strong>（40 字节固定长度 vs IPv4 20-60 字节可变长度）</li>
+<li><strong>无分片</strong>（路由器不分片，由发送端负责路径 MTU 发现）</li>
+<li><strong>无校验和</strong>（链路层和传输层已经有校验和，IP 层不再重复计算，提高转发效率）</li>
+<li><strong>内置 IPSec 支持</strong></li>
+<li><strong>无广播，使用多播和任播代替</strong></li>
+</ul>
+<p><strong>IPv6 地址表示：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">完整格式:    2001:0db8:0000:0000:0000:ff00:0042:8329</span><br><span class="line">压缩格式:    2001:db8::ff00:42:8329</span><br><span class="line">IPv4 映射:   ::ffff:192.0.2.128</span><br><span class="line">回环地址:    ::1</span><br><span class="line">未指定地址:  ::</span><br><span class="line">链路本地:    fe80::/10</span><br></pre></td></tr></table></figure>
+
+<p><strong>IPv6 头部格式：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">IPv6 头部（固定的 40 字节）:</span><br><span class="line"> 0               1               2               3</span><br><span class="line"> 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|Version| Traffic Class |           Flow Label                  |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|         Payload Length        |  Next Header  |   Hop Limit   |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|                                                               |</span><br><span class="line">+                                                               +</span><br><span class="line">|                         Source Address (128 bit)              |</span><br><span class="line">+                                                               +</span><br><span class="line">|                                                               |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|                                                               |</span><br><span class="line">+                                                               +</span><br><span class="line">|                      Destination Address (128 bit)            |</span><br><span class="line">+                                                               +</span><br><span class="line">|                                                               |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></pre></td></tr></table></figure>
+
+<p><strong>IPv4 vs IPv6 头部对比：</strong></p>
+<ul>
+<li>IPv4 头部有 13 个字段（含选项），IPv6 只有 8 个</li>
+<li>IPv4 头部的校验和、标识、标志、分片偏移等字段在 IPv6 中被移除</li>
+<li>这些简化让路由器处理 IPv6 包的效率显著提升</li>
+</ul>
+<h3 id="7-3-ICMP-——-互联网诊断协议"><a href="#7-3-ICMP-——-互联网诊断协议" class="headerlink" title="7.3 ICMP —— 互联网诊断协议"></a>7.3 ICMP —— 互联网诊断协议</h3><p>ICMP（Internet Control Message Protocol）是 IP 层的辅助协议，用于传递错误信息和网络诊断。</p>
+<p><strong>ICMP 报文结构：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ICMP 报文（封装在 IP 数据报中）:</span><br><span class="line">┌──────────┬──────────┬────────────────────┬──────────────────┐</span><br><span class="line">│ Type (8) │ Code (8) │   Checksum (16)    │  Message Body    │</span><br><span class="line">└──────────┴──────────┴────────────────────┴──────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p><strong>常用 ICMP 类型：</strong></p>
+<ul>
+<li><strong>Type 0, Code 0：</strong> Echo Reply（ping 回复）</li>
+<li><strong>Type 3：</strong> Destination Unreachable（目标不可达）<ul>
+<li>Code 0: Network Unreachable</li>
+<li>Code 1: Host Unreachable</li>
+<li>Code 3: Port Unreachable（UDP 没有监听时触发）</li>
+<li>Code 4: Fragmentation Needed but DF Set（PMTU 发现的依据）</li>
+</ul>
+</li>
+<li><strong>Type 8, Code 0：</strong> Echo Request（ping 请求）</li>
+<li><strong>Type 11：</strong> Time Exceeded<ul>
+<li>Code 0: TTL Exceeded in Transit（traceroute 的依靠）</li>
+</ul>
+</li>
+</ul>
+<p><strong>traceroute 原理：</strong><br><code>traceroute</code> 利用 TTL（Time to Live）字段和 ICMP Time Exceeded 消息来探测路由路径：</p>
+<ol>
+<li>发送 TTL&#x3D;1 的 UDP 包，第一个路由器收到后 TTL 减为 0，丢弃包并返回 ICMP Time Exceeded</li>
+<li>发送 TTL&#x3D;2 的包，到达第二个路由器后超时</li>
+<li>重复直到到达目标主机（此时目标主机返回 ICMP Port Unreachable）</li>
+</ol>
+<p>每次发送 3 个包（默认），记录每个 TTL 级别收到响应的 RTT。</p>
+<h3 id="7-4-BGP-基础-——-互联网的路由协议"><a href="#7-4-BGP-基础-——-互联网的路由协议" class="headerlink" title="7.4 BGP 基础 —— 互联网的路由协议"></a>7.4 BGP 基础 —— 互联网的路由协议</h3><p>BGP（Border Gateway Protocol）是互联网的<strong>域间路由协议</strong>，几乎所有 ISP 之间的路由交换都通过 BGP 进行。</p>
+<p><strong>为什么需要 BGP？</strong></p>
+<ul>
+<li>互联网由数以万计的 AS（自治系统）组成</li>
+<li>每个 AS 拥有独立的 IP 地址段和路由策略</li>
+<li>需要一个协议来在各 AS 之间交换可达性信息</li>
+</ul>
+<p><strong>BGP 的核心概念：</strong></p>
+<p><strong>自治系统（AS, Autonomous System）：</strong><br>由一个机构管理的一组路由器的集合，使用相同的路由策略。每个 AS 有一个唯一的 AS 号（ASN）。例如：</p>
+<ul>
+<li>AS15169（Google）</li>
+<li>AS32934（Facebook）</li>
+<li>AS4134（中国电信）</li>
+<li>AS9808（中国移动）</li>
+</ul>
+<p><strong>路径向量（Path Vector）：</strong><br>BGP 使用路径向量算法（区别于 RIP 的距离向量和 OSPF 的链路状态）。每条路由通告都携带着完整的 AS 路径：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Network         Next Hop       Path</span><br><span class="line">8.8.8.0/24      10.0.1.1       64500 15169</span><br></pre></td></tr></table></figure>
+<p>这表示要到达 <code>8.8.8.0/24</code> 网络，需要经过 AS64500 和 AS15169。</p>
+<p><strong>eBGP 与 iBGP：</strong></p>
+<ul>
+<li><strong>eBGP（External BGP）：</strong> 不同 AS 之间的 BGP 会话。默认 AD（管理距离）&#x3D; 20</li>
+<li><strong>iBGP（Internal BGP）：</strong> 同一 AS 内部的 BGP 会话。默认 AD &#x3D; 200</li>
+</ul>
+<p><strong>BGP 路由选择过程：</strong><br>BGP 不是选择”最短路径”，而是按优先级顺序比较以下属性：</p>
+<ol>
+<li>最高的 Local Preference（本地优先级）</li>
+<li>最短的 AS Path</li>
+<li>最低的 Origin 类型（IGP &lt; EGP &lt; Incomplete）</li>
+<li>最低的 MED（Multi-Exit Discriminator）</li>
+<li>eBGP 优先于 iBGP</li>
+<li>最低的 IGP 成本到下一跳</li>
+<li>最低的 Router ID</li>
+</ol>
+<p><strong>BGP 安全风险：</strong></p>
+<ul>
+<li><strong>BGP 路由劫持：</strong> 恶意或错误的 AS 宣告不属于自己的 IP 前缀，导致流量被重定向（2018 年，某流量劫持事件导致全球部分 Google 服务中断）</li>
+<li><strong>RPKI（Resource Public Key Infrastructure）：</strong> 通过加密签名验证路由来源的合法性。ROA（Route Origin Authorization）记录了哪个 AS 被授权宣告哪些 IP 前缀</li>
+</ul>
+<hr>
+<h2 id="八、链路层协议详解"><a href="#八、链路层协议详解" class="headerlink" title="八、链路层协议详解"></a>八、链路层协议详解</h2><h3 id="8-1-以太网-——-局域网的主宰"><a href="#8-1-以太网-——-局域网的主宰" class="headerlink" title="8.1 以太网 —— 局域网的主宰"></a>8.1 以太网 —— 局域网的主宰</h3><p>以太网（Ethernet, IEEE 802.3）是部署最广泛的局域网技术，从 1973 年 Bob Metcalfe 在 Xerox PARC 发明至今，经历了几十年的持续演进。</p>
+<p><strong>以太网帧格式：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">以太网帧 (Ethernet II / DIX 格式):</span><br><span class="line">┌─────────────────────────────────────────────────────────────┐</span><br><span class="line">│ Preamble │ SFD │ Dst MAC│ Src MAC│ Type/│ Data   │ FCS     │</span><br><span class="line">│ (7 bytes)│(1B) │ (6B)   │ (6B)   │ Len  │ (46-   │ (4B)    │</span><br><span class="line">│          │     │        │        │ (2B) │ 1500B) │         │</span><br><span class="line">└─────────────────────────────────────────────────────────────┘</span><br><span class="line"></span><br><span class="line">Preamble (前导码):   7 字节的 10101010 模式，用于时钟同步</span><br><span class="line">SFD (帧首定界符):    1 字节的 10101011，标记帧的真正开始</span><br><span class="line">MAC 地址:           6 字节，如 00:1A:2B:3C:4D:5E</span><br><span class="line">Type / Length:      当值 ≤ 1500 时表示长度，&gt; 1500 时表示上层协议类型</span><br><span class="line">                    常见值: 0x0800=IPv4, 0x86DD=IPv6, 0x0806=ARP</span><br><span class="line">FCS (帧校验序列):    CRC-32 校验和，检测传输错误</span><br></pre></td></tr></table></figure>
+
+<p><strong>最小帧长与冲突检测：</strong><br>以太网的最小帧长（不含前导码和 SFD）是 64 字节。如果数据不足 46 字节，需要用填充（Padding）补齐。这个设计是为了确保在 CSMA&#x2F;CD（载波监听多路访问&#x2F;冲突检测）机制下，发送方能在发送完成前检测到冲突——信号从网络一端传播到另一端的时间（slot time）必须大于最小帧的发送时间。</p>
+<p><strong>以太网速率演进：</strong></p>
+<table>
+<thead>
+<tr>
+<th>标准</th>
+<th>速率</th>
+<th>介质</th>
+<th>编码</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>10BASE-T</td>
+<td>10 Mbps</td>
+<td>Cat3 双绞线</td>
+<td>曼彻斯特</td>
+</tr>
+<tr>
+<td>100BASE-TX</td>
+<td>100 Mbps</td>
+<td>Cat5 双绞线</td>
+<td>4B&#x2F;5B + MLT-3</td>
+</tr>
+<tr>
+<td>1000BASE-T</td>
+<td>1 Gbps</td>
+<td>Cat5e+ 双绞线</td>
+<td>PAM-5 x 4 对线</td>
+</tr>
+<tr>
+<td>10GBASE-T</td>
+<td>10 Gbps</td>
+<td>Cat6a 双绞线</td>
+<td>PAM-16 + LDPC</td>
+</tr>
+<tr>
+<td>100GBASE-LR4</td>
+<td>100 Gbps</td>
+<td>单模光纤</td>
+<td>4x25G WDM</td>
+</tr>
+<tr>
+<td>400GBASE-FR4</td>
+<td>400 Gbps</td>
+<td>单模光纤</td>
+<td>4x100G WDM</td>
+</tr>
+</tbody></table>
+<h3 id="8-2-ARP-——-从-IP-到-MAC"><a href="#8-2-ARP-——-从-IP-到-MAC" class="headerlink" title="8.2 ARP —— 从 IP 到 MAC"></a>8.2 ARP —— 从 IP 到 MAC</h3><p>ARP（Address Resolution Protocol, RFC 826）负责将 IPv4 地址解析为 MAC 地址。它工作在链路层，但服务于 IP 层。</p>
+<p><strong>ARP 报文格式：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ARP 报文（直接封装在以太网帧中，Type=0x0806）:</span><br><span class="line">┌──────────────────────────────────────────────────┐</span><br><span class="line">│ Hardware Type:  0x0001 (以太网)                    │</span><br><span class="line">│ Protocol Type:  0x0800 (IPv4)                     │</span><br><span class="line">│ HW Addr Len:    6                                 │</span><br><span class="line">│ Proto Addr Len: 4                                 │</span><br><span class="line">│ Operation:      1=Request, 2=Reply                │</span><br><span class="line">│ Sender HW Addr: aa:bb:cc:dd:ee:ff                 │</span><br><span class="line">│ Sender Proto Addr: 192.168.1.1                    │</span><br><span class="line">│ Target HW Addr:  00:00:00:00:00:00 (请求时为空)    │</span><br><span class="line">│ Target Proto Addr: 192.168.1.2                     │</span><br><span class="line">└──────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p><strong>ARP 工作流程：</strong></p>
+<ol>
+<li>主机 A 需要向 192.168.1.2 发送数据，但不知道其 MAC 地址</li>
+<li>A 发送 ARP Request（广播，目标 MAC 为 <code>ff:ff:ff:ff:ff:ff</code>）：”谁有 192.168.1.2？告诉 192.168.1.1”</li>
+<li>主机 B（192.168.1.2）收到后，单播 ARP Reply：<code>192.168.1.2 的 MAC 是 bb:cc:dd:ee:ff:00</code></li>
+<li>A 将结果缓存到 ARP 表（<code>arp -a</code> 查看），用于后续通信</li>
+</ol>
+<p><strong>ARP 欺骗（ARP Spoofing）：</strong><br>攻击者发送伪造的 ARP Reply，将自己的 MAC 地址与网关 IP 绑定，从而实现中间人攻击（MITM）。防御手段包括：</p>
+<ul>
+<li>静态 ARP 绑定</li>
+<li>DHCP Snooping + Dynamic ARP Inspection（交换机层面的防御）</li>
+<li>ARP 代理（Proxy ARP）检测</li>
+</ul>
+<h3 id="8-3-802-11-WiFi-——-无线网络的基石"><a href="#8-3-802-11-WiFi-——-无线网络的基石" class="headerlink" title="8.3 802.11 WiFi —— 无线网络的基石"></a>8.3 802.11 WiFi —— 无线网络的基石</h3><p>IEEE 802.11 定义了无线局域网的标准，它和有线以太网在链路层有显著差异。</p>
+<p><strong>802.11 的核心区别：</strong></p>
+<ul>
+<li><strong>半双工通信：</strong> 无线信号在同频段上无法同时收发</li>
+<li><strong>冲突检测不可靠：</strong> 无线环境存在”隐藏节点问题”（Hidden Node Problem），两个节点都听不到对方，但它们的信号在接收端冲突</li>
+<li><strong>使用 CSMA&#x2F;CA（Collision Avoidance）代替 CSMA&#x2F;CD：</strong> 通过 RTS&#x2F;CTS（请求发送&#x2F;允许发送）机制解决隐藏节点问题</li>
+</ul>
+<p><strong>802.11 帧结构：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">802.11 数据帧:</span><br><span class="line">┌────────────┬───────┬───┬───┬───┬──────┬───┬───────────┬─────┐</span><br><span class="line">│Frame Ctrl  │Duration│Addr1│Addr2│Addr3│Seq Ctl│Addr4│Frame Body│ FCS │</span><br><span class="line">│  (2 bytes) │(2B)   │(6B)│(6B)│(6B)│(2B)  │(6B) │(0-2312B) │ (4B)│</span><br><span class="line">└────────────┴───────┴───┴───┴───┴──────┘───┴───────────┴─────┘</span><br><span class="line"></span><br><span class="line">Frame Control 字段子项:</span><br><span class="line">- Protocol Version (2 bit)</span><br><span class="line">- Type / Subtype (2+4 bit): 00=Management, 01=Control, 10=Data</span><br><span class="line">- To DS / From DS (各 1 bit): 指示帧方向，决定 Addr1-Addr4 的含义</span><br><span class="line">- More Fragments, Retry, Power Management, More Data, Protected, +HTC/Order</span><br></pre></td></tr></table></figure>
+
+<p><strong>802.11 的四地址机制：</strong><br>与以太网只有两个 MAC 地址（源&#x2F;目标）不同，802.11 帧最多可包含 4 个地址：</p>
+<ul>
+<li><strong>Addr1：</strong> 接收端（下一跳的无线 MAC）</li>
+<li><strong>Addr2：</strong> 发送端（当前无线发送者的 MAC）</li>
+<li><strong>Addr3：</strong> 最终目标&#x2F;原始源（DS 场景下的目的地址或源地址）</li>
+<li><strong>Addr4：</strong> 无线分布系统（WDS）中的桥接地址</li>
+</ul>
+<p><strong>802.11 代际演进：</strong></p>
+<table>
+<thead>
+<tr>
+<th>代际</th>
+<th>标准</th>
+<th>发布年份</th>
+<th>最大速率</th>
+<th>频段</th>
+<th>关键特性</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>WiFi 4</td>
+<td>802.11n</td>
+<td>2009</td>
+<td>600 Mbps</td>
+<td>2.4&#x2F;5 GHz</td>
+<td>MIMO, 40 MHz 信道</td>
+</tr>
+<tr>
+<td>WiFi 5</td>
+<td>802.11ac</td>
+<td>2013</td>
+<td>6.9 Gbps</td>
+<td>5 GHz</td>
+<td>MU-MIMO, 160 MHz, 256-QAM</td>
+</tr>
+<tr>
+<td>WiFi 6</td>
+<td>802.11ax</td>
+<td>2019</td>
+<td>9.6 Gbps</td>
+<td>2.4&#x2F;5&#x2F;6 GHz</td>
+<td>OFDMA, 1024-QAM, BSS Coloring</td>
+</tr>
+<tr>
+<td>WiFi 7</td>
+<td>802.11be</td>
+<td>2024</td>
+<td>46 Gbps</td>
+<td>2.4&#x2F;5&#x2F;6 GHz</td>
+<td>320 MHz, 4096-QAM, MLO</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="九、数据封装过程：字节级逐步走读"><a href="#九、数据封装过程：字节级逐步走读" class="headerlink" title="九、数据封装过程：字节级逐步走读"></a>九、数据封装过程：字节级逐步走读</h2><p>让我们通过一个具体的例子——一台 Android 手机通过 WiFi 访问 <code>https://tufusi.com</code>——来追踪数据从应用到物理层的完整封装过程。</p>
+<h3 id="示例场景"><a href="#示例场景" class="headerlink" title="示例场景"></a>示例场景</h3><p>应用层数据：HTTP&#x2F;3 请求（QUIC STREAM 帧，实际数据 “GET &#x2F; HTTP&#x2F;3” 的某一部分）</p>
+<h3 id="Step-1-应用层-→-QUIC-帧"><a href="#Step-1-应用层-→-QUIC-帧" class="headerlink" title="Step 1: 应用层 → QUIC 帧"></a>Step 1: 应用层 → QUIC 帧</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">原始数据: &quot;GET / HTTP/3&quot; (11 字节)</span><br><span class="line"></span><br><span class="line">QUIC STREAM 帧封装:</span><br><span class="line">┌──────────────┬──────────────────────────────────┐</span><br><span class="line">│ Type: 0x08   │ Stream ID: 0x04 (变长整数编码)    │  Type 的低 2 bit = Stream Frame</span><br><span class="line">│ Offset: 0    │ Length: 11                       │</span><br><span class="line">├──────────────┼──────────────────────────────────┤</span><br><span class="line">│ Stream Data: &quot;GET / HTTP/3&quot;                     │</span><br><span class="line">└──────────────────────────────────────────────────┘</span><br><span class="line">                        (约 20 字节，含变长整数字段)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Step-2-QUIC-包封装"><a href="#Step-2-QUIC-包封装" class="headerlink" title="Step 2: QUIC 包封装"></a>Step 2: QUIC 包封装</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">QUIC Short Header Packet (1-RTT 包):</span><br><span class="line">┌────────┬──────────────────────────────────┬──────────────────────┐</span><br><span class="line">│Header  │  Destination Connection ID        │  Packet Number       │</span><br><span class="line">│ 1 byte │  可变长度 (8-20 字节)              │  1-4 字节             │</span><br><span class="line">│ 0x41   │  0x1234567890ABCDEF              │  0x00000042          │</span><br><span class="line">├────────┴──────────────────────────────────┴──────────────────────┤</span><br><span class="line">│ Protected Payload (加密后):                                       │</span><br><span class="line">│   ├── STREAM Frame: StreamID=4, Data=&quot;GET / HTTP/3&quot;              │</span><br><span class="line">│   ├── PADDING Frame (可选)                                        │</span><br><span class="line">│   └── AEAD Authentication Tag (16 字节)                            │</span><br><span class="line">└───────────────────────────────────────────────��──────────────────┘</span><br><span class="line">                        总计约 60 字节</span><br></pre></td></tr></table></figure>
+
+<p>QUIC 的所有载荷在传输前都经过 TLS 1.3 AEAD 加密（AES-128-GCM 或 ChaCha20-Poly1305），外部观察者只能看到 Connection ID 和 Packet Number——这也包括包类型和标志位等需要保护的内容，QUIC 通过 Header Protection 机制使用独立的密钥加密包头中的敏感字段。</p>
+<h3 id="Step-3-UDP-封装"><a href="#Step-3-UDP-封装" class="headerlink" title="Step 3: UDP 封装"></a>Step 3: UDP 封装</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">UDP 数据报:</span><br><span class="line">┌──────────────────────┬─────────────────┬─────────────────────────┐</span><br><span class="line">│ Src Port: 54321 (2B) │ Dst Port: 443   │ Length: 68 (2B)         │</span><br><span class="line">│                      │                 │ (= 8 + 60 QUIC payload) │</span><br><span class="line">├──────────────────────┴─────────────────┼─────────────────────────┤</span><br><span class="line">│ Checksum: 0xABCD (2B)                  │                         │</span><br><span class="line">├────────────────────────────────────────┤                         │</span><br><span class="line">│ QUIC Packet (60 bytes)                 │                         │</span><br><span class="line">└────────────────────────────────────────┴─────────────────────────┘</span><br><span class="line">                        总计 68 字节</span><br></pre></td></tr></table></figure>
+
+<p>UDP 校验和是强制性的（在 IPv6 中）。它覆盖了 UDP 头部、UDP 数据以及 IPv4 伪首部（源 IP、目标 IP、协议号、UDP 长度），确保数据在传输中未被破坏。</p>
+<h3 id="Step-4-IP-封装"><a href="#Step-4-IP-封装" class="headerlink" title="Step 4: IP 封装"></a>Step 4: IP 封装</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">IPv4 数据报:</span><br><span class="line">┌───────┬─────┬──────────────┬─────┬─────┬──────┬─────────────┬───────────────┐</span><br><span class="line">│Vers=4 │IHL=5│DSCP+ECN (1B) │Total│Ident│Flags+│ TTL = 64    │Protocol=17    │</span><br><span class="line">│       │(20B)│              │ Len │ (2B)│Frag  │             │(UDP)          │</span><br><span class="line">│       │     │              │=88  │     │Offset│             │               │</span><br><span class="line">├───────┴─────┼──────────────┴─────┴─────┼──────┴─────────────┼───────────────┤</span><br><span class="line">│Header       │Src IP: 192.168.1.10 (4B) │Dst IP: 93.184.216.34 (4B)          │</span><br><span class="line">│Checksum (2B)│                         │                                    │</span><br><span class="line">├─────────────┴─────────────────────────┴────────────────────────────────────┤</span><br><span class="line">│ UDP Datagram (68 bytes)                                                     │</span><br><span class="line">└─────────────────────────────────────────────────────────────────────────────┘</span><br><span class="line">                        总计 88 字节 (20B IP 头 + 68B UDP + 数据)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>IHL（Internet Header Length）&#x3D; 5，表示头部为 20 字节（5 个 32 位字）</li>
+<li>Protocol &#x3D; 17，表示上层是 UDP（TCP 是 6，ICMP 是 1）</li>
+<li>Total Length &#x3D; 88（IP 头部 + UDP 数据报，单位：字节）</li>
+</ul>
+<p>在实际的 Android&#x2F;Linux 实现中，IP 层还涉及路由表查找。内核查询路由表（<code>ip route show</code>），确定该包应从哪个网络接口发出，以及下一跳 IP 地址。</p>
+<h3 id="Step-5-以太网帧封装（WiFi-场景下更复杂，这里以有线以太网为例）"><a href="#Step-5-以太网帧封装（WiFi-场景下更复杂，这里以有线以太网为例）" class="headerlink" title="Step 5: 以太网帧封装（WiFi 场景下更复杂，这里以有线以太网为例）"></a>Step 5: 以太网帧封装（WiFi 场景下更复杂，这里以有线以太网为例）</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">以太网帧（Ethernet II）:</span><br><span class="line">┌──────────────┬──────────────────┬────────────────┬──────┬────────────────┐</span><br><span class="line">│ Dst MAC:     │ Src MAC:         │ EtherType:     │ Pay  │ FCS (CRC-32):  │</span><br><span class="line">│ 00:1A:2B:... │ aa:bb:cc:...     │ 0x0800 (IPv4)  │ load │ 0xABCD1234     │</span><br><span class="line">│ (6 bytes)    │ (6 bytes)        │ (2 bytes)      │ (88B)│ (4 bytes)      │</span><br><span class="line">└──────────────┴──────────────────┴────────────────┴──────┴────────────────┘</span><br><span class="line">                        总计 106 字节</span><br></pre></td></tr></table></figure>
+
+<p>目标 MAC 地址通过 ARP 表查询下一跳 IP 得到：</p>
+<ol>
+<li>查路由表：下一跳为 192.168.1.1（默认网关）</li>
+<li>查 ARP 表：192.168.1.1 → 00:1A:2B:3C:4D:5E</li>
+<li>如果 ARP 表未命中，发送 ARP Request 并在 ARP 缓存中等待结果</li>
+</ol>
+<h3 id="Step-6-物理层编码（以-1000BASE-T-为例）"><a href="#Step-6-物理层编码（以-1000BASE-T-为例）" class="headerlink" title="Step 6: 物理层编码（以 1000BASE-T 为例）"></a>Step 6: 物理层编码（以 1000BASE-T 为例）</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">PAM-5 符号编码（每对线）:</span><br><span class="line">以太网帧比特流 → 线路编码 → 4D-PAM5 符号 → 模拟信号</span><br><span class="line"></span><br><span class="line">1000BASE-T 在 4 对双绞线上同时传输:</span><br><span class="line">- 每对线: 125 MBaud × 2 比特/符号 (PAM-5) = 250 Mbps</span><br><span class="line">- 4 对线: 250 Mbps × 4 = 1000 Mbps</span><br><span class="line">- 使用 Tomlinson-Harashima Precoding (THP) 消除码间干扰</span><br><span class="line">- 使用回声消除实现全双工 (同一对线上同时收发)</span><br></pre></td></tr></table></figure>
+
+<h3 id="封装层次总览"><a href="#封装层次总览" class="headerlink" title="封装层次总览"></a>封装层次总览</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌─────────────────────────────────────────────────────────────────┐</span><br><span class="line">│  &quot;GET / HTTP/3&quot;                                                 │ ← 应用数据</span><br><span class="line">├───────────────────────────────────────────��─────────────────────┤</span><br><span class="line">│  QUIC STREAM Frame (Stream ID, Offset, Length, Data)            │ ← QUIC 帧</span><br><span class="line">├─────────────────────────────────────────────────────────────────┤</span><br><span class="line">│  QUIC Packet (Header + Protected Payload + AEAD Tag)            │ ← QUIC 包</span><br><span class="line">├─────────────────────────────────────────────────────────────────┤</span><br><span class="line">│  UDP Datagram (SrcPort, DstPort, Length, Checksum + payload)    │ ← UDP 层</span><br><span class="line">├─────────────────────────────────────────────────────────────────┤</span><br><span class="line">│  IP Datagram (SrcIP, DstIP, TTL, Protocol + UDP payload)        │ ← IP 层</span><br><span class="line">├─────────────────────────────────────────────────────────────────┤</span><br><span class="line">│  Ethernet Frame (DstMAC, SrcMAC, Type + IP payload + FCS)       │ ← 链路层</span><br><span class="line">├─────────────────────────────────────────────────────────────────┤</span><br><span class="line">│  Electrical Signal on Cat5e Cable (PAM-5 modulated)             │ ← 物理层</span><br><span class="line">└─────────────────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p>接收端的过程完全相反——每层剥离自己的头部，验证校验和，将Payload交给上一层，直到应用层拿到原始数据。</p>
+<hr>
+<h2 id="十、Android-网络栈：从应用到内核"><a href="#十、Android-网络栈：从应用到内核" class="headerlink" title="十、Android 网络栈：从应用到内核"></a>十、Android 网络栈：从应用到内核</h2><p>Android 的网络栈建立在 Linux 内核之上，但通过 Java&#x2F;Kotlin 框架层进行了大量封装。以下从上到下追踪一个网络请求的完整路径。</p>
+<h3 id="10-1-应用层：OkHttp-架构"><a href="#10-1-应用层：OkHttp-架构" class="headerlink" title="10.1 应用层：OkHttp 架构"></a>10.1 应用层：OkHttp 架构</h3><p>OkHttp 是 Android（和 Java）生态中最主流的 HTTP 客户端库，自 Android 4.4 起被 AOSP 内置使用。</p>
+<p><strong>OkHttp 核心组件：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌──────────────────────────────────────────────┐</span><br><span class="line">│              OkHttpClient                     │</span><br><span class="line">│   (共享实例: 连接池、缓存、拦截器)              │</span><br><span class="line">├──────────────────────────────────────────────┤</span><br><span class="line">│              Dispatcher                       │</span><br><span class="line">│   (管理请求队列、线程池、并发控制)               │</span><br><span class="line">├──────────────────────────────────────────────┤</span><br><span class="line">│         Interceptor Chain                     │</span><br><span class="line">│   ┌──────────────────────────────────────┐   │</span><br><span class="line">│   │ 自定义应用拦截器                        │   │</span><br><span class="line">│   │ RetryAndFollowUpInterceptor           │   │</span><br><span class="line">│   │ BridgeInterceptor                      │   │</span><br><span class="line">│   │ CacheInterceptor                       │   │</span><br><span class="line">│   │ ConnectInterceptor                     │   │</span><br><span class="line">│   │ 自定义网络拦截器                        │   │</span><br><span class="line">│   │ CallServerInterceptor                  │   │</span><br><span class="line">│   └──────────────────────────────────────┘   │</span><br><span class="line">├──────────────────────────────────────────────┤</span><br><span class="line">│           Connection Pool                     │</span><br><span class="line">│   (复用 HTTP/1.x 连接，HTTP/2 多路复用)        │</span><br><span class="line">└──────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p><strong>拦截器链（Interceptor Chain）：</strong><br>这是 OkHttp 最优雅的设计。每个拦截器处理一个关注点：</p>
+<ol>
+<li><strong>应用拦截器：</strong> 用户的 <code>addInterceptor()</code>，可修改请求&#x2F;响应，不感知重定向和重试</li>
+<li><strong>RetryAndFollowUpInterceptor：</strong> 处理失败重试和 HTTP 重定向（最多 20 次）</li>
+<li><strong>BridgeInterceptor：</strong> 将用户请求转换为 HTTP 请求（添加 Host、Content-Type、Cookie、User-Agent、Accept-Encoding 等头部）</li>
+<li><strong>CacheInterceptor：</strong> 根据缓存策略响应（返回缓存、条件请求或穿透）</li>
+<li><strong>ConnectInterceptor：</strong> 从连接池中获取或创建新连接</li>
+<li><strong>网络拦截器：</strong> 用户的 <code>addNetworkInterceptor()</code>，可观察底层交互</li>
+<li><strong>CallServerInterceptor：</strong> 实际向服务器写入请求并读取响应</li>
+</ol>
+<p><strong>连接池（Connection Pool）：</strong></p>
+<ul>
+<li>每个地址（Host:Port）最多保持 5 个空闲连接（<code>maxIdleConnections = 5</code>）</li>
+<li>空闲连接 5 分钟后关闭（<code>keepAliveDurationNs = 5 分钟</code>）</li>
+<li>HTTP&#x2F;2 连接则复用同一个 TCP 连接进行多路复用</li>
+</ul>
+<p><strong>OkHttp 发起到完成的全流程（以一次 GET 请求为例）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. client.newCall(request).enqueue(callback)</span><br><span class="line">2. Dispatcher 将 Call 放入 readyCalls 队列</span><br><span class="line">3. 当 runningCalls &lt; maxRequests (64) 且 per-host &lt; maxRequestsPerHost (5):</span><br><span class="line">   → promoteAndExecute() 将 Call 移到 runningCalls</span><br><span class="line">4. RealCall.execute() → getResponseWithInterceptorChain()</span><br><span class="line">5. 经过完整的拦截器链,最终到达 CallServerInterceptor</span><br><span class="line">6. ConnectInterceptor 调用 ExchangeFinder.find()</span><br><span class="line">   - 查询 ConnectionPool 是否有可用连接</span><br><span class="line">   - 若无, 通过 RouteSelector 选择路由, 创建 RealConnection</span><br><span class="line">   - RealConnection.connect() 执行 DNS 解析 + TCP 连接 + TLS 握手</span><br><span class="line">7. CallServerInterceptor 通过 Exchange (管理 HTTP/1.x 序列化或 HTTP/2 流) 发送请求</span><br><span class="line">8. 读取响应, 逐级返回给回调</span><br><span class="line">9. 连接归还连接池 (如连接可复用)</span><br></pre></td></tr></table></figure>
+
+<h3 id="10-2-系统服务层：ConnectivityManager"><a href="#10-2-系统服务层：ConnectivityManager" class="headerlink" title="10.2 系统服务层：ConnectivityManager"></a>10.2 系统服务层：ConnectivityManager</h3><p>ConnectivityManager 是 Android Framework 提供的网络状态管理服务。</p>
+<p><strong>核心职责：</strong></p>
+<ul>
+<li>管理网络的连接和断开事件</li>
+<li>为应用提供当前网络的能力信息（带宽、延迟、是否计费、是否经过 VPN）</li>
+<li>将应用的网络请求绑定到特定网络（如强制使用 WiFi 或蜂窝网络）</li>
+</ul>
+<p><strong>关键 API：</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 获取 ConnectivityManager</span></span><br><span class="line"><span class="type">ConnectivityManager</span> <span class="variable">cm</span> <span class="operator">=</span> (ConnectivityManager) context</span><br><span class="line">    .getSystemService(Context.CONNECTIVITY_SERVICE);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取当前活跃网络</span></span><br><span class="line"><span class="type">Network</span> <span class="variable">currentNetwork</span> <span class="operator">=</span> cm.getActiveNetwork();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取网络能力</span></span><br><span class="line"><span class="type">NetworkCapabilities</span> <span class="variable">caps</span> <span class="operator">=</span> cm.getNetworkCapabilities(currentNetwork);</span><br><span class="line"><span class="type">boolean</span> <span class="variable">isWifi</span> <span class="operator">=</span> caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI);</span><br><span class="line"><span class="type">boolean</span> <span class="variable">isCellular</span> <span class="operator">=</span> caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR);</span><br><span class="line"><span class="type">boolean</span> <span class="variable">isMetered</span> <span class="operator">=</span> !caps.hasCapability(</span><br><span class="line">    NetworkCapabilities.NET_CAPABILITY_NOT_METERED);</span><br><span class="line"><span class="type">int</span> <span class="variable">downBandwidth</span> <span class="operator">=</span> caps.getLinkDownstreamBandwidthKbps();</span><br><span class="line"><span class="type">int</span> <span class="variable">upBandwidth</span> <span class="operator">=</span> caps.getLinkUpstreamBandwidthKbps();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 注册网络回调</span></span><br><span class="line">cm.registerNetworkCallback(</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">NetworkRequest</span>.Builder()</span><br><span class="line">        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)</span><br><span class="line">        .build(),</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">ConnectivityManager</span>.NetworkCallback() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onAvailable</span><span class="params">(Network network)</span> &#123; &#125;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onLost</span><span class="params">(Network network)</span> &#123; &#125;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onCapabilitiesChanged</span><span class="params">(</span></span><br><span class="line"><span class="params">            Network network, NetworkCapabilities caps)</span> &#123; &#125;</span><br><span class="line">    &#125;);</span><br></pre></td></tr></table></figure>
+
+<p><strong>网络绑定（Network Binding）：</strong><br>Android 允许应用将 socket 绑定到特定网络，避免默认网络切换导致的连接中断：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 将 OkHttp 请求绑定到特定网络</span></span><br><span class="line"><span class="type">OkHttpClient</span> <span class="variable">client</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">OkHttpClient</span>.Builder()</span><br><span class="line">    .socketFactory(network.getSocketFactory())</span><br><span class="line">    .build();</span><br></pre></td></tr></table></figure>
+
+<p>这底层通过 <code>Network.bindSocket()</code> → <code>setsockopt()</code> → <code>SO_BINDTODEVICE</code> 或 Linux 的 fwmark（防火墙标记）将流量限制在指定网络接口上。</p>
+<h3 id="10-3-守护进程层：netd"><a href="#10-3-守护进程层：netd" class="headerlink" title="10.3 守护进程层：netd"></a>10.3 守护进程层：netd</h3><p><code>netd</code>（Network Daemon）是 Android 的本地网络守护进程，以 C++ 实现，运行在 root 权限下。它是 Android Framework 和 Linux 内核网络栈之间的桥梁。</p>
+<p><strong>netd 的核心职责：</strong></p>
+<ol>
+<li><p><strong>DNS 解析管理：</strong></p>
+<ul>
+<li>维护每个网络的 DNS 服务器列表（<code>/etc/resolv.conf</code> 已不再直接使用）</li>
+<li>管理 DNS 缓存</li>
+<li>处理 Private DNS（DoT）配置</li>
+<li>Android 9+ 默认使用 DoT（<code>dns.google</code>）</li>
+</ul>
+</li>
+<li><p><strong>网络路由管理：</strong></p>
+<ul>
+<li>为每个网络（WiFi、蜂窝、VPN）维护独立的<strong>路由表</strong></li>
+<li>使用 Linux 的 <strong>策略路由（Policy Routing）</strong>：通过 <code>ip rule</code> 配合 fwmark 将不同应用的流量路由到不同的路由表</li>
+<li>处理网络切换时的路由更新</li>
+</ul>
+</li>
+<li><p><strong>防火墙 &#x2F; Tethering：</strong></p>
+<ul>
+<li>管理 NAT 规则（<code>iptables</code>）</li>
+<li>配置热点（SoftAP）的 DHCP 和转发规则</li>
+<li>带宽限制（Bandwidth Controller &#x2F; tethering 限速）</li>
+</ul>
+</li>
+</ol>
+<p><strong>netd 与 Framework 的通信：</strong><br>Framework 通过 Binder IPC 调用 <code>netd</code>。关键的服务包括：</p>
+<ul>
+<li><code>INetd</code> 接口（Framework → netd）</li>
+<li><code>NetdNativeService</code>（AIDL 定义）</li>
+</ul>
+<p>典型调用链示例（WiFi 连接时）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">WifiService (Java)</span><br><span class="line">  → ConnectivityService (Java)</span><br><span class="line">    → NetworkManagementService (Java)</span><br><span class="line">      → netd (C++, via Binder)</span><br><span class="line">        → iptables / ip route / resolv.conf (内核/系统调用)</span><br></pre></td></tr></table></figure>
+
+<h3 id="10-4-内核层：iptables-与-netfilter"><a href="#10-4-内核层：iptables-与-netfilter" class="headerlink" title="10.4 内核层：iptables 与 netfilter"></a>10.4 内核层：iptables 与 netfilter</h3><p><code>iptables</code> 是 Linux 内核 netfilter 框架的用户空间配置工具。Android 在每个网络接口变更时都会重新配置 iptables 规则。</p>
+<p><strong>netfilter 的 5 个钩子点（Hook Points）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">网络包流向与 hook 点:</span><br><span class="line">               ┌────────────┐</span><br><span class="line">               │ NF_IP_LOCAL_IN  ◄── 发给本机的包</span><br><span class="line">               └──────▲──────┘</span><br><span class="line">                      │</span><br><span class="line">┌─────────┐    ┌──────┴──────┐    ┌──────────────┐    ┌─────────┐</span><br><span class="line">│ 网络接口 │───►│NF_IP_PRE_   │───►│ 路由决策:     │───►│NF_IP_   │───► 发送</span><br><span class="line">│ (eth0/  │    │ROUTING      │    │ 目标在哪?      │    │FORWARD  │</span><br><span class="line">│  wlan0) │    └─────────────┘    └──┬───────┬────┘    └─────────┘</span><br><span class="line">└─────────┘                         │       │</span><br><span class="line">                      发给本机 ◄────┘       └────► 非本机, 转发</span><br><span class="line">                                                 │</span><br><span class="line">                                      ┌──────────┴──────┐</span><br><span class="line">                                      │ NF_IP_POST_     │</span><br><span class="line">                                      │ ROUTING         │</span><br><span class="line">                                      └──────────┬──────┘</span><br><span class="line">                                                 │</span><br><span class="line">                                                 ▼</span><br><span class="line">                                            网络接口发出</span><br></pre></td></tr></table></figure>
+
+<p><strong>Android 中典型的 iptables 规则（简化版）：</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># NAT 表: 热点流量共享 (Tethering)</span></span><br><span class="line">*nat</span><br><span class="line">-A POSTROUTING -s 192.168.43.0/24 -o rmnet_data0 -j MASQUERADE</span><br><span class="line"></span><br><span class="line"><span class="comment"># Filter 表: 防火墙规则</span></span><br><span class="line">*filter</span><br><span class="line"><span class="comment"># 阻止来自 WiFi 的特定流量</span></span><br><span class="line">-A bw_INPUT -i wlan0 -j bw_global_alert</span><br><span class="line"><span class="comment"># 允许已建立/关联的连接</span></span><br><span class="line">-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT</span><br><span class="line"></span><br><span class="line"><span class="comment"># Mangle 表: 数据包标记 (用于策略路由)</span></span><br><span class="line">*mangle</span><br><span class="line"><span class="comment"># 给特定 UID 的流量打标记</span></span><br><span class="line">-A OUTPUT -m owner --uid-owner 10086 -j MARK --set-mark 0x1</span><br></pre></td></tr></table></figure>
+
+<p><strong>Android 的策略路由（Policy Routing）实现：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">应用流量 → fwmark (依据 UID) → ip rule (匹配 fwmark) → 查特定路由表 → 走特定网络接口</span><br><span class="line"></span><br><span class="line">示例:</span><br><span class="line">ip rule add fwmark 0x1 table 100          # fwmark=1 查 table 100</span><br><span class="line">ip route add default via 10.0.0.1 dev wlan0 table 100  # table 100 的默认路由走 WiFi</span><br></pre></td></tr></table></figure>
+
+<p>这意味着不同的应用（不同 UID）可以同时使用不同的网络接口——比如微信走 WiFi，其他应用走 4G。Android 的 <code>ConnectivityManager.bindProcessToNetwork()</code> 正是通过设置进程的 fwmark 来实现这一功能的。</p>
+<hr>
+<h2 id="十一、QUIC-深度剖析"><a href="#十一、QUIC-深度剖析" class="headerlink" title="十一、QUIC 深度剖析"></a>十一、QUIC 深度剖析</h2><h3 id="11-1-为什么-Google-造了-QUIC？"><a href="#11-1-为什么-Google-造了-QUIC？" class="headerlink" title="11.1 为什么 Google 造了 QUIC？"></a>11.1 为什么 Google 造了 QUIC？</h3><p>Google 面临着全球最大规模的网络流量挑战。在 2012 年前后，Google 的工程师们意识到 TCP + TLS 的组合在以下场景中无法满足需求：</p>
+<p><strong>1. TCP 队头阻塞（Head-of-Line Blocking）：</strong><br>HTTP&#x2F;2 通过多路复用解决了应用层的队头阻塞，但 TCP 层的队头阻塞依然存在。因为 TCP 保证所有字节严格有序交付——如果序列号为 S 的包丢失，即使序列号为 S+1、S+2… 的包已经到达，TCP 也不会将它们交付给应用层，必须等待 S 被重传。在 2% 丢包率的高延迟移动网络上，这可能意味着数百毫秒的额外延迟。</p>
+<p><strong>2. 连接建立的延迟：</strong><br>TCP 三次握手（1-RTT）+ TLS 1.2 握手（2-RTT）&#x3D; 3-RTT 才能开始传输数据。即使使用 TLS 1.3（1-RTT）也需要 2-RTT。对于谷歌搜索这种以毫秒计的场景，这是不可接受的。</p>
+<p><strong>3. 连接迁移困难：</strong><br>TCP 连接由四元组（源 IP、源端口、目标 IP、目标端口）唯一标识。当用户从 WiFi 切换到 4G 时，IP 地址改变，TCP 连接必然中断，需要重新建立。对于视频通话等长时间连接，这是致命的。</p>
+<p><strong>4. 协议僵化（Ossification）：</strong><br>TCP 和 TLS 的中间件（防火墙、NAT、负载均衡器）对协议的更新极其缓慢。很多中间设备会丢弃它们不理解的新选项或扩展。Google 曾试图在 TCP 层面实验新的拥塞控制算法和选项字段，但经常被中间设备”踩死”。</p>
+<p><strong>5. 多路复用的复杂性：</strong><br>TCP 只有一个字节流。要在应用层实现多路复用（如 HTTP&#x2F;2），必须在上层构建帧和流——而这些流之间仍然受制于 TCP 的队头阻塞。</p>
+<h3 id="11-2-QUIC-的核心设计"><a href="#11-2-QUIC-的核心设计" class="headerlink" title="11.2 QUIC 的核心设计"></a>11.2 QUIC 的核心设计</h3><p><strong>在 UDP 之上重建传输层：</strong><br>QUIC 选择基于 UDP 而非新建 IP 协议（如 SCTP 做的那样），原因很简单：UDP 是唯一能被所有中间设备识别和转发的传输层协议。尝试定义新的 IP 协议号，会在无数中间设备（防火墙、NAT、路由器）上被丢弃。</p>
+<p><strong>Connection ID —— 解耦连接与地址：</strong><br>QUIC 使用 Connection ID（一个可变长度的不透明标识符）来标识连接，而不是传统的四元组。这带来了<strong>连接迁移</strong>能力：</p>
+<ul>
+<li>当客户端 IP 从 192.168.1.x（WiFi）变为 10.0.0.x（4G）时，QUIC 可以继续使用相同的 Connection ID</li>
+<li>服务器验证新地址的到达性（Path Validation），确认后无缝切换到新路径</li>
+<li>对应用层完全透明——视频通话不会中断，下载不会失败</li>
+</ul>
+<p><strong>多流架构 —— 彻底消除队头阻塞：</strong><br>QUIC 在连接内支持<strong>多个独立的流（Stream）</strong>。每个流：</p>
+<ul>
+<li>有自己的独立序号空间</li>
+<li>丢失的包只阻塞该包所属的流，不影响其他流</li>
+<li>流之间可以无序交付</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">TCP + HTTP/2 的队头阻塞:</span><br><span class="line">TCP Stream: [H2_Stream1_Frame1] [H2_Stream2_Frame1] [H2_Stream1_Frame2] ← TCP 丢包</span><br><span class="line">            ← 整个连接暂停，等待重传，所有 HTTP/2 流都被阻塞</span><br><span class="line"></span><br><span class="line">QUIC + HTTP/3 的无队头阻塞:</span><br><span class="line">QUIC Stream 1:  [Frame1] ---- [Frame2]  ← Stream 1 丢包, 只阻塞 Stream 1</span><br><span class="line">QUIC Stream 2:  [Frame1] [Frame2] [Frame3]  ← Stream 2 不受影响, 继续交付</span><br><span class="line">QUIC Stream 3:  [Frame1] [Frame2]  ← Stream 3 也不受影响</span><br></pre></td></tr></table></figure>
+
+<p><strong>内置加密 —— 不信任下层：</strong><br>QUIC 将 TLS 1.3 直接嵌入协议内部。QUIC 包除了少量头部字段（Connection ID、Packet Number 部分）外，全部加密。这意味着：</p>
+<ul>
+<li>中间设备无法看到或修改 QUIC 的拥塞控制信号</li>
+<li>无法进行深度包检测（DPI）来识别具体流量</li>
+<li>协议升级（新版本）只需要修改加密载荷内部，中间设备无法阻止</li>
+</ul>
+<p><strong>0-RTT 握手：</strong><br>QUIC 支持两种握手模式：</p>
+<ul>
+<li><strong>1-RTT 握手（首次连接）：</strong> 客户端发送初始包（ClientHello），服务器回复握手包（ServerHello + Certificate + Finished），1 个 RTT 后即可开始传输数据</li>
+<li><strong>0-RTT 握手（重新连接）：</strong> 利用之前连接缓存的服务端配置和 PSK（Pre-Shared Key），客户端在第一个飞行包中就携带应用数据</li>
+</ul>
+<h3 id="11-3-QUIC-的连接建立过程"><a href="#11-3-QUIC-的连接建立过程" class="headerlink" title="11.3 QUIC 的连接建立过程"></a>11.3 QUIC 的连接建立过程</h3><p><strong>QUIC 1-RTT 握手（首次连接）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Client                                           Server</span><br><span class="line">  │                                                │</span><br><span class="line">  │── Initial Packet ──────────────────────────►   │</span><br><span class="line">  │   包含: CRYPTO Frame (ClientHello)             │</span><br><span class="line">  │   临时 Connection ID (客户端选择的)              │</span><br><span class="line">  │   QUIC version negotiation fields              │</span><br><span class="line">  │                                                │</span><br><span class="line">  │                   ◄── Initial Packet ────────── │</span><br><span class="line">  │                       CRYPTO Frame (ServerHello)│</span><br><span class="line">  │                   ◄── Handshake Packet ──────── │</span><br><span class="line">  │                       CRYPTO Frame (EncryptedExtensions, │</span><br><span class="line">  │                        Certificate, CertVerify, Finished) │</span><br><span class="line">  │                                                │</span><br><span class="line">  │── Handshake Packet ────────────────────────►   │</span><br><span class="line">  │   CRYPTO Frame (Finished)                     │</span><br><span class="line">  │── 1-RTT Packet (Application Data) ────────►   │ ← 握手完成, 应用数据开始传输</span><br><span class="line">  │                                                │</span><br></pre></td></tr></table></figure>
+
+<p>QUIC 使用不同的包类型和加密级别：</p>
+<ul>
+<li><strong>Initial Packet：</strong> 使用初始密钥（从目标 Connection ID 派生），保护最初的数据交换</li>
+<li><strong>Handshake Packet：</strong> 使用 TLS 握手派生的密钥</li>
+<li><strong>1-RTT Packet（Short Header）：</strong> 使用最终的应用数据密钥</li>
+</ul>
+<p><strong>QUIC 0-RTT 握手（重新连接）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Client                                           Server</span><br><span class="line">  │                                                │</span><br><span class="line">  │── Initial Packet ──────────────────────────►   │</span><br><span class="line">  │   CRYPTO Frame (ClientHello + PSK)            │</span><br><span class="line">  │── 0-RTT Packet ───────────────────────────►   │  ← 在收到服务器响应前就发送</span><br><span class="line">  │   Application Data (0-RTT Early Data)         │</span><br><span class="line">  │                                                │</span><br><span class="line">  │                   ◄── Handshake Packet ──────── │</span><br><span class="line">  │                       CRYPTO Frame (ServerHello + Finished) │</span><br><span class="line">  │                                                │</span><br><span class="line">  │── Handshake Packet (Finished) ─────────────►   │</span><br><span class="line">  │── 1-RTT Packet (Application Data) ────────►   │</span><br></pre></td></tr></table></figure>
+
+<p>0-RTT 数据在客户端发送 Initial 包之后立即发送，不等服务器响应。这几乎消除了重连的延迟——在理想情况下，应用数据延迟接近 0-RTT。但 0-RTT 数据存在<strong>重放攻击</strong>风险；服务器可以选择接受或拒绝 0-RTT 数据。</p>
+<h3 id="11-4-QUIC-的连接迁移"><a href="#11-4-QUIC-的连接迁移" class="headerlink" title="11.4 QUIC 的连接迁移"></a>11.4 QUIC 的连接迁移</h3><p>连接迁移是 QUIC 最强大的特性之一。它的工作原理如下：</p>
+<p><strong>场景：</strong> 用户正在 4G 网络上进行视频通话，走进办公室后切换到 WiFi。</p>
+<p><strong>传统 TCP + TLS 的困境：</strong></p>
+<ol>
+<li>4G 网络（IP_A）→ WiFi 网络（IP_B）：客户端的 IP 地址变了</li>
+<li>TCP 四元组（IP_A, Port_A, Server_IP, 443）失效</li>
+<li>必须重新：TCP 三次握手 + TLS 握手 + 应用层重新建立状态</li>
+<li>视频通话中断数秒，用户感知明显</li>
+</ol>
+<p><strong>QUIC 的处理方式：</strong></p>
+<ol>
+<li>客户端检测到网络接口切换（IP_A → IP_B）</li>
+<li>客户端从新地址（IP_B）发送 QUIC 包，使用相同的 Connection ID</li>
+<li>服务器收到来自新 IP 的包，识别出 Connection ID，知道这是同一个连接</li>
+<li>服务器执行<strong>路径验证</strong>：发送 PATH_CHALLENGE 帧到新地址，要求客户端响应 PATH_RESPONSE</li>
+<li>验证通过后，服务器切换向新地址发送数据</li>
+<li>应用层毫不知情——视频通话无缝继续</li>
+</ol>
+<p><strong>关键技术细节：</strong></p>
+<ul>
+<li>Connection ID 在握手过程中协商，双方可以各自选择不同的 Connection ID</li>
+<li>路径验证是可选的（取决于实现），但推荐在迁移时执行以防止流量放大攻击</li>
+<li>客户端可以同时尝试从多个路径发送数据（多路径 QUIC，正在标准化中）</li>
+</ul>
+<h3 id="11-5-QUIC-的拥塞控制"><a href="#11-5-QUIC-的拥塞控制" class="headerlink" title="11.5 QUIC 的拥塞控制"></a>11.5 QUIC 的拥塞控制</h3><p>QUIC 在用户空间实现拥塞控制（而非在内核中，像 TCP 那样）。这带来两个巨大优势：</p>
+<ol>
+<li><strong>可快速迭代：</strong> 不需要升级操作系统内核，应用升级即可更换拥塞控制算法</li>
+<li><strong>可定制化：</strong> 不同应用可以使用不同的拥塞控制策略</li>
+</ol>
+<p>QUIC 规范（RFC 9002）描述了一种基于 New Reno 的拥塞控制器，但实际部署中 Google 使用 BBRv2，其他实现（如 Cloudflare 的 quiche）也支持 CUBIC。</p>
+<p><strong>QUIC 拥塞控制的关键信号：</strong></p>
+<ul>
+<li><strong>ACK 包：</strong> 包含包的接收时间和 ECN 信息</li>
+<li><strong>丢包检测：</strong> 基于包序号和 ACK 信息（不同于 TCP 的重复 ACK）</li>
+<li><strong>RTT 测量：</strong> 每个 ACK 帧都包含 <code>ack_delay</code> 字段（接收方处理延迟），实现更精确的 RTT 估计</li>
+</ul>
+<h3 id="11-6-QUIC-vs-TCP-TLS-性能对比"><a href="#11-6-QUIC-vs-TCP-TLS-性能对比" class="headerlink" title="11.6 QUIC vs TCP+TLS 性能对比"></a>11.6 QUIC vs TCP+TLS 性能对比</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>TCP + TLS 1.3</th>
+<th>QUIC</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>首次连接延迟</td>
+<td>2-RTT (TCP握手 + TLS握手)</td>
+<td>1-RTT</td>
+</tr>
+<tr>
+<td>重连延迟</td>
+<td>2-RTT</td>
+<td>0-RTT (如 PSK 有效)</td>
+</tr>
+<tr>
+<td>队头阻塞</td>
+<td>TCP层存在</td>
+<td>完全消除</td>
+</tr>
+<tr>
+<td>连接迁移</td>
+<td>不支持</td>
+<td>原生支持</td>
+</tr>
+<tr>
+<td>实现位置</td>
+<td>内核 (TCP) + 用户空间 (TLS)</td>
+<td>完全在用户空间</td>
+</tr>
+<tr>
+<td>协议升级</td>
+<td>极慢 (中间设备阻�)</td>
+<td>快速 (载荷加密)</td>
+</tr>
+<tr>
+<td>头部开销</td>
+<td>TCP 20B + TLS ~25B &#x3D; 45B</td>
+<td>加密头部 ~20B</td>
+</tr>
+<tr>
+<td>NAT 穿透</td>
+<td>复杂</td>
+<td>基于 UDP, 复用现有 NAT 机制</td>
+</tr>
+<tr>
+<td>CPU 开销</td>
+<td>硬件卸载 (TCP) + 软件加密 (TLS)</td>
+<td>软件 (无硬件卸载) → 更高 CPU 占用</td>
+</tr>
+</tbody></table>
+<p>QUIC 的主要劣势是 CPU 开销——因为它在用户空间实现，无法利用网卡的 TCP Segmentation Offload（TSO）等硬件加速。但随着 CPU 性能提升和 QUIC 实现的优化（如 GSO, Generic Segmentation Offload），这个差距正在缩小。</p>
+<hr>
+<h2 id="十二、Socket-编程：从理论到实践"><a href="#十二、Socket-编程：从理论到实践" class="headerlink" title="十二、Socket 编程：从理论到实践"></a>十二、Socket 编程：从理论到实践</h2><h3 id="12-1-BSD-Socket-API"><a href="#12-1-BSD-Socket-API" class="headerlink" title="12.1 BSD Socket API"></a>12.1 BSD Socket API</h3><p>Socket（套接字）是操作系统提供给应用程序的网络编程接口。它起源于 1983 年的 4.2BSD Unix，至今仍是所有主流操作系统的标准网络 API。</p>
+<p><strong>核心系统调用：</strong></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// TCP 服务器端</span></span><br><span class="line"><span class="type">int</span> server_fd = socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);   <span class="comment">// 创建 socket</span></span><br><span class="line"><span class="comment">// AF_INET: IPv4, SOCK_STREAM: TCP (面向流), 0: 自动选择协议</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">addr</span>;</span></span><br><span class="line">addr.sin_family = AF_INET;</span><br><span class="line">addr.sin_port = htons(<span class="number">8080</span>);           <span class="comment">// 端口号，主机字节序→网络字节序</span></span><br><span class="line">addr.sin_addr.s_addr = INADDR_ANY;     <span class="comment">// 监听所有网络接口</span></span><br><span class="line">bind(server_fd, (<span class="keyword">struct</span> sockaddr*)&amp;addr, <span class="keyword">sizeof</span>(addr));  <span class="comment">// 绑定地址</span></span><br><span class="line"></span><br><span class="line">listen(server_fd, <span class="number">128</span>);   <span class="comment">// 开始监听，backlog=128</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">client_addr</span>;</span></span><br><span class="line"><span class="type">socklen_t</span> client_len = <span class="keyword">sizeof</span>(client_addr);</span><br><span class="line"><span class="type">int</span> client_fd = accept(server_fd, (<span class="keyword">struct</span> sockaddr*)&amp;client_addr,</span><br><span class="line">                       &amp;client_len);   <span class="comment">// 接受连接，返回新的 socket fd</span></span><br><span class="line"></span><br><span class="line"><span class="type">char</span> buf[<span class="number">4096</span>];</span><br><span class="line"><span class="type">ssize_t</span> n = recv(client_fd, buf, <span class="keyword">sizeof</span>(buf), <span class="number">0</span>);   <span class="comment">// 接收数据</span></span><br><span class="line">send(client_fd, <span class="string">&quot;HTTP/1.1 200 OK\r\n...&quot;</span>, <span class="number">19</span>, <span class="number">0</span>);   <span class="comment">// 发送数据</span></span><br><span class="line"></span><br><span class="line">close(client_fd);   <span class="comment">// 关闭连接</span></span><br><span class="line">close(server_fd);</span><br><span class="line"></span><br><span class="line"><span class="comment">// TCP 客户端</span></span><br><span class="line"><span class="type">int</span> fd = socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">server_addr</span>;</span></span><br><span class="line">server_addr.sin_family = AF_INET;</span><br><span class="line">server_addr.sin_port = htons(<span class="number">80</span>);</span><br><span class="line">inet_pton(AF_INET, <span class="string">&quot;93.184.216.34&quot;</span>, &amp;server_addr.sin_addr);</span><br><span class="line">connect(fd, (<span class="keyword">struct</span> sockaddr*)&amp;server_addr, <span class="keyword">sizeof</span>(server_addr));</span><br><span class="line"></span><br><span class="line">send(fd, <span class="string">&quot;GET / HTTP/1.1\r\nHost: example.com\r\n\r\n&quot;</span>, <span class="number">38</span>, <span class="number">0</span>);</span><br><span class="line">recv(fd, buf, <span class="keyword">sizeof</span>(buf), <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">close(fd);</span><br></pre></td></tr></table></figure>
+
+<p><strong>socket() 的参数组合：</strong></p>
+<table>
+<thead>
+<tr>
+<th>domain</th>
+<th>type</th>
+<th>protocol</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AF_INET</td>
+<td>SOCK_STREAM</td>
+<td>0</td>
+<td>IPv4 TCP</td>
+</tr>
+<tr>
+<td>AF_INET</td>
+<td>SOCK_DGRAM</td>
+<td>0</td>
+<td>IPv4 UDP</td>
+</tr>
+<tr>
+<td>AF_INET6</td>
+<td>SOCK_STREAM</td>
+<td>0</td>
+<td>IPv6 TCP</td>
+</tr>
+<tr>
+<td>AF_INET6</td>
+<td>SOCK_DGRAM</td>
+<td>0</td>
+<td>IPv6 UDP</td>
+</tr>
+<tr>
+<td>AF_UNIX</td>
+<td>SOCK_STREAM</td>
+<td>0</td>
+<td>Unix Domain Socket（本地进程间通信）</td>
+</tr>
+<tr>
+<td>AF_PACKET</td>
+<td>SOCK_RAW</td>
+<td>htons(ETH_P_ALL)</td>
+<td>原始套接字（链路层数据包，需要 CAP_NET_RAW）</td>
+</tr>
+</tbody></table>
+<h3 id="12-2-非阻塞-I-O"><a href="#12-2-非阻塞-I-O" class="headerlink" title="12.2 非阻塞 I&#x2F;O"></a>12.2 非阻塞 I&#x2F;O</h3><p>默认情况下，<code>recv()</code>、<code>accept()</code>、<code>connect()</code> 等调用都是<strong>阻塞</strong>的——如果数据尚未到达，调用线程会被挂起，直到条件满足或超时。这对高并发服务器是不可接受的。</p>
+<p><strong>将 socket 设置为非阻塞模式：</strong></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> flags = fcntl(fd, F_GETFL, <span class="number">0</span>);</span><br><span class="line">fcntl(fd, F_SETFL, flags | O_NONBLOCK);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 此后 recv() 如果没有数据立即返回 -1，errno = EAGAIN/EWOULDBLOCK</span></span><br><span class="line"><span class="type">ssize_t</span> n = recv(fd, buf, <span class="keyword">sizeof</span>(buf), <span class="number">0</span>);</span><br><span class="line"><span class="keyword">if</span> (n == <span class="number">-1</span> &amp;&amp; (errno == EAGAIN || errno == EWOULDBLOCK)) &#123;</span><br><span class="line">    <span class="comment">// 暂时没有数据，去做别的事</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>I&#x2F;O 多路复用的演进：</strong></p>
+<p><strong>select（1983，4.2BSD）：</strong></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">fd_set readfds;</span><br><span class="line">FD_ZERO(&amp;readfds);</span><br><span class="line">FD_SET(fd1, &amp;readfds);</span><br><span class="line">FD_SET(fd2, &amp;readfds);</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">timeval</span> <span class="title">tv</span> =</span> &#123; .tv_sec = <span class="number">5</span>, .tv_usec = <span class="number">0</span> &#125;;</span><br><span class="line"><span class="type">int</span> ready = select(max_fd + <span class="number">1</span>, &amp;readfds, <span class="literal">NULL</span>, <span class="literal">NULL</span>, &amp;tv);</span><br><span class="line"><span class="keyword">if</span> (ready &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (FD_ISSET(fd1, &amp;readfds)) &#123; <span class="comment">/* fd1 可读 */</span> &#125;</span><br><span class="line">    <span class="keyword">if</span> (FD_ISSET(fd2, &amp;readfds)) &#123; <span class="comment">/* fd2 可读 */</span> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>select 的局限性：</strong></p>
+<ul>
+<li><code>fd_set</code> 大小固定（<code>FD_SETSIZE</code>，默认 1024），限制了最大并发连接数</li>
+<li>每次调用需要将 <code>fd_set</code> 从用户空间复制到内核空间，O(n) 开销</li>
+<li>返回时需要遍历所有 fd 来找到就绪的，O(n) 开销</li>
+<li>每次调用后 <code>fd_set</code> 被修改，下次使用前需要重新设置</li>
+</ul>
+<p><strong>poll（1986，System V）：</strong></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">pollfd</span> <span class="title">fds</span>[<span class="title">MAX_CONNS</span>];</span></span><br><span class="line">fds[<span class="number">0</span>].fd = fd1;</span><br><span class="line">fds[<span class="number">0</span>].events = POLLIN;        <span class="comment">// 关注可读事件</span></span><br><span class="line">fds[<span class="number">1</span>].fd = fd2;</span><br><span class="line">fds[<span class="number">1</span>].events = POLLIN;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> ready = poll(fds, num_fds, <span class="number">5000</span>);  <span class="comment">// 5000ms 超时</span></span><br><span class="line"><span class="keyword">if</span> (ready &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; num_fds; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (fds[i].revents &amp; POLLIN) &#123;</span><br><span class="line">            <span class="comment">// fd 可读</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>poll 相比 select 的改进：</strong></p>
+<ul>
+<li>没有 <code>FD_SETSIZE</code> 限制，可以处理任意数量 fd</li>
+<li>使用独立的 <code>events</code>（输入）和 <code>revents</code>（输出）字段，无需每次重建</li>
+</ul>
+<p><strong>但 poll 仍然是 O(n) 的：</strong> 每次调用都要复制整个 fds 数组到内核空间，仍需遍历所有 fd。</p>
+<h3 id="12-3-epoll-——-Linux-高性能网络编程的核心"><a href="#12-3-epoll-——-Linux-高性能网络编程的核心" class="headerlink" title="12.3 epoll —— Linux 高性能网络编程的核心"></a>12.3 epoll —— Linux 高性能网络编程的核心</h3><p>epoll（event poll）是 Linux 2.6 引入的高性能 I&#x2F;O 事件通知机制，专为大规模并发连接设计。它是 nginx、Redis、Node.js 等高性能服务器的基础。</p>
+<p><strong>epoll 的三个核心系统调用：</strong></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/epoll.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 1. 创建 epoll 实例</span></span><br><span class="line"><span class="type">int</span> epfd = epoll_create1(<span class="number">0</span>);  <span class="comment">// Linux 2.6.8+, 代替 epoll_create(int size)</span></span><br><span class="line"><span class="comment">// size 参数已被废弃, 内核动态分配</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 2. 注册 fd</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">epoll_event</span> <span class="title">ev</span>;</span></span><br><span class="line">ev.events = EPOLLIN | EPOLLET;   <span class="comment">// 关注可读事件，使用边缘触发</span></span><br><span class="line">ev.data.fd = server_fd;          <span class="comment">// 可以存储 fd 或指针</span></span><br><span class="line">epoll_ctl(epfd, EPOLL_CTL_ADD, server_fd, &amp;ev);</span><br><span class="line"><span class="comment">// 操作: EPOLL_CTL_ADD / EPOLL_CTL_MOD / EPOLL_CTL_DEL</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 3. 等待事件</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MAX_EVENTS 1024</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">epoll_event</span> <span class="title">events</span>[<span class="title">MAX_EVENTS</span>];</span></span><br><span class="line"><span class="type">int</span> nfds = epoll_wait(epfd, events, MAX_EVENTS, timeout_ms);</span><br><span class="line"><span class="comment">// timeout_ms = -1: 无限阻塞; 0: 立即返回; &gt;0: 超时 (毫秒)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; nfds; i++) &#123;</span><br><span class="line">    <span class="type">int</span> fd = events[i].data.fd;</span><br><span class="line">    <span class="type">uint32_t</span> revents = events[i].events;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (revents &amp; EPOLLIN) &#123;</span><br><span class="line">        <span class="comment">// fd 可读</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (revents &amp; EPOLLOUT) &#123;</span><br><span class="line">        <span class="comment">// fd 可写</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (revents &amp; (EPOLLERR | EPOLLHUP)) &#123;</span><br><span class="line">        <span class="comment">// fd 出错或挂断</span></span><br><span class="line">        epoll_ctl(epfd, EPOLL_CTL_DEL, fd, <span class="literal">NULL</span>);</span><br><span class="line">        close(fd);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>边缘触发（Edge-Triggered, ET）vs 水平触发（Level-Triggered, LT）：</strong></p>
+<p><strong>水平触发（LT，默认模式）：</strong></p>
+<ul>
+<li>只要 fd 处于就绪状态（如缓冲区有数据），每次 <code>epoll_wait()</code> 都会返回该 fd</li>
+<li>与 poll&#x2F;select 的行为一致，最容易理解和使用</li>
+<li>适合处理得慢的场景</li>
+</ul>
+<p><strong>边缘触发（ET，高性能模式）：</strong></p>
+<ul>
+<li>fd 从”未就绪”变为”就绪”时，<code>epoll_wait()</code> 才会返回该 fd（<strong>仅通知一次</strong>）</li>
+<li>如果应用没有读完所有数据，不会再收到通知——除非新数据到达触发新事件</li>
+<li>必须使用<strong>非阻塞 I&#x2F;O + 循环读写直到 EAGAIN</strong>，否则会丢事件</li>
+<li>减少了事件通知次数，适合高性能场景</li>
+</ul>
+<p>边缘触发的正确读模式：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// ET 模式的正确读取方式</span></span><br><span class="line"><span class="type">int</span> fd = ...; <span class="comment">// 已设为 O_NONBLOCK，并注册为 EPOLLIN | EPOLLET</span></span><br><span class="line"><span class="type">char</span> buf[<span class="number">4096</span>];</span><br><span class="line"><span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">    <span class="type">ssize_t</span> n = recv(fd, buf, <span class="keyword">sizeof</span>(buf), <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> (n &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 处理数据</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (n == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 对端关闭连接</span></span><br><span class="line">        close(fd);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;  <span class="comment">// n == -1</span></span><br><span class="line">        <span class="keyword">if</span> (errno == EAGAIN || errno == EWOULDBLOCK) &#123;</span><br><span class="line">            <span class="comment">// 缓冲区已空，没有更多数据，退出循环</span></span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 真正的错误</span></span><br><span class="line">            close(fd);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>epoll 的高效原理：</strong></p>
+<p>epoll 之所以能高效处理数万个并发连接，核心在于：</p>
+<ol>
+<li><p><strong>事件驱动而非轮询：</strong> 内核在 fd 就绪时主动将事件加入就绪列表（ready list），<code>epoll_wait()</code> 只需返回这个列表，无需遍历所有 fd。时间复杂度 O(1) vs select&#x2F;poll 的 O(n)。</p>
+</li>
+<li><p><strong>使用红黑树存储注册的 fd：</strong> <code>epoll_ctl()</code> 添加&#x2F;删除 fd 时，内核将该 fd 插入&#x2F;移除红黑树，时间复杂度 O(log n)。当设备驱动通知数据到达时，内核通过红黑树快速找到对应的 epoll 条目。</p>
+</li>
+<li><p><strong>回调机制：</strong> 注册 fd 时，内核在对应的设备驱动中设置回调函数。当数据到达时，硬件中断 → 驱动 → 唤醒等待队列上的进程 → 将就绪 fd 放入就绪列表。整个过程不需要应用层反复轮询。</p>
+</li>
+</ol>
+<p><strong>epoll 性能基准：</strong><br>在典型的测试中（10000 个空闲连接 + 100 个活跃连接）：</p>
+<ul>
+<li>select：每次调用需要 ~30 微秒（随连接总数线性增长）</li>
+<li>epoll：每次调用需要 ~3 微秒（只取决于活跃连接数）</li>
+</ul>
+<p>这就是为什么 nginx 能在一台机器上处理数十万并发连接，而基于 select 的 Apache prefork 模式只能处理数百。</p>
+<p><strong>完整的 epoll TCP 服务器示例：</strong></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/epoll.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;errno.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MAX_EVENTS 1024</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PORT 8080</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 设置 socket 为非阻塞</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">set_nonblocking</span><span class="params">(<span class="type">int</span> fd)</span> &#123;</span><br><span class="line">    <span class="type">int</span> flags = fcntl(fd, F_GETFL, <span class="number">0</span>);</span><br><span class="line">    fcntl(fd, F_SETFL, flags | O_NONBLOCK);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">int</span> listen_fd = socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line">    set_nonblocking(listen_fd);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> opt = <span class="number">1</span>;</span><br><span class="line">    setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &amp;opt, <span class="keyword">sizeof</span>(opt));</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">addr</span> =</span> &#123;</span><br><span class="line">        .sin_family = AF_INET,</span><br><span class="line">        .sin_port = htons(PORT),</span><br><span class="line">        .sin_addr.s_addr = INADDR_ANY</span><br><span class="line">    &#125;;</span><br><span class="line">    bind(listen_fd, (<span class="keyword">struct</span> sockaddr*)&amp;addr, <span class="keyword">sizeof</span>(addr));</span><br><span class="line">    listen(listen_fd, SOMAXCONN);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> epfd = epoll_create1(<span class="number">0</span>);</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">epoll_event</span> <span class="title">ev</span> =</span> &#123; .events = EPOLLIN, .data.fd = listen_fd &#125;;</span><br><span class="line">    epoll_ctl(epfd, EPOLL_CTL_ADD, listen_fd, &amp;ev);</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">epoll_event</span> <span class="title">events</span>[<span class="title">MAX_EVENTS</span>];</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="type">int</span> nfds = epoll_wait(epfd, events, MAX_EVENTS, <span class="number">-1</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; nfds; i++) &#123;</span><br><span class="line">            <span class="type">int</span> fd = events[i].data.fd;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (fd == listen_fd) &#123;</span><br><span class="line">                <span class="comment">// 新连接</span></span><br><span class="line">                <span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">                    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">client_addr</span>;</span></span><br><span class="line">                    <span class="type">socklen_t</span> client_len = <span class="keyword">sizeof</span>(client_addr);</span><br><span class="line">                    <span class="type">int</span> client_fd = accept(listen_fd,</span><br><span class="line">                        (<span class="keyword">struct</span> sockaddr*)&amp;client_addr, &amp;client_len);</span><br><span class="line">                    <span class="keyword">if</span> (client_fd == <span class="number">-1</span>) &#123;</span><br><span class="line">                        <span class="keyword">if</span> (errno == EAGAIN || errno == EWOULDBLOCK) <span class="keyword">break</span>;</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                    set_nonblocking(client_fd);</span><br><span class="line">                    ev.events = EPOLLIN | EPOLLET;  <span class="comment">// 边缘触发</span></span><br><span class="line">                    ev.data.fd = client_fd;</span><br><span class="line">                    epoll_ctl(epfd, EPOLL_CTL_ADD, client_fd, &amp;ev);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// 客户端数据</span></span><br><span class="line">                <span class="type">char</span> buf[<span class="number">4096</span>];</span><br><span class="line">                <span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">                    <span class="type">ssize_t</span> n = recv(fd, buf, <span class="keyword">sizeof</span>(buf), <span class="number">0</span>);</span><br><span class="line">                    <span class="keyword">if</span> (n &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                        <span class="comment">// 回显 (echo)</span></span><br><span class="line">                        send(fd, buf, n, <span class="number">0</span>);</span><br><span class="line">                    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (n == <span class="number">0</span>) &#123;</span><br><span class="line">                        <span class="comment">// 对端关闭</span></span><br><span class="line">                        epoll_ctl(epfd, EPOLL_CTL_DEL, fd, <span class="literal">NULL</span>);</span><br><span class="line">                        close(fd);</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        <span class="keyword">if</span> (errno == EAGAIN || errno == EWOULDBLOCK) <span class="keyword">break</span>;</span><br><span class="line">                        epoll_ctl(epfd, EPOLL_CTL_DEL, fd, <span class="literal">NULL</span>);</span><br><span class="line">                        close(fd);</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    close(listen_fd);</span><br><span class="line">    close(epfd);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个简单的 epoll echo 服务器可以高效处理数万并发 TCP 连接，其背后的设计思想——事件驱动、非阻塞 I&#x2F;O、内核级的多路复用——正是现代高性能网络服务（nginx、Envoy、Netty、tokio）的共同基础。</p>
+<hr>
+<h2 id="十三、总结"><a href="#十三、总结" class="headerlink" title="十三、总结"></a>十三、总结</h2><p>从物理层的一道电信号到应用层的一个 HTTP 响应，从上世纪 70 年代的 ARPANET 到今天的 QUIC&#x2F;HTTP3，网络分层模型始终是我们理解、设计和优化网络系统的核心思维框架。</p>
+<p><strong>核心要点回顾：</strong></p>
+<ol>
+<li><p><strong>分层是网络设计的核心哲学：</strong> 每层独立演进，向上屏蔽复杂性，向下抽象差异性。</p>
+</li>
+<li><p><strong>OSI 七层模型是理论基准，TCP&#x2F;IP 四层模型是工程现实：</strong> 理解两者之间的映射关系，有助于在理论和实践之间自如切换。</p>
+</li>
+<li><p><strong>应用层协议各有所长：</strong> HTTP&#x2F;1.1 简洁但低效，HTTP&#x2F;2 解决了应用层队头阻塞，HTTP&#x2F;3 基于 QUIC 彻底消除队头阻塞并支持连接迁移。</p>
+</li>
+<li><p><strong>TCP 的状态机和拥塞控制</strong>是网络编程的基础知识——诊断连接泄露（CLOSE-WAIT）和端口耗尽（TIME-WAIT）是生产环境中的常见技能。</p>
+</li>
+<li><p><strong>QUIC 代表了传输层协议的演进方向：</strong> 在 UDP 之上重建传输层，通过 Connection ID 支持连接迁移，通过多流架构彻底消除队头阻塞。</p>
+</li>
+<li><p><strong>Android 的网络栈</strong>从应用层（OkHttp）→ 系统服务层（ConnectivityManager）→ 守护进程层（netd）→ 内核层（iptables&#x2F;netfilter），每一层都有明确的职责和性能考量。</p>
+</li>
+<li><p><strong>Socket 编程是连接理论和实践的桥梁：</strong> 从 BSD socket API 到 select&#x2F;poll 再到 epoll，理解 I&#x2F;O 模型的演进有助于写出高性能的网络服务。</p>
+</li>
+</ol>
+<p>在移动网络环境日益复杂（5G、边缘计算、卫星互联网）的今天，深入理解 TCP&#x2F;IP 协议栈的分层架构和具体协议的运作机理，不仅能帮助开发者写出更健壮的网络代码，更能让你在面对网络故障时有条不紊地逐层排查——这正是”分层”思维给予我们的核心力量。</p>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/304.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2022/01/05/%E9%87%8D%E6%8B%BEAndroid-UI%E8%BF%9B%E9%98%B6%E4%B9%8B%E7%BB%98%E5%88%B6%E6%B5%81%E7%A8%8B%E5%8F%8A%E5%8E%9F%E7%90%86/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/380.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>UI进阶之绘制流程及原理</span></div></a></div><div class="next-post pull_right"><a href="/2021/12/15/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3TCP%E5%8D%8F%E8%AE%AE%E3%80%91TCP%E5%8D%8F%E8%AE%AE%E4%BB%8B%E7%BB%8D/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/305.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【深入理解TCP协议】TCP协议介绍</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/304.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

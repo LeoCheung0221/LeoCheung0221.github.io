@@ -1,0 +1,916 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【统计学习方法死磕系列】隐马尔可夫模型 | ONE·PIECE</title><meta name="description" content="【统计学习方法死磕系列】隐马尔可夫模型"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【统计学习方法死磕系列】隐马尔可夫模型"><meta name="twitter:description" content="【统计学习方法死磕系列】隐马尔可夫模型"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【统计学习方法死磕系列】隐马尔可夫模型"><meta property="og:url" content="http://tufusi.com/2020/09/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E9%9A%90%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E6%A8%A1%E5%9E%8B/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【统计学习方法死磕系列】隐马尔可夫模型"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2020/09/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E9%9A%90%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E6%A8%A1%E5%9E%8B/"><link rel="prev" title="机器学习框架篇-Scikit-learn" href="http://tufusi.com/2020/09/20/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E7%AF%87-Scikit-learn/"><link rel="next" title="机器学习框架篇-Keras" href="http://tufusi.com/2020/09/15/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E7%AF%87-Keras/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">写在前面</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#1-%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E9%93%BE%E5%9F%BA%E7%A1%80"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">1. 马尔可夫链基础</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E6%80%A7%E8%B4%A8"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">1.1 马尔可夫性质</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-2-%E7%A6%BB%E6%95%A3%E6%97%B6%E9%97%B4%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E9%93%BE"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">1.2 离散时间马尔可夫链</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-3-Chapman-Kolmogorov-%E6%96%B9%E7%A8%8B"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">1.3 Chapman-Kolmogorov 方程</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-4-%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E9%93%BE%E7%9A%84%E5%88%86%E7%B1%BB%E4%B8%8E%E6%80%A7%E8%B4%A8"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">1.4 马尔可夫链的分类与性质</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-5-%E5%B9%B3%E7%A8%B3%E5%88%86%E5%B8%83%E4%B8%8E%E9%81%8D%E5%8E%86%E5%AE%9A%E7%90%86"><span class="toc_mobile_items-number">2.5.</span> <span class="toc_mobile_items-text">1.5 平稳分布与遍历定理</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-%E9%9A%90%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%AE%9A%E4%B9%89"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">2. 隐马尔可夫模型的定义</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E6%A8%A1%E5%9E%8B%E4%B8%89%E8%A6%81%E7%B4%A0"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">2.1 模型三要素</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-HMM-%E7%9A%84%E4%B8%A4%E4%B8%AA%E5%9F%BA%E6%9C%AC%E5%81%87%E8%AE%BE"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">2.2 HMM 的两个基本假设</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-HMM-%E7%9A%84%E4%B8%89%E4%B8%AA%E7%BB%8F%E5%85%B8%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">2.3 HMM 的三个经典问题</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-%E9%97%AE%E9%A2%98%E4%B8%80%EF%BC%9A%E6%A6%82%E7%8E%87%E8%AE%A1%E7%AE%97"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">3. 问题一：概率计算</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E7%9B%B4%E6%8E%A5%E8%AE%A1%E7%AE%97%EF%BC%88%E4%B8%8D%E5%8F%AF%E8%A1%8C%EF%BC%89"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">3.1 直接计算（不可行）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E5%89%8D%E5%90%91%E7%AE%97%E6%B3%95%EF%BC%88Forward-Algorithm%EF%BC%89"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">3.2 前向算法（Forward Algorithm）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-%E5%90%8E%E5%90%91%E7%AE%97%E6%B3%95%EF%BC%88Backward-Algorithm%EF%BC%89"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">3.3 后向算法（Backward Algorithm）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-%E6%95%B0%E5%80%BC%E7%A8%B3%E5%AE%9A%E6%80%A7%EF%BC%9AScaling-%E6%8A%80%E5%B7%A7"><span class="toc_mobile_items-number">4.4.</span> <span class="toc_mobile_items-text">3.4 数值稳定性：Scaling 技巧</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-%E9%97%AE%E9%A2%98%E4%B8%89%EF%BC%9A%E8%A7%A3%E7%A0%81%E9%97%AE%E9%A2%98%EF%BC%88Viterbi-%E7%AE%97%E6%B3%95%EF%BC%89"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">4. 问题三：解码问题（Viterbi 算法）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E6%9C%80%E5%8F%AF%E8%83%BD%E7%9A%84%E7%8A%B6%E6%80%81%E5%BA%8F%E5%88%97"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">4.1 最可能的状态序列</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-Viterbi-%E7%AE%97%E6%B3%95%E7%9A%84-DP-%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">4.2 Viterbi 算法的 DP 结构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-Viterbi-%E7%AE%97%E6%B3%95%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">4.3 Viterbi 算法伪代码</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-4-Viterbi-%E4%B8%8E%E5%89%8D%E5%90%91%E7%AE%97%E6%B3%95%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc_mobile_items-number">5.4.</span> <span class="toc_mobile_items-text">4.4 Viterbi 与前向算法的区别</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-5-Viterbi-%E7%9A%84%E6%95%B0%E5%80%BC%E7%A4%BA%E4%BE%8B"><span class="toc_mobile_items-number">5.5.</span> <span class="toc_mobile_items-text">4.5 Viterbi 的数值示例</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-%E9%97%AE%E9%A2%98%E4%BA%8C%EF%BC%9A%E5%AD%A6%E4%B9%A0%E9%97%AE%E9%A2%98%EF%BC%88Baum-Welch-%E7%AE%97%E6%B3%95%EF%BC%89"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">5. 问题二：学习问题（Baum-Welch 算法）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E9%97%AE%E9%A2%98%E7%9A%84%E5%BD%A2%E5%BC%8F%E5%8C%96"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">5.1 问题的形式化</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-EM-%E7%AE%97%E6%B3%95%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">5.2 EM 算法的核心思想</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-%E4%B8%A4%E4%B8%AA%E5%85%B3%E9%94%AE%E6%A6%82%E7%8E%87"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">5.3 两个关键概率</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-4-M-%E6%AD%A5%EF%BC%9A%E5%8F%82%E6%95%B0%E9%87%8D%E4%BC%B0%E8%AE%A1%E5%85%AC%E5%BC%8F"><span class="toc_mobile_items-number">6.4.</span> <span class="toc_mobile_items-text">5.4 M 步：参数重估计公式</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-5-Baum-Welch-%E7%AE%97%E6%B3%95%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc_mobile_items-number">6.5.</span> <span class="toc_mobile_items-text">5.5 Baum-Welch 算法伪代码</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-6-EM-%E7%AE%97%E6%B3%95%E7%9A%84%E6%94%B6%E6%95%9B%E6%80%A7"><span class="toc_mobile_items-number">6.6.</span> <span class="toc_mobile_items-text">5.6 EM 算法的收敛性</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-7-%E5%A4%9A%E5%BA%8F%E5%88%97%E5%AD%A6%E4%B9%A0"><span class="toc_mobile_items-number">6.7.</span> <span class="toc_mobile_items-text">5.7 多序列学习</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-%E6%89%A9%E5%B1%95-HMM"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">6. 扩展 HMM</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E9%AB%98%E6%96%AF-HMM%EF%BC%88Gaussian-HMM%EF%BC%89"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">6.1 高斯 HMM（Gaussian HMM）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-%E9%AB%98%E6%96%AF%E6%B7%B7%E5%90%88-HMM%EF%BC%88GMM-HMM%EF%BC%89"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">6.2 高斯混合 HMM（GMM-HMM）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-%E8%87%AA%E5%9B%9E%E5%BD%92-HMM%EF%BC%88AR-HMM%EF%BC%89"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">6.3 自回归 HMM（AR-HMM）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-4-%E8%BE%93%E5%85%A5-%E8%BE%93%E5%87%BA-HMM%EF%BC%88IO-HMM%EF%BC%89"><span class="toc_mobile_items-number">7.4.</span> <span class="toc_mobile_items-text">6.4 输入-输出 HMM（IO-HMM）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#7-HMM-%E7%9A%84%E7%BB%9F%E8%AE%A1%E6%80%A7%E8%B4%A8%E4%B8%8E%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">7. HMM 的统计性质与局限性</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-HMM-%E7%9A%84%E6%8C%87%E6%95%B0%E6%97%8F%E8%A1%A8%E7%A4%BA"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">7.1 HMM 的指数族表示</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-HMM-%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-CRF"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">7.2 HMM 的局限性：为什么需要 CRF</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-Baum-Welch-%E7%AE%97%E6%B3%95%E7%9A%84%E6%B7%B1%E5%85%A5%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">8. Baum-Welch 算法的深入分析</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-EM-%E7%AE%97%E6%B3%95%E7%9A%84-Jensen-%E4%B8%8D%E7%AD%89%E5%BC%8F%E6%8E%A8%E5%AF%BC"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">8.1 EM 算法的 Jensen 不等式推导</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-EM-%E6%94%B6%E6%95%9B%E6%80%A7%E7%9A%84%E5%87%A0%E4%BD%95%E8%A7%A3%E9%87%8A"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">8.2 EM 收敛性的几何解释</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-3-%E5%A4%9A%E4%B8%AA%E5%B1%80%E9%83%A8%E6%9C%80%E4%BC%98%E7%9A%84%E5%BA%94%E5%AF%B9"><span class="toc_mobile_items-number">9.3.</span> <span class="toc_mobile_items-text">8.3 多个局部最优的应对</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-HMM-%E4%B8%AD%E7%9A%84%E5%8F%82%E6%95%B0%E5%B9%B3%E6%BB%91"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">9. HMM 中的参数平滑</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-1-%E6%95%B0%E6%8D%AE%E7%A8%80%E7%96%8F%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">9.1 数据稀疏问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-2-%E6%8B%89%E6%99%AE%E6%8B%89%E6%96%AF%E5%B9%B3%E6%BB%91%EF%BC%88Laplace-Smoothing%EF%BC%89"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">9.2 拉普拉斯平滑（Laplace Smoothing）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-3-%E5%85%B6%E4%BB%96%E5%B9%B3%E6%BB%91%E6%96%B9%E6%B3%95"><span class="toc_mobile_items-number">10.3.</span> <span class="toc_mobile_items-text">9.3 其他平滑方法</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#10-HMM-%E4%B8%8E%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">10. HMM 与深度学习的关系</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-1-%E4%BB%8E-HMM-%E5%88%B0-RNN-LSTM"><span class="toc_mobile_items-number">11.1.</span> <span class="toc_mobile_items-text">10.1 从 HMM 到 RNN&#x2F;LSTM</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-2-Bi-LSTM-CRF-%E7%9A%84%E6%B7%B7%E5%90%88%E6%9E%B6%E6%9E%84"><span class="toc_mobile_items-number">11.2.</span> <span class="toc_mobile_items-text">10.2 Bi-LSTM-CRF 的混合架构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-3-HMM-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%9C%AA%E8%A2%AB%E6%B7%98%E6%B1%B0"><span class="toc_mobile_items-number">11.3.</span> <span class="toc_mobile_items-text">10.3 HMM 为什么未被淘汰</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#11-%E6%95%B0%E5%80%BC%E7%A4%BA%E4%BE%8B%EF%BC%9A%E5%AE%8C%E6%95%B4%E7%9A%84%E5%89%8D%E5%90%91-%E5%90%8E%E5%90%91-Viterbi-Baum-Welch-%E8%B5%B0%E6%9F%A5"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">11. 数值示例：完整的前向-后向-Viterbi-Baum-Welch 走查</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-1-%E9%97%AE%E9%A2%98%E8%AE%BE%E5%AE%9A"><span class="toc_mobile_items-number">12.1.</span> <span class="toc_mobile_items-text">11.1 问题设定</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-2-%E5%89%8D%E5%90%91%E7%AE%97%E6%B3%95%E8%AE%A1%E7%AE%97"><span class="toc_mobile_items-number">12.2.</span> <span class="toc_mobile_items-text">11.2 前向算法计算</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-3-%E5%90%8E%E5%90%91%E7%AE%97%E6%B3%95%E8%AE%A1%E7%AE%97"><span class="toc_mobile_items-number">12.3.</span> <span class="toc_mobile_items-text">11.3 后向算法计算</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-4-gamma-%E5%92%8C-xi-%E7%9A%84%E8%AE%A1%E7%AE%97"><span class="toc_mobile_items-number">12.4.</span> <span class="toc_mobile_items-text">11.4 $\gamma$ 和 $\xi$ 的计算</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-5-Viterbi-%E8%A7%A3%E7%A0%81"><span class="toc_mobile_items-number">12.5.</span> <span class="toc_mobile_items-text">11.5 Viterbi 解码</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-6-%E5%AF%B9%E6%AF%94%EF%BC%9A%E9%80%90%E6%97%B6%E5%88%BB%E6%9C%80%E4%BC%98-vs-Viterbi-%E5%85%A8%E5%B1%80%E6%9C%80%E4%BC%98"><span class="toc_mobile_items-number">12.6.</span> <span class="toc_mobile_items-text">11.6 对比：逐时刻最优 vs Viterbi 全局最优</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#12-HMM-%E6%89%A9%E5%B1%95%E5%BA%94%E7%94%A8%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">13.</span> <span class="toc_mobile_items-text">12. HMM 扩展应用详解</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#12-1-%E4%B8%AD%E6%96%87%E5%88%86%E8%AF%8D%E4%B8%AD%E7%9A%84-HMM"><span class="toc_mobile_items-number">13.1.</span> <span class="toc_mobile_items-text">12.1 中文分词中的 HMM</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#12-2-%E8%AF%AD%E9%9F%B3%E8%AF%86%E5%88%AB%E4%B8%AD%E7%9A%84-GMM-HMM"><span class="toc_mobile_items-number">13.2.</span> <span class="toc_mobile_items-text">12.2 语音识别中的 GMM-HMM</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#12-3-%E7%94%9F%E7%89%A9%E4%BF%A1%E6%81%AF%E5%AD%A6%E4%B8%AD%E7%9A%84-Profile-HMM"><span class="toc_mobile_items-number">13.3.</span> <span class="toc_mobile_items-text">12.3 生物信息学中的 Profile HMM</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#13-%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E7%AD%94"><span class="toc_mobile_items-number">14.</span> <span class="toc_mobile_items-text">13. 面试高频问答</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#14-%E6%80%BB%E7%BB%93"><span class="toc_mobile_items-number">15.</span> <span class="toc_mobile_items-text">14. 总结</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="toc-number">1.</span> <span class="toc-text">写在前面</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E9%93%BE%E5%9F%BA%E7%A1%80"><span class="toc-number">2.</span> <span class="toc-text">1. 马尔可夫链基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E6%80%A7%E8%B4%A8"><span class="toc-number">2.1.</span> <span class="toc-text">1.1 马尔可夫性质</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E7%A6%BB%E6%95%A3%E6%97%B6%E9%97%B4%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E9%93%BE"><span class="toc-number">2.2.</span> <span class="toc-text">1.2 离散时间马尔可夫链</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-Chapman-Kolmogorov-%E6%96%B9%E7%A8%8B"><span class="toc-number">2.3.</span> <span class="toc-text">1.3 Chapman-Kolmogorov 方程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E9%93%BE%E7%9A%84%E5%88%86%E7%B1%BB%E4%B8%8E%E6%80%A7%E8%B4%A8"><span class="toc-number">2.4.</span> <span class="toc-text">1.4 马尔可夫链的分类与性质</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-%E5%B9%B3%E7%A8%B3%E5%88%86%E5%B8%83%E4%B8%8E%E9%81%8D%E5%8E%86%E5%AE%9A%E7%90%86"><span class="toc-number">2.5.</span> <span class="toc-text">1.5 平稳分布与遍历定理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E9%9A%90%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%AE%9A%E4%B9%89"><span class="toc-number">3.</span> <span class="toc-text">2. 隐马尔可夫模型的定义</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E6%A8%A1%E5%9E%8B%E4%B8%89%E8%A6%81%E7%B4%A0"><span class="toc-number">3.1.</span> <span class="toc-text">2.1 模型三要素</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-HMM-%E7%9A%84%E4%B8%A4%E4%B8%AA%E5%9F%BA%E6%9C%AC%E5%81%87%E8%AE%BE"><span class="toc-number">3.2.</span> <span class="toc-text">2.2 HMM 的两个基本假设</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-HMM-%E7%9A%84%E4%B8%89%E4%B8%AA%E7%BB%8F%E5%85%B8%E9%97%AE%E9%A2%98"><span class="toc-number">3.3.</span> <span class="toc-text">2.3 HMM 的三个经典问题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E9%97%AE%E9%A2%98%E4%B8%80%EF%BC%9A%E6%A6%82%E7%8E%87%E8%AE%A1%E7%AE%97"><span class="toc-number">4.</span> <span class="toc-text">3. 问题一：概率计算</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%9B%B4%E6%8E%A5%E8%AE%A1%E7%AE%97%EF%BC%88%E4%B8%8D%E5%8F%AF%E8%A1%8C%EF%BC%89"><span class="toc-number">4.1.</span> <span class="toc-text">3.1 直接计算（不可行）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%89%8D%E5%90%91%E7%AE%97%E6%B3%95%EF%BC%88Forward-Algorithm%EF%BC%89"><span class="toc-number">4.2.</span> <span class="toc-text">3.2 前向算法（Forward Algorithm）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%90%8E%E5%90%91%E7%AE%97%E6%B3%95%EF%BC%88Backward-Algorithm%EF%BC%89"><span class="toc-number">4.3.</span> <span class="toc-text">3.3 后向算法（Backward Algorithm）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E6%95%B0%E5%80%BC%E7%A8%B3%E5%AE%9A%E6%80%A7%EF%BC%9AScaling-%E6%8A%80%E5%B7%A7"><span class="toc-number">4.4.</span> <span class="toc-text">3.4 数值稳定性：Scaling 技巧</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E9%97%AE%E9%A2%98%E4%B8%89%EF%BC%9A%E8%A7%A3%E7%A0%81%E9%97%AE%E9%A2%98%EF%BC%88Viterbi-%E7%AE%97%E6%B3%95%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">4. 问题三：解码问题（Viterbi 算法）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E6%9C%80%E5%8F%AF%E8%83%BD%E7%9A%84%E7%8A%B6%E6%80%81%E5%BA%8F%E5%88%97"><span class="toc-number">5.1.</span> <span class="toc-text">4.1 最可能的状态序列</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Viterbi-%E7%AE%97%E6%B3%95%E7%9A%84-DP-%E7%BB%93%E6%9E%84"><span class="toc-number">5.2.</span> <span class="toc-text">4.2 Viterbi 算法的 DP 结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-Viterbi-%E7%AE%97%E6%B3%95%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc-number">5.3.</span> <span class="toc-text">4.3 Viterbi 算法伪代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-Viterbi-%E4%B8%8E%E5%89%8D%E5%90%91%E7%AE%97%E6%B3%95%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">5.4.</span> <span class="toc-text">4.4 Viterbi 与前向算法的区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-Viterbi-%E7%9A%84%E6%95%B0%E5%80%BC%E7%A4%BA%E4%BE%8B"><span class="toc-number">5.5.</span> <span class="toc-text">4.5 Viterbi 的数值示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E9%97%AE%E9%A2%98%E4%BA%8C%EF%BC%9A%E5%AD%A6%E4%B9%A0%E9%97%AE%E9%A2%98%EF%BC%88Baum-Welch-%E7%AE%97%E6%B3%95%EF%BC%89"><span class="toc-number">6.</span> <span class="toc-text">5. 问题二：学习问题（Baum-Welch 算法）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E9%97%AE%E9%A2%98%E7%9A%84%E5%BD%A2%E5%BC%8F%E5%8C%96"><span class="toc-number">6.1.</span> <span class="toc-text">5.1 问题的形式化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-EM-%E7%AE%97%E6%B3%95%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">6.2.</span> <span class="toc-text">5.2 EM 算法的核心思想</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E4%B8%A4%E4%B8%AA%E5%85%B3%E9%94%AE%E6%A6%82%E7%8E%87"><span class="toc-number">6.3.</span> <span class="toc-text">5.3 两个关键概率</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-M-%E6%AD%A5%EF%BC%9A%E5%8F%82%E6%95%B0%E9%87%8D%E4%BC%B0%E8%AE%A1%E5%85%AC%E5%BC%8F"><span class="toc-number">6.4.</span> <span class="toc-text">5.4 M 步：参数重估计公式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-Baum-Welch-%E7%AE%97%E6%B3%95%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc-number">6.5.</span> <span class="toc-text">5.5 Baum-Welch 算法伪代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-6-EM-%E7%AE%97%E6%B3%95%E7%9A%84%E6%94%B6%E6%95%9B%E6%80%A7"><span class="toc-number">6.6.</span> <span class="toc-text">5.6 EM 算法的收敛性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-7-%E5%A4%9A%E5%BA%8F%E5%88%97%E5%AD%A6%E4%B9%A0"><span class="toc-number">6.7.</span> <span class="toc-text">5.7 多序列学习</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E6%89%A9%E5%B1%95-HMM"><span class="toc-number">7.</span> <span class="toc-text">6. 扩展 HMM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E9%AB%98%E6%96%AF-HMM%EF%BC%88Gaussian-HMM%EF%BC%89"><span class="toc-number">7.1.</span> <span class="toc-text">6.1 高斯 HMM（Gaussian HMM）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E9%AB%98%E6%96%AF%E6%B7%B7%E5%90%88-HMM%EF%BC%88GMM-HMM%EF%BC%89"><span class="toc-number">7.2.</span> <span class="toc-text">6.2 高斯混合 HMM（GMM-HMM）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E8%87%AA%E5%9B%9E%E5%BD%92-HMM%EF%BC%88AR-HMM%EF%BC%89"><span class="toc-number">7.3.</span> <span class="toc-text">6.3 自回归 HMM（AR-HMM）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E8%BE%93%E5%85%A5-%E8%BE%93%E5%87%BA-HMM%EF%BC%88IO-HMM%EF%BC%89"><span class="toc-number">7.4.</span> <span class="toc-text">6.4 输入-输出 HMM（IO-HMM）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-HMM-%E7%9A%84%E7%BB%9F%E8%AE%A1%E6%80%A7%E8%B4%A8%E4%B8%8E%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc-number">8.</span> <span class="toc-text">7. HMM 的统计性质与局限性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-HMM-%E7%9A%84%E6%8C%87%E6%95%B0%E6%97%8F%E8%A1%A8%E7%A4%BA"><span class="toc-number">8.1.</span> <span class="toc-text">7.1 HMM 的指数族表示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-HMM-%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-CRF"><span class="toc-number">8.2.</span> <span class="toc-text">7.2 HMM 的局限性：为什么需要 CRF</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Baum-Welch-%E7%AE%97%E6%B3%95%E7%9A%84%E6%B7%B1%E5%85%A5%E5%88%86%E6%9E%90"><span class="toc-number">9.</span> <span class="toc-text">8. Baum-Welch 算法的深入分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-EM-%E7%AE%97%E6%B3%95%E7%9A%84-Jensen-%E4%B8%8D%E7%AD%89%E5%BC%8F%E6%8E%A8%E5%AF%BC"><span class="toc-number">9.1.</span> <span class="toc-text">8.1 EM 算法的 Jensen 不等式推导</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-EM-%E6%94%B6%E6%95%9B%E6%80%A7%E7%9A%84%E5%87%A0%E4%BD%95%E8%A7%A3%E9%87%8A"><span class="toc-number">9.2.</span> <span class="toc-text">8.2 EM 收敛性的几何解释</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-%E5%A4%9A%E4%B8%AA%E5%B1%80%E9%83%A8%E6%9C%80%E4%BC%98%E7%9A%84%E5%BA%94%E5%AF%B9"><span class="toc-number">9.3.</span> <span class="toc-text">8.3 多个局部最优的应对</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-HMM-%E4%B8%AD%E7%9A%84%E5%8F%82%E6%95%B0%E5%B9%B3%E6%BB%91"><span class="toc-number">10.</span> <span class="toc-text">9. HMM 中的参数平滑</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E6%95%B0%E6%8D%AE%E7%A8%80%E7%96%8F%E9%97%AE%E9%A2%98"><span class="toc-number">10.1.</span> <span class="toc-text">9.1 数据稀疏问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E6%8B%89%E6%99%AE%E6%8B%89%E6%96%AF%E5%B9%B3%E6%BB%91%EF%BC%88Laplace-Smoothing%EF%BC%89"><span class="toc-number">10.2.</span> <span class="toc-text">9.2 拉普拉斯平滑（Laplace Smoothing）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-%E5%85%B6%E4%BB%96%E5%B9%B3%E6%BB%91%E6%96%B9%E6%B3%95"><span class="toc-number">10.3.</span> <span class="toc-text">9.3 其他平滑方法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-HMM-%E4%B8%8E%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">11.</span> <span class="toc-text">10. HMM 与深度学习的关系</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-%E4%BB%8E-HMM-%E5%88%B0-RNN-LSTM"><span class="toc-number">11.1.</span> <span class="toc-text">10.1 从 HMM 到 RNN&#x2F;LSTM</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-Bi-LSTM-CRF-%E7%9A%84%E6%B7%B7%E5%90%88%E6%9E%B6%E6%9E%84"><span class="toc-number">11.2.</span> <span class="toc-text">10.2 Bi-LSTM-CRF 的混合架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-3-HMM-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%9C%AA%E8%A2%AB%E6%B7%98%E6%B1%B0"><span class="toc-number">11.3.</span> <span class="toc-text">10.3 HMM 为什么未被淘汰</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-%E6%95%B0%E5%80%BC%E7%A4%BA%E4%BE%8B%EF%BC%9A%E5%AE%8C%E6%95%B4%E7%9A%84%E5%89%8D%E5%90%91-%E5%90%8E%E5%90%91-Viterbi-Baum-Welch-%E8%B5%B0%E6%9F%A5"><span class="toc-number">12.</span> <span class="toc-text">11. 数值示例：完整的前向-后向-Viterbi-Baum-Welch 走查</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-1-%E9%97%AE%E9%A2%98%E8%AE%BE%E5%AE%9A"><span class="toc-number">12.1.</span> <span class="toc-text">11.1 问题设定</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-2-%E5%89%8D%E5%90%91%E7%AE%97%E6%B3%95%E8%AE%A1%E7%AE%97"><span class="toc-number">12.2.</span> <span class="toc-text">11.2 前向算法计算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-3-%E5%90%8E%E5%90%91%E7%AE%97%E6%B3%95%E8%AE%A1%E7%AE%97"><span class="toc-number">12.3.</span> <span class="toc-text">11.3 后向算法计算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-4-gamma-%E5%92%8C-xi-%E7%9A%84%E8%AE%A1%E7%AE%97"><span class="toc-number">12.4.</span> <span class="toc-text">11.4 $\gamma$ 和 $\xi$ 的计算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-5-Viterbi-%E8%A7%A3%E7%A0%81"><span class="toc-number">12.5.</span> <span class="toc-text">11.5 Viterbi 解码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-6-%E5%AF%B9%E6%AF%94%EF%BC%9A%E9%80%90%E6%97%B6%E5%88%BB%E6%9C%80%E4%BC%98-vs-Viterbi-%E5%85%A8%E5%B1%80%E6%9C%80%E4%BC%98"><span class="toc-number">12.6.</span> <span class="toc-text">11.6 对比：逐时刻最优 vs Viterbi 全局最优</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-HMM-%E6%89%A9%E5%B1%95%E5%BA%94%E7%94%A8%E8%AF%A6%E8%A7%A3"><span class="toc-number">13.</span> <span class="toc-text">12. HMM 扩展应用详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#12-1-%E4%B8%AD%E6%96%87%E5%88%86%E8%AF%8D%E4%B8%AD%E7%9A%84-HMM"><span class="toc-number">13.1.</span> <span class="toc-text">12.1 中文分词中的 HMM</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-2-%E8%AF%AD%E9%9F%B3%E8%AF%86%E5%88%AB%E4%B8%AD%E7%9A%84-GMM-HMM"><span class="toc-number">13.2.</span> <span class="toc-text">12.2 语音识别中的 GMM-HMM</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-3-%E7%94%9F%E7%89%A9%E4%BF%A1%E6%81%AF%E5%AD%A6%E4%B8%AD%E7%9A%84-Profile-HMM"><span class="toc-number">13.3.</span> <span class="toc-text">12.3 生物信息学中的 Profile HMM</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E7%AD%94"><span class="toc-number">14.</span> <span class="toc-text">13. 面试高频问答</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-%E6%80%BB%E7%BB%93"><span class="toc-number">15.</span> <span class="toc-text">14. 总结</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【统计学习方法死磕系列】隐马尔可夫模型</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2020-09-15<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0/">统计学习</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">12.9k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 52 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h2><p>隐马尔可夫模型（Hidden Markov Model, HMM）是概率图模型中最经典的动态模型之一。它广泛应用于语音识别、自然语言处理（分词、词性标注、命名实体识别）、生物信息学（基因序列分析）、金融时序分析等领域。</p>
+<p>HMM 的精妙之处在于：它用两层结构（隐藏的状态序列 + 可观测的输出序列）来描述一个动态系统。我们只能观察到输出，而隐藏的状态需要从观测中推断。这种”隐变量”建模思想是概率图模型、EM 算法乃至现代变分推断的基础。</p>
+<p>本文将以数学严格性死磕 HMM 的三个经典问题（评估、解码、学习），并结合前向-后向算法、Viterbi 算法、Baum-Welch 算法（EM）进行全面推导。建议读者在阅读过程中用笔推演每个关键公式。</p>
+<hr>
+<h2 id="1-马尔可夫链基础"><a href="#1-马尔可夫链基础" class="headerlink" title="1. 马尔可夫链基础"></a>1. 马尔可夫链基础</h2><p>在深入 HMM 之前，我们需要先建立马尔可夫链（Markov Chain）的数学基础。</p>
+<h3 id="1-1-马尔可夫性质"><a href="#1-1-马尔可夫性质" class="headerlink" title="1.1 马尔可夫性质"></a>1.1 马尔可夫性质</h3><p><strong>定义 1（马尔可夫性质，Markov Property）</strong>：一个随机过程 ${X_t, t &#x3D; 1, 2, \ldots}$ 具有马尔可夫性质，当且仅当：</p>
+<p>$$P(X_{t+1} = s_{t+1} | X_t = s_t, X_{t-1} = s_{t-1}, \ldots, X_1 = s_1) = P(X_{t+1} = s_{t+1} | X_t = s_t)$$</p>
+<p>也就是说，给定当前状态，未来状态与过去状态条件独立。”未来只依赖现在，不依赖过去。”</p>
+<p>这个性质极其强大，因为它意味着整个系统的动态可以完全由<strong>一步转移概率</strong>来描述。</p>
+<p><strong>$m$ 阶马尔可夫性质</strong>：$P(X_{t+1} | X_t, X_{t-1}, \ldots) &#x3D; P(X_{t+1} | X_t, X_{t-1}, \ldots, X_{t-m+1})$——未来只依赖最近的 $m$ 个状态。本文只讨论一阶情况（$m&#x3D;1$），这是 HMM 的标准假设。</p>
+<h3 id="1-2-离散时间马尔可夫链"><a href="#1-2-离散时间马尔可夫链" class="headerlink" title="1.2 离散时间马尔可夫链"></a>1.2 离散时间马尔可夫链</h3><p>考虑有限状态空间 $\mathcal{S} &#x3D; {s_1, s_2, \ldots, s_N}$ 上的离散时间马尔可夫链。</p>
+<p><strong>定义 2（状态转移矩阵）</strong>：</p>
+<p>$$A = [a_{ij}]_{N \times N}, \quad a_{ij} = P(X_{t+1} = s_j | X_t = s_i)$$</p>
+<p>转移矩阵 $A$ 是一个<strong>随机矩阵（Stochastic Matrix）</strong>：</p>
+<ul>
+<li>$a_{ij} \geq 0$（非负性）</li>
+<li>$\sum_{j&#x3D;1}^{N} a_{ij} &#x3D; 1$（行和为 1，从状态 $i$ 出发的概率分布归一化）</li>
+</ul>
+<p><strong>定义 3（初始状态概率分布）</strong>：</p>
+<p>$$\pi = (\pi_1, \pi_2, \ldots, \pi_N), \quad \pi_i = P(X_1 = s_i)$$</p>
+<p>$\sum_{i&#x3D;1}^{N} \pi_i &#x3D; 1$。</p>
+<p>有了 $\pi$ 和 $A$，一个马尔可夫链就被完全定义了。任意时刻的状态分布可以通过迭代计算：</p>
+<p>$$P(X_t) = \pi A^{t-1}$$</p>
+<p>其中 $[A^{t-1}]_{ij}$ 表示从状态 $i$ 出发，经过 $t-1$ 步转移到状态 $j$ 的概率。</p>
+<h3 id="1-3-Chapman-Kolmogorov-方程"><a href="#1-3-Chapman-Kolmogorov-方程" class="headerlink" title="1.3 Chapman-Kolmogorov 方程"></a>1.3 Chapman-Kolmogorov 方程</h3><p>对于 $m$ 步转移概率：</p>
+<p>$$a_{ij}^{(m)} = P(X_{t+m} = s_j | X_t = s_i)$$</p>
+<p>C-K 方程给出了多步转移的递归关系：</p>
+<p>$$a_{ij}^{(m+n)} = \sum_{k=1}^{N} a_{ik}^{(m)} a_{kj}^{(n)}$$</p>
+<p>在矩阵形式下，$A^{(m)} &#x3D; A^m$。这正是矩阵乘法的定义，证明了转移概率的矩阵表示是自洽的。</p>
+<h3 id="1-4-马尔可夫链的分类与性质"><a href="#1-4-马尔可夫链的分类与性质" class="headerlink" title="1.4 马尔可夫链的分类与性质"></a>1.4 马尔可夫链的分类与性质</h3><p><strong>定义 4（不可约性 Irreducibility）</strong>：如果从任意状态 $i$ 出发，存在一条路径以正概率到达任意状态 $j$（即 $\exists m &gt; 0, a_{ij}^{(m)} &gt; 0$），则称该马尔可夫链是不可约的。直观理解：整个状态空间是”连通”的，没有”死胡同”。</p>
+<p><strong>定义 5（周期性 Periodicity）</strong>：状态 $i$ 的周期 $d(i) &#x3D; \gcd{m \geq 1 : a_{ii}^{(m)} &gt; 0}$。若 $d(i) &#x3D; 1$，状态 $i$ 是非周期的。若所有状态都是非周期的，称链是非周期的。</p>
+<p><strong>定义 6（常返性 Recurrence）</strong>：状态 $i$ 是常返的，若从 $i$ 出发以概率 1 返回 $i$。在有限状态空间中，不可约链的所有状态都是正常返的。</p>
+<p><strong>定义 7（遍历性 Ergodicity）</strong>：一个不可约、非周期的马尔可夫链是遍历的。遍历性保证了<strong>唯一平稳分布</strong>的存在性和收敛性。</p>
+<h3 id="1-5-平稳分布与遍历定理"><a href="#1-5-平稳分布与遍历定理" class="headerlink" title="1.5 平稳分布与遍历定理"></a>1.5 平稳分布与遍历定理</h3><p><strong>定义 4（平稳分布）</strong>：若存在概率分布 $\mu &#x3D; (\mu_1, \ldots, \mu_N)$ 满足：</p>
+<p>$$\mu = \mu A \quad \text{即} \quad \mu_j = \sum_{i=1}^{N} \mu_i a_{ij}$$</p>
+<p>则 $\mu$ 是马尔可夫链的平稳分布（Stationary Distribution）。一旦到达平稳分布，链在任何后续时刻都保持此分布。</p>
+<p><strong>遍历定理</strong>：对于不可约（irreducible，从任何状态可达任何状态）、非周期（aperiodic）的有限状态马尔可夫链，平稳分布 $\mu$ 存在且唯一，且从任意初始分布出发，$t$ 步后的分布都收敛到 $\mu$。</p>
+<p><strong>平稳分布的计算</strong>：求解线性方程组 $\mu A &#x3D; \mu, \sum \mu_i &#x3D; 1$。这是一个 $N+1$ 个方程、$N$ 个未知数的超定系统，去掉第一个方程（行相关）中的一个即可求解。</p>
+<p><strong>数值示例</strong>：考虑一个两状态 Markov 链</p>
+<p>$$A = \begin{bmatrix} 0.7 & 0.3 \\ 0.4 & 0.6 \end{bmatrix}$$</p>
+<p>求解 $\mu A &#x3D; \mu$：</p>
+<p>$$\begin{cases} 0.7\mu_1 + 0.4\mu_2 = \mu_1 \\ 0.3\mu_1 + 0.6\mu_2 = \mu_2 \\ \mu_1 + \mu_2 = 1 \end{cases}$$</p>
+<p>从第二式：$0.3\mu_1 &#x3D; 0.4\mu_2 \Rightarrow \mu_1 &#x3D; \frac{4}{3}\mu_2$</p>
+<p>结合 $\mu_1 + \mu_2 &#x3D; 1$：$\frac{4}{3}\mu_2 + \mu_2 &#x3D; 1 \Rightarrow \mu_2 &#x3D; \frac{3}{7}, \mu_1 &#x3D; \frac{4}{7}$</p>
+<p>验证 $\mu A &#x3D; (\frac{4}{7}, \frac{3}{7}) \begin{bmatrix} 0.7 &amp; 0.3 \ 0.4 &amp; 0.6 \end{bmatrix} &#x3D; (\frac{2.8+1.2}{7}, \frac{1.2+1.8}{7}) &#x3D; (\frac{4}{7}, \frac{3}{7}) &#x3D; \mu \checkmark$</p>
+<p><strong>平稳分布的极限解释</strong>：从任意初始分布 $\pi$ 出发，经过足够多步后，状态分布收敛到 $\mu$。例如：</p>
+<ul>
+<li>$\pi^{(0)} &#x3D; (1, 0)$（从状态 1 开始）：<br>$\pi^{(1)} &#x3D; (0.7, 0.3)$, $\pi^{(2)} &#x3D; (0.61, 0.39)$, $\pi^{(5)} \approx (0.5719, 0.4281)$, $\pi^{(10)} \approx (0.57143, 0.42857) \approx \mu$</li>
+<li>$\pi^{(0)} &#x3D; (0, 1)$（从状态 2 开始）：<br>$\pi^{(1)} &#x3D; (0.4, 0.6)$, $\pi^{(5)} \approx (0.5713, 0.4287)$, $\pi^{(10)} \approx (0.57143, 0.42857) \approx \mu$</li>
+</ul>
+<p>两种初始分布在约 10 步后都收敛到同一个平稳分布——这是遍历马尔可夫链的本质特征：记忆在迭代中衰减。</p>
+<p><strong>马尔可夫链的混合时间（Mixing Time）</strong>：从任意初始分布出发，$t$ 步内总变差距离 $d_{TV}(t) &#x3D; \frac{1}{2}|\pi^{(t)} - \mu|_1 &lt; \varepsilon$ 所需的最小步数。对于上面的矩阵，混合时间（$\varepsilon &#x3D; 0.01$）约为 6 步。混合时间是衡量马尔可夫链”多快遗忘初始状态”的关键指标，在 MCMC 采样中有重要的实际意义。</p>
+<hr>
+<h2 id="2-隐马尔可夫模型的定义"><a href="#2-隐马尔可夫模型的定义" class="headerlink" title="2. 隐马尔可夫模型的定义"></a>2. 隐马尔可夫模型的定义</h2><h3 id="2-1-模型三要素"><a href="#2-1-模型三要素" class="headerlink" title="2.1 模型三要素"></a>2.1 模型三要素</h3><p>HMM 包含两层随机过程：</p>
+<ol>
+<li><strong>隐藏的马尔可夫链</strong>：状态序列 $I &#x3D; (i_1, i_2, \ldots, i_T)$，$i_t \in {1, 2, \ldots, N}$。这是不可观测的。</li>
+<li><strong>观测序列</strong>：$O &#x3D; (o_1, o_2, \ldots, o_T)$，$o_t \in {v_1, v_2, \ldots, v_M}$。这是我们能看到的。</li>
+</ol>
+<p><strong>HMM 由三个参数组完全确定</strong>：$\lambda &#x3D; (\pi, A, B)$</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+<th>维度</th>
+<th>数学定义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$\pi$</td>
+<td>初始状态概率向量</td>
+<td>$1 \times N$</td>
+<td>$\pi_i &#x3D; P(i_1 &#x3D; s_i)$</td>
+</tr>
+<tr>
+<td>$A$</td>
+<td>状态转移概率矩阵</td>
+<td>$N \times N$</td>
+<td>$a_{ij} &#x3D; P(i_{t+1} &#x3D; s_j \mid i_t &#x3D; s_i)$</td>
+</tr>
+<tr>
+<td>$B$</td>
+<td>观测概率矩阵（发射概率）</td>
+<td>$N \times M$</td>
+<td>$b_j(k) &#x3D; P(o_t &#x3D; v_k \mid i_t &#x3D; s_j)$</td>
+</tr>
+</tbody></table>
+<p>其中 $N$ 是状态数，$M$ 是观测符号数，$T$ 是序列长度。</p>
+<h3 id="2-2-HMM-的两个基本假设"><a href="#2-2-HMM-的两个基本假设" class="headerlink" title="2.2 HMM 的两个基本假设"></a>2.2 HMM 的两个基本假设</h3><p><strong>假设 1（齐次一阶马尔可夫性）</strong>：当前状态只依赖于前一个状态。</p>
+<p>$$P(i_t | i_{t-1}, i_{t-2}, \ldots, i_1) = P(i_t | i_{t-1})$$</p>
+<p><strong>假设 2（观测独立性）</strong>：当前观测只依赖于当前状态。</p>
+<p>$$P(o_t | i_T, o_T, i_{T-1}, o_{T-1}, \ldots, i_1, o_1) = P(o_t | i_t)$$</p>
+<p>这两个假设极大地简化了模型。虽然现实中它们可能不完全成立，但在大量实际应用中，HMM 仍然表现出色。当观测独立性假设不成立时，条件随机场（CRF）提供了更灵活的替代方案（见本系列下一篇）。</p>
+<h3 id="2-3-HMM-的三个经典问题"><a href="#2-3-HMM-的三个经典问题" class="headerlink" title="2.3 HMM 的三个经典问题"></a>2.3 HMM 的三个经典问题</h3><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>名称</th>
+<th>目标</th>
+<th>算法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>问题 1</td>
+<td>概率计算（Evaluation）</td>
+<td>给定 $\lambda$ 和 $O$，计算 $P(O</td>
+<td>\lambda)$</td>
+</tr>
+<tr>
+<td>问题 2</td>
+<td>学习（Learning）</td>
+<td>给定 $O$，估计最优 $\lambda$</td>
+<td>Baum-Welch (EM)</td>
+</tr>
+<tr>
+<td>问题 3</td>
+<td>解码（Decoding）</td>
+<td>给定 $\lambda$ 和 $O$，找最可能的 $I$</td>
+<td>Viterbi 算法</td>
+</tr>
+</tbody></table>
+<p>这三个问题覆盖了 HMM 应用的全部场景，分别对应了概率推理、参数学习和序列标注。</p>
+<hr>
+<h2 id="3-问题一：概率计算"><a href="#3-问题一：概率计算" class="headerlink" title="3. 问题一：概率计算"></a>3. 问题一：概率计算</h2><h3 id="3-1-直接计算（不可行）"><a href="#3-1-直接计算（不可行）" class="headerlink" title="3.1 直接计算（不可行）"></a>3.1 直接计算（不可行）</h3><p>给定 $\lambda &#x3D; (\pi, A, B)$ 和观测序列 $O &#x3D; (o_1, \ldots, o_T)$，计算 $P(O|\lambda)$。</p>
+<p>对任意一个状态序列 $I &#x3D; (i_1, \ldots, i_T)$，产生 $O$ 的联合概率为：</p>
+<p>$$P(O, I | \lambda) = \pi_{i_1} b_{i_1}(o_1) \cdot a_{i_1 i_2} b_{i_2}(o_2) \cdots a_{i_{T-1} i_T} b_{i_T}(o_T)$$</p>
+<p>$P(O|\lambda) &#x3D; \sum_I P(O, I|\lambda)$，对所有可能的状态序列求和。有 $N^T$ 个可能的状态序列，每个序列的联合概率需要 $O(T)$ 计算，总计算量为 $O(T \cdot N^T)$——指数级，完全不可行（$N&#x3D;5, T&#x3D;100 \Rightarrow 5^{100}$ 种序列）。</p>
+<h3 id="3-2-前向算法（Forward-Algorithm）"><a href="#3-2-前向算法（Forward-Algorithm）" class="headerlink" title="3.2 前向算法（Forward Algorithm）"></a>3.2 前向算法（Forward Algorithm）</h3><p>前向算法利用动态规划（DP）将复杂度从 $O(T N^T)$ 降到 $O(T N^2)$——这是 HMM 最关键的计算技巧之一。</p>
+<p><strong>定义 5（前向概率）</strong>：</p>
+<p>$$\alpha_t(i) = P(o_1, o_2, \ldots, o_t, i_t = s_i | \lambda)$$</p>
+<p>即截止到时刻 $t$，部分观测序列为 $o_1, \ldots, o_t$ 且时刻 $t$ 的状态为 $s_i$ 的概率。</p>
+<p><strong>递推关系</strong>：</p>
+<p><strong>初始化</strong>（$t &#x3D; 1$）：</p>
+<p>$$\alpha_1(i) = \pi_i \cdot b_i(o_1), \quad i = 1, \ldots, N$$</p>
+<p><strong>递推</strong>（$t &#x3D; 1, 2, \ldots, T-1$）：</p>
+<p>$$\alpha_{t+1}(j) = \left[ \sum_{i=1}^{N} \alpha_t(i) \cdot a_{ij} \right] \cdot b_j(o_{t+1}), \quad j = 1, \ldots, N$$</p>
+<p>直觉解释：到达时刻 $t+1$ 状态 $j$ 并看到观测 $o_{t+1}$，等于从 $t$ 时刻的所有可能状态 $i$ 转移过来（$\alpha_t(i) \cdot a_{ij}$），再乘以发射 $o_{t+1}$ 的概率 $b_j(o_{t+1})$。</p>
+<p><strong>终止</strong>：</p>
+<p>$$P(O | \lambda) = \sum_{i=1}^{N} \alpha_T(i)$$</p>
+<p><strong>前向算法伪代码</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Algorithm: Forward</span><br><span class="line">Input: λ = (π, A, B), O = (o_1, ..., o_T)</span><br><span class="line">Output: P(O|λ) 和前向概率 α</span><br><span class="line"></span><br><span class="line">1. // 初始化</span><br><span class="line">2. for i = 1 to N:</span><br><span class="line">3.     α_1(i) = π_i · b_i(o_1)</span><br><span class="line">4. // 递推</span><br><span class="line">5. for t = 1 to T-1:</span><br><span class="line">6.     for j = 1 to N:</span><br><span class="line">7.         α_&#123;t+1&#125;(j) = [Σ_&#123;i=1&#125;^&#123;N&#125; α_t(i) · a_&#123;ij&#125;] · b_j(o_&#123;t+1&#125;)</span><br><span class="line">8. // 终止</span><br><span class="line">9. P = Σ_&#123;i=1&#125;^&#123;N&#125; α_T(i)</span><br><span class="line">10. return P, α</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-后向算法（Backward-Algorithm）"><a href="#3-3-后向算法（Backward-Algorithm）" class="headerlink" title="3.3 后向算法（Backward Algorithm）"></a>3.3 后向算法（Backward Algorithm）</h3><p>前向算法从前往后递推。后向算法从后往前递推，为问题三（学习）做准备。</p>
+<p><strong>定义 6（后向概率）</strong>：</p>
+<p>$$\beta_t(i) = P(o_{t+1}, o_{t+2}, \ldots, o_T | i_t = s_i, \lambda)$$</p>
+<p>即给定时刻 $t$ 状态为 $s_i$ 的条件下，从 $t+1$ 到 $T$ 的部分观测序列的概率。</p>
+<p><strong>递推关系</strong>：</p>
+<p><strong>初始化</strong>（$t &#x3D; T$）：</p>
+<p>$$\beta_T(i) = 1, \quad i = 1, \ldots, N$$</p>
+<p>设定为 1 是因为，在 $t &#x3D; T$ 时”之后的观测”为空——空的概率为 1。</p>
+<p><strong>递推</strong>（$t &#x3D; T-1, T-2, \ldots, 1$）：</p>
+<p>$$\beta_t(i) = \sum_{j=1}^{N} a_{ij} \cdot b_j(o_{t+1}) \cdot \beta_{t+1}(j)$$</p>
+<p>直觉解释：从时刻 $t$ 的状态 $i$ 出发，后面发生的事 &#x3D; 跳到所有可能的下一状态 $j$（$a_{ij}$），观测到 $o_{t+1}$（$b_j(o_{t+1})$），然后从 $j$ 继续（$\beta_{t+1}(j)$）。</p>
+<p><strong>后向算法伪代码</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Algorithm: Backward</span><br><span class="line">Input: λ = (π, A, B), O = (o_1, ..., o_T)</span><br><span class="line">Output: 后向概率 β</span><br><span class="line"></span><br><span class="line">1. // 初始化</span><br><span class="line">2. for i = 1 to N:</span><br><span class="line">3.     β_T(i) = 1</span><br><span class="line">4. // 递推</span><br><span class="line">5. for t = T-1 down to 1:</span><br><span class="line">6.     for i = 1 to N:</span><br><span class="line">7.         β_t(i) = Σ_&#123;j=1&#125;^&#123;N&#125; a_&#123;ij&#125; · b_j(o_&#123;t+1&#125;) · β_&#123;t+1&#125;(j)</span><br><span class="line">8. return β</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意</strong>：前向和后向都可以单独计算出 $P(O|\lambda)$：</p>
+<p>$$P(O|\lambda) = \sum_{i=1}^{N} \alpha_t(i) \beta_t(i), \quad \forall t \in \{1, \ldots, T\}$$</p>
+<p>这个性质非常有用：可以在任意时刻 $t$ 用前后向概率的乘积和来计算总概率。这提供了多种校验和数值稳定的手段。</p>
+<h3 id="3-4-数值稳定性：Scaling-技巧"><a href="#3-4-数值稳定性：Scaling-技巧" class="headerlink" title="3.4 数值稳定性：Scaling 技巧"></a>3.4 数值稳定性：Scaling 技巧</h3><p>前向概率 $\alpha_t(i)$ 和后向概率 $\beta_t(i)$ 中包含了 $t$ 个概率的连乘积。当 $T$ 较大时（例如 $T &gt; 100$），这些值会指数级趋近于 0（下溢），超出浮点数的表示范围。</p>
+<p><strong>解决方案：对前向概率做重归一化（Scaling）</strong></p>
+<p>引入尺度因子：</p>
+<p>$$c_t = \frac{1}{\sum_{i=1}^{N} \hat{\alpha}_t(i)}$$</p>
+<p>其中 $\hat{\alpha}_t(i)$ 是未归一化的前向概率。实际存储归一化后的值：</p>
+<p>$$\tilde{\alpha}_t(i) = c_t \cdot \hat{\alpha}_t(i)$$</p>
+<p>最终的对数似然可以通过累加尺度因子恢复：</p>
+<p>$$\log P(O|\lambda) = -\sum_{t=1}^{T} \log c_t$$</p>
+<p>这就是在概率空间中取对数来做计算（log-space）——将连乘变成累加，彻底避免下溢。</p>
+<p><strong>Log-Sum-Exp 技巧</strong>：在需要累加多个小数时，使用：</p>
+<p>$$\log \sum_i \exp(x_i) = x_{\max} + \log \sum_i \exp(x_i - x_{\max})$$</p>
+<p>其中 $x_{\max} &#x3D; \max_i x_i$。先减去最大值再进行指数运算，防止 $\exp(x_i)$ 溢出。</p>
+<hr>
+<h2 id="4-问题三：解码问题（Viterbi-算法）"><a href="#4-问题三：解码问题（Viterbi-算法）" class="headerlink" title="4. 问题三：解码问题（Viterbi 算法）"></a>4. 问题三：解码问题（Viterbi 算法）</h2><h3 id="4-1-最可能的状态序列"><a href="#4-1-最可能的状态序列" class="headerlink" title="4.1 最可能的状态序列"></a>4.1 最可能的状态序列</h3><p>给定 $\lambda$ 和 $O$，求最可能的状态序列：</p>
+<p>$$I^* = \arg\max_I P(I | O, \lambda)$$</p>
+<p>等价于最大化联合概率（因为 $P(O|\lambda)$ 对不同的 $I$ 是常数）：</p>
+<p>$$I^* = \arg\max_I P(I, O | \lambda)$$</p>
+<h3 id="4-2-Viterbi-算法的-DP-结构"><a href="#4-2-Viterbi-算法的-DP-结构" class="headerlink" title="4.2 Viterbi 算法的 DP 结构"></a>4.2 Viterbi 算法的 DP 结构</h3><p>Viterbi 算法使用与前向算法类似的 DP 框架，但将求和（$\sum$）替换为求最大（$\max$），并保存回溯路径。</p>
+<p><strong>定义 7（Viterbi 变量）</strong>：</p>
+<p>$$\delta_t(i) = \max_{i_1, i_2, \ldots, i_{t-1}} P(i_1, i_2, \ldots, i_{t-1}, i_t = s_i, o_1, o_2, \ldots, o_t | \lambda)$$</p>
+<p>即沿某条路径到达时刻 $t$ 状态 $i$，并观察到 $o_1, \ldots, o_t$ 的所有路径中的最大概率。</p>
+<p><strong>递推关系</strong>：</p>
+<p><strong>初始化</strong>：</p>
+<p>$$\delta_1(i) = \pi_i \cdot b_i(o_1), \quad i = 1, \ldots, N$$<br>$$\psi_1(i) = 0, \quad i = 1, \ldots, N$$</p>
+<p>$ \psi_t(i) $ 保存 $ t $ 时刻状态 $ i $ 对应的上一时刻最优状态。</p>
+<p><strong>递推</strong>（$t &#x3D; 1, 2, \ldots, T-1$）：</p>
+<p>$$\delta_{t+1}(j) = \left[ \max_{1 \leq i \leq N} \delta_t(i) \cdot a_{ij} \right] \cdot b_j(o_{t+1})$$</p>
+<p>$$\psi_{t+1}(j) = \arg\max_{1 \leq i \leq N} \delta_t(i) \cdot a_{ij}$$</p>
+<p><strong>终止</strong>：</p>
+<p>$$P^* = \max_{1 \leq i \leq N} \delta_T(i)$$<br>$$i_T^* = \arg\max_{1 \leq i \leq N} \delta_T(i)$$</p>
+<p><strong>最优路径回溯</strong>（$t &#x3D; T-1, T-2, \ldots, 1$）：</p>
+<p>$$i_t^* = \psi_{t+1}(i_{t+1}^*)$$</p>
+<h3 id="4-3-Viterbi-算法伪代码"><a href="#4-3-Viterbi-算法伪代码" class="headerlink" title="4.3 Viterbi 算法伪代码"></a>4.3 Viterbi 算法伪代码</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Algorithm: Viterbi</span><br><span class="line">Input: λ = (π, A, B), O = (o_1, ..., o_T)</span><br><span class="line">Output: 最优状态序列 I* = (i_1*, ..., i_T*), 最优路径概率 P*</span><br><span class="line"></span><br><span class="line">1. // 初始化</span><br><span class="line">2. for i = 1 to N:</span><br><span class="line">3.     δ_1(i) = π_i · b_i(o_1)</span><br><span class="line">4.     ψ_1(i) = 0</span><br><span class="line">5. // 递推</span><br><span class="line">6. for t = 1 to T-1:</span><br><span class="line">7.     for j = 1 to N:</span><br><span class="line">8.         δ_&#123;t+1&#125;(j) = max_i [δ_t(i) · a_&#123;ij&#125;] · b_j(o_&#123;t+1&#125;)</span><br><span class="line">9.         ψ_&#123;t+1&#125;(j) = argmax_i [δ_t(i) · a_&#123;ij&#125;]</span><br><span class="line">10. // 终止</span><br><span class="line">11. P* = max_i δ_T(i)</span><br><span class="line">12. i_T* = argmax_i δ_T(i)</span><br><span class="line">13. // 回溯</span><br><span class="line">14. for t = T-1 down to 1:</span><br><span class="line">15.     i_t* = ψ_&#123;t+1&#125;(i_&#123;t+1&#125;*)</span><br><span class="line">16. return I* = (i_1*, ..., i_T*), P*</span><br></pre></td></tr></table></figure>
+
+<p>计算复杂度：$O(T \cdot N^2)$（与前向算法相同）。</p>
+<h3 id="4-4-Viterbi-与前向算法的区别"><a href="#4-4-Viterbi-与前向算法的区别" class="headerlink" title="4.4 Viterbi 与前向算法的区别"></a>4.4 Viterbi 与前向算法的区别</h3><p>两者框架相同，但一个关键操作不同：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>前向算法</th>
+<th>Viterbi 算法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>聚合操作</td>
+<td>$\sum$</td>
+<td>$\max$</td>
+</tr>
+<tr>
+<td>目标</td>
+<td>计算总概率</td>
+<td>找最优路径</td>
+</tr>
+<tr>
+<td>额外存储</td>
+<td>无（仅 $\alpha$）</td>
+<td>$\psi_t(j)$（回溯指针）</td>
+</tr>
+<tr>
+<td>计算结果</td>
+<td>$P(O\vert\lambda)$</td>
+<td>$I^*$, $P^*$</td>
+</tr>
+</tbody></table>
+<p><strong>为什么 Viterbi 找到的”最可能状态序列”与逐时刻取最可能状态不同？</strong></p>
+<p>逐时刻取 $\arg\max_i P(i_t &#x3D; s_i | O, \lambda)$（即 $\arg\max_i \gamma_t(i)$）得到的是每个时刻独立看最可能的状态，这并不能保证整个序列在联合分布下是最优的——因为状态之间有转换概率约束，两个连续时刻各自最可能的状态之间的转换概率可能为 0。</p>
+<p>例如，一个人可以”明天是晴天”和”后天是晴天”各自都很可能，但如果晴天到晴天之间有”必定下雨”的转换约束，那”晴→晴”的序列整体概率可能就是 0 了。Viterbi 正确地考虑了这种全局一致性。</p>
+<h3 id="4-5-Viterbi-的数值示例"><a href="#4-5-Viterbi-的数值示例" class="headerlink" title="4.5 Viterbi 的数值示例"></a>4.5 Viterbi 的数值示例</h3><p>假设一个简单的词性标注 HMM（两个隐藏状态：N 名词、V 动词；三个观测：fish, swim, eat）：</p>
+<p>$$\pi = [0.6, 0.4]$$</p>
+<p>$$A = \begin{bmatrix} P(N|N) & P(V|N) \\ P(N|V) & P(V|V) \end{bmatrix} = \begin{bmatrix} 0.7 & 0.3 \\ 0.4 & 0.6 \end{bmatrix}$$</p>
+<p>$$B = \begin{bmatrix} P(\text{fish}|N) & P(\text{swim}|N) & P(\text{eat}|N) \\ P(\text{fish}|V) & P(\text{swim}|V) & P(\text{eat}|V) \end{bmatrix} = \begin{bmatrix} 0.4 & 0.1 & 0.5 \\ 0.3 & 0.6 & 0.1 \end{bmatrix}$$</p>
+<p>观测序列 $O &#x3D; (\text{fish}, \text{swim})$。求最可能的状态序列。</p>
+<p><strong>$t &#x3D; 1$（初始化）</strong>：</p>
+<ul>
+<li>$\delta_1(N) &#x3D; \pi_N \cdot P(\text{fish}|N) &#x3D; 0.6 \times 0.4 &#x3D; 0.24$</li>
+<li>$\delta_1(V) &#x3D; \pi_V \cdot P(\text{fish}|V) &#x3D; 0.4 \times 0.3 &#x3D; 0.12$</li>
+</ul>
+<p><strong>$t &#x3D; 2$（递推）</strong>：</p>
+<ul>
+<li><p>$\delta_2(N) &#x3D; \max[\delta_1(N) \cdot a_{NN}, \delta_1(V) \cdot a_{VN}] \cdot P(\text{swim}|N)$<br>$&#x3D; \max[0.24 \times 0.7, 0.12 \times 0.4] \times 0.1 &#x3D; \max[0.168, 0.048] \times 0.1 &#x3D; 0.0168$<br>$\psi_2(N) &#x3D; N$（回溯到 N）</p>
+</li>
+<li><p>$\delta_2(V) &#x3D; \max[\delta_1(N) \cdot a_{NV}, \delta_1(V) \cdot a_{VV}] \cdot P(\text{swim}|V)$<br>$&#x3D; \max[0.24 \times 0.3, 0.12 \times 0.6] \times 0.6 &#x3D; \max[0.072, 0.072] \times 0.6 &#x3D; 0.0432$<br>$\psi_2(V) &#x3D; N$ 或 $V$（任选一个，都行）</p>
+</li>
+</ul>
+<p><strong>终止</strong>：</p>
+<p>$P^* &#x3D; \max[\delta_2(N), \delta_2(V)] &#x3D; 0.0432$，$i_2^* &#x3D; V$</p>
+<p><strong>回溯</strong>：</p>
+<p>$i_1^* &#x3D; \psi_2(V) &#x3D; N$（或 V，取决于实现细节）</p>
+<p>最可能的标注为：fish&#x2F;N, swim&#x2F;V 或 fish&#x2F;V, swim&#x2F;V（取决于 $\psi_2(V)$ 的选择）。计算两个完整序列的概率：</p>
+<ul>
+<li>$P(N, V, \text{fish}, \text{swim}) &#x3D; 0.6 \times 0.4 \times 0.3 \times 0.6 &#x3D; 0.0432$</li>
+<li>$P(V, V, \text{fish}, \text{swim}) &#x3D; 0.4 \times 0.3 \times 0.6 \times 0.6 &#x3D; 0.0432$</li>
+</ul>
+<p>两者一样！说明在这个小例子中两种标注方案等可能。实践中，当出现平票时算法的实现细节决定了取舍。</p>
+<hr>
+<h2 id="5-问题二：学习问题（Baum-Welch-算法）"><a href="#5-问题二：学习问题（Baum-Welch-算法）" class="headerlink" title="5. 问题二：学习问题（Baum-Welch 算法）"></a>5. 问题二：学习问题（Baum-Welch 算法）</h2><h3 id="5-1-问题的形式化"><a href="#5-1-问题的形式化" class="headerlink" title="5.1 问题的形式化"></a>5.1 问题的形式化</h3><p>给定观测序列 $O &#x3D; (o_1, \ldots, o_T)$，但不知道状态序列。我们要估计模型参数 $\lambda &#x3D; (\pi, A, B)$，使得 $P(O|\lambda)$ 最大化：</p>
+<p>$$\lambda^* = \arg\max_\lambda P(O|\lambda)$$</p>
+<p>这是一个典型的”带有隐变量的极大似然估计”问题。天然适合 EM 算法。</p>
+<p>与监督学习不同（监督学习知道状态序列，可以直接统计频率），HMM 的学习是<strong>无监督的</strong>——我们只有观测序列，状态序列（隐变量）是我们需要推断的。</p>
+<h3 id="5-2-EM-算法的核心思想"><a href="#5-2-EM-算法的核心思想" class="headerlink" title="5.2 EM 算法的核心思想"></a>5.2 EM 算法的核心思想</h3><p>EM（Expectation-Maximization）交替执行两步：</p>
+<ol>
+<li><strong>E 步（Expectation）</strong>：基于当前参数 $\lambda^{\text{old}}$，计算隐变量的后验期望</li>
+<li><strong>M 步（Maximization）</strong>：基于 E 步得到的期望，重新估计参数 $\lambda^{\text{new}}$</li>
+</ol>
+<p>对于 HMM，EM 的实例化就是 <strong>Baum-Welch 算法</strong>。</p>
+<h3 id="5-3-两个关键概率"><a href="#5-3-两个关键概率" class="headerlink" title="5.3 两个关键概率"></a>5.3 两个关键概率</h3><p>在 E 步中，我们需要计算两个关键概率：</p>
+<p><strong>定义 8（单个状态的后验概率 $\gamma$）</strong>：</p>
+<p>$$\gamma_t(i) = P(i_t = s_i | O, \lambda)$$</p>
+<p>利用前后向概率：</p>
+<p>$$\gamma_t(i) = \frac{\alpha_t(i) \beta_t(i)}{P(O|\lambda)} = \frac{\alpha_t(i) \beta_t(i)}{\sum_{j=1}^{N} \alpha_t(j) \beta_t(j)}$$</p>
+<p><strong>定义 9（相邻状态转移的后验概率 $\xi$）</strong>：</p>
+<p>$$\xi_t(i, j) = P(i_t = s_i, i_{t+1} = s_j | O, \lambda)$$</p>
+<p>利用前后向概率：</p>
+<p>$$\xi_t(i, j) = \frac{\alpha_t(i) a_{ij} b_j(o_{t+1}) \beta_{t+1}(j)}{P(O|\lambda)} = \frac{\alpha_t(i) a_{ij} b_j(o_{t+1}) \beta_{t+1}(j)}{\sum_{k=1}^{N} \sum_{l=1}^{N} \alpha_t(k) a_{kl} b_l(o_{t+1}) \beta_{t+1}(l)}$$</p>
+<p>$\gamma$ 和 $\xi$ 的关系：</p>
+<p>$$\gamma_t(i) = \sum_{j=1}^{N} \xi_t(i, j)$$</p>
+<p>(当前在 $i$ 的概率 &#x3D; 从 $i$ 出发到任意 $j$ 的概率之和)</p>
+<h3 id="5-4-M-步：参数重估计公式"><a href="#5-4-M-步：参数重估计公式" class="headerlink" title="5.4 M 步：参数重估计公式"></a>5.4 M 步：参数重估计公式</h3><p>基于 E 步计算出的 $\gamma$ 和 $\xi$，我们可以重新估计参数。这里的推导使用了<strong>计数思想</strong>：</p>
+<p><strong>$\pi_i$ 的重估计</strong>：初始状态为 $s_i$ 的期望次数</p>
+<p>$$\hat{\pi}_i = \gamma_1(i)$$</p>
+<p><strong>$a_{ij}$ 的重估计</strong>：从状态 $s_i$ 转移到 $s_j$ 的期望次数 ÷ 从状态 $s_i$ 出发的期望次数</p>
+<p>$$\hat{a}_{ij} = \frac{\sum_{t=1}^{T-1} \xi_t(i, j)}{\sum_{t=1}^{T-1} \gamma_t(i)}$$</p>
+<p><strong>$b_j(k)$ 的重估计</strong>：在状态 $s_j$ 下观测为 $v_k$ 的期望次数 ÷ 处于状态 $s_j$ 的期望次数</p>
+<p>$$\hat{b}_j(k) = \frac{\sum_{t=1, o_t = v_k}^{T} \gamma_t(j)}{\sum_{t=1}^{T} \gamma_t(j)}$$</p>
+<p>其中分子表示”当观测是 $v_k$ 时处于状态 $j$”的时刻的 $\gamma_t(j)$ 之和。</p>
+<h3 id="5-5-Baum-Welch-算法伪代码"><a href="#5-5-Baum-Welch-算法伪代码" class="headerlink" title="5.5 Baum-Welch 算法伪代码"></a>5.5 Baum-Welch 算法伪代码</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Algorithm: Baum-Welch (HMM 的 EM)</span><br><span class="line">Input: 观测序列 O = (o_1, ..., o_T), 收敛容差 ε</span><br><span class="line">Output: λ = (π, A, B)</span><br><span class="line"></span><br><span class="line">1. 随机初始化 λ = (π, A, B)  // 确保 π 和 A 的行和为 1</span><br><span class="line">2. repeat:</span><br><span class="line">3.     // ===== E-step =====</span><br><span class="line">4.     使用 Forward(λ, O) 计算 α</span><br><span class="line">5.     使用 Backward(λ, O) 计算 β</span><br><span class="line">6.     计算 P(O|λ) = Σ_i α_T(i)  // 当前似然</span><br><span class="line">7.     for t = 1 to T:</span><br><span class="line">8.         计算 γ_t(i) = α_t(i)β_t(i) / P(O|λ)</span><br><span class="line">9.     for t = 1 to T-1:</span><br><span class="line">10.        计算 ξ_t(i,j) = α_t(i)a_&#123;ij&#125;b_j(o_&#123;t+1&#125;)β_&#123;t+1&#125;(j) / P(O|λ)</span><br><span class="line">11.    // ===== M-step =====</span><br><span class="line">12.    π_i = γ_1(i)</span><br><span class="line">13.    a_&#123;ij&#125; = Σ_&#123;t=1&#125;^&#123;T-1&#125; ξ_t(i,j) / Σ_&#123;t=1&#125;^&#123;T-1&#125; γ_t(i)</span><br><span class="line">14.    b_j(k) = Σ_&#123;t: o_t=v_k&#125; γ_t(j) / Σ_&#123;t=1&#125;^&#123;T&#125; γ_t(j)</span><br><span class="line">15. until |P(O|λ_new) - P(O|λ_old)| &lt; ε</span><br><span class="line">16. return λ</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-6-EM-算法的收敛性"><a href="#5-6-EM-算法的收敛性" class="headerlink" title="5.6 EM 算法的收敛性"></a>5.6 EM 算法的收敛性</h3><p>EM 算法保证每次迭代后 $P(O|\lambda^{\text{new}}) \geq P(O|\lambda^{\text{old}})$，即似然单调不减。但 EM 只能保证收敛到<strong>局部最优</strong>而非全局最优——这意味着 Baum-Welch 的结果依赖于初始化。</p>
+<p><strong>初始化策略</strong>：</p>
+<ol>
+<li>随机初始化多次，取最终似然最大的</li>
+<li>使用先验知识（如先均匀分布，再逐步调整）</li>
+<li>对于有标签数据，使用监督统计作为初始值，再进行无监督精炼</li>
+<li>使用分段 K-means 初始化（Viterbi 训练的一种变体）</li>
+</ol>
+<h3 id="5-7-多序列学习"><a href="#5-7-多序列学习" class="headerlink" title="5.7 多序列学习"></a>5.7 多序列学习</h3><p>当有 $S$ 条独立的观测序列 ${O^{(1)}, O^{(2)}, \ldots, O^{(S)}}$ 时，似然是各序列似然之积：</p>
+<p>$$P(\text{All observations} | \lambda) = \prod_{s=1}^{S} P(O^{(s)} | \lambda)$$</p>
+<p>M 步的重估计公式需要聚合所有序列的统计量：</p>
+<p>$$\hat{a}_{ij} = \frac{\sum_{s=1}^{S} \sum_{t=1}^{T_s-1} \xi_t^{(s)}(i, j)}{\sum_{s=1}^{S} \sum_{t=1}^{T_s-1} \gamma_t^{(s)}(i)}$$</p>
+<p>$$\hat{b}_j(k) = \frac{\sum_{s=1}^{S} \sum_{t=1, o_t^{(s)} = v_k}^{T_s} \gamma_t^{(s)}(j)}{\sum_{s=1}^{S} \sum_{t=1}^{T_s} \gamma_t^{(s)}(j)}$$</p>
+<hr>
+<h2 id="6-扩展-HMM"><a href="#6-扩展-HMM" class="headerlink" title="6. 扩展 HMM"></a>6. 扩展 HMM</h2><h3 id="6-1-高斯-HMM（Gaussian-HMM）"><a href="#6-1-高斯-HMM（Gaussian-HMM）" class="headerlink" title="6.1 高斯 HMM（Gaussian HMM）"></a>6.1 高斯 HMM（Gaussian HMM）</h3><p>当观测是连续值而非离散符号时，$B$ 不再是离散概率分布矩阵，而是连续概率密度函数（通常使用高斯分布或高斯混合模型）。</p>
+<p>对状态 $j$，假设观测服从多元高斯分布：</p>
+<p>$$b_j(o) = \mathcal{N}(o; \mu_j, \Sigma_j) = \frac{1}{(2\pi)^{d/2} |\Sigma_j|^{1/2}} \exp\left(-\frac{1}{2}(o - \mu_j)^T \Sigma_j^{-1} (o - \mu_j)\right)$$</p>
+<p>参数估计（M 步）变为：</p>
+<p>$$\hat{\mu}_j = \frac{\sum_{t=1}^{T} \gamma_t(j) \cdot o_t}{\sum_{t=1}^{T} \gamma_t(j)}$$</p>
+<p>$$\hat{\Sigma}_j = \frac{\sum_{t=1}^{T} \gamma_t(j) \cdot (o_t - \hat{\mu}_j)(o_t - \hat{\mu}_j)^T}{\sum_{t=1}^{T} \gamma_t(j)}$$</p>
+<p>注意这里 $\mu_j$ 的更新公式是加权平均（权重为 $\gamma_t(j)$），这与 K-means 的软聚类更新非常类似。</p>
+<p>Gaussian HMM 广泛应用于：</p>
+<ul>
+<li>金融市场中的波动率状态建模</li>
+<li>传感器信号处理</li>
+<li>语音识别中的声学特征建模</li>
+</ul>
+<h3 id="6-2-高斯混合-HMM（GMM-HMM）"><a href="#6-2-高斯混合-HMM（GMM-HMM）" class="headerlink" title="6.2 高斯混合 HMM（GMM-HMM）"></a>6.2 高斯混合 HMM（GMM-HMM）</h3><p>更进一步，每个状态可以用<strong>高斯混合模型（GMM）</strong>来建模更复杂的观测分布：</p>
+<p>$$b_j(o) = \sum_{m=1}^{M} c_{jm} \mathcal{N}(o; \mu_{jm}, \Sigma_{jm})$$</p>
+<p>其中 $c_{jm}$ 是状态 $j$ 下第 $m$ 个混合成分的权重，$\sum_m c_{jm} &#x3D; 1$。</p>
+<p>这引入了额外的隐变量（混合成分），形成”隐状态中的隐变量”结构。GMM-HMM 在传统的语音识别系统中曾是标准配置（在深度学习出现之前）。</p>
+<h3 id="6-3-自回归-HMM（AR-HMM）"><a href="#6-3-自回归-HMM（AR-HMM）" class="headerlink" title="6.3 自回归 HMM（AR-HMM）"></a>6.3 自回归 HMM（AR-HMM）</h3><p>当观测之间存在时间依赖时（违反观测独立性假设），可以使用自回归 HMM：</p>
+<p>$$b_j(o_t | o_{t-1}, \ldots, o_{t-p}) = \mathcal{N}(o_t; \sum_{r=1}^{p} A_j^{(r)} o_{t-r}, \Sigma_j)$$</p>
+<p>每个状态有自己的自回归系数矩阵 $A_j^{(r)}$。</p>
+<h3 id="6-4-输入-输出-HMM（IO-HMM）"><a href="#6-4-输入-输出-HMM（IO-HMM）" class="headerlink" title="6.4 输入-输出 HMM（IO-HMM）"></a>6.4 输入-输出 HMM（IO-HMM）</h3><p>IO-HMM 在转移概率和&#x2F;或发射概率中引入外生输入变量 $u_t$（特征）：</p>
+<p>$$a_{ij}(u_t) = \frac{\exp(w_{ij} \cdot u_t)}{\sum_k \exp(w_{ik} \cdot u_t)}$$</p>
+<p>这使转移概率依赖于外部特征——一个直接的例子是：在序列标注任务中，特征可以包括当前词的上下文、词性等，而不只是 HMM 自身的状态转移。IO-HMM 可以看作是从 HMM 到 CRF 的过渡形式。</p>
+<hr>
+<h2 id="7-HMM-的统计性质与局限性"><a href="#7-HMM-的统计性质与局限性" class="headerlink" title="7. HMM 的统计性质与局限性"></a>7. HMM 的统计性质与局限性</h2><h3 id="7-1-HMM-的指数族表示"><a href="#7-1-HMM-的指数族表示" class="headerlink" title="7.1 HMM 的指数族表示"></a>7.1 HMM 的指数族表示</h3><p>HMM 的完整数据（状态 $I$ + 观测 $O$）的联合分布属于指数族。其对数似然可以写为参数与充分统计量的内积形式。这使得 M 步有闭式解（如前所示），也是 EM 算法在 HMM 上如此自然的深层原因。</p>
+<h3 id="7-2-HMM-的局限性：为什么需要-CRF"><a href="#7-2-HMM-的局限性：为什么需要-CRF" class="headerlink" title="7.2 HMM 的局限性：为什么需要 CRF"></a>7.2 HMM 的局限性：为什么需要 CRF</h3><ol>
+<li><p><strong>观测独立性假设过强</strong>：HMM 假设 $o_t$ 只依赖于 $i_t$。在序列标注任务中，这意味着相邻词的标注之间只能通过状态转移概率来交互，但不能直接利用观测之间的相关性（例如”形容词后跟名词”这一模式无法被直接建模）。</p>
+</li>
+<li><p><strong>生成式 vs 判别式</strong>：HMM 是生成式模型（model $P(X,Y)$），而序列标注本质上是一个判别式任务（model $P(Y|X)$）。生成式模型需要为 $P(X)$ 建模——这是我们并不关心的。</p>
+</li>
+<li><p><strong>无法使用重叠特征</strong>：HMM 中每个观测只能由当前状态”发射”。CRF 的势函数可以包含任意的、重叠的、手工设计的特征函数——这通常是序列标注任务中获得高精度的关键。</p>
+</li>
+</ol>
+<p>CRF（条件随机场）通过直接建模 $P(Y|X)$（判别式）并允许任意特征函数，解决了上述问题。但这并不意味着 HMM 被淘汰——HMM 作为生成式模型，在数据量较小、对模型的概率解释要求较强的场景中仍然有价值。且理解 HMM 是理解 CRF 的必要前提。</p>
+<hr>
+<h2 id="8-Baum-Welch-算法的深入分析"><a href="#8-Baum-Welch-算法的深入分析" class="headerlink" title="8. Baum-Welch 算法的深入分析"></a>8. Baum-Welch 算法的深入分析</h2><h3 id="8-1-EM-算法的-Jensen-不等式推导"><a href="#8-1-EM-算法的-Jensen-不等式推导" class="headerlink" title="8.1 EM 算法的 Jensen 不等式推导"></a>8.1 EM 算法的 Jensen 不等式推导</h3><p>Baum-Welch 是 EM 算法的具体实例化。EM 的核心是构造对数似然的一个下界（Q 函数），然后迭代优化这个下界。</p>
+<p>对于 HMM，对数似然为：</p>
+<p>$$\log P(O|\lambda) = \log \sum_I P(O, I|\lambda) = \log \sum_I Q(I) \frac{P(O, I|\lambda)}{Q(I)}$$</p>
+<p>由 Jensen 不等式（对 concave 函数 $\log$）：</p>
+<p>$$\log \sum_I Q(I) \frac{P(O, I|\lambda)}{Q(I)} \geq \sum_I Q(I) \log \frac{P(O, I|\lambda)}{Q(I)} = \mathcal{F}(Q, \lambda)$$</p>
+<p>这个下界 $\mathcal{F}(Q, \lambda)$ 称为<strong>变分自由能</strong>或 ELBO（Evidence Lower BOund）。</p>
+<p>EM 算法的两个步骤可以等价地理解为：</p>
+<ul>
+<li><strong>E 步</strong>：固定 $\lambda^{\text{old}}$，最大化 $\mathcal{F}(Q, \lambda^{\text{old}})$ 关于 $Q$。最优解为 $Q(I) &#x3D; P(I|O, \lambda^{\text{old}})$，即隐变量的后验分布。</li>
+<li><strong>M 步</strong>：固定 $Q$，最大化 $\mathcal{F}(Q, \lambda)$ 关于 $\lambda$。等价于最大化 $Q(\lambda, \lambda^{\text{old}}) &#x3D; \sum_I P(I|O, \lambda^{\text{old}}) \log P(O, I|\lambda)$。</li>
+</ul>
+<h3 id="8-2-EM-收敛性的几何解释"><a href="#8-2-EM-收敛性的几何解释" class="headerlink" title="8.2 EM 收敛性的几何解释"></a>8.2 EM 收敛性的几何解释</h3><p>在参数空间中，EM 算法可以理解为：在当前参数点处，构造一个在切线方向和曲率上匹配真实对数似然的辅助函数（下界），然后直接跳到该辅助函数的最高点。由于辅助函数是下界，跳到其最高点必然至少不低于当前点。与前向梯度下降不同，EM 的”步长”是由辅助函数的最优解自然决定的，不需要调学习率。</p>
+<h3 id="8-3-多个局部最优的应对"><a href="#8-3-多个局部最优的应对" class="headerlink" title="8.3 多个局部最优的应对"></a>8.3 多个局部最优的应对</h3><p>Baum-Welch 对初始化敏感。常见策略：随机初始化 $K&#x3D;10-50$ 组参数，每组运行 Baum-Welch 至收敛，选最终似然最高的那组。对于 $N$ 较大的模型，可先用 $K$-means 聚类观测向量初始化发射概率，再用均匀分布初始化转移概率。</p>
+<hr>
+<h2 id="9-HMM-中的参数平滑"><a href="#9-HMM-中的参数平滑" class="headerlink" title="9. HMM 中的参数平滑"></a>9. HMM 中的参数平滑</h2><h3 id="9-1-数据稀疏问题"><a href="#9-1-数据稀疏问题" class="headerlink" title="9.1 数据稀疏问题"></a>9.1 数据稀疏问题</h3><p>在参数估计中，如果某个转移或发射事件在训练数据中从未出现，对应的概率被估计为 0。这导致测试时一旦遇到该事件，整个序列的概率变为 0——模型完全拒绝了一个”可能”但”未见过”的序列。</p>
+<h3 id="9-2-拉普拉斯平滑（Laplace-Smoothing）"><a href="#9-2-拉普拉斯平滑（Laplace-Smoothing）" class="headerlink" title="9.2 拉普拉斯平滑（Laplace Smoothing）"></a>9.2 拉普拉斯平滑（Laplace Smoothing）</h3><p>最简单的解决方案：给每个计数加一个小的正数：</p>
+<p>$$a_{ij}^{\text{smoothed}} = \frac{C(i \to j) + \alpha}{\sum_k (C(i \to k) + \alpha)} = \frac{C(i \to j) + \alpha}{C(i) + \alpha N}$$</p>
+<p>其中 $\alpha &gt; 0$ 是平滑参数。$\alpha &#x3D; 1$ 即为经典 Laplace 平滑。类似地发射概率：</p>
+<p>$$b_j(k)^{\text{smoothed}} = \frac{C(j \to v_k) + \beta}{C(j) + \beta M}$$</p>
+<h3 id="9-3-其他平滑方法"><a href="#9-3-其他平滑方法" class="headerlink" title="9.3 其他平滑方法"></a>9.3 其他平滑方法</h3><p><strong>Dirichlet 先验（贝叶斯平滑）</strong>：在 Baum-Welch 的 M 步中使用伪计数（pseudo-counts），等价于对 $A$ 和 $B$ 的行使用 Dirichlet 先验。</p>
+<p><strong>Jelinek-Mercer 平滑</strong>：$\hat{a}<em>{ij} &#x3D; \lambda a</em>{ij}^{\text{ML}} + (1-\lambda) \frac{1}{N}$，其中 $\lambda \in [0,1]$ 控制对训练数据的信任度。</p>
+<p>实践中推荐使用 Dirichlet 正则化（在 M 步分子分母加一个小的常数，如 0.01）。</p>
+<hr>
+<h2 id="10-HMM-与深度学习的关系"><a href="#10-HMM-与深度学习的关系" class="headerlink" title="10. HMM 与深度学习的关系"></a>10. HMM 与深度学习的关系</h2><h3 id="10-1-从-HMM-到-RNN-LSTM"><a href="#10-1-从-HMM-到-RNN-LSTM" class="headerlink" title="10.1 从 HMM 到 RNN&#x2F;LSTM"></a>10.1 从 HMM 到 RNN&#x2F;LSTM</h3><p>传统 HMM 有两处限制：(1) 转移概率 $a_{ij}$ 是静态的（不依赖观测内容或更长历史）；(2) 发射概率 $b_j(o_t)$ 仅依赖当前状态。RNN&#x2F;LSTM 在一个统一的神经网络架构中同时绕过这两个限制——隐藏状态通过可微递归计算，当前输出可依赖整个历史。从概率图视角看，HMM 是马尔可夫链（线性链 + 隐变量依赖），RNN 是确定性递归 + 非线性变换。</p>
+<h3 id="10-2-Bi-LSTM-CRF-的混合架构"><a href="#10-2-Bi-LSTM-CRF-的混合架构" class="headerlink" title="10.2 Bi-LSTM-CRF 的混合架构"></a>10.2 Bi-LSTM-CRF 的混合架构</h3><p>这是序列标注的经典 SOTA 架构（在 Transformer 出现之前）：</p>
+<ol>
+<li><strong>Bi-LSTM 层</strong>：对每个词提取上下文相关的特征表示，捕获长程依赖</li>
+<li><strong>CRF 层</strong>：基于 LSTM 特征学习标注之间的转移约束</li>
+</ol>
+<p>CRF 层确保标签之间的全局一致性（如 I-PER 前必须有 B-PER）——这与 HMM 的 Viterbi 解码非常相似，但发射得分来自 LSTM。Bi-LSTM-CRF 可视为 HMM 的判别式版本（CRF）+ 深度学习特征提取（LSTM）。</p>
+<h3 id="10-3-HMM-为什么未被淘汰"><a href="#10-3-HMM-为什么未被淘汰" class="headerlink" title="10.3 HMM 为什么未被淘汰"></a>10.3 HMM 为什么未被淘汰</h3><ol>
+<li><strong>小样本场景</strong>：HMM 作为生成式模型（利用了 $P(X)$），在训练数据极少时可能优于判别式方法</li>
+<li><strong>可解释性要求</strong>：HMM 的状态有明确语义（如金融中”牛市&#x2F;熊市”），深度网络隐藏状态难以解释</li>
+<li><strong>专家知识融入</strong>：HMM 的转移矩阵和发射矩阵可直接融入领域专家知识</li>
+<li><strong>计算资源受限</strong>：HMM 在嵌入式设备中 Viterbi 推理极快</li>
+<li><strong>生成任务</strong>：需要从模型中采样生成序列时（如蛋白质序列设计），HMM 更自然</li>
+</ol>
+<hr>
+<h2 id="11-数值示例：完整的前向-后向-Viterbi-Baum-Welch-走查"><a href="#11-数值示例：完整的前向-后向-Viterbi-Baum-Welch-走查" class="headerlink" title="11. 数值示例：完整的前向-后向-Viterbi-Baum-Welch 走查"></a>11. 数值示例：完整的前向-后向-Viterbi-Baum-Welch 走查</h2><h3 id="11-1-问题设定"><a href="#11-1-问题设定" class="headerlink" title="11.1 问题设定"></a>11.1 问题设定</h3><p>假设有一个简单的天气 HMM：</p>
+<ul>
+<li>隐藏状态：Sunny（S，晴天）和 Rainy（R，雨天），$N&#x3D;2$</li>
+<li>观测：Walk（W，散步）、Shop（P，购物）、Clean（C，打扫），$M&#x3D;3$</li>
+</ul>
+<p>参数：</p>
+<p>$$\pi = \begin{bmatrix} 0.6 & 0.4 \end{bmatrix}$$</p>
+<p>$$A = \begin{bmatrix} 0.7 & 0.3 \\ 0.4 & 0.6 \end{bmatrix}$$</p>
+<p>$$B = \begin{bmatrix} 0.6 & 0.3 & 0.1 \\ 0.1 & 0.4 & 0.5 \end{bmatrix} \quad \text{(行=S,R; 列=W,P,C)}$$</p>
+<p>观测序列 $O &#x3D; (W, P, C)$，$T&#x3D;3$。</p>
+<h3 id="11-2-前向算法计算"><a href="#11-2-前向算法计算" class="headerlink" title="11.2 前向算法计算"></a>11.2 前向算法计算</h3><p>**$t&#x3D;1$**：</p>
+<ul>
+<li>$\alpha_1(S) &#x3D; \pi_S \cdot P(W|S) &#x3D; 0.6 \times 0.6 &#x3D; 0.36$</li>
+<li>$\alpha_1(R) &#x3D; \pi_R \cdot P(W|R) &#x3D; 0.4 \times 0.1 &#x3D; 0.04$</li>
+</ul>
+<p>**$t&#x3D;2$**：</p>
+<ul>
+<li>$\alpha_2(S) &#x3D; [\alpha_1(S) \cdot a_{SS} + \alpha_1(R) \cdot a_{RS}] \cdot P(P|S)$<br>$&#x3D; [0.36 \times 0.7 + 0.04 \times 0.4] \times 0.3 &#x3D; [0.252 + 0.016] \times 0.3 &#x3D; 0.0804$</li>
+<li>$\alpha_2(R) &#x3D; [0.36 \times 0.3 + 0.04 \times 0.6] \times 0.4 &#x3D; [0.108 + 0.024] \times 0.4 &#x3D; 0.0528$</li>
+</ul>
+<p>**$t&#x3D;3$**：</p>
+<ul>
+<li>$\alpha_3(S) &#x3D; [0.0804 \times 0.7 + 0.0528 \times 0.4] \times 0.1 &#x3D; [0.05628 + 0.02112] \times 0.1 &#x3D; 0.00774$</li>
+<li>$\alpha_3(R) &#x3D; [0.0804 \times 0.3 + 0.0528 \times 0.6] \times 0.5 &#x3D; [0.02412 + 0.03168] \times 0.5 &#x3D; 0.0279$</li>
+</ul>
+<p>$P(O|\lambda) &#x3D; \alpha_3(S) + \alpha_3(R) &#x3D; 0.00774 + 0.0279 &#x3D; 0.03564$</p>
+<h3 id="11-3-后向算法计算"><a href="#11-3-后向算法计算" class="headerlink" title="11.3 后向算法计算"></a>11.3 后向算法计算</h3><p>**$t&#x3D;3$**：</p>
+<ul>
+<li>$\beta_3(S) &#x3D; 1, \beta_3(R) &#x3D; 1$</li>
+</ul>
+<p>**$t&#x3D;2$**：</p>
+<ul>
+<li>$\beta_2(S) &#x3D; a_{SS} \cdot P(C|S) \cdot \beta_3(S) + a_{SR} \cdot P(C|R) \cdot \beta_3(R)$<br>$&#x3D; 0.7 \times 0.1 \times 1 + 0.3 \times 0.5 \times 1 &#x3D; 0.07 + 0.15 &#x3D; 0.22$</li>
+<li>$\beta_2(R) &#x3D; 0.4 \times 0.1 \times 1 + 0.6 \times 0.5 \times 1 &#x3D; 0.04 + 0.30 &#x3D; 0.34$</li>
+</ul>
+<p>**$t&#x3D;1$**：</p>
+<ul>
+<li>$\beta_1(S) &#x3D; 0.7 \times 0.3 \times 0.22 + 0.3 \times 0.4 \times 0.34 &#x3D; 0.0462 + 0.0408 &#x3D; 0.087$</li>
+<li>$\beta_1(R) &#x3D; 0.4 \times 0.3 \times 0.22 + 0.6 \times 0.4 \times 0.34 &#x3D; 0.0264 + 0.0816 &#x3D; 0.108$</li>
+</ul>
+<p>验证 $P(O|\lambda) &#x3D; \pi_S \cdot P(W|S) \cdot \beta_1(S) + \pi_R \cdot P(W|R) \cdot \beta_1(R) &#x3D; 0.6 \times 0.6 \times 0.087 + 0.4 \times 0.1 \times 0.108 &#x3D; 0.03132 + 0.00432 &#x3D; 0.03564 \checkmark$</p>
+<h3 id="11-4-gamma-和-xi-的计算"><a href="#11-4-gamma-和-xi-的计算" class="headerlink" title="11.4 $\gamma$ 和 $\xi$ 的计算"></a>11.4 $\gamma$ 和 $\xi$ 的计算</h3><p>**$\gamma_t(i)$**：</p>
+<p>以 $t&#x3D;2$ 为例：</p>
+<ul>
+<li>$\gamma_2(S) &#x3D; \frac{\alpha_2(S) \cdot \beta_2(S)}{P(O)} &#x3D; \frac{0.0804 \times 0.22}{0.03564} &#x3D; \frac{0.017688}{0.03564} \approx 0.496$</li>
+<li>$\gamma_2(R) &#x3D; \frac{0.0528 \times 0.34}{0.03564} &#x3D; \frac{0.017952}{0.03564} \approx 0.504$</li>
+</ul>
+<p>解释：在 $t&#x3D;2$ 看到 W,P,C 这些观测后，天气是晴天的后验概率约 49.6%，是雨天的后验概率约 50.4%——几乎等可能。</p>
+<p>**$\xi_t(i,j)$**（以 $t&#x3D;1, i&#x3D;S, j&#x3D;S$ 为例）：</p>
+<p>$$\xi_1(S, S) = \frac{\alpha_1(S) \cdot a_{SS} \cdot P(P|S) \cdot \beta_2(S)}{P(O)} = \frac{0.36 \times 0.7 \times 0.3 \times 0.22}{0.03564} = \frac{0.016632}{0.03564} \approx 0.467$$</p>
+<p>解释：给定三个观测，在 $t&#x3D;1$ 是晴天、$t&#x3D;2$ 还是晴天的后验概率约 46.7%。</p>
+<h3 id="11-5-Viterbi-解码"><a href="#11-5-Viterbi-解码" class="headerlink" title="11.5 Viterbi 解码"></a>11.5 Viterbi 解码</h3><p>**$t&#x3D;1$**：</p>
+<ul>
+<li>$\delta_1(S) &#x3D; 0.36, \psi_1(S) &#x3D; 0$</li>
+<li>$\delta_1(R) &#x3D; 0.04, \psi_1(R) &#x3D; 0$</li>
+</ul>
+<p>**$t&#x3D;2$**：</p>
+<ul>
+<li>$\delta_2(S) &#x3D; \max[0.36 \times 0.7, 0.04 \times 0.4] \times 0.3 &#x3D; \max[0.252, 0.016] \times 0.3 &#x3D; 0.0756$, $\psi_2(S)&#x3D;S$</li>
+<li>$\delta_2(R) &#x3D; \max[0.36 \times 0.3, 0.04 \times 0.6] \times 0.4 &#x3D; \max[0.108, 0.024] \times 0.4 &#x3D; 0.0432$, $\psi_2(R)&#x3D;S$</li>
+</ul>
+<p>**$t&#x3D;3$**：</p>
+<ul>
+<li>$\delta_3(S) &#x3D; \max[0.0756 \times 0.7, 0.0432 \times 0.4] \times 0.1 &#x3D; \max[0.05292, 0.01728] \times 0.1 &#x3D; 0.005292$, $\psi_3(S)&#x3D;S$</li>
+<li>$\delta_3(R) &#x3D; \max[0.0756 \times 0.3, 0.0432 \times 0.6] \times 0.5 &#x3D; \max[0.02268, 0.02592] \times 0.5 &#x3D; 0.01296$, $\psi_3(R)&#x3D;R$</li>
+</ul>
+<p><strong>回溯</strong>：$i_3^* &#x3D; R$, $i_2^* &#x3D; \psi_3(R) &#x3D; R$, $i_1^* &#x3D; \psi_2(R) &#x3D; S$</p>
+<p>最优状态序列：(Sunny, Rainy, Rainy) — 对应观测 (Walk, Shop, Clean)。</p>
+<p>解释：第一天晴天去散步，然后变雨天，继续购物和打扫。这与直觉吻合——雨天更可能在家购物和打扫，晴天更可能外出散步。但第二天开始下雨后转为室内活动。</p>
+<h3 id="11-6-对比：逐时刻最优-vs-Viterbi-全局最优"><a href="#11-6-对比：逐时刻最优-vs-Viterbi-全局最优" class="headerlink" title="11.6 对比：逐时刻最优 vs Viterbi 全局最优"></a>11.6 对比：逐时刻最优 vs Viterbi 全局最优</h3><p>我们计算出 $\gamma_t(i)$ 以对每一时刻独立选最优状态：</p>
+<ul>
+<li>$\gamma_1(S) &#x3D; \frac{\alpha_1(S)\beta_1(S)}{P(O)} &#x3D; \frac{0.36 \times 0.087}{0.03564} \approx 0.878$, $\gamma_1(R) \approx 0.122$ → 选 S</li>
+<li>$\gamma_2(S) \approx 0.496$, $\gamma_2(R) \approx 0.504$ → 选 R</li>
+<li>$\gamma_3(S) &#x3D; \frac{0.00774 \times 1}{0.03564} \approx 0.217$, $\gamma_3(R) \approx 0.783$ → 选 R</li>
+</ul>
+<p>逐时刻最优序列也是 (S, R, R)，与 Viterbi 一致——说明在这个例子中两种方法恰巧一致。但这个一致性不总是成立的。</p>
+<p><strong>反例</strong>：假设修改转移矩阵使 $a_{SR} &#x3D; 0$（从晴天不能直接变雨天）但 $a_{RR} &#x3D; 1.0$（雨天永远是雨天）。如果 $\gamma_1$ 选择 S 但 $\gamma_2$ 选择 R，Viterbi 会拒绝这个序列（因为 $a_{SR} &#x3D; 0$ 使该路径概率为 0），转而选择次优但全局相容的序列。而逐时刻贪心法则会输出一个概率为 0 的不合法序列。这就是 Viterbi 的全局最优与逐时刻最优的核心分歧。</p>
+<hr>
+<h2 id="12-HMM-扩展应用详解"><a href="#12-HMM-扩展应用详解" class="headerlink" title="12. HMM 扩展应用详解"></a>12. HMM 扩展应用详解</h2><h3 id="12-1-中文分词中的-HMM"><a href="#12-1-中文分词中的-HMM" class="headerlink" title="12.1 中文分词中的 HMM"></a>12.1 中文分词中的 HMM</h3><p>中文分词是序列标注问题（BEMS 标注：Begin, End, Middle, Single）。观测是字符序列，隐藏状态是 BEMS 标签。</p>
+<p>观测序列：”我 爱 北京 天安门” → “我&#x2F;爱&#x2F;北京&#x2F;天安门”</p>
+<p>HMM 分词流程：</p>
+<ol>
+<li>训练阶段：在有标注的分词语料上统计初始状态概率、状态转移概率（如 P(E|B) 应该很低）、发射概率（如 P(‘京’|E) 应该较高）</li>
+<li>解码阶段：对任意句子，运行 Viterbi 算法找到最优的 BEMS 标签序列</li>
+<li>后处理：根据 BEMS 标签切词</li>
+</ol>
+<p>现代中文分词系统（如 jieba）在 HMM 基础上增加词典匹配和规则来提升准确率。</p>
+<h3 id="12-2-语音识别中的-GMM-HMM"><a href="#12-2-语音识别中的-GMM-HMM" class="headerlink" title="12.2 语音识别中的 GMM-HMM"></a>12.2 语音识别中的 GMM-HMM</h3><p>在深度学习统治 ASR 之前，GMM-HMM 是语音识别的标准框架：</p>
+<ul>
+<li><strong>HMM 的状态</strong>对应音素（phone）的子段（通常一个音素 3-5 个状态）</li>
+<li><strong>GMM</strong> 建模每个状态下声学特征（MFCC 等）的分布</li>
+<li><strong>语言模型</strong>（N-gram）提供状态转移的先验</li>
+</ul>
+<p>整个系统是 HMM（时序结构）+ GMM（声学建模）+ N-gram（语言约束）的组合。Viterbi 解码在音素、词、句子的三级网络中搜索最优路径。</p>
+<h3 id="12-3-生物信息学中的-Profile-HMM"><a href="#12-3-生物信息学中的-Profile-HMM" class="headerlink" title="12.3 生物信息学中的 Profile HMM"></a>12.3 生物信息学中的 Profile HMM</h3><p>Profile HMM 用于蛋白质&#x2F;基因家族的序列比对。它在标准 HMM 基础上引入了三个状态类型：</p>
+<ul>
+<li><strong>Match 状态</strong>：匹配位置（发射氨基酸）</li>
+<li><strong>Insert 状态</strong>：插入片段（额外序列）</li>
+<li><strong>Delete 状态</strong>：缺失（静默状态，不发射）</li>
+</ul>
+<p>这使得它可以建模序列进化中的 indel（插入&#x2F;缺失）事件。HMMER 是使用 Profile HMM 的流行工具，在 Pfam、InterPro 等蛋白质家族数据库中发挥关键作用。</p>
+<hr>
+<h2 id="13-面试高频问答"><a href="#13-面试高频问答" class="headerlink" title="13. 面试高频问答"></a>13. 面试高频问答</h2><p><strong>Q1: 前向算法和后向算法的关系是什么？为什么两者都能计算 $P(O|\lambda)$？</strong></p>
+<p>A: 前向概率 $\alpha_t(i) &#x3D; P(o_1, \ldots, o_t, i_t &#x3D; s_i | \lambda)$ 涵盖”过去到现在的观测和现在状态”。后向概率 $\beta_t(i) &#x3D; P(o_{t+1}, \ldots, o_T | i_t &#x3D; s_i, \lambda)$ 涵盖”现在状态给定下未来观测”。两者之积 $\alpha_t(i) \beta_t(i) &#x3D; P(O, i_t &#x3D; s_i | \lambda)$，求和即得 $P(O|\lambda)$。这个等式对任意 $t$ 都成立。</p>
+<p><strong>Q2: Viterbi 算法中的 $\max$ 操作可以换成 $\sum$ 吗？如果可以，结果是什么？</strong></p>
+<p>A: 如果把 Viterbi 算法中的 $\max$ 全部换成 $\sum$，得到的恰好就是前向算法。两者使用完全相同的 DP 网格结构，只是聚合算子不同：$\max$ 找最优单条路径概率，$\sum$ 累积所有路径的总概率。Viterbi 是前向算法在 max-plus 半环上的版本。</p>
+<p><strong>Q3: Baum-Welch 算法的 E 步为什么要计算 $\xi_t(i,j)$？</strong></p>
+<p>A: $\xi_t(i,j) &#x3D; P(i_t &#x3D; s_i, i_{t+1} &#x3D; s_j | O, \lambda)$ 是给定观测后相邻状态转移的后验概率。M 步重估计转移概率 $a_{ij}$ 需要”从 $s_i$ 到 $s_j$ 的期望次数”（$\sum_t \xi_t(i,j)$）除以”处于 $s_i$ 的期望次数”（$\sum_t \gamma_t(i)$）。这是 EM 中”用后验期望替代缺失数据”的具体体现。</p>
+<p><strong>Q4: HMM 为什么使用 EM 算法？为什么不能直接解析求解？</strong></p>
+<p>A: HMM 的似然函数 $P(O|\lambda) &#x3D; \sum_I P(O, I|\lambda)$ 是 log-sum 形式：$L(\lambda) &#x3D; \log \sum_I P(O, I|\lambda)$，参数耦合在一起无法解析求导。EM 算法通过 Jensen 不等式将 $\log \sum$ 交换为 $\sum \log$，构造下界（Q 函数）来间接优化，M 步有闭式解。</p>
+<p><strong>Q5: 前向算法的数值下溢问题如何解决？</strong></p>
+<p>A: 前向概率 $\alpha_t(i)$ 随着 $T$ 增大呈指数级趋于 0。解决方案是 Scaling（重归一化）：每一步将 $\alpha_t(i)$ 归一化为概率分布，记录尺度因子 $c_t$。最终 $\log P(O|\lambda) &#x3D; -\sum_t \log c_t$，在 log-space 中完成所有计算。Baum-Welch 中 $\gamma_t(i)$ 和 $\xi_t(i,j)$ 的分子分母 scale factor 可互相抵消。</p>
+<p><strong>Q6: 为什么 HMM 是生成式模型，而 CRF 是判别式模型？</strong></p>
+<p>A: HMM 对联合分布 $P(O, I)$ 建模（生成式）：定义状态序列如何生成（$\pi, A$），以及每个状态下观测如何生成（$B$），可以从模型中采样完整的数据对。CRF 直接对条件分布 $P(I|O)$ 建模（判别式）：不建模 $P(O)$，可自由使用 $O$ 中的任意特征（全局、重叠特征），无需担心如何生成观测。生成式模型在小样本下可能更好（建模 $P(X)$ 是一种正则化）；判别式模型在有足够标注数据时通常精度更高。</p>
+<p><strong>Q7: Viterbi 算法找到的”逐时刻最可能状态”和”全局最可能状态序列”有什么不同？为什么前者可能不合法？</strong></p>
+<p>A: 逐时刻取 $\arg\max_i \gamma_t(i)$（即给定观测下每个时刻独立最优的状态）不一定构成联合概率最大的完整序列。原因：两个连续时刻各自最可能状态之间的转移概率 $a_{ij}$ 可能为 0 或极低。例如 $\gamma_1&#x3D;(0.6, 0.4)$ 选择状态 1，$\gamma_2&#x3D;(0.5, 0.5)$ 选择状态 2，但如果 $a_{12}&#x3D;0$（从状态 1 无法直接跳到状态 2），这个序列的联合概率就是 0。Viterbi 正确地考虑了状态间的全局相容性，找到的是联合最可能的完整序列。</p>
+<p><strong>Q8: 如何处理观测序列长度不同的问题？</strong></p>
+<p>A: HMM 天然支持变长序列——参数 $\pi, A, B$ 与序列长度 $T$ 无关。训练时对每条序列独立做前向-后向（用其自身的 $T_s$），将所有序列的 $\gamma_t^{(s)}$ 和 $\xi_t^{(s)}$ 聚合计入 M 步。这也适用于多个独立序列的 Baum-Welch 训练。</p>
+<p><strong>Q9: 描述 Baum-Welch 算法中 E 步和 M 步的具体计算过程。</strong></p>
+<p>A: </p>
+<ul>
+<li><strong>E 步</strong>：使用当前参数 $\lambda^{\text{old}}$ 运行前向-后向算法，计算 $\alpha_t(i), \beta_t(i)$ 以及 $P(O|\lambda^{\text{old}})$。然后计算后验概率 $\gamma_t(i) &#x3D; \alpha_t(i)\beta_t(i)&#x2F;P(O|\lambda)$ 和 $\xi_t(i,j) &#x3D; \alpha_t(i)a_{ij}b_j(o_{t+1})\beta_{t+1}(j)&#x2F;P(O|\lambda)$。</li>
+<li><strong>M 步</strong>：用 E 步的期望统计量重新估计参数。$\hat{\pi}<em>i &#x3D; \gamma_1(i)$，$\hat{a}</em>{ij} &#x3D; \sum_t \xi_t(i,j) &#x2F; \sum_t \gamma_t(i)$，$\hat{b}<em>j(k) &#x3D; \sum</em>{t: o_t&#x3D;v_k} \gamma_t(j) &#x2F; \sum_t \gamma_t(j)$。这些公式的直觉是”期望计数除以期望总数”，是完整数据 MLE 的”软”版本（用后验概率代替了硬分配）。</li>
+</ul>
+<p><strong>Q10: 如果 HMM 中有 $N&#x3D;100$ 个隐藏状态，观测序列 $T&#x3D;1000$，运行一次 Viterbi 解码需要多少次基本运算？</strong></p>
+<p>A: Viterbi 的主要计算量在递推步骤。对每个时刻 $t &#x3D; 1, \ldots, T-1$，对每个当前状态 $j$ 计算 $\delta_{t+1}(j) &#x3D; \max_i [\delta_t(i) \cdot a_{ij}] \cdot b_j(o_{t+1})$，这需要遍历所有 $N$ 个前一状态 $i$ 来求 max。因此每步需要 $O(N^2)$ 次乘法+比较。总计 $(T-1) \times N^2 \approx 1000 \times 10000 &#x3D; 10^7$ 次基本运算。加上回溯阶段需要 $T-1$ 次查表，总计约 10M 次运算——在现代 CPU 上不到 1 毫秒即可完成。这体现了 DP 的强大：指数级搜索空间被压缩到了二次复杂度。</p>
+<hr>
+<h2 id="14-总结"><a href="#14-总结" class="headerlink" title="14. 总结"></a>14. 总结</h2><p>HMM 是时序概率建模的基石。三个经典问题与三个核心算法构成了一个完整的理论体系：</p>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>算法</th>
+<th>类型</th>
+<th>复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>概率计算</td>
+<td>前向-后向</td>
+<td>DP &#x2F; 精确</td>
+<td>$O(T N^2)$</td>
+</tr>
+<tr>
+<td>解码</td>
+<td>Viterbi</td>
+<td>DP &#x2F; 精确</td>
+<td>$O(T N^2)$</td>
+</tr>
+<tr>
+<td>学习</td>
+<td>Baum-Welch (EM)</td>
+<td>迭代 &#x2F; 局部最优</td>
+<td>$O(ITER \cdot T N^2)$</td>
+</tr>
+</tbody></table>
+<p>HMM 的三个关键假设——马尔可夫性、齐次性、观测独立性——使计算变得可行，但也限制了模型的表达能力。理解这些假设何时合理、何时需要被松弛，是选择 HMM vs CRF vs RNN&#x2F;LSTM&#x2F;Transformer 的判断依据。</p>
+<p>HMM 的思想遗产远不止模型本身：</p>
+<ul>
+<li><strong>动态规划（前向、Viterbi）</strong>在序列建模中的广泛应用</li>
+<li><strong>EM 算法</strong>的无监督学习范式</li>
+<li><strong>隐变量模型</strong>的概率推断框架</li>
+<li>从 HMM 到 CRF、从 HMM 到 HMM+LSTM 的发展脉络</li>
+</ul>
+<p>都深刻影响了后续的统计学习和深度学习模型。</p>
+<hr>
+<p><strong>HMM 三大算法复杂度汇总</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>算法</th>
+<th>问题</th>
+<th>时间复杂度</th>
+<th>空间复杂度</th>
+<th>递归方向</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Forward</td>
+<td>概率计算</td>
+<td>$O(T N^2)$</td>
+<td>$O(TN)$ 或优化为 $O(N)$</td>
+<td>前向递推</td>
+</tr>
+<tr>
+<td>Backward</td>
+<td>概率计算</td>
+<td>$O(T N^2)$</td>
+<td>$O(TN)$ 或优化为 $O(N)$</td>
+<td>后向递推</td>
+</tr>
+<tr>
+<td>Viterbi</td>
+<td>解码</td>
+<td>$O(T N^2)$</td>
+<td>$O(TN)$（存回溯指针）</td>
+<td>前向递推 + 回溯</td>
+</tr>
+<tr>
+<td>Baum-Welch</td>
+<td>学习</td>
+<td>$O(\text{iter} \cdot T N^2)$</td>
+<td>$O(TN)$（存储 $\alpha, \beta, \gamma, \xi$）</td>
+<td>前向+后向 + 参数重估</td>
+</tr>
+</tbody></table>
+<hr>
+<p><strong>HMM 与相关模型的对比</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>类型</th>
+<th>观测独立性</th>
+<th>特征灵活性</th>
+<th>训练</th>
+<th>状态空间</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HMM</td>
+<td>生成式</td>
+<td>是</td>
+<td>低（预定义发射概率）</td>
+<td>EM (Baum-Welch)</td>
+<td>离散</td>
+</tr>
+<tr>
+<td>CRF</td>
+<td>判别式</td>
+<td>否</td>
+<td>高（任意特征）</td>
+<td>梯度下降&#x2F;L-BFGS</td>
+<td>离散</td>
+</tr>
+<tr>
+<td>HMM+SVM</td>
+<td>混合</td>
+<td>是</td>
+<td>中</td>
+<td>分段训练</td>
+<td>离散</td>
+</tr>
+<tr>
+<td>MEMM</td>
+<td>判别式</td>
+<td>否</td>
+<td>高</td>
+<td>MLE</td>
+<td>离散（有标签偏置）</td>
+</tr>
+<tr>
+<td>RNN&#x2F;LSTM</td>
+<td>判别式</td>
+<td>否</td>
+<td>极高</td>
+<td>BPTT &#x2F; SGD</td>
+<td>连续（隐藏向量）</td>
+</tr>
+<tr>
+<td>Transformer</td>
+<td>判别式</td>
+<td>否</td>
+<td>极高</td>
+<td>Adam&#x2F;SGD</td>
+<td>连续（自注意力）</td>
+</tr>
+</tbody></table>
+<p>在表格数据或小样本序列建模中，HMM 和 CRF 仍然是最稳健的选择；在大规模 NLP 任务中，Transformer 已经取代了 LSTM-CRF 的 SOTA 地位。</p>
+<hr>
+<p><strong>扩展阅读推荐</strong>：</p>
+<ul>
+<li>Rabiner (1989), <em>A Tutorial on Hidden Markov Models and Selected Applications in Speech Recognition</em> — HMM 的经典教程，引用量超过 30000</li>
+<li>Bishop (2006), <em>Pattern Recognition and Machine Learning</em>, Chapter 13 — HMM 的 PRML 视角</li>
+<li>Murphy (2012), <em>Machine Learning: A Probabilistic Perspective</em>, Chapter 17 — HMM 在现代概率图框架下的全面讲解</li>
+<li>L. R. Rabiner &amp; B. H. Juang (1986), <em>An Introduction to Hidden Markov Models</em> — 另一篇经典综述</li>
+</ul>
+<p><strong>HMM 实践工具推荐</strong>：</p>
+<ul>
+<li><strong>hmmlearn</strong>（Python）：<code>pip install hmmlearn</code>，支持 Gaussian HMM、GMM-HMM、Multinomial HMM，API 设计类似 sklearn</li>
+<li><strong>pomegranate</strong>（Python）：更通用的概率模型库，支持 HMM、贝叶斯网络、混合模型</li>
+<li><strong>seqHMM</strong>（R）：用于序列分析和纵向数据的 HMM 库</li>
+<li><strong>GHMM</strong>（C）：GNU 的通用 HMM 工具箱，支持自定义发射分布</li>
+</ul>
+<hr>
+<p><strong>Q11: HMM 中的马尔可夫假设（一阶）如果被违反了会怎样？如何检测和缓解？</strong></p>
+<p>A: 如果真实数据不满足一阶马尔可夫性（即 $P(i_t | i_{t-1}, i_{t-2}) \neq P(i_t | i_{t-1})$），模型仍有偏——它会把高阶依赖”压缩”到一阶转移概率中，但这会导致模型不够精确。检测方法：(1) 在验证集上检查残差是否仍有自相关性；(2) 比较一阶和二阶 HMM 的似然（似然比检验）；(3) 在训练数据上统计二阶转移频率并与一阶模型的预测对比。缓解方法：(1) 使用 $m$ 阶 HMM（代价是参数从 $O(N^2)$ 增加到 $O(N^{m+1})$）；(2) 使用分段平稳假设，将时间序列切分为多个近似平稳的段；(3) 使用 RNN&#x2F;LSTM 替代 HMM 的离散状态转移建模。</p>
+<p><strong>Q12: 多序列 Baum-Welch 训练中，如果各序列的质量差异很大怎么办？</strong></p>
+<p>A: 可以通过为每条序列分配权重 $w^{(s)}$ 来反映其置信度或重要性。在 M 步中，将 $\gamma_t^{(s)}(i)$ 替换为 $w^{(s)} \cdot \gamma_t^{(s)}(i)$（加权期望计数）。这等价于在似然函数中使用加权对数似然 $\sum_s w^{(s)} \log P(O^{(s)}|\lambda)$。常见加权策略：(1) 按序列长度加权（长序列可能更可靠）；(2) 按序列的标注质量&#x2F;置信度加权（如果部分序列有弱标注或自动标注）；(3) 对于异常序列（如含大量未见观测的序列）降低权重。</p>
+<p><strong>Q13: 在深度学习时代，为什么还要学习 HMM？</strong></p>
+<p>A: </p>
+<ol>
+<li><strong>概率图模型的思维范式</strong>：理解 HMM 的推断（前向-后向）、解码（Viterbi）和学习（EM）三件套，是理解更复杂概率模型（CRF, LDA, HDP-HMM, 状态空间模型, 深度生成模型 VAE&#x2F;扩散模型）的基础。概率推断的动态规划范式（sum-product 和 max-product）贯穿了所有图模型。</li>
+<li><strong>小数据 + 强先验场景</strong>：在很多科学领域（如生物信息学、金融计量、语音学），可用的标注数据远少于 NLP，但领域知识可以自然编码为 HMM 的参数结构。此时 HMM 显著优于深度网络。</li>
+<li><strong>解释性要求</strong>：在医疗诊断、金融监管等场景，模型分析需要一个可解释的”状态”概念。HMM 的隐藏状态天然对应可解释的系统模式。</li>
+<li><strong>算法思想的迁移</strong>：Viterbi 算法拓展为 Beam Search（现代 NLP 解码的标配），前向-后向算法拓展为 seq2seq 的注意力权重计算（本质上是软对齐），EM 思想深刻影响了 VAE 和扩散模型的训练。</li>
+</ol>
+<hr>
+<p><em>本系列下一篇文章（也是本系列最后一篇）将深入探讨条件随机场（CRF）——从无向图模型到线性链 CRF，完成从 HMM 到 CRF 的认知跨越，敬请期待。</em></p>
+<hr>
+<p><strong>HMM 关键公式速查</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>公式</th>
+<th>表达式</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>前向概率</td>
+<td>$\alpha_{t+1}(j) &#x3D; [\sum_i \alpha_t(i) a_{ij}] b_j(o_{t+1})$</td>
+<td>概率计算</td>
+</tr>
+<tr>
+<td>后向概率</td>
+<td>$\beta_t(i) &#x3D; \sum_j a_{ij} b_j(o_{t+1}) \beta_{t+1}(j)$</td>
+<td>概率计算</td>
+</tr>
+<tr>
+<td>似然</td>
+<td>$P(O\vert\lambda) &#x3D; \sum_i \alpha_T(i) &#x3D; \sum_i \pi_i b_i(o_1) \beta_1(i)$</td>
+<td>概率计算</td>
+</tr>
+<tr>
+<td>$\gamma$</td>
+<td>$\gamma_t(i) &#x3D; \frac{\alpha_t(i) \beta_t(i)}{P(O\vert\lambda)}$</td>
+<td>E 步</td>
+</tr>
+<tr>
+<td>$\xi$</td>
+<td>$\xi_t(i,j) &#x3D; \frac{\alpha_t(i) a_{ij} b_j(o_{t+1}) \beta_{t+1}(j)}{P(O\vert\lambda)}$</td>
+<td>E 步</td>
+</tr>
+<tr>
+<td>Viterbi 递推</td>
+<td>$\delta_{t+1}(j) &#x3D; [\max_i \delta_t(i) a_{ij}] b_j(o_{t+1})$</td>
+<td>解码</td>
+</tr>
+<tr>
+<td>M 步-$A$</td>
+<td>$\hat{a}_{ij} &#x3D; \frac{\sum_t \xi_t(i,j)}{\sum_t \gamma_t(i)}$</td>
+<td>学习</td>
+</tr>
+<tr>
+<td>M 步-$B$</td>
+<td>$\hat{b}<em>j(k) &#x3D; \frac{\sum</em>{t: o_t&#x3D;v_k} \gamma_t(j)}{\sum_t \gamma_t(j)}$</td>
+<td>学习</td>
+</tr>
+<tr>
+<td>Scaling</td>
+<td>$\log P(O\vert\lambda) &#x3D; -\sum_t \log c_t$</td>
+<td>数值稳定</td>
+</tr>
+</tbody></table>
+<hr>
+<p><strong>HMM 学习资源推荐</strong>：</p>
+<ul>
+<li><strong>《统计自然语言处理》</strong>（宗成庆）：HMM 在中文分词和词性标注中的应用</li>
+<li><strong>《Speech and Language Processing》</strong>（Jurafsky &amp; Martin, 3rd ed.）：NLP 视角的 HMM 教程</li>
+<li><strong>《Pattern Recognition and Machine Learning》</strong>（Bishop）第 13 章：概率图模型框架下的 HMM</li>
+<li><strong>《Biological Sequence Analysis》</strong>（Durbin et al.）：HMM 在生物信息学中的经典应用</li>
+<li><strong>hmmlearn 文档</strong>：Python 中 Gaussian HMM 和 Multinomial HMM 的最佳入门</li>
+</ul>
+<hr>
+<p><strong>最后的思考</strong>：HMM 的价值不在于它今天的 SOTA 地位（它早已不是），而在于它给序列建模提供了一套完整的思维工具——状态空间建模、动态规划推断、EM 参数学习。这套工具在后来的 CRF、LSTM、seq2seq、Transformer 中一再重现。理解了 HMM 的三问题三算法，你就掌握了序列建模的”语法”——具体用哪种”词汇”（HMM&#x2F;CRF&#x2F;LSTM&#x2F;Transformer）去表达，都只是选择而已。</p>
+<p>HMM 是统计学习领域少有的”数学优雅 + 计算可行 + 应用广泛”三位一体的模型。从 1960 年代 Baum 等人的开创性工作，到 1980 年代 Rabiner 将其系统化并应用于语音识别，再到今天在生物信息学和金融时序中的持续使用——HMM 的半个多世纪的历史证明了它的基础性地位。在深度学习时代重读 HMM，你会发现动态规划、消息传递、对数空间计算、EM 变分下界这些概念，在注意力和 Transformer 中一次次重现——只是换了个名字。</p>
+<p>这也是本系列的倒数第二篇。下一篇——条件随机场——将把 HMM 的”局部归一化概率空间”升级为 CRF 的”全局归一化得分空间”，完成从生成式到判别式的序列建模范式迁移。</p>
+<p><strong>感谢阅读。</strong> 如果对你有所启发，欢迎分享和讨论。</p>
+<blockquote>
+<p>统计学习不是记忆公式，是理解每个公式背后的优化目标和概率假设。<br>HMM 是这种理解的绝佳起点——三个问题、三个算法、一个统一的 DP 框架。</p>
+</blockquote>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2020/09/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E9%9A%90%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E6%A8%A1%E5%9E%8B/">http://tufusi.com/2020/09/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E9%9A%90%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E6%A8%A1%E5%9E%8B/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2020/09/20/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E7%AF%87-Scikit-learn/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>机器学习框架篇-Scikit-learn</span></div></a></div><div class="next-post pull_right"><a href="/2020/09/15/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E7%AF%87-Keras/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>机器学习框架篇-Keras</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

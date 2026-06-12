@@ -1,0 +1,424 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【逆向安全技术-工具篇】反编译神器apktool和Jadx | ONE·PIECE</title><meta name="description" content="【逆向安全技术-工具篇】反编译神器apktool和Jadx"><meta name="keywords" content="反编译"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【逆向安全技术-工具篇】反编译神器apktool和Jadx"><meta name="twitter:description" content="【逆向安全技术-工具篇】反编译神器apktool和Jadx"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【逆向安全技术-工具篇】反编译神器apktool和Jadx"><meta property="og:url" content="http://tufusi.com/2021/07/20/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%B7%A5%E5%85%B7%E7%AF%87%E3%80%91%E5%8F%8D%E7%BC%96%E8%AF%91%E7%A5%9E%E5%99%A8apktool%E5%92%8CJadx/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【逆向安全技术-工具篇】反编译神器apktool和Jadx"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2021/07/20/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%B7%A5%E5%85%B7%E7%AF%87%E3%80%91%E5%8F%8D%E7%BC%96%E8%AF%91%E7%A5%9E%E5%99%A8apktool%E5%92%8CJadx/"><link rel="prev" title="【逆向安全技术-工具篇】Hook神器XPosed" href="http://tufusi.com/2021/07/25/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%B7%A5%E5%85%B7%E7%AF%87%E3%80%91Hook%E7%A5%9E%E5%99%A8XPosed/"><link rel="next" title="【逆向安全技术-防护篇】so加固原理" href="http://tufusi.com/2021/07/15/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E9%98%B2%E6%8A%A4%E7%AF%87%E3%80%91so%E5%8A%A0%E5%9B%BA%E5%8E%9F%E7%90%86/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81apktool-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、apktool 深度解析</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E4%B8%80-1-APK-%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E5%9B%9E%E9%A1%BE"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">一.1 APK 文件结构回顾</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E4%B8%80-2-%E5%86%85%E9%83%A8%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">一.2 内部工作原理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E4%B8%80-3-%E5%AE%8C%E6%95%B4%E5%91%BD%E4%BB%A4%E5%8F%82%E8%80%83"><span class="toc_mobile_items-number">1.3.</span> <span class="toc_mobile_items-text">一.3 完整命令参考</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E4%B8%80-4-apktool-yml-%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc_mobile_items-number">1.4.</span> <span class="toc_mobile_items-text">一.4 apktool.yml 配置文件</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E4%B8%80-5-smali-baksmali-%E5%BC%95%E6%93%8E%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc_mobile_items-number">1.5.</span> <span class="toc_mobile_items-text">一.5 smali&#x2F;baksmali 引擎深度解析</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81JADX-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、JADX 深度解析</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E4%BA%8C-1-%E5%8F%8D%E7%BC%96%E8%AF%91%E6%B5%81%E6%B0%B4%E7%BA%BF"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">二.1 反编译流水线</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E4%BA%8C-2-SSA-%E8%BD%AC%E6%8D%A2%E5%8E%9F%E7%90%86"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">二.2 SSA 转换原理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E4%BA%8C-3-%E5%8F%8D%E6%B7%B7%E6%B7%86%E5%BC%95%E6%93%8E"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">二.3 反混淆引擎</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E4%BA%8C-4-%E6%A0%B8%E5%BF%83%E7%89%B9%E6%80%A7"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">二.4 核心特性</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E4%BA%8C-5-%E5%91%BD%E4%BB%A4%E8%A1%8C%E4%BD%BF%E7%94%A8"><span class="toc_mobile_items-number">2.5.</span> <span class="toc_mobile_items-text">二.5 命令行使用</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81JADX-vs-GDA-vs-BytecodeViewer-vs-CFR-%E5%A4%9A%E7%BB%B4%E5%BA%A6%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、JADX vs GDA vs BytecodeViewer vs CFR 多维度对比</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E5%AE%9E%E6%88%98%E5%B7%A5%E4%BD%9C%E6%B5%81"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、实战工作流</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%9B%9B-1-%E6%A0%87%E5%87%86%E9%80%86%E5%90%91%E5%B7%A5%E4%BD%9C%E6%B5%81"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">四.1 标准逆向工作流</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%9B%9B-2-%E9%85%8D%E5%90%88%E4%BD%BF%E7%94%A8%E6%8A%80%E5%B7%A7"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">四.2 配合使用技巧</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%9B%9B-3-%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5%E5%AE%8C%E6%95%B4%E7%A4%BA%E4%BE%8B"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">四.3 代码注入完整示例</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81AOSP-%E7%9B%B8%E5%85%B3%E6%BA%90%E7%A0%81%E5%AF%BC%E8%AF%BB"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、AOSP 相关源码导读</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#AXML-%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%BC%E5%BC%8F%E5%85%B3%E9%94%AE%E6%BA%90%E7%A0%81"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">AXML 二进制格式关键源码</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%80%83%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">面试常考问题</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81apktool-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc-number">1.</span> <span class="toc-text">一、apktool 深度解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80-1-APK-%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E5%9B%9E%E9%A1%BE"><span class="toc-number">1.1.</span> <span class="toc-text">一.1 APK 文件结构回顾</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80-2-%E5%86%85%E9%83%A8%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="toc-number">1.2.</span> <span class="toc-text">一.2 内部工作原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80-3-%E5%AE%8C%E6%95%B4%E5%91%BD%E4%BB%A4%E5%8F%82%E8%80%83"><span class="toc-number">1.3.</span> <span class="toc-text">一.3 完整命令参考</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80-4-apktool-yml-%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-number">1.4.</span> <span class="toc-text">一.4 apktool.yml 配置文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80-5-smali-baksmali-%E5%BC%95%E6%93%8E%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc-number">1.5.</span> <span class="toc-text">一.5 smali&#x2F;baksmali 引擎深度解析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81JADX-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc-number">2.</span> <span class="toc-text">二、JADX 深度解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C-1-%E5%8F%8D%E7%BC%96%E8%AF%91%E6%B5%81%E6%B0%B4%E7%BA%BF"><span class="toc-number">2.1.</span> <span class="toc-text">二.1 反编译流水线</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C-2-SSA-%E8%BD%AC%E6%8D%A2%E5%8E%9F%E7%90%86"><span class="toc-number">2.2.</span> <span class="toc-text">二.2 SSA 转换原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C-3-%E5%8F%8D%E6%B7%B7%E6%B7%86%E5%BC%95%E6%93%8E"><span class="toc-number">2.3.</span> <span class="toc-text">二.3 反混淆引擎</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C-4-%E6%A0%B8%E5%BF%83%E7%89%B9%E6%80%A7"><span class="toc-number">2.4.</span> <span class="toc-text">二.4 核心特性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C-5-%E5%91%BD%E4%BB%A4%E8%A1%8C%E4%BD%BF%E7%94%A8"><span class="toc-number">2.5.</span> <span class="toc-text">二.5 命令行使用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81JADX-vs-GDA-vs-BytecodeViewer-vs-CFR-%E5%A4%9A%E7%BB%B4%E5%BA%A6%E5%AF%B9%E6%AF%94"><span class="toc-number">3.</span> <span class="toc-text">三、JADX vs GDA vs BytecodeViewer vs CFR 多维度对比</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%AE%9E%E6%88%98%E5%B7%A5%E4%BD%9C%E6%B5%81"><span class="toc-number">4.</span> <span class="toc-text">四、实战工作流</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B-1-%E6%A0%87%E5%87%86%E9%80%86%E5%90%91%E5%B7%A5%E4%BD%9C%E6%B5%81"><span class="toc-number">4.1.</span> <span class="toc-text">四.1 标准逆向工作流</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B-2-%E9%85%8D%E5%90%88%E4%BD%BF%E7%94%A8%E6%8A%80%E5%B7%A7"><span class="toc-number">4.2.</span> <span class="toc-text">四.2 配合使用技巧</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B-3-%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5%E5%AE%8C%E6%95%B4%E7%A4%BA%E4%BE%8B"><span class="toc-number">4.3.</span> <span class="toc-text">四.3 代码注入完整示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81AOSP-%E7%9B%B8%E5%85%B3%E6%BA%90%E7%A0%81%E5%AF%BC%E8%AF%BB"><span class="toc-number">5.</span> <span class="toc-text">五、AOSP 相关源码导读</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#AXML-%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%BC%E5%BC%8F%E5%85%B3%E9%94%AE%E6%BA%90%E7%A0%81"><span class="toc-number">5.1.</span> <span class="toc-text">AXML 二进制格式关键源码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%80%83%E9%97%AE%E9%A2%98"><span class="toc-number">6.</span> <span class="toc-text">面试常考问题</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【逆向安全技术-工具篇】反编译神器apktool和Jadx</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-07-20<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">5.5k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 22 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、apktool-深度解析"><a href="#一、apktool-深度解析" class="headerlink" title="一、apktool 深度解析"></a>一、apktool 深度解析</h2><p>apktool（<a target="_blank" rel="noopener" href="https://github.com/iBotPeaches/Apktool%EF%BC%89%E6%98%AF">https://github.com/iBotPeaches/Apktool）是</a> Android 逆向的基石工具，主要功能是对 APK 进行<strong>解码（decode）</strong>和<strong>重构建（rebuild）</strong>。</p>
+<h3 id="一-1-APK-文件结构回顾"><a href="#一-1-APK-文件结构回顾" class="headerlink" title="一.1 APK 文件结构回顾"></a>一.1 APK 文件结构回顾</h3><p>理解 apktool 的工作原理需要先了解 APK 的内部结构：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">target.apk</span><br><span class="line">├── AndroidManifest.xml          (二进制 AXML 格式，非明文 XML)</span><br><span class="line">├── classes.dex                  (Dalvik 字节码，可能多个 classesN.dex)</span><br><span class="line">├── resources.arsc               (二进制资源索引表)</span><br><span class="line">├── res/</span><br><span class="line">│   ├── layout/                  (布局文件，编译后为二进制 XML)</span><br><span class="line">│   ├── values/                  (字符串/颜色/尺寸等，编译后打包进 arsc)</span><br><span class="line">│   ├── drawable*/               (图片资源)</span><br><span class="line">│   └── ...</span><br><span class="line">├── META-INF/</span><br><span class="line">│   ├── MANIFEST.MF              (清单文件)</span><br><span class="line">│   ├── CERT.RSA                 (签名文件)</span><br><span class="line">│   └── CERT.SF                  (签名信息)</span><br><span class="line">├── lib/</span><br><span class="line">│   ├── armeabi-v7a/</span><br><span class="line">│   │   └── *.so                 (ARM32 原生库)</span><br><span class="line">│   ├── arm64-v8a/</span><br><span class="line">│   │   └── *.so                 (ARM64 原生库)</span><br><span class="line">│   └── x86_64/</span><br><span class="line">│       └── *.so                 (x86_64 原生库)</span><br><span class="line">└── assets/                      (原始资源文件)</span><br></pre></td></tr></table></figure>
+
+<h3 id="一-2-内部工作原理"><a href="#一-2-内部工作原理" class="headerlink" title="一.2 内部工作原理"></a>一.2 内部工作原理</h3><p>当执行 <code>apktool d target.apk</code> 时，apktool 执行以下步骤：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌───────────────────────────────────────────────────┐</span><br><span class="line">│            apktool d target.apk                    │</span><br><span class="line">├───────────────────────────────────────────────────┤</span><br><span class="line">│ Step 1: 解压 ZIP (APK 本质是 ZIP 格式)             │</span><br><span class="line">│ Step 2: 解析 AndroidManifest.xml                  │</span><br><span class="line">│         AXMLParser → 可读 XML                      │</span><br><span class="line">│ Step 3: 解析 resources.arsc                       │</span><br><span class="line">│         ARSCDecoder → res/values/*.xml             │</span><br><span class="line">│ Step 4: 反汇编 DEX                                 │</span><br><span class="line">│         baksmali → smali/ 目录                     │</span><br><span class="line">│ Step 5: 解析 res/ 下的二进制 XML                    │</span><br><span class="line">│         XmlPullParser → 可读 XML                   │</span><br><span class="line">│ Step 6: 输出 apktool.yml (资源配置描述)            │</span><br><span class="line">└───────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p><strong>AXML (Android Binary XML) 解析：</strong></p>
+<p>AndroidManifest.xml 在 APK 中并不是文本格式，而是经过 aapt 编译的二进制 XML。apktool 内置的 AXMLParser 能将其反向解析：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">二进制 AXML 格式结构：</span><br><span class="line">┌──────────────────────┐</span><br><span class="line">│  Header (chunkType)  │ → 0x00080003 (XML chunk)</span><br><span class="line">│  String Table        │ → 全局字符串池 (所有标签名、属性名)</span><br><span class="line">│  Resource ID Table   │ → 资源 ID 到字符串的映射</span><br><span class="line">│  Tag Chunks          │ → 树形结构，每个节点包含：</span><br><span class="line">│    - Namespace        │    命名空间 (android:)</span><br><span class="line">│    - StartElement     │    元素开始 (含属性列表)</span><br><span class="line">│    - EndElement       │    元素结束</span><br><span class="line">└──────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p><strong>resources.arsc 解析：</strong></p>
+<p>resources.arsc 是资源索引表，存储所有资源 ID 到值的映射。apktool 的 ARSCDecoder 将其还原为人类可读的 values 目录下的 XML 文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">resources.arsc 内部结构：</span><br><span class="line">Package [com.example.app] (packageId=0x7F)</span><br><span class="line">├── Type [string]</span><br><span class="line">│   ├── Entry [0x7F010000] → &quot;app_name&quot; = &quot;MyApp&quot;</span><br><span class="line">│   ├── Entry [0x7F010001] → &quot;welcome_message&quot; = &quot;Welcome&quot;</span><br><span class="line">│   └── ...</span><br><span class="line">├── Type [drawable]</span><br><span class="line">│   ├── Entry [0x7F020000] → &quot;icon.png&quot;</span><br><span class="line">│   └── ...</span><br><span class="line">├── Type [color]</span><br><span class="line">│   ├── Entry [0x7F030000] → &quot;#FF5722&quot;</span><br><span class="line">│   └── ...</span><br><span class="line">└── Configurations: default, zh-rCN, en-rUS, ...</span><br></pre></td></tr></table></figure>
+
+<h3 id="一-3-完整命令参考"><a href="#一-3-完整命令参考" class="headerlink" title="一.3 完整命令参考"></a>一.3 完整命令参考</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># ===== 解码命令 =====</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 基础解码</span></span><br><span class="line">apktool d target.apk -o output_dir</span><br><span class="line"></span><br><span class="line"><span class="comment"># 调试模式：生成 .line, .local, .param, .prologue 等调试注释</span></span><br><span class="line"><span class="comment"># 这对理解 smali 的控制流非常有用</span></span><br><span class="line">apktool d -d target.apk -o debug_dir</span><br><span class="line"></span><br><span class="line"><span class="comment"># 仅解码资源，跳过 DEX→smali（适合只修改资源的场景）</span></span><br><span class="line">apktool d -s target.apk -o src_only</span><br><span class="line"></span><br><span class="line"><span class="comment"># 仅解码 DEX，跳过资源解码（适合只修改代码逻辑的场景）</span></span><br><span class="line">apktool d -r target.apk -o no_res</span><br><span class="line"></span><br><span class="line"><span class="comment"># 强制覆盖已存在的输出目录</span></span><br><span class="line">apktool d -f target.apk -o output_dir</span><br><span class="line"></span><br><span class="line"><span class="comment"># 指定框架资源（解决某些系统应用反编译问题）</span></span><br><span class="line">apktool <span class="keyword">if</span> framework-res.apk                <span class="comment"># 安装框架文件</span></span><br><span class="line">apktool d -p ~/.local/share/apktool/framework/ target.apk</span><br><span class="line"></span><br><span class="line"><span class="comment"># 保留原始 classes.dex（不解码为 smali）</span></span><br><span class="line">apktool d -s target.apk -o output</span><br><span class="line"></span><br><span class="line"><span class="comment"># ===== 重构建命令 =====</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 构建 APK</span></span><br><span class="line">apktool b output_dir -o new.apk</span><br><span class="line"></span><br><span class="line"><span class="comment"># 构建并复制原始 META-INF 目录（保留原始签名用于系统应用回编）</span></span><br><span class="line">apktool b output_dir -c</span><br><span class="line"></span><br><span class="line"><span class="comment"># 构建时输出详细日志</span></span><br><span class="line">apktool b output_dir -v</span><br><span class="line"></span><br><span class="line"><span class="comment"># 强制删除目标文件（如果已存在）</span></span><br><span class="line">apktool b output_dir -f -o new.apk</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用 aapt2 而非旧版 aapt（Android 8.0+）</span></span><br><span class="line">apktool b output_dir --use-aapt2 -o new.apk</span><br><span class="line"></span><br><span class="line"><span class="comment"># 指定最小 SDK 版本</span></span><br><span class="line">apktool b output_dir --api 26 -o new.apk</span><br></pre></td></tr></table></figure>
+
+<h3 id="一-4-apktool-yml-配置文件"><a href="#一-4-apktool-yml-配置文件" class="headerlink" title="一.4 apktool.yml 配置文件"></a>一.4 apktool.yml 配置文件</h3><p>apktool decode 后会生成 <code>apktool.yml</code>，存储所有元数据。修改这个文件可以影响重构建行为：</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="number">2.9</span><span class="number">.3</span></span><br><span class="line"><span class="attr">apkFileName:</span> <span class="string">target.apk</span></span><br><span class="line"><span class="attr">isFrameworkApk:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">usesFramework:</span></span><br><span class="line">  <span class="attr">ids:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="number">1</span></span><br><span class="line">  <span class="attr">tag:</span> <span class="literal">null</span></span><br><span class="line"><span class="attr">sdkInfo:</span></span><br><span class="line">  <span class="attr">minSdkVersion:</span> <span class="string">&#x27;21&#x27;</span></span><br><span class="line">  <span class="attr">targetSdkVersion:</span> <span class="string">&#x27;33&#x27;</span></span><br><span class="line"><span class="attr">versionInfo:</span></span><br><span class="line">  <span class="attr">versionCode:</span> <span class="string">&#x27;1&#x27;</span></span><br><span class="line">  <span class="attr">versionName:</span> <span class="string">&#x27;1.0&#x27;</span></span><br><span class="line"><span class="attr">compressionType:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">doNotCompress:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">arsc</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">png</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">ogg</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">mp3</span></span><br><span class="line"><span class="attr">sharedLibrary:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">sparseResources:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">unknownFiles:</span></span><br><span class="line">  <span class="attr">stamp-cert-sha256:</span> <span class="string">&#x27;8&#x27;</span></span><br><span class="line"><span class="attr">packageInfo:</span></span><br><span class="line">  <span class="attr">forcedPackageId:</span> <span class="string">&#x27;127&#x27;</span></span><br><span class="line">  <span class="attr">renameManifestPackage:</span> <span class="literal">null</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="一-5-smali-baksmali-引擎深度解析"><a href="#一-5-smali-baksmali-引擎深度解析" class="headerlink" title="一.5 smali&#x2F;baksmali 引擎深度解析"></a>一.5 smali&#x2F;baksmali 引擎深度解析</h3><p>apktool 的 DEX 处理能力来自 smali&#x2F;baksmali（<a target="_blank" rel="noopener" href="https://github.com/JesusFreke/smali%EF%BC%89%E3%80%82">https://github.com/JesusFreke/smali）。</a></p>
+<p><strong>DEX 文件格式回顾：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">DEX 文件结构（简化）：</span><br><span class="line">┌──────────────────────┐</span><br><span class="line">│  header              │ ← magic: &quot;dex\n035\0&quot;, checksum, SHA-1</span><br><span class="line">│  string_ids[]        │ ← 字符串池索引</span><br><span class="line">│  type_ids[]          │ ← 类型描述符索引 (如 &quot;Ljava/lang/String;&quot;)</span><br><span class="line">│  proto_ids[]         │ ← 方法原型索引</span><br><span class="line">│  field_ids[]         │ ← 字段索引</span><br><span class="line">│  method_ids[]        │ ← 方法索引</span><br><span class="line">│  class_defs[]        │ ← 类定义 (最重要的部分)</span><br><span class="line">│    class_data_item   │   ← 包含字段和方法的具体实现</span><br><span class="line">│      code_item       │   ← 方法的字节码指令</span><br><span class="line">│  map_list            │ ← 各区段位置映射</span><br><span class="line">└──────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p>baksmali 的转换过程：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">classes.dex</span><br><span class="line">    │</span><br><span class="line">    ▼  baksmali disassemble</span><br><span class="line">    │</span><br><span class="line">    ├── smali/com/example/</span><br><span class="line">    │   ├── MainActivity.smali</span><br><span class="line">    │   ├── R$string.smali</span><br><span class="line">    │   └── ...</span><br><span class="line">    └── smali_classes2/ (若有多个 DEX)</span><br><span class="line"></span><br><span class="line">每个 .smali 文件的结构：</span><br><span class="line">.class public Lcom/example/MainActivity;</span><br><span class="line">.super Landroid/app/Activity;</span><br><span class="line">.source &quot;MainActivity.java&quot;</span><br><span class="line"></span><br><span class="line"># virtual methods</span><br><span class="line">.method public onCreate(Landroid/os/Bundle;)V</span><br><span class="line">    .locals 2</span><br><span class="line"></span><br><span class="line">    invoke-super &#123;p0, p1&#125;, Landroid/app/Activity;-&gt;onCreate(...)V</span><br><span class="line">    ...</span><br><span class="line">    return-void</span><br><span class="line">.end method</span><br></pre></td></tr></table></figure>
+
+<p><strong>smali 汇编指令速查：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">数据操作：</span><br><span class="line">  const/4 v0, 0x1           # 4-bit 常量 → v0</span><br><span class="line">  const/16 v0, 0x100        # 16-bit 常量 → v0</span><br><span class="line">  const v0, 0x10000         # 32-bit 常量 → v0</span><br><span class="line">  const-string v0, &quot;hello&quot;  # 字符串常量 → v0</span><br><span class="line">  move v0, v1               # v0 = v1</span><br><span class="line"></span><br><span class="line">方法调用：</span><br><span class="line">  invoke-virtual    &#123;v0, v1&#125;, method  # 虚方法调用</span><br><span class="line">  invoke-direct     &#123;v0, v1&#125;, method  # 直接调用 (构造器/private)</span><br><span class="line">  invoke-static     &#123;v0&#125;, method      # 静态方法调用</span><br><span class="line">  invoke-super      &#123;v0&#125;, method      # 父类方法调用</span><br><span class="line">  invoke-interface  &#123;v0&#125;, method      # 接口方法调用</span><br><span class="line"></span><br><span class="line">返回：</span><br><span class="line">  return-void                          # 无返回值</span><br><span class="line">  return v0                            # 返回 v0</span><br><span class="line">  return-object v0                     # 返回对象</span><br><span class="line"></span><br><span class="line">控制流：</span><br><span class="line">  if-eq v0, v1, :label     # v0 == v1 跳转</span><br><span class="line">  if-ne v0, v1, :label     # v0 != v1 跳转</span><br><span class="line">  if-lt v0, v1, :label     # v0 &lt; v1 跳转</span><br><span class="line">  if-ge v0, v1, :label     # v0 &gt;= v1 跳转</span><br><span class="line">  goto :label              # 无条件跳转</span><br><span class="line"></span><br><span class="line">字段访问：</span><br><span class="line">  iget v0, p0, field       # v0 = this.field</span><br><span class="line">  iput v0, p0, field       # this.field = v0</span><br><span class="line">  sget v0, field           # v0 = staticField</span><br><span class="line">  sput v0, field           # staticField = v0</span><br></pre></td></tr></table></figure>
+
+<p><strong>baksmali 直接使用：</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 将单个 DEX 反汇编为 smali</span></span><br><span class="line">java -jar baksmali.jar d classes.dex -o smali_out/</span><br><span class="line"></span><br><span class="line"><span class="comment"># 为多个 DEX 依次反汇编</span></span><br><span class="line">java -jar baksmali.jar d classes.dex -o smali_out/</span><br><span class="line">java -jar baksmali.jar d classes2.dex -o smali_classes2_out/</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用 smali 将 smali 汇编为 DEX</span></span><br><span class="line">java -jar smali.jar a smali_out/ -o new_classes.dex</span><br><span class="line"></span><br><span class="line"><span class="comment"># 指定 API Level（影响 opcode 生成）</span></span><br><span class="line">java -jar baksmali.jar d -a 30 classes.dex -o smali_out/</span><br><span class="line"></span><br><span class="line"><span class="comment"># 反汇编同时生成调试信息</span></span><br><span class="line">java -jar baksmali.jar d -b output.bak -l classes.dex -o smali_out/</span><br></pre></td></tr></table></figure>
+
+<h2 id="二、JADX-深度解析"><a href="#二、JADX-深度解析" class="headerlink" title="二、JADX 深度解析"></a>二、JADX 深度解析</h2><p>JADX（<a target="_blank" rel="noopener" href="https://github.com/skylot/jadx%EF%BC%89%E7%9A%84%E4%BD%9C%E7%94%A8%E6%98%AF%E5%B0%86">https://github.com/skylot/jadx）的作用是将</a> DEX 字节码反编译为 Java 源代码，质量在所有开源工具中名列前茅。</p>
+<h3 id="二-1-反编译流水线"><a href="#二-1-反编译流水线" class="headerlink" title="二.1 反编译流水线"></a>二.1 反编译流水线</h3><p>JADX 的反编译不是一个简单的一步转换，而是多阶段的流水线处理：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">DEX 文件</span><br><span class="line">    │</span><br><span class="line">    ▼  dex-reader (解析 DEX 格式)</span><br><span class="line">    │</span><br><span class="line">JADX IR (中间表示)</span><br><span class="line">    │  - 基本块（Basic Block）</span><br><span class="line">    │  - SSA 形式（Static Single Assignment）</span><br><span class="line">    │  - 控制流图（Control Flow Graph）</span><br><span class="line">    │</span><br><span class="line">    ▼  优化 Passes</span><br><span class="line">    │</span><br><span class="line">    ├── 死代码消除 (Dead Code Elimination)</span><br><span class="line">    ├── 常量传播 (Constant Propagation)</span><br><span class="line">    ├── 内联优化 (Method Inlining)</span><br><span class="line">    ├── 循环优化 (Loop Simplification)</span><br><span class="line">    ├── 条件简化 (Branch Simplification)</span><br><span class="line">    │</span><br><span class="line">    ▼  类型推断 (Type Inference)</span><br><span class="line">    │</span><br><span class="line">    ├── 泛型恢复</span><br><span class="line">    ├── 变量类型推导</span><br><span class="line">    │</span><br><span class="line">    ▼  代码生成 (Java Source Generator)</span><br><span class="line">    │</span><br><span class="line">    ├── 缩进格式化</span><br><span class="line">    ├── 注释生成</span><br><span class="line">    │</span><br><span class="line">    ▼</span><br><span class="line">Java 源代码</span><br></pre></td></tr></table></figure>
+
+<p><strong>关键数据结构：JADX IR</strong></p>
+<p>JADX 将 Dalvik 字节码转换为自己设计的中间表示（IR），这与 LLVM IR 的理念类似。IR 的设计决定了反编译质量的上限：</p>
+<ul>
+<li><strong>BlockNode</strong>：基本块，包含指令序列，以跳转&#x2F;返回&#x2F;异常等控制转移指令结束</li>
+<li><strong>InsnNode</strong>：IR 指令节点，每个 Dalvik 指令被翻译为 1 个或多个 IR 指令</li>
+<li><strong>SSAVar</strong>：SSA 形式的变量，每个变量只被赋值一次（通过 Phi 节点合并多个分支的值）</li>
+<li><strong>MethodNode</strong>：方法级 IR，包含上述所有信息的聚合</li>
+</ul>
+<h3 id="二-2-SSA-转换原理"><a href="#二-2-SSA-转换原理" class="headerlink" title="二.2 SSA 转换原理"></a>二.2 SSA 转换原理</h3><p>JADX 使用 SSA（Static Single Assignment）形式作为其 IR 的核心。SSA 转换过程：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">原始字节码（非 SSA）：</span><br><span class="line">  v0 = 1</span><br><span class="line">  if (condition) goto L1</span><br><span class="line">  v0 = 2</span><br><span class="line">L1:</span><br><span class="line">  v1 = v0 + 3          # v0 可能是 1 或 2？</span><br><span class="line"></span><br><span class="line">SSA 转换后：</span><br><span class="line">  v0_1 = 1</span><br><span class="line">  if (condition) goto L1</span><br><span class="line">  v0_2 = 2</span><br><span class="line">L1:</span><br><span class="line">  v0_3 = φ(v0_1, v0_2)  # Phi 节点：来自两个分支的合并</span><br><span class="line">  v1 = v0_3 + 3</span><br></pre></td></tr></table></figure>
+
+<p>JADX 中 SSA 转换的核心代码逻辑（简化版）：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 在 jadx-core/src/main/java/jadx/core/dex/visitors/ssa/SSATransform.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SSATransform</span> &#123;</span><br><span class="line">    <span class="comment">// 为每个基本块计算支配关系</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">computeDominators</span><span class="params">(MethodNode mth)</span> &#123; ... &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 在支配边界插入 Phi 节点</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">insertPhiNodes</span><span class="params">(MethodNode mth)</span> &#123; ... &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 重命名变量使其符合 SSA 形式</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">renameVariables</span><span class="params">(MethodNode mth)</span> &#123; ... &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="二-3-反混淆引擎"><a href="#二-3-反混淆引擎" class="headerlink" title="二.3 反混淆引擎"></a>二.3 反混淆引擎</h3><p>JADX 的 deobfuscation 能力分为多个层次：</p>
+<p><strong>1. 类名&#x2F;方法名恢复（naming deobfuscation）：</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 原始混淆代码：</span></span><br><span class="line"><span class="comment">//   class a &#123; void a(b bVar) &#123; ... &#125; &#125;</span></span><br><span class="line"><span class="comment">// JADX 反混淆后：</span></span><br><span class="line"><span class="comment">//   class NetworkManager &#123; void fetchData(RequestParams params) &#123; ... &#125; &#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 恢复策略：</span></span><br><span class="line"><span class="comment">// - 分析继承关系 → 推断父类命名约定</span></span><br><span class="line"><span class="comment">// - 分析方法签名 → 根据参数类型和返回值推断语义</span></span><br><span class="line"><span class="comment">// - 分析调用上下文 → 根据调用处的变量名推断</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>2. 字符串解密（string deobfuscation）：</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 常见混淆模式：</span></span><br><span class="line"><span class="comment">//   original: Log.d(&quot;Network&quot;, &quot;Request failed&quot;);</span></span><br><span class="line"><span class="comment">//   obfuscated: Log.d(a.a(&quot;bHd4Z3N6&quot;), a.a(&quot;UmVxdWVzdCBmYWlsZWQ=&quot;));</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// JADX 策略：检测到简单的 decode 调用模式（如 Base64 + XOR），</span></span><br><span class="line"><span class="comment">// 尝试自动执行并替换为明文字符串</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>3. 控制流恢复（control flow deobfuscation）：</strong></p>
+<p>JADX 能识别并还原一些常见的控制流混淆模式：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 混淆后的代码：</span></span><br><span class="line"><span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"><span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">    <span class="keyword">switch</span> (i) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">            <span class="comment">// 真正的第一个操作</span></span><br><span class="line">            i = <span class="number">1</span>; <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">            <span class="comment">// 真正的第二个操作</span></span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// JADX 通过分析 switch-case 的状态转移模式</span></span><br><span class="line"><span class="comment">// 将其还原为顺序结构</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="二-4-核心特性"><a href="#二-4-核心特性" class="headerlink" title="二.4 核心特性"></a>二.4 核心特性</h3><p><strong>搜索能力：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Ctrl+Shift+F → 全文搜索（字符串、方法名、类名、字段名）</span><br><span class="line">Ctrl+N       → 按类名搜索（支持模糊匹配 / 驼峰匹配）</span><br><span class="line">Ctrl+H       → 按方法名搜索</span><br><span class="line">Ctrl+Alt+F   → 在当前文件中搜索</span><br><span class="line">导航栏中支持正则表达式搜索</span><br><span class="line">文本搜索支持：</span><br><span class="line">  - 忽略大小写</span><br><span class="line">  - 正则表达式</span><br><span class="line">  - 搜索范围：所有类 / 当前类 / 选择区域</span><br></pre></td></tr></table></figure>
+
+<p><strong>反混淆功能：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Tools → Deobfuscation → 重命名混淆的类/方法名</span><br><span class="line">Tools → Quarks Plugin → 内置安全分析插件</span><br><span class="line">  - 搜索硬编码密钥/密码</span><br><span class="line">  - 搜索网络调用模式</span><br><span class="line">  - 搜索加密函数调用</span><br><span class="line">  - 搜索证书验证逻辑</span><br><span class="line">Preferences → Deobfuscation options:</span><br><span class="line">  - 最大重命名长度</span><br><span class="line">  - 重命名策略（基于类型/基于使用）</span><br></pre></td></tr></table></figure>
+
+<p><strong>代码导航：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">右键 → Find Usage         → 查找所有调用点（跨 DEX）</span><br><span class="line">右键 → Go to Declaration  → 跳转到声明处</span><br><span class="line">右键 → Show Bytecode      → 查看对应 smali 代码（验证反编译正确性）</span><br><span class="line">右键 → Copy Class Name    → 复制完整类名</span><br><span class="line">右键 → Exclude from decompilation → 跳过特定类</span><br><span class="line">F3                        → 跳转到声明</span><br><span class="line">F4                        → 查看类型层级</span><br><span class="line">Ctrl+Alt+H                → 查看调用层级</span><br><span class="line">Ctrl+Shift+T              → 快速打开文件</span><br></pre></td></tr></table></figure>
+
+<h3 id="二-5-命令行使用"><a href="#二-5-命令行使用" class="headerlink" title="二.5 命令行使用"></a>二.5 命令行使用</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 基础使用</span></span><br><span class="line">jadx target.apk                     <span class="comment"># 在当前目录生成源代码</span></span><br><span class="line">jadx -d output_dir/ target.apk      <span class="comment"># 指定输出目录</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 高级选项</span></span><br><span class="line">jadx --deobf                         <span class="comment"># 开启反混淆</span></span><br><span class="line">jadx --deobf-min 3 --deobf-max 4     <span class="comment"># 反混淆强度（1-5，默认 3）</span></span><br><span class="line">jadx --show-bad-code                 <span class="comment"># 显示无法完全反编译的代码</span></span><br><span class="line">jadx --no-replace-consts             <span class="comment"># 不内联常量</span></span><br><span class="line">jadx --escape-unicode                <span class="comment"># 转义 Unicode 字符</span></span><br><span class="line">jadx --no-imports                    <span class="comment"># 使用全限定类名（不生成 import）</span></span><br><span class="line">jadx --use-dx                        <span class="comment"># 使用 dx 作为 DEX 输入工具</span></span><br><span class="line">jadx --threads-count 4               <span class="comment"># 并行线程数</span></span><br><span class="line">jadx --cfg                           <span class="comment"># 生成控制流图（CFG）</span></span><br><span class="line">jadx --raw-cfg                       <span class="comment"># 生成原始 CFG</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 导出为 Gradle 项目（方便用 Android Studio 打开）</span></span><br><span class="line">jadx --export-gradle output_dir/ target.apk</span><br><span class="line"></span><br><span class="line"><span class="comment"># 仅反编译特定类</span></span><br><span class="line">jadx --class-name com.example.MyClass target.apk</span><br><span class="line"></span><br><span class="line"><span class="comment"># GUI 模式</span></span><br><span class="line">jadx-gui target.apk                  <span class="comment"># 打开图形界面</span></span><br><span class="line">jadx-gui -Xmx4g target.apk          <span class="comment"># 分配 4GB 堆内存（大型 APK）</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="三、JADX-vs-GDA-vs-BytecodeViewer-vs-CFR-多维度对比"><a href="#三、JADX-vs-GDA-vs-BytecodeViewer-vs-CFR-多维度对比" class="headerlink" title="三、JADX vs GDA vs BytecodeViewer vs CFR 多维度对比"></a>三、JADX vs GDA vs BytecodeViewer vs CFR 多维度对比</h2><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>JADX</th>
+<th>GDA</th>
+<th>BytecodeViewer</th>
+<th>CFR</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>反编译质量</td>
+<td>★★★★★</td>
+<td>★★★★☆</td>
+<td>★★★★☆</td>
+<td>★★★★★</td>
+</tr>
+<tr>
+<td>搜索能力</td>
+<td>★★★★★</td>
+<td>★★★★☆</td>
+<td>★★★☆☆</td>
+<td>★☆☆☆☆</td>
+</tr>
+<tr>
+<td>GUI 体验</td>
+<td>★★★★☆</td>
+<td>★★★☆☆</td>
+<td>★★★☆☆</td>
+<td>N&#x2F;A (CLI only)</td>
+</tr>
+<tr>
+<td>反混淆</td>
+<td>★★★★☆</td>
+<td>★★★★★</td>
+<td>★★★☆☆</td>
+<td>★★★★☆</td>
+</tr>
+<tr>
+<td>Smali 对比</td>
+<td>★★☆☆☆</td>
+<td>★★★★★</td>
+<td>★★★★★</td>
+<td>★☆☆☆☆</td>
+</tr>
+<tr>
+<td>内存占用</td>
+<td>中</td>
+<td>低</td>
+<td>高</td>
+<td>低</td>
+</tr>
+<tr>
+<td>处理大型 APK</td>
+<td>良好</td>
+<td>优秀</td>
+<td>一般</td>
+<td>优秀</td>
+</tr>
+<tr>
+<td>开源</td>
+<td>✓ (Apache 2.0)</td>
+<td>✗</td>
+<td>✓ (GPLv3)</td>
+<td>✓ (MIT)</td>
+</tr>
+<tr>
+<td>持续维护</td>
+<td>活跃</td>
+<td>活跃</td>
+<td>偶尔</td>
+<td>活跃</td>
+</tr>
+<tr>
+<td>仓库</td>
+<td>github.com&#x2F;skylot&#x2F;jadx</td>
+<td>-</td>
+<td>github.com&#x2F;Konloch&#x2F;bytecode-viewer</td>
+<td>github.com&#x2F;leibnitz&#x2F;cfr</td>
+</tr>
+</tbody></table>
+<p><strong>GDA（GJoy Dex Analyser）</strong> 的特色：自带 Dalvik 字节码调试器、支持方法 trace 追踪、对 obfuscated 代码的 control flow 分析能力出色。</p>
+<p><strong>BytecodeViewer</strong> 的特色：同时使用多个反编译器（JADX + CFR + Procyon + Fernflower）展示结果，方便交叉验证。但启动慢、内存占用大。</p>
+<p><strong>CFR</strong> 的特色：对 Java 8+ lambda、try-with-resources、switch-on-string、enum 等现代 Java 特性的反编译质量最高。适合反编译 Android 应用中使用了 Java 8+ 特性的部分。</p>
+<h2 id="四、实战工作流"><a href="#四、实战工作流" class="headerlink" title="四、实战工作流"></a>四、实战工作流</h2><h3 id="四-1-标准逆向工作流"><a href="#四-1-标准逆向工作流" class="headerlink" title="四.1 标准逆向工作流"></a>四.1 标准逆向工作流</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># ===== Step 1: apktool 解包（获得 smali + 资源）=====</span></span><br><span class="line">apktool d target.apk -o step1_apktool/</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看 shell 特征（判断是否加固）</span></span><br><span class="line"><span class="built_in">ls</span> step1_apktool/lib/armeabi-v7a/   <span class="comment"># 找壳的 so</span></span><br><span class="line"><span class="built_in">cat</span> step1_apktool/AndroidManifest.xml | grep <span class="string">&quot;application&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ===== Step 2: JADX 反编译到 Java =====</span></span><br><span class="line">jadx -d step2_jadx/ target.apk</span><br><span class="line"></span><br><span class="line"><span class="comment"># 如果是加固后的 APK，这一步只能看到壳代码</span></span><br><span class="line"><span class="comment"># 需要先脱壳再分析</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ===== Step 3: 在 JADX 中分析目标逻辑 =====</span></span><br><span class="line">jadx-gui step2_jadx/</span><br><span class="line"><span class="comment"># 搜索关键字符串 → 定位目标方法 → 记录完整类名和方法名</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ===== Step 4: 定位 smali 代码 =====</span></span><br><span class="line"><span class="comment"># 类名: com.example.app.LoginActivity</span></span><br><span class="line"><span class="comment"># 对应路径: step1_apktool/smali/com/example/app/LoginActivity.smali</span></span><br><span class="line">find step1_apktool/ -name <span class="string">&quot;LoginActivity.smali&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ===== Step 5: 修改 smali 代码 =====</span></span><br><span class="line"><span class="comment"># 例如：将 if-ne (不等于跳转) 改为 if-eq (等于跳转)</span></span><br><span class="line"><span class="comment"># 或：修改 const/4 v0, 0x0 为 const/4 v0, 0x1 使条件判断恒为真</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ===== Step 6: 重打包 =====</span></span><br><span class="line">apktool b step1_apktool/ -o patched.apk</span><br><span class="line"></span><br><span class="line"><span class="comment"># ===== Step 7: 签名 =====</span></span><br><span class="line"><span class="comment"># 生成签名（首次）</span></span><br><span class="line">keytool -genkey -v -keystore debug.keystore -<span class="built_in">alias</span> debug \</span><br><span class="line">    -keyalg RSA -keysize 2048 -validity 365</span><br><span class="line"></span><br><span class="line"><span class="comment"># 签名</span></span><br><span class="line">jarsigner -verbose -keystore debug.keystore \</span><br><span class="line">    -signedjar signed.apk patched.apk debug</span><br><span class="line"></span><br><span class="line"><span class="comment"># 或使用 apksigner（Android 7.0+ 推荐）：</span></span><br><span class="line">apksigner sign --ks debug.keystore patched.apk</span><br><span class="line"></span><br><span class="line"><span class="comment"># ===== Step 8: 对齐（可选但推荐）=====</span></span><br><span class="line">zipalign -v 4 patched.apk final.apk</span><br><span class="line"></span><br><span class="line"><span class="comment"># ===== Step 9: 安装测试 =====</span></span><br><span class="line">adb install final.apk</span><br><span class="line">adb logcat | grep -E <span class="string">&quot;(AndroidRuntime|Xposed|frida)&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="四-2-配合使用技巧"><a href="#四-2-配合使用技巧" class="headerlink" title="四.2 配合使用技巧"></a>四.2 配合使用技巧</h3><p><strong>技巧 1：JADX + smali 交叉验证</strong></p>
+<p>当 JADX 反编译某个方法出错时，右键 → Show Bytecode 查看 smali。如果 smali 也是乱码，说明原始 DEX 被加固&#x2F;加密了。如果 smali 正常但 Java 显示异常，这是 JADX 的反编译缺陷，可以在 GitHub 提 Issue 并暂时手动阅读 smali。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// JADX 可能显示为：</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">someMethod</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// $FF: Couldn&#x27;t be decompiled</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 右键 Show Bytecode 可看到完整 smali</span></span><br><span class="line"><span class="comment">// 手动翻译 smali → Java 逻辑</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>技巧 2：批量搜索定位关键代码</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 在 JADX 输出的 Java 代码中批量搜索</span></span><br><span class="line">grep -r <span class="string">&quot;SecretKeySpec&quot;</span> step2_jadx/ | <span class="built_in">head</span> -20</span><br><span class="line">grep -r <span class="string">&quot;Cipher&quot;</span> step2_jadx/ | grep <span class="string">&quot;init&quot;</span> | <span class="built_in">head</span> -20</span><br><span class="line">grep -r <span class="string">&quot;equalsIgnoreCase&quot;</span> step2_jadx/ | <span class="built_in">head</span> -20</span><br><span class="line"></span><br><span class="line"><span class="comment"># 搜索 Base64 编码（常见于密钥处理）</span></span><br><span class="line">grep -r <span class="string">&#x27;Base64\.&#x27;</span> step2_jadx/ | <span class="built_in">head</span> -20</span><br><span class="line"></span><br><span class="line"><span class="comment"># 搜索 URL 模式</span></span><br><span class="line">grep -rP <span class="string">&#x27;https?://&#x27;</span> step2_jadx/ | <span class="built_in">head</span> -20</span><br></pre></td></tr></table></figure>
+
+<p><strong>技巧 3：快速定位 string 对应的 smali</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 已知字符串 &quot;license_check_failed&quot;</span></span><br><span class="line"><span class="comment"># 先在 R$string.smali 中找 ID</span></span><br><span class="line">grep -r <span class="string">&quot;license_check_failed&quot;</span> step1_apktool/res/values/strings.xml</span><br><span class="line"></span><br><span class="line"><span class="comment"># 然后在 smali 中搜索该字符串 ID 的使用</span></span><br><span class="line">grep -r <span class="string">&quot;0x7f0b002a&quot;</span> step1_apktool/smali/ | <span class="built_in">head</span> -10</span><br></pre></td></tr></table></figure>
+
+<h3 id="四-3-代码注入完整示例"><a href="#四-3-代码注入完整示例" class="headerlink" title="四.3 代码注入完整示例"></a>四.3 代码注入完整示例</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Step 1: 编写注入的 Java 代码</span></span><br><span class="line"><span class="built_in">cat</span> &gt; Inject.java &lt;&lt; <span class="string">&#x27;EOF&#x27;</span></span><br><span class="line">package com.example.inject;</span><br><span class="line"></span><br><span class="line">import android.util.Log;</span><br><span class="line"></span><br><span class="line">public class InjectHelper &#123;</span><br><span class="line">    public static void <span class="function"><span class="title">hook_entry</span></span>() &#123;</span><br><span class="line">        Log.d(<span class="string">&quot;InjectHelper&quot;</span>, <span class="string">&quot;Injected code executed!&quot;</span>);</span><br><span class="line">        // 可以在这里调用各种 Xposed/Frida 不具备的能力</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line"><span class="comment"># Step 2: 编译为 class</span></span><br><span class="line">javac -<span class="built_in">cp</span> ~/Android/Sdk/platforms/android-33/android.jar Inject.java</span><br><span class="line"></span><br><span class="line"><span class="comment"># Step 3: 将 class 转为 DEX</span></span><br><span class="line">d8 Inject.class --lib ~/Android/Sdk/platforms/android-33/android.jar \</span><br><span class="line">    --output .</span><br><span class="line"></span><br><span class="line"><span class="comment"># Step 4: 反汇编注入的 DEX 为 smali</span></span><br><span class="line">java -jar baksmali.jar d classes.dex -o inject_smali/</span><br><span class="line"></span><br><span class="line"><span class="comment"># Step 5: 将 smali 复制到 apktool 输出目录</span></span><br><span class="line"><span class="built_in">cp</span> -r inject_smali/com/example/inject/ \</span><br><span class="line">    step1_apktool/smali/com/example/inject/</span><br><span class="line"></span><br><span class="line"><span class="comment"># Step 6: 在目标 Activity 的 onCreate 中添加调用</span></span><br><span class="line"><span class="comment"># 编辑 step1_apktool/smali/com/example/app/MainActivity.smali</span></span><br><span class="line"><span class="comment"># 在 return-void 之前插入：</span></span><br><span class="line"><span class="comment">#   invoke-static &#123;&#125;, Lcom/example/inject/InjectHelper;-&gt;hook_entry()V</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Step 7: 重打包 + 签名</span></span><br><span class="line">apktool b step1_apktool/ -o patched.apk</span><br><span class="line">jarsigner -keystore debug.keystore patched.apk debug</span><br></pre></td></tr></table></figure>
+
+<h2 id="五、AOSP-相关源码导读"><a href="#五、AOSP-相关源码导读" class="headerlink" title="五、AOSP 相关源码导读"></a>五、AOSP 相关源码导读</h2><p>理解 APK 编译和 DEX 底层有助于在遇到反编译问题时排查根源：</p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>源码路径</th>
+<th>关键内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>aapt&#x2F;aapt2</td>
+<td><code>/frameworks/base/tools/aapt2/</code></td>
+<td>AXML 编译&#x2F;反编译逻辑</td>
+</tr>
+<tr>
+<td>d8 (DEX compiler)</td>
+<td><code>/tools/r8/</code></td>
+<td>Java class → DEX 转换</td>
+</tr>
+<tr>
+<td>dx</td>
+<td><code>/dalvik/dx/</code></td>
+<td>旧版 DEX 编译器</td>
+</tr>
+<tr>
+<td>ART dex2oat</td>
+<td><code>/art/dex2oat/</code></td>
+<td>DEX → OAT 编译</td>
+</tr>
+<tr>
+<td>ART dex_file</td>
+<td><code>/art/libdexfile/</code></td>
+<td>DEX 文件格式解析</td>
+</tr>
+<tr>
+<td>ART oat_file</td>
+<td><code>/art/runtime/oat_file.h</code></td>
+<td>OAT 文件格式</td>
+</tr>
+</tbody></table>
+<h3 id="AXML-二进制格式关键源码"><a href="#AXML-二进制格式关键源码" class="headerlink" title="AXML 二进制格式关键源码"></a>AXML 二进制格式关键源码</h3><p>aapt2 中的 AXML 写入&#x2F;读取逻辑（简化）：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/tools/aapt2/xml/XmlFlattener.cpp 中的简化逻辑</span></span><br><span class="line"><span class="comment">// AXML 的二进制格式处理：</span></span><br><span class="line"><span class="comment">// - 字符串引用化：所有字符串存于全局池，使用索引代替</span></span><br><span class="line"><span class="comment">// - 资源 ID 引用化：@string/app_name → 0x7F010000</span></span><br><span class="line"><span class="comment">// - 属性压缩：常见的命名空间和属性用预定义枚举表示</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// AndroidManifest.xml 在运行时也会被解析（PKMS）</span></span><br><span class="line"><span class="comment">// frameworks/base/core/java/android/content/pm/PackageParser.java</span></span><br><span class="line"><span class="comment">// (Android 10+ 改为 ParsingPackageUtils)</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="面试常考问题"><a href="#面试常考问题" class="headerlink" title="面试常考问题"></a>面试常考问题</h2><p><strong>Q1：简述 apktool d 命令执行时发生了什么？DEX 是如何被转换为 smali 的？</strong></p>
+<p>A：apktool d 执行时主要经历以下阶段：</p>
+<p>（1）ZIP 解压：APK 文件本质是 ZIP，先解压到临时目录。</p>
+<p>（2）AXML 解析：AndroidManifest.xml 和 res&#x2F; 下的布局 XML 是二进制 AXML 格式。apktool 的 AXMLParser 读取二进制 chunk（String Table → Resource ID Table → Tag Chunks），将其还原为可读 XML 并处理 XML 命名空间的引用。</p>
+<p>（3）resources.arsc 解析：ARSCDecoder 读取二进制资源表（Package → Type → Entry 的三级树结构），还原为 res&#x2F;values&#x2F; 下的 strings.xml、colors.xml、styles.xml 等。</p>
+<p>（4）DEX 反汇编（核心）：baksmali 引擎读取 DEX 文件 → 解析 header 获取各 section 的偏移和大小 → 读取 class_defs 获取类列表 → 每个 class_def 包含 access_flags、super_class、interfaces、annotations、class_data（字段 + 方法）→ 对每个 code_item（方法的字节码），逐条解码 Dalvik opcode 并生成对应的 smali 助记符 → 生成 .smali 文件。</p>
+<p>（5）最终生成 apktool.yml 配置文件，存储 SDK 信息、资源 ID 映射、压缩策略等元数据，供回编译时使用。</p>
+<p><strong>Q2：apktool 反编译后修改了资源，重打包失败的原因有哪些？</strong></p>
+<p>A：常见原因：</p>
+<p>（1）资源 ID 冲突或引用错误：手动修改了 public.xml 中的 ID 分配，导致 ID 与 resources.arsc 不一致。apktool 回编译时通过 aapt 重新分配资源 ID，如果 public.xml 中的 ID 与编译期分配的 ID 冲突则会失败。</p>
+<p>（2）apktool 版本与 APK 的 aapt 版本不匹配：新版本 aapt 引入了 aapt2，使用了新特性（如 <code>--no-static-lib-packages</code>），旧版 apktool 无法处理。升级 apktool 到最新版通常可以解决。</p>
+<p>（3）使用了 <code>-r/--no-res</code> 跳过了资源解码但后续又在 smali 中引用了资源 ID，导致回编译时找不到对应的资源引用。</p>
+<p>（4）AndroidManifest.xml 中的 namespace 引用版本不兼容（如使用 <code>android:targetSandboxVersion</code> 等新属性），需要在 apktool 中安装相应的框架资源文件（<code>apktool if framework-res.apk</code>）。</p>
+<p>（5）9-patch 图片在解包时被解压破坏了边界标记（黑线），回编译时 aapt 拒绝处理。解决：使用 <code>--no-crunch</code> 跳过图片处理，或手动用 draw9patch 工具修复。</p>
+<p>解决方案通用步骤：升级 apktool 到最新版、使用 <code>-f</code> 强制覆盖、使用 <code>--use-aapt2</code> 切换到 aapt2、检查 apktool.yml 中的 sdkInfo 是否正确。</p>
+<p><strong>Q3：JADX 遇到反编译死循环或 OOM 怎么办？</strong></p>
+<p>A：</p>
+<p>（1）调整反编译强度：在 JADX 偏好设置中调低反编译强度（关闭 <code>Deobfuscation</code>、关闭 <code>Inline anonymous classes</code>、关闭 <code>Inline synthetic classes</code>）。</p>
+<p>（2）命令行限制：使用 <code>--deobf-min 0 --deobf-max 1</code> 降低反混淆深度，或使用 <code>--no-inline</code> 禁止方法内联。</p>
+<p>（3）排除问题类：在 GUI 中右键特定类 → <code>Exclude from decompilation</code> 跳过。可先通过 Logcat 或 JADX 的日志输出判断是哪个类导致的问题。</p>
+<p>（4）增大内存：<code>jadx-gui -Xmx8g target.apk</code>，对于大于 100MB 的 APK 建议至少分配 4GB。</p>
+<p>（5）分段处理：先用 <code>apktool d -s</code> 提取 DEX，再分别对每个 classes.dex 使用 JADX 命令行逐一反编译。</p>
+<p>（6）转换为 smali 阅读：对于确实无法反编译的类，右键 Show Bytecode 查看 smali 实现，或使用 GDA 作为替补工具交叉验证。</p>
+<p>（7）JADX 的设计限制：JADX 对某些特殊的混淆手法（如利用 try-catch 构建的非结构化控制流、过深的嵌套 switch、大量 lambda 表达式）可能无法生成有效的 Java 代码。此时直接在 smali 层面分析更高效。</p>
+<p><strong>Q4：如何利用 apktool + JADX 配合实现代码注入？</strong></p>
+<p>A：</p>
+<p>（1）apktool d target.apk 获取 smali 代码和资源。</p>
+<p>（2）编写注入代码（Java）并编译为 smali：<code>javac Inject.java → d8 Inject.class → java -jar baksmali.jar d classes.dex -o inject_smali/</code>。</p>
+<p>（3）将生成的 smali 文件复制到 apktool 输出的 smali 目录中，注意目录结构必须与包名对应。</p>
+<p>（4）在目标方法的 smali 中添加 <code>invoke-static</code> 调用注入的方法。关键技巧：在方法开头注入可获取参数，在 return 前注入可修改返回值。注意寄存器数量的分配（<code>.locals</code> 声明）。</p>
+<p>（5）apktool b 重打包，jarsigner&#x2F;apksigner 签名，adb install 安装。</p>
+<p>（6）若目标 APK 使用 ProGuard 混淆，需注意：注入类的包名不要与目标现有的混淆类名冲突；注入代码中引用的 Android API 必须存在于目标 SDK 版本中；如果目标有签名校验，注入前需 hook <code>/vmsig</code> 或相关的签名验证逻辑。</p>
+<p>（7）高级技巧：不直接复制 smali 文件，而是修改 <code>smali/</code> 目录下已有类的 smali 逻辑（如改 if-ne 为 if-eq、增加 log 输出），这样无需引入新类和包名冲突。</p>
+<p><strong>Q5：为什么同一个 DEX 用 JADX 和 CFR 反编译的结果可能不同？哪个更准确？</strong></p>
+<p>A：两个反编译器在算法设计和优化策略上有差异，导致结果不同：</p>
+<p>（1）IR 设计差异：JADX 使用基于 SSA 的自研 IR，CFR 使用基于栈的分析。对于复杂的嵌套 try-catch，不同的 IR 抽象可能导致不同的成功率和代码结构还原。</p>
+<p>（2）优化策略差异：JADX 倾向于”干净”的输出（死代码消除更激进），CFR 倾向于”忠实还原”原始逻辑（保留更多结构信息）。当遇到故意构造的混淆代码时，JADX 可能直接放弃（显示 <code>Couldn&#39;t be decompiled</code>），CFR 可能生成可读但冗长的代码。</p>
+<p>（3）Java 版本支持差异：CFR 对 Java 8+ 特性的支持更完整（Lambda、方法引用、try-with-resources、switch-on-string、模块化），而 JADX 在处理这些特性时有时会回退到较底层的实现。</p>
+<p>（4）准确性判断标准：都不绝对准确。验证方法：（a）查看原始 smali（JADX 右键 Show Bytecode）交叉验证；（b）用两个工具对比结果；（c）在关键判断逻辑处对比反编译代码的行为是否与原始应用一致（通过运行时 Hook 验证）。</p>
+<p>（5）实践建议：以 JADX 为主要分析工具（GUI 更友好、搜索更强），遇到反编译失败或可疑逻辑时，切换到 CFR 或 GDA 交叉验证。在修改 smali 重打包前，务必对比多个反编译器的结果，确保理解了真实逻辑。</p>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%8F%8D%E7%BC%96%E8%AF%91/">反编译    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/07/25/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%B7%A5%E5%85%B7%E7%AF%87%E3%80%91Hook%E7%A5%9E%E5%99%A8XPosed/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【逆向安全技术-工具篇】Hook神器XPosed</span></div></a></div><div class="next-post pull_right"><a href="/2021/07/15/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E9%98%B2%E6%8A%A4%E7%AF%87%E3%80%91so%E5%8A%A0%E5%9B%BA%E5%8E%9F%E7%90%86/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【逆向安全技术-防护篇】so加固原理</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2022/09/01/重拾Android-【实战系列】IO之AES加密加固/" title="【实战系列】IO之AES加密加固"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/dilyara-garifullina-PxuncMFiuvg-unsplash.jpg"><div class="relatedPosts_title">【实战系列】IO之AES加密加固</div></a></div><div class="relatedPosts_item"><a href="/2021/06/01/高级Android-【逆向安全技术-基础篇】dex文件格式解析/" title="【逆向安全技术-基础篇】dex文件格式解析"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【逆向安全技术-基础篇】dex文件格式解析</div></a></div><div class="relatedPosts_item"><a href="/2021/05/25/高级Android-【逆向安全技术-基础篇】resource.arsc文件格式解析/" title="【逆向安全技术-基础篇】resource.arsc文件格式解析"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【逆向安全技术-基础篇】resource.arsc文件格式解析</div></a></div><div class="relatedPosts_item"><a href="/2021/05/15/高级Android-【逆向安全技术-基础篇】AndroidManifest.xml文件格式解析/" title="【逆向安全技术-基础篇】AndroidManifest.xml文件格式解析"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【逆向安全技术-基础篇】AndroidManifest.xml文件格式解析</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

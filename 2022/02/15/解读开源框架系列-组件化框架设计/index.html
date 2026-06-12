@@ -1,0 +1,376 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>解读开源框架系列-组件化框架设计 | ONE·PIECE</title><meta name="description" content="解读开源框架系列-组件化框架设计"><meta name="keywords" content="架构设计"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="解读开源框架系列-组件化框架设计"><meta name="twitter:description" content="解读开源框架系列-组件化框架设计"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/435.jpg"><meta property="og:type" content="article"><meta property="og:title" content="解读开源框架系列-组件化框架设计"><meta property="og:url" content="http://tufusi.com/2022/02/15/%E8%A7%A3%E8%AF%BB%E5%BC%80%E6%BA%90%E6%A1%86%E6%9E%B6%E7%B3%BB%E5%88%97-%E7%BB%84%E4%BB%B6%E5%8C%96%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="解读开源框架系列-组件化框架设计"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/435.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2022/02/15/%E8%A7%A3%E8%AF%BB%E5%BC%80%E6%BA%90%E6%A1%86%E6%9E%B6%E7%B3%BB%E5%88%97-%E7%BB%84%E4%BB%B6%E5%8C%96%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1/"><link rel="prev" title="解读开源框架系列-图片加载框架设计" href="http://tufusi.com/2022/02/20/%E8%A7%A3%E8%AF%BB%E5%BC%80%E6%BA%90%E6%A1%86%E6%9E%B6%E7%B3%BB%E5%88%97-%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1/"><link rel="next" title="解读开源框架系列-插件化框架设计" href="http://tufusi.com/2022/02/10/%E8%A7%A3%E8%AF%BB%E5%BC%80%E6%BA%90%E6%A1%86%E6%9E%B6%E7%B3%BB%E5%88%97-%E6%8F%92%E4%BB%B6%E5%8C%96%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E7%BB%84%E4%BB%B6%E5%8C%96%E7%9A%84%E6%A0%B8%E5%BF%83%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、组件化的核心问题</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-%E7%BB%84%E4%BB%B6%E5%8C%96%E4%B8%8E%E6%A8%A1%E5%9D%97%E5%8C%96%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">1.1 组件化与模块化的区别</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81%E6%A8%A1%E5%9D%97%E9%9A%94%E7%A6%BB%EF%BC%9Aapi-vs-implementation"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、模块隔离：api vs implementation</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-AndroidManifest-%E5%90%88%E5%B9%B6%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 AndroidManifest 合并策略</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81%E7%BB%84%E4%BB%B6%E7%AE%A1%E7%90%86%E5%99%A8%EF%BC%9AComponentManager-%E8%AE%BE%E8%AE%A1"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、组件管理器：ComponentManager 设计</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E7%BB%84%E4%BB%B6%E5%88%9D%E5%A7%8B%E5%8C%96%E4%BC%98%E5%85%88%E7%BA%A7"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 组件初始化优先级</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E8%B7%AF%E7%94%B1%E8%A1%A8%E7%94%9F%E6%88%90%EF%BC%9AAPT-%E4%B8%8E-ActivityRouter-%E6%96%B9%E6%A1%88"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、路由表生成：APT 与 ActivityRouter 方案</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-APT-%E5%A6%82%E4%BD%95%E7%94%9F%E6%88%90%E8%B7%AF%E7%94%B1%E8%A1%A8"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 APT 如何生成路由表</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-ARouter-%E7%9A%84%E5%88%86%E7%BB%84%E6%87%92%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 ARouter 的分组懒加载机制</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-%E6%8B%A6%E6%88%AA%E5%99%A8%E9%93%BE"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 拦截器链</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-4-%E8%B7%AF%E7%94%B1%E6%96%B9%E6%A1%88%E7%9A%84%E6%9B%BF%E4%BB%A3%E9%80%89%E6%8B%A9"><span class="toc_mobile_items-number">4.4.</span> <span class="toc_mobile_items-text">4.4 路由方案的替代选择</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0%EF%BC%9AIService-%E6%8E%A5%E5%8F%A3%E6%A8%A1%E5%BC%8F"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、服务发现：IService 接口模式</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0%E7%9A%84%E7%BC%93%E5%AD%98%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 服务发现的缓存机制</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-%E7%BB%84%E4%BB%B6%E9%97%B4%E9%80%9A%E4%BF%A1%E6%96%B9%E6%A1%88%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 组件间通信方案对比</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81Application-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%A7%94%E6%B4%BE"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、Application 生命周期委派</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-ContentProvider-%E8%87%AA%E5%8A%A8%E5%88%9D%E5%A7%8B%E5%8C%96%E6%8A%80%E5%B7%A7"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 ContentProvider 自动初始化技巧</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、工程结构最佳实践</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-%E5%A4%9A%E6%A8%A1%E5%9D%97%E7%89%88%E6%9C%AC%E7%AE%A1%E7%90%86"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">7.1 多模块版本管理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-%E5%A2%9E%E9%87%8F%E7%BC%96%E8%AF%91%E5%8A%A0%E9%80%9F%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">7.2 增量编译加速策略</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81%E9%9D%A2%E8%AF%95%E5%B8%B8%E9%97%AE%E9%A2%98%E7%9B%AE"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、面试常问题目</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%BB%84%E4%BB%B6%E5%8C%96%E7%9A%84%E6%A0%B8%E5%BF%83%E9%97%AE%E9%A2%98"><span class="toc-number">1.</span> <span class="toc-text">一、组件化的核心问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E7%BB%84%E4%BB%B6%E5%8C%96%E4%B8%8E%E6%A8%A1%E5%9D%97%E5%8C%96%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 组件化与模块化的区别</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%A8%A1%E5%9D%97%E9%9A%94%E7%A6%BB%EF%BC%9Aapi-vs-implementation"><span class="toc-number">2.</span> <span class="toc-text">二、模块隔离：api vs implementation</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-AndroidManifest-%E5%90%88%E5%B9%B6%E7%AD%96%E7%95%A5"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 AndroidManifest 合并策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%BB%84%E4%BB%B6%E7%AE%A1%E7%90%86%E5%99%A8%EF%BC%9AComponentManager-%E8%AE%BE%E8%AE%A1"><span class="toc-number">3.</span> <span class="toc-text">三、组件管理器：ComponentManager 设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%BB%84%E4%BB%B6%E5%88%9D%E5%A7%8B%E5%8C%96%E4%BC%98%E5%85%88%E7%BA%A7"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 组件初始化优先级</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E8%B7%AF%E7%94%B1%E8%A1%A8%E7%94%9F%E6%88%90%EF%BC%9AAPT-%E4%B8%8E-ActivityRouter-%E6%96%B9%E6%A1%88"><span class="toc-number">4.</span> <span class="toc-text">四、路由表生成：APT 与 ActivityRouter 方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-APT-%E5%A6%82%E4%BD%95%E7%94%9F%E6%88%90%E8%B7%AF%E7%94%B1%E8%A1%A8"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 APT 如何生成路由表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-ARouter-%E7%9A%84%E5%88%86%E7%BB%84%E6%87%92%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 ARouter 的分组懒加载机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E6%8B%A6%E6%88%AA%E5%99%A8%E9%93%BE"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 拦截器链</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E8%B7%AF%E7%94%B1%E6%96%B9%E6%A1%88%E7%9A%84%E6%9B%BF%E4%BB%A3%E9%80%89%E6%8B%A9"><span class="toc-number">4.4.</span> <span class="toc-text">4.4 路由方案的替代选择</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0%EF%BC%9AIService-%E6%8E%A5%E5%8F%A3%E6%A8%A1%E5%BC%8F"><span class="toc-number">5.</span> <span class="toc-text">五、服务发现：IService 接口模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0%E7%9A%84%E7%BC%93%E5%AD%98%E6%9C%BA%E5%88%B6"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 服务发现的缓存机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E7%BB%84%E4%BB%B6%E9%97%B4%E9%80%9A%E4%BF%A1%E6%96%B9%E6%A1%88%E5%AF%B9%E6%AF%94"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 组件间通信方案对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81Application-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%A7%94%E6%B4%BE"><span class="toc-number">6.</span> <span class="toc-text">六、Application 生命周期委派</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-ContentProvider-%E8%87%AA%E5%8A%A8%E5%88%9D%E5%A7%8B%E5%8C%96%E6%8A%80%E5%B7%A7"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 ContentProvider 自动初始化技巧</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc-number">7.</span> <span class="toc-text">七、工程结构最佳实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E5%A4%9A%E6%A8%A1%E5%9D%97%E7%89%88%E6%9C%AC%E7%AE%A1%E7%90%86"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 多模块版本管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E5%A2%9E%E9%87%8F%E7%BC%96%E8%AF%91%E5%8A%A0%E9%80%9F%E7%AD%96%E7%95%A5"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 增量编译加速策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E9%9D%A2%E8%AF%95%E5%B8%B8%E9%97%AE%E9%A2%98%E7%9B%AE"><span class="toc-number">8.</span> <span class="toc-text">八、面试常问题目</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/435.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">解读开源框架系列-组件化框架设计</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2022-02-15<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">4.2k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 16 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、组件化的核心问题"><a href="#一、组件化的核心问题" class="headerlink" title="一、组件化的核心问题"></a>一、组件化的核心问题</h2><p>随着 Android 项目规模增长，单体工程（Monolithic Project）会面临严重的工程问题：</p>
+<ol>
+<li><strong>编译速度</strong>：修改一行代码需要重新编译整个项目，clean build 可能需要数十分钟。</li>
+<li><strong>协作冲突</strong>：多人同时修改同一个模块，Git 冲突频繁。</li>
+<li><strong>代码边界模糊</strong>：模块之间可以直接引用对方的类，依赖关系如蛛网般纠缠。</li>
+<li><strong>复用困难</strong>：一个模块无法独立抽取给其他项目使用。</li>
+</ol>
+<p>组件化（Componentization）的解决方案是：<strong>将一个庞大的 App 工程拆分为多个可独立编译、独立运行、可复用的业务模块</strong>。</p>
+<p>组件化的四个核心能力：</p>
+<ul>
+<li><strong>模块隔离</strong>：模块之间通过 <code>api</code> 和 <code>implementation</code> 控制依赖传递。</li>
+<li><strong>路由通信</strong>：模块间通过 URL Scheme 方式导航，无需持有对方的 Activity&#x2F;Fragment 类引用。</li>
+<li><strong>服务发现</strong>：模块暴露 IService 接口，通过服务容器获取实现。</li>
+<li><strong>生命周期委派</strong>：Application 的生命周期事件分发给各模块。</li>
+</ul>
+<h3 id="1-1-组件化与模块化的区别"><a href="#1-1-组件化与模块化的区别" class="headerlink" title="1.1 组件化与模块化的区别"></a>1.1 组件化与模块化的区别</h3><p>很多人混用”组件化”和”模块化”，但它们有本质区别：</p>
+<ul>
+<li><strong>模块化（Modularization）</strong>：按照功能&#x2F;职责划分代码目录，各模块之间可能存在编译期强依赖。目标是代码组织清晰。</li>
+<li><strong>组件化（Componentization）</strong>：在模块化基础上，要求各业务组件之间<strong>解耦</strong>（无直接编译依赖），可以独立编译、独立运行、独立测试。目标是团队并行开发效率。</li>
+</ul>
+<p>简而言之：所有组件化项目都是模块化的，但不是所有模块化项目都是组件化的。组件化 &#x3D; 模块化 + 解耦 + 独立运行能力。</p>
+<h2 id="二、模块隔离：api-vs-implementation"><a href="#二、模块隔离：api-vs-implementation" class="headerlink" title="二、模块隔离：api vs implementation"></a>二、模块隔离：api vs implementation</h2><p>Gradle 的 <code>api</code> 和 <code>implementation</code> 是模块隔离的基础：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 模块 A 的 build.gradle</span><br><span class="line">dependencies &#123;</span><br><span class="line">    // implementation：依赖不传递，只有 A 内部可用</span><br><span class="line">    implementation &#x27;com.squareup.okhttp3:okhttp:4.9.0&#x27;</span><br><span class="line"></span><br><span class="line">    // api：依赖会传递给依赖 A 的模块</span><br><span class="line">    api &#x27;com.google.code.gson:gson:2.8.9&#x27;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 模块 B 依赖模块 A</span><br><span class="line">dependencies &#123;</span><br><span class="line">    implementation project(&#x27;:module_a&#x27;)</span><br><span class="line">    // B 可以使用 gson（因为 A 用了 api）</span><br><span class="line">    // B 不能直接使用 okhttp（因为 A 用了 implementation）</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>implementation</code> 的实质：编译时 B 看不到 A 的 implementation 依赖的符号（符号在 A 的编译 classpath 中但不在 B 的编译 classpath 中），但运行时这些类仍然存在（因为最终 APK 包含所有传递依赖）。这强制开发者只能通过 A 暴露的公开 API 使用 A，不能直接依赖 A 的内部实现。</p>
+<p><strong>Gradle 构建时的 classpath 分离</strong>：Gradle 为每个模块维护三个 classpath：</p>
+<ol>
+<li><code>compileClasspath</code>：编译当前模块所需的依赖（包含 api 传递，不包含 implementation 传递）</li>
+<li><code>runtimeClasspath</code>：运行当前模块所需的依赖（包含所有传递）</li>
+<li><code>annotationProcessorPath</code>：APT 所需的依赖</li>
+</ol>
+<p><code>implementation</code> 依赖只出现在 runtimeClasspath 中，不出现在 compileClasspath 中。这就是”编译期隔离”的本质。</p>
+<p>在大型组件化工程中，通常还配置 <code>resourcePrefix</code> 来隔离资源名冲突：</p>
+<figure class="highlight groovy"><table><tr><td class="code"><pre><span class="line"><span class="comment">// module_user 的 build.gradle</span></span><br><span class="line">android &#123;</span><br><span class="line">    resourcePrefix <span class="string">&quot;user_&quot;</span>  <span class="comment">// 该模块所有资源必须以 user_ 开头</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这避免了不同模块定义了同名资源文件（如两个模块都有 <code>bg_button.xml</code>）导致的资源覆盖问题。</p>
+<h3 id="2-1-AndroidManifest-合并策略"><a href="#2-1-AndroidManifest-合并策略" class="headerlink" title="2.1 AndroidManifest 合并策略"></a>2.1 AndroidManifest 合并策略</h3><p>多模块环境下，每个 library 模块有自己的 <code>AndroidManifest.xml</code>，构建时需要合并所有 Manifest。合并规则遵循优先级：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">build variant Manifest &gt; product flavor Manifest &gt; main Manifest &gt; library Manifest</span><br></pre></td></tr></table></figure>
+
+<p>冲突解决通过 <code>tools:replace</code> 和 <code>tools:merge</code> 属性：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 在 app 模块的 Manifest 中解决冲突 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">activity</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:name</span>=<span class="string">&quot;.MainActivity&quot;</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:theme</span>=<span class="string">&quot;@style/AppTheme&quot;</span></span></span><br><span class="line"><span class="tag">    <span class="attr">tools:replace</span>=<span class="string">&quot;android:theme&quot;</span> /&gt;</span>  <span class="comment">&lt;!-- 用自己的 theme 替换 library 的 --&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">activity</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:name</span>=<span class="string">&quot;.SplashActivity&quot;</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:configChanges</span>=<span class="string">&quot;orientation|screenSize&quot;</span></span></span><br><span class="line"><span class="tag">    <span class="attr">tools:node</span>=<span class="string">&quot;merge&quot;</span> /&gt;</span>  <span class="comment">&lt;!-- 合并 library 和自己声明的属性 --&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>Manifest Merger 的冲突日志级别可以通过 Gradle 配置调整：</p>
+<figure class="highlight groovy"><table><tr><td class="code"><pre><span class="line">android &#123;</span><br><span class="line">    applicationVariants.all &#123; variant -&gt;</span><br><span class="line">        variant.outputs.all &#123; output -&gt;</span><br><span class="line">            output.processManifestProvider.configure &#123;</span><br><span class="line">                doLast &#123;</span><br><span class="line">                    <span class="comment">// 打印详细的 Manifest 合并报告</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="三、组件管理器：ComponentManager-设计"><a href="#三、组件管理器：ComponentManager-设计" class="headerlink" title="三、组件管理器：ComponentManager 设计"></a>三、组件管理器：ComponentManager 设计</h2><p>一个标准的组件管理器负责组件的注册、初始化和生命周期管理：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ComponentManager</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> ComponentManager instance;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;String, IComponent&gt; componentMap = <span class="keyword">new</span> <span class="title class_">LinkedHashMap</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> ComponentManager <span class="title function_">getInstance</span><span class="params">()</span> &#123; <span class="comment">/* 单例 */</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 注册组件</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">registerComponent</span><span class="params">(String name, IComponent component)</span> &#123;</span><br><span class="line">        componentMap.put(name, component);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 初始化所有组件（在 Application.onCreate 中调用）</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">initComponents</span><span class="params">(Application app)</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (IComponent comp : componentMap.values()) &#123;</span><br><span class="line">            comp.onCreate(app);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 按需获取组件暴露的服务</span></span><br><span class="line">    <span class="keyword">public</span> &lt;T <span class="keyword">extends</span> <span class="title class_">IService</span>&gt; T <span class="title function_">getService</span><span class="params">(Class&lt;T&gt; serviceClass)</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (IComponent comp : componentMap.values()) &#123;</span><br><span class="line">            <span class="keyword">if</span> (serviceClass.isAssignableFrom(comp.getClass())) &#123;</span><br><span class="line">                <span class="keyword">return</span> (T) comp;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 分发给所有组件的低内存回调</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onLowMemory</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (IComponent comp : componentMap.values()) &#123;</span><br><span class="line">            comp.onLowMemory();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 组件接口</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">IComponent</span> &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">onCreate</span><span class="params">(Application app)</span>;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">onTerminate</span><span class="params">()</span>;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">onLowMemory</span><span class="params">()</span>;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">onTrimMemory</span><span class="params">(<span class="type">int</span> level)</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 业务服务接口</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">IUserService</span> <span class="keyword">extends</span> <span class="title class_">IService</span> &#123;</span><br><span class="line">    <span class="type">boolean</span> <span class="title function_">isLoggedIn</span><span class="params">()</span>;</span><br><span class="line">    UserInfo <span class="title function_">getCurrentUser</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在编译期，每个模块通过 APT 自动生成注册代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 自动生成的 UserComponentRegister.java（通过 APT 生成）</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserComponentRegister</span> <span class="keyword">implements</span> <span class="title class_">IComponentRegister</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">register</span><span class="params">(ComponentManager manager)</span> &#123;</span><br><span class="line">        manager.registerComponent(<span class="string">&quot;user&quot;</span>, <span class="keyword">new</span> <span class="title class_">UserComponent</span>());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-1-组件初始化优先级"><a href="#3-1-组件初始化优先级" class="headerlink" title="3.1 组件初始化优先级"></a>3.1 组件初始化优先级</h3><p>在有依赖关系的组件之间（如日志组件应在业务组件之前初始化），需要初始化优先级：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> ComponentPriority &#123;</span><br><span class="line">    <span class="type">int</span> <span class="title function_">value</span><span class="params">()</span> <span class="keyword">default</span> <span class="number">0</span>;  <span class="comment">// 数值越小越先初始化</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// APT 生成时记录优先级</span></span><br><span class="line"><span class="comment">// ComponentManager 中排序</span></span><br><span class="line">componentMap.values().stream()</span><br><span class="line">    .sorted(Comparator.comparingInt(c -&gt; c.getClass().getAnnotation(ComponentPriority.class).value()))</span><br><span class="line">    .forEach(comp -&gt; comp.onCreate(app));</span><br></pre></td></tr></table></figure>
+
+<h2 id="四、路由表生成：APT-与-ActivityRouter-方案"><a href="#四、路由表生成：APT-与-ActivityRouter-方案" class="headerlink" title="四、路由表生成：APT 与 ActivityRouter 方案"></a>四、路由表生成：APT 与 ActivityRouter 方案</h2><p>路由是组件化最核心的基础设施。模块 A 需要跳转到模块 B 的页面，但不能直接 import 模块 B 的 Activity 类（这会破坏组件隔离）。</p>
+<p>ARouter（阿里开源，<code>https://github.com/alibaba/ARouter</code>）是使用最广泛的方案：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 使用 @Route 注解标记目标页面</span></span><br><span class="line"><span class="meta">@Route(path = &quot;/user/LoginActivity&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LoginActivity</span> <span class="keyword">extends</span> <span class="title class_">AppCompatActivity</span> &#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    String username;  <span class="comment">// 自动从 URL 参数中注入</span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">onCreate</span><span class="params">(Bundle savedInstanceState)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>.onCreate(savedInstanceState);</span><br><span class="line">        ARouter.getInstance().inject(<span class="built_in">this</span>);  <span class="comment">// 注入参数</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 跳转代码（不 import LoginActivity）</span></span><br><span class="line">ARouter.getInstance().build(<span class="string">&quot;/user/LoginActivity&quot;</span>)</span><br><span class="line">    .withString(<span class="string">&quot;username&quot;</span>, <span class="string">&quot;alice&quot;</span>)</span><br><span class="line">    .navigation();</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-1-APT-如何生成路由表"><a href="#4-1-APT-如何生成路由表" class="headerlink" title="4.1 APT 如何生成路由表"></a>4.1 APT 如何生成路由表</h3><p>ARouter 的 <code>arouter-compiler</code> 模块在编译期扫描所有 <code>@Route</code> 注解：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// arouter-compiler 的核心处理逻辑（简化）</span></span><br><span class="line"><span class="comment">// com.alibaba.android.arouter.compiler.processor.RouteProcessor</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">process</span><span class="params">(Set&lt;? extends TypeElement&gt; annotations, RoundEnvironment roundEnv)</span> &#123;</span><br><span class="line">    Set&lt;? <span class="keyword">extends</span> <span class="title class_">Element</span>&gt; routeElements = roundEnv.getElementsAnnotatedWith(Route.class);</span><br><span class="line">    <span class="keyword">for</span> (Element element : routeElements) &#123;</span><br><span class="line">        <span class="type">Route</span> <span class="variable">route</span> <span class="operator">=</span> element.getAnnotation(Route.class);</span><br><span class="line">        <span class="type">String</span> <span class="variable">path</span> <span class="operator">=</span> route.path();</span><br><span class="line">        <span class="comment">// 生成形如: atlas.put(&quot;/user/LoginActivity&quot;, RouteMeta.build(...))</span></span><br><span class="line">        <span class="comment">// RouteMeta 包含 Class 引用、路由类型等</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 写入生成的文件：ARouter$$Group$$user.java</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最终生成的代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// ARouter$$Group$$user.java（自动生成）</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ARouter$$Group$$user</span> <span class="keyword">implements</span> <span class="title class_">IRouteGroup</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">loadInto</span><span class="params">(Map&lt;String, RouteMeta&gt; atlas)</span> &#123;</span><br><span class="line">        atlas.put(<span class="string">&quot;/user/LoginActivity&quot;</span>,</span><br><span class="line">            RouteMeta.build(RouteType.ACTIVITY, LoginActivity.class,</span><br><span class="line">                <span class="string">&quot;/user/LoginActivity&quot;</span>, <span class="string">&quot;user&quot;</span>, <span class="number">0</span>, <span class="number">0</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ARouter 运行时通过 path 的第一段（如 “user”）作为 group，懒加载对应的 Group 文件，然后从 atlas 中找到目标 Class，完成跳转。</p>
+<h3 id="4-2-ARouter-的分组懒加载机制"><a href="#4-2-ARouter-的分组懒加载机制" class="headerlink" title="4.2 ARouter 的分组懒加载机制"></a>4.2 ARouter 的分组懒加载机制</h3><p>ARouter 不一次性加载所有路由表，而是按 group 懒加载。path 的格式是 <code>/group/pageName</code>，第一段即 group。<code>Warehouse.groupsIndex</code> 维护 group → IRouteGroup class 的映射：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// ARouter 懒加载核心</span></span><br><span class="line"><span class="keyword">protected</span> Postcard <span class="title function_">build</span><span class="params">(String path)</span> &#123;</span><br><span class="line">    <span class="comment">// 1. 从 Warehouse.routes 中查找</span></span><br><span class="line">    <span class="type">RouteMeta</span> <span class="variable">routeMeta</span> <span class="operator">=</span> Warehouse.routes.get(path);</span><br><span class="line">    <span class="keyword">if</span> (routeMeta == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// 2. 提取 group，懒加载路由表</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">group</span> <span class="operator">=</span> path.substring(<span class="number">1</span>, path.indexOf(<span class="string">&quot;/&quot;</span>, <span class="number">1</span>));</span><br><span class="line">        Class&lt;? <span class="keyword">extends</span> <span class="title class_">IRouteGroup</span>&gt; groupMeta = Warehouse.groupsIndex.get(group);</span><br><span class="line">        <span class="keyword">if</span> (groupMeta == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NoRouteFoundException</span>(<span class="string">&quot;no route match the path: &quot;</span> + path);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">IRouteGroup</span> <span class="variable">iGroupInstance</span> <span class="operator">=</span> groupMeta.getConstructor().newInstance();</span><br><span class="line">        iGroupInstance.loadInto(Warehouse.routes);</span><br><span class="line">        <span class="comment">// 加载完成后从 groupsIndex 中移除（避免重复加载）</span></span><br><span class="line">        Warehouse.groupsIndex.remove(group);</span><br><span class="line">        routeMeta = Warehouse.routes.get(path);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 3. 构建 Postcard</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Postcard</span>(path, routeMeta);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-拦截器链"><a href="#4-3-拦截器链" class="headerlink" title="4.3 拦截器链"></a>4.3 拦截器链</h3><p>ARouter 支持全局拦截器，可在页面跳转前做登录检查等逻辑：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Interceptor(priority = 1, name = &quot;登录拦截器&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LoginInterceptor</span> <span class="keyword">implements</span> <span class="title class_">IInterceptor</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">process</span><span class="params">(Postcard postcard, InterceptorCallback callback)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (postcard.getExtra() == NEED_LOGIN &amp;&amp; !UserManager.isLogin()) &#123;</span><br><span class="line">            callback.onInterrupt(<span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;请先登录&quot;</span>));</span><br><span class="line">            <span class="comment">// 可在此处拦截并跳转到登录页</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            callback.onContinue(postcard);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>拦截器链实现的底层是责任链模式。所有 <code>@Interceptor</code> 注解的类在编译期被收集，运行时按 priority 排序组织为一个链表。每个拦截器的 process() 的 callback 会触发链的下一个拦截器。</p>
+<h3 id="4-4-路由方案的替代选择"><a href="#4-4-路由方案的替代选择" class="headerlink" title="4.4 路由方案的替代选择"></a>4.4 路由方案的替代选择</h3><p>除了 ARouter，还有几种路由方案：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>原理</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>ARouter</strong></td>
+<td>APT + 反射实例化</td>
+<td>功能全面、社区活跃</td>
+<td>方法数多（~2000）、有反射</td>
+</tr>
+<tr>
+<td><strong>DeepLinkDispatch</strong></td>
+<td>APT + 注解生成 DeepLink 表</td>
+<td>与 Android Navigation 集成好</td>
+<td>仅支持 Activity</td>
+</tr>
+<tr>
+<td><strong>ActivityRouter</strong></td>
+<td>类 ARouter，更轻量</td>
+<td>方法数少</td>
+<td>功能较少</td>
+</tr>
+<tr>
+<td><strong>Gradle Transform 方案</strong></td>
+<td>Transform 扫描所有类</td>
+<td>无注解、无反射</td>
+<td>构建速度慢</td>
+</tr>
+</tbody></table>
+<h2 id="五、服务发现：IService-接口模式"><a href="#五、服务发现：IService-接口模式" class="headerlink" title="五、服务发现：IService 接口模式"></a>五、服务发现：IService 接口模式</h2><p>除了页面路由，模块之间还需要能力调用（如从用户模块获取登录状态）。ARouter 的 IService 模式：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 在公共层（common module）定义接口</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">ILoginService</span> <span class="keyword">extends</span> <span class="title class_">IProvider</span> &#123;</span><br><span class="line">    <span class="type">boolean</span> <span class="title function_">isLogin</span><span class="params">()</span>;</span><br><span class="line">    String <span class="title function_">getUserToken</span><span class="params">()</span>;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">logout</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在具体业务模块实现</span></span><br><span class="line"><span class="meta">@Route(path = &quot;/user/LoginService&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LoginServiceImpl</span> <span class="keyword">implements</span> <span class="title class_">ILoginService</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isLogin</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> UserManager.getInstance().isLogin();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getUserToken</span><span class="params">()</span> &#123; <span class="comment">/* ... */</span> &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">init</span><span class="params">(Context context)</span> &#123; <span class="comment">/* ... */</span> &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">logout</span><span class="params">()</span> &#123; <span class="comment">/* ... */</span> &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在任何模块中调用（无需 import LoginServiceImpl）</span></span><br><span class="line"><span class="type">ILoginService</span> <span class="variable">loginService</span> <span class="operator">=</span> ARouter.getInstance().navigation(ILoginService.class);</span><br><span class="line"><span class="keyword">if</span> (loginService != <span class="literal">null</span> &amp;&amp; loginService.isLogin()) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>navigation(Class)</code> 方法会查找该接口的 <code>@Route</code> 标记的实现类，通过反射实例化并返回。这样依赖关系从”编译期强依赖”变为”运行时通过接口松耦合”。</p>
+<h3 id="5-1-服务发现的缓存机制"><a href="#5-1-服务发现的缓存机制" class="headerlink" title="5.1 服务发现的缓存机制"></a>5.1 服务发现的缓存机制</h3><p>ARouter 对通过 <code>navigation(Class)</code> 获取的服务实例做了缓存——首次调用时通过反射创建实例并缓存到 <code>Warehouse.providers</code>，后续调用直接返回缓存。这避免了重复反射的开销。</p>
+<h3 id="5-2-组件间通信方案对比"><a href="#5-2-组件间通信方案对比" class="headerlink" title="5.2 组件间通信方案对比"></a>5.2 组件间通信方案对比</h3><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>通信方式</th>
+<th>耦合度</th>
+<th>性能</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>IService 模式</strong></td>
+<td>接口 + 路由发现</td>
+<td>编译期无耦合</td>
+<td>高（缓存后零开销）</td>
+<td>模块间能力调用</td>
+</tr>
+<tr>
+<td><strong>EventBus</strong></td>
+<td>发布-订阅</td>
+<td>完全解耦</td>
+<td>中（反射或索引）</td>
+<td>一对多事件通知</td>
+</tr>
+<tr>
+<td><strong>BroadcastReceiver</strong></td>
+<td>系统广播</td>
+<td>完全解耦</td>
+<td>低（跨进程）</td>
+<td>系统级事件</td>
+</tr>
+<tr>
+<td><strong>ContentProvider</strong></td>
+<td>URI 查询</td>
+<td>编译期无耦合</td>
+<td>低（跨进程）</td>
+<td>数据共享</td>
+</tr>
+<tr>
+<td><strong>ViewModel + SharedFlow</strong></td>
+<td>观察者模式</td>
+<td>编译期依赖接口</td>
+<td>高</td>
+<td>同一模块内通信</td>
+</tr>
+</tbody></table>
+<h2 id="六、Application-生命周期委派"><a href="#六、Application-生命周期委派" class="headerlink" title="六、Application 生命周期委派"></a>六、Application 生命周期委派</h2><p>组件化后，每个业务模块都需要在 Application 启动时执行初始化（如初始化数据库、注册第三方 SDK）。但 modules 之间不能直接通信，需要一个代理机制：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// BaseApplication.java（主模块）</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BaseApplication</span> <span class="keyword">extends</span> <span class="title class_">Application</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onCreate</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>.onCreate();</span><br><span class="line">        <span class="comment">// 通过 APT 获取所有 IModule 实现并调用 init</span></span><br><span class="line">        List&lt;IModule&gt; modules = getAllModulesByApt();</span><br><span class="line">        <span class="keyword">for</span> (IModule <span class="keyword">module</span> : modules) &#123;</span><br><span class="line">            <span class="keyword">module</span>.init(<span class="built_in">this</span>);</span><br><span class="line">            <span class="keyword">module</span>.registerLifecycle(lifecycleCallbacks);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 每个模块实现 IModule</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserModuleInit</span> <span class="keyword">implements</span> <span class="title class_">IModule</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">init</span><span class="params">(Application app)</span> &#123;</span><br><span class="line">        <span class="comment">// 初始化用户数据库、第三方登录 SDK 等</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>各模块的 <code>IModule</code> 实现类通过 APT 自动收集，主模块无需逐一引用。</p>
+<h3 id="6-1-ContentProvider-自动初始化技巧"><a href="#6-1-ContentProvider-自动初始化技巧" class="headerlink" title="6.1 ContentProvider 自动初始化技巧"></a>6.1 ContentProvider 自动初始化技巧</h3><p>Android 的一个设计特性被广泛利用于组件初始化：ContentProvider 的 <code>onCreate()</code> 在 Application 的 <code>onCreate()</code> 之前被调用。Firebase、WorkManager、App Startup 等库都利用这个特性：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 在每个模块中声明一个 Provider</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserModuleInitProvider</span> <span class="keyword">extends</span> <span class="title class_">ContentProvider</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">onCreate</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// 此时 Application 的 onCreate 还没调用</span></span><br><span class="line">        <span class="comment">// 但 Context 已经可用（getContext() 返回 Application）</span></span><br><span class="line">        UserModule.init(getContext());</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;  <span class="comment">// 返回 false 表示不需要后续 CRUD 操作</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ... 其他方法返回 null 即可</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>每个模块在 AndroidManifest 中声明这个 Provider，系统自动在 App 启动时调用所有 Provider 的 onCreate。这实现了模块初始化的完全自动发现——主模块无需知悉任何子模块的初始化代码。</p>
+<h2 id="七、工程结构最佳实践"><a href="#七、工程结构最佳实践" class="headerlink" title="七、工程结构最佳实践"></a>七、工程结构最佳实践</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">├── app/                    # 主模块（壳工程，只做拼装和 Application 初始化）</span><br><span class="line">├── common/                 # 公共层（BaseActivity、工具类、网络框架封装）</span><br><span class="line">│   ├── common-base/</span><br><span class="line">│   └── common-service/     # 各模块暴露的 IService 接口定义</span><br><span class="line">├── module_user/            # 用户模块（可独立运行 runAlone = true）</span><br><span class="line">├── module_im/              # 即时通讯模块</span><br><span class="line">├── module_pay/             # 支付模块</span><br><span class="line">└── buildSrc/               # Gradle 构建脚本的统一配置</span><br></pre></td></tr></table></figure>
+
+<p><code>runAlone</code> 模式：每个业务模块在开发时可以单独作为 App 运行，通过 Gradle 配置：</p>
+<figure class="highlight groovy"><table><tr><td class="code"><pre><span class="line"><span class="comment">// module_user 的 build.gradle</span></span><br><span class="line"><span class="type">boolean</span> runAlone = isRunAlone.toBoolean()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (runAlone) &#123;</span><br><span class="line">    apply <span class="attr">plugin:</span> <span class="string">&#x27;com.android.application&#x27;</span></span><br><span class="line">    applicationId <span class="string">&quot;com.example.module.user&quot;</span></span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    apply <span class="attr">plugin:</span> <span class="string">&#x27;com.android.library&#x27;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当 <code>runAlone = true</code> 时，该模块就是一个独立的 Application，有自己的 <code>AndroidManifest.xml</code>，开发者可以独立启动和调试，无需编译其他模块。这在团队规模较大时极大地提升了开发效率。</p>
+<h3 id="7-1-多模块版本管理"><a href="#7-1-多模块版本管理" class="headerlink" title="7.1 多模块版本管理"></a>7.1 多模块版本管理</h3><p>大型组件化项目中，统一管理各模块的外部依赖版本至关重要：</p>
+<figure class="highlight groovy"><table><tr><td class="code"><pre><span class="line"><span class="comment">// buildSrc/src/main/kotlin/Versions.kt</span></span><br><span class="line">object Versions &#123;</span><br><span class="line">    const val compileSdk = <span class="number">33</span></span><br><span class="line">    const val minSdk = <span class="number">21</span></span><br><span class="line"></span><br><span class="line">    object Libs &#123;</span><br><span class="line">        const val okhttp = <span class="string">&quot;4.9.3&quot;</span></span><br><span class="line">        const val retrofit = <span class="string">&quot;2.9.0&quot;</span></span><br><span class="line">        const val glide = <span class="string">&quot;4.14.2&quot;</span></span><br><span class="line">        const val arouter = <span class="string">&quot;1.5.2&quot;</span></span><br><span class="line">        const val room = <span class="string">&quot;2.5.0&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 各模块 build.gradle.kts 中引用</span></span><br><span class="line">dependencies &#123;</span><br><span class="line">    implementation(<span class="string">&quot;com.squareup.okhttp3:okhttp:$&#123;Versions.Libs.okhttp&#125;&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>更进一步，可以使用 Gradle 的 <code>platform</code> 和 <code>enforcedPlatform</code> 统一版本约束，或在 <code>buildSrc</code> 中使用 <code>DependencyHandler</code> 扩展函数统一依赖声明。</p>
+<h3 id="7-2-增量编译加速策略"><a href="#7-2-增量编译加速策略" class="headerlink" title="7.2 增量编译加速策略"></a>7.2 增量编译加速策略</h3><p>大型组件化项目的编译速度优化：</p>
+<ol>
+<li><strong>Gradle Build Cache</strong>：启用远程或本地缓存 <code>org.gradle.caching=true</code></li>
+<li><strong>配置文件（Configuration Cache）</strong>：Gradle 7.0+ 启用 <code>org.gradle.configuration-cache=true</code></li>
+<li><strong>按需编译</strong>：只编译变更的模块及其下游依赖，使用 Gradle Enterprise 的 build scan 分析构建瓶颈</li>
+<li>**Kotlin Symbol Processing (KSP)**：替代 KAPT，编译速度提升 2-3 倍</li>
+<li><strong>避免传递依赖膨胀</strong>：使用 <code>implementation</code> 代替 <code>api</code> 减少编译 classpath 大小</li>
+<li><strong>并行构建</strong>：<code>org.gradle.parallel=true</code></li>
+</ol>
+<h2 id="八、面试常问题目"><a href="#八、面试常问题目" class="headerlink" title="八、面试常问题目"></a>八、面试常问题目</h2><p><strong>Q1: implementation 和 api 的区别？为什么组件化中推荐使用 implementation？</strong></p>
+<p>api 依赖会传递：A 用 api 依赖 B，C 依赖 A，则 C 可以访问 B 的类。implementation 依赖不传递：C 不能访问 B 的类。组件化中使用 implementation 可以强制模块间通过接口通信，避免绕过 A 直接依赖其内部实现，实现真正的封装。同时 implementation 减少了编译时的依赖传递，显著提升增量编译速度——修改 B 时只需重新编译 B 和直接依赖 B 的 A，不需要重新编译 C。</p>
+<p><strong>Q2: ARouter 如何解决模块间的循环依赖问题？</strong></p>
+<p>模块间的循环依赖指的是 A 依赖 B 且 B 依赖 A。组件化通过提取公共层（common module）来解决：A 和 B 共同依赖 common，将需要共享的接口定义放到 common 中，通过 IService 运行时发现。这样 A 和 B 在编译期完全独立，没有相互引用。</p>
+<p><strong>Q3: 组件化和插件化的区别是什么？</strong></p>
+<p>组件化是工程结构的设计方法，所有组件最终合并到一个 APK 中，在编译期完成组装。插件化是运行时的技术，不同的业务模块可以独立打包为 APK，运行时动态加载。组件化解决的是开发和协作效率问题，插件化解决的是动态部署和热更新问题。实际项目中两者可以结合使用：在组件化基础上，对需要动态发布的组件做插件化改造。</p>
+<p><strong>Q4: resourcePrefix 机制是如何防止资源冲突的？</strong></p>
+<p>Gradle 在构建打包阶段，会将所有 library 模块和 app 模块的资源合并。如果两个模块有同名资源文件，后处理的会覆盖先处理的（取决于依赖顺序）。resourcePrefix 强制该模块的资源名以指定前缀开头，编译时通过 Lint 检查（ResourceName 规则）报错。这不是运行时机制，而是构建期约束。</p>
+<p><strong>Q5: 组件化中如何实现 AAR&#x2F;组件级别的 ABI 隔离？</strong></p>
+<p>当一个组件需要独立提供 native so 库时，不同 ABI（arm64-v8a、armeabi-v7a 等）的 so 文件需要正确打包。配置策略是：在 app 模块的 build.gradle 中通过 <code>android.defaultConfig.ndk.abiFilters</code> 指定最终支持的 ABI，同时在各组件模块中通过 <code>packagingOptions</code> 控制 so 文件的去重。关键原则：最终 APK 中不能包含多个模块提供的同名 so 但不同版本——这可能导致运行时链接错误。</p>
+<hr>
+<p><strong>参考源码路径：</strong></p>
+<ul>
+<li>ARouter：<code>https://github.com/alibaba/ARouter</code></li>
+<li>ARouter Compiler：<code>arouter-compiler/src/main/java/com/alibaba/android/arouter/compiler/processor/RouteProcessor.java</code></li>
+<li>DexPathList：<code>libcore/dalvik/src/main/java/dalvik/system/DexPathList.java</code></li>
+<li>Android Gradle Plugin Dependency Resolution：<code>tools/base/build-system/gradle-core</code></li>
+<li>Resource Prefix Lint Check：<code>tools/base/lint/libs/lint-checks/src/main/java/com/android/tools/lint/checks/ResourceNameDetector.java</code></li>
+<li>Manifest Merger：<code>tools/base/build-system/manifest-merger</code></li>
+<li>App Startup Library：<code>https://developer.android.com/topic/libraries/app-startup</code></li>
+</ul>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/">架构设计    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/435.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2022/02/20/%E8%A7%A3%E8%AF%BB%E5%BC%80%E6%BA%90%E6%A1%86%E6%9E%B6%E7%B3%BB%E5%88%97-%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/413.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>解读开源框架系列-图片加载框架设计</span></div></a></div><div class="next-post pull_right"><a href="/2022/02/10/%E8%A7%A3%E8%AF%BB%E5%BC%80%E6%BA%90%E6%A1%86%E6%9E%B6%E7%B3%BB%E5%88%97-%E6%8F%92%E4%BB%B6%E5%8C%96%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/173.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>解读开源框架系列-插件化框架设计</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2019/09/10/重拾Android-【架构篇】MVI架构/" title="【架构篇】MVI架构"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【架构篇】MVI架构</div></a></div><div class="relatedPosts_item"><a href="/2019/09/05/重拾Android-【实战系列】MVVM之基于Artifactory和Jetpack高级架构/" title="【实战系列】MVVM之基于Artifactory和Jetpack高级架构"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/280301.jpg"><div class="relatedPosts_title">【实战系列】MVVM之基于Artifactory和Jetpack高级架构</div></a></div><div class="relatedPosts_item"><a href="/2019/09/01/重拾Android-【架构篇】MVP架构/" title="【架构篇】MVP架构"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/apothecary-87-CVBQdww5JZU-unsplash.jpg"><div class="relatedPosts_title">【架构篇】MVP架构</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/435.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

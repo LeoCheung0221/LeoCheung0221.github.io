@@ -1,0 +1,400 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【Claude Code源码剖析】14-成本追踪与Token管理系统 | ONE·PIECE</title><meta name="description" content="🔒 此内容需要密码访问"><meta name="keywords" content="源码分析,Claude Code,Agent,LLM"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【Claude Code源码剖析】14-成本追踪与Token管理系统"><meta name="twitter:description" content="🔒 此内容需要密码访问"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【Claude Code源码剖析】14-成本追踪与Token管理系统"><meta property="og:url" content="http://tufusi.com/2026/04/02/%E3%80%90Claude%20Code%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E3%80%9114-%E6%88%90%E6%9C%AC%E8%BF%BD%E8%B8%AA%E4%B8%8EToken%E7%AE%A1%E7%90%86/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="🔒 此内容需要密码访问"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2026/04/02/%E3%80%90Claude%20Code%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E3%80%9114-%E6%88%90%E6%9C%AC%E8%BF%BD%E8%B8%AA%E4%B8%8EToken%E7%AE%A1%E7%90%86/"><link rel="prev" title="【Claude Code源码剖析】15-核心工具函数库" href="http://tufusi.com/2026/04/03/%E3%80%90Claude%20Code%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E3%80%9115-%E6%A0%B8%E5%BF%83%E5%B7%A5%E5%85%B7%E5%87%BD%E6%95%B0%E5%BA%93/"><link rel="next" title="【Claude Code源码剖析】13-插件与技能系统" href="http://tufusi.com/2026/03/28/%E3%80%90Claude%20Code%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E3%80%9113-%E6%8F%92%E4%BB%B6%E4%B8%8E%E6%8A%80%E8%83%BD%E7%B3%BB%E7%BB%9F/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84%E6%80%BB%E8%A7%88"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、系统架构总览</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81%E6%A8%A1%E5%9E%8B%E5%AE%9A%E4%BB%B7%E4%BD%93%E7%B3%BB-modelCost-ts"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、模型定价体系 (modelCost.ts)</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E5%AE%9A%E4%BB%B7%E5%B1%82%E7%BA%A7%E5%AE%9A%E4%B9%89"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 定价层级定义</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-MODEL-COSTS-%E6%98%A0%E5%B0%84%E8%A1%A8"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 MODEL_COSTS 映射表</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-Opus-4-6-Fast%E6%A8%A1%E5%BC%8F%E7%89%B9%E6%AE%8A%E5%AE%9A%E4%BB%B7"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 Opus 4.6 Fast模式特殊定价</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-4-%E8%B4%B9%E7%94%A8%E8%AE%A1%E7%AE%97%E6%A0%B8%E5%BF%83%E5%87%BD%E6%95%B0"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">2.4 费用计算核心函数</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#calculateUSDCost-model-string-usage-TokenUsage-number"><span class="toc_mobile_items-number">2.4.1.</span> <span class="toc_mobile_items-text">calculateUSDCost(model: string, usage: TokenUsage): number</span></a></li></ol></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81%E4%BC%9A%E8%AF%9D%E6%88%90%E6%9C%AC%E8%BF%BD%E8%B8%AA-cost-tracker-ts"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、会话成本追踪 (cost-tracker.ts)</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E7%8A%B6%E6%80%81%E7%AE%A1%E7%90%86%E6%9E%B6%E6%9E%84"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 状态管理架构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E6%88%90%E6%9C%AC%E7%B4%AF%E5%8A%A0%EF%BC%9AaddToTotalSessionCost"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 成本累加：addToTotalSessionCost()</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#Advisor%E9%80%92%E5%BD%92%E8%BF%BD%E8%B8%AA"><span class="toc_mobile_items-number">3.2.1.</span> <span class="toc_mobile_items-text">Advisor递归追踪</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-%E4%BC%9A%E8%AF%9D%E6%8C%81%E4%B9%85%E5%8C%96"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 会话持久化</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#saveCurrentSessionCosts-fpsMetrics"><span class="toc_mobile_items-number">3.3.1.</span> <span class="toc_mobile_items-text">saveCurrentSessionCosts(fpsMetrics?)</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#getStoredSessionCosts"><span class="toc_mobile_items-number">3.3.2.</span> <span class="toc_mobile_items-text">getStoredSessionCosts()</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#restoreCostStateForSession-sessionId"><span class="toc_mobile_items-number">3.3.3.</span> <span class="toc_mobile_items-text">restoreCostStateForSession(sessionId)</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-%E6%A0%BC%E5%BC%8F%E5%8C%96%E8%BE%93%E5%87%BA%EF%BC%9AformatTotalCost"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">3.4 格式化输出：formatTotalCost()</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81React%E9%9B%86%E6%88%90%EF%BC%9AcostHook-ts"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、React集成：costHook.ts</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-useCostSummary-Hook"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 useCostSummary() Hook</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81OpenTelemetry%E9%81%A5%E6%B5%8B%E9%9B%86%E6%88%90"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、OpenTelemetry遥测集成</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E4%B8%A4%E4%B8%AA%E8%AE%A1%E6%95%B0%E5%99%A8"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 两个计数器</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-%E9%81%A5%E6%B5%8B%E7%94%A8%E9%80%94"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 遥测用途</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E7%BC%93%E5%AD%98%E7%BB%8F%E6%B5%8E%E5%AD%A6"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、缓存经济学</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E7%BC%93%E5%AD%98%E5%AE%9A%E4%BB%B7%E6%A8%A1%E5%9E%8B"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 缓存定价模型</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-%E7%BB%8F%E6%B5%8E%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 经济分析</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E5%AE%8C%E6%95%B4%E6%95%B0%E6%8D%AE%E6%B5%81%E8%BF%BD%E8%B8%AA"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、完整数据流追踪</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81%E8%BE%B9%E7%95%8C%E6%83%85%E5%86%B5%E4%B8%8E%E5%AE%B9%E9%94%99%E8%AE%BE%E8%AE%A1"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、边界情况与容错设计</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-%E6%9C%AA%E7%9F%A5%E6%A8%A1%E5%9E%8B%E5%A4%84%E7%90%86"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">8.1 未知模型处理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-%E4%BC%9A%E8%AF%9D%E6%81%A2%E5%A4%8D%E7%9A%84%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">8.2 会话恢复的一致性</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-3-%E5%B9%B6%E5%8F%91%E5%AE%89%E5%85%A8"><span class="toc_mobile_items-number">8.3.</span> <span class="toc_mobile_items-text">8.3 并发安全</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E8%AE%BE%E8%AE%A1%E5%93%B2%E5%AD%A6%E6%80%BB%E7%BB%93"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、设计哲学总结</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84%E6%80%BB%E8%A7%88"><span class="toc-number">1.</span> <span class="toc-text">一、系统架构总览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%A8%A1%E5%9E%8B%E5%AE%9A%E4%BB%B7%E4%BD%93%E7%B3%BB-modelCost-ts"><span class="toc-number">2.</span> <span class="toc-text">二、模型定价体系 (modelCost.ts)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%AE%9A%E4%BB%B7%E5%B1%82%E7%BA%A7%E5%AE%9A%E4%B9%89"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 定价层级定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-MODEL-COSTS-%E6%98%A0%E5%B0%84%E8%A1%A8"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 MODEL_COSTS 映射表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Opus-4-6-Fast%E6%A8%A1%E5%BC%8F%E7%89%B9%E6%AE%8A%E5%AE%9A%E4%BB%B7"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 Opus 4.6 Fast模式特殊定价</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E8%B4%B9%E7%94%A8%E8%AE%A1%E7%AE%97%E6%A0%B8%E5%BF%83%E5%87%BD%E6%95%B0"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 费用计算核心函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#calculateUSDCost-model-string-usage-TokenUsage-number"><span class="toc-number">2.4.1.</span> <span class="toc-text">calculateUSDCost(model: string, usage: TokenUsage): number</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E4%BC%9A%E8%AF%9D%E6%88%90%E6%9C%AC%E8%BF%BD%E8%B8%AA-cost-tracker-ts"><span class="toc-number">3.</span> <span class="toc-text">三、会话成本追踪 (cost-tracker.ts)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%8A%B6%E6%80%81%E7%AE%A1%E7%90%86%E6%9E%B6%E6%9E%84"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 状态管理架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%88%90%E6%9C%AC%E7%B4%AF%E5%8A%A0%EF%BC%9AaddToTotalSessionCost"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 成本累加：addToTotalSessionCost()</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Advisor%E9%80%92%E5%BD%92%E8%BF%BD%E8%B8%AA"><span class="toc-number">3.2.1.</span> <span class="toc-text">Advisor递归追踪</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E4%BC%9A%E8%AF%9D%E6%8C%81%E4%B9%85%E5%8C%96"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 会话持久化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#saveCurrentSessionCosts-fpsMetrics"><span class="toc-number">3.3.1.</span> <span class="toc-text">saveCurrentSessionCosts(fpsMetrics?)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#getStoredSessionCosts"><span class="toc-number">3.3.2.</span> <span class="toc-text">getStoredSessionCosts()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#restoreCostStateForSession-sessionId"><span class="toc-number">3.3.3.</span> <span class="toc-text">restoreCostStateForSession(sessionId)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E6%A0%BC%E5%BC%8F%E5%8C%96%E8%BE%93%E5%87%BA%EF%BC%9AformatTotalCost"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 格式化输出：formatTotalCost()</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81React%E9%9B%86%E6%88%90%EF%BC%9AcostHook-ts"><span class="toc-number">4.</span> <span class="toc-text">四、React集成：costHook.ts</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-useCostSummary-Hook"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 useCostSummary() Hook</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81OpenTelemetry%E9%81%A5%E6%B5%8B%E9%9B%86%E6%88%90"><span class="toc-number">5.</span> <span class="toc-text">五、OpenTelemetry遥测集成</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E4%B8%A4%E4%B8%AA%E8%AE%A1%E6%95%B0%E5%99%A8"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 两个计数器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E9%81%A5%E6%B5%8B%E7%94%A8%E9%80%94"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 遥测用途</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E7%BC%93%E5%AD%98%E7%BB%8F%E6%B5%8E%E5%AD%A6"><span class="toc-number">6.</span> <span class="toc-text">六、缓存经济学</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E7%BC%93%E5%AD%98%E5%AE%9A%E4%BB%B7%E6%A8%A1%E5%9E%8B"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 缓存定价模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E7%BB%8F%E6%B5%8E%E5%88%86%E6%9E%90"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 经济分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%AE%8C%E6%95%B4%E6%95%B0%E6%8D%AE%E6%B5%81%E8%BF%BD%E8%B8%AA"><span class="toc-number">7.</span> <span class="toc-text">七、完整数据流追踪</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E8%BE%B9%E7%95%8C%E6%83%85%E5%86%B5%E4%B8%8E%E5%AE%B9%E9%94%99%E8%AE%BE%E8%AE%A1"><span class="toc-number">8.</span> <span class="toc-text">八、边界情况与容错设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E6%9C%AA%E7%9F%A5%E6%A8%A1%E5%9E%8B%E5%A4%84%E7%90%86"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 未知模型处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E4%BC%9A%E8%AF%9D%E6%81%A2%E5%A4%8D%E7%9A%84%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 会话恢复的一致性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-%E5%B9%B6%E5%8F%91%E5%AE%89%E5%85%A8"><span class="toc-number">8.3.</span> <span class="toc-text">8.3 并发安全</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E8%AE%BE%E8%AE%A1%E5%93%B2%E5%AD%A6%E6%80%BB%E7%BB%93"><span class="toc-number">9.</span> <span class="toc-text">九、设计哲学总结</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【Claude Code源码剖析】14-成本追踪与Token管理系统</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2026-04-02<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/">大模型</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/Harness/">Harness</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">2.9k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 11 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><script>(function(){  if(!sessionStorage.getItem("_hexo_protect_harness")){    location.href="/harness?r="+encodeURIComponent(location.pathname);  }})();</script><blockquote>
+<p>⚠️ <strong>学习声明</strong>：本文档基于 Claude Code 2.1.88 源码分析整理，仅供个人学习研究使用，不做任何商业用途。</p>
+</blockquote>
+<blockquote>
+<p><strong>源文件</strong>: <code>src/cost-tracker.ts</code>(324行), <code>src/services/modelCost.ts</code>(232行), <code>src/costHook.ts</code>(23行)<br><strong>职责</strong>: 模型调用计费、Token消耗统计、会话成本持久化、OpenTelemetry遥测上报</p>
+</blockquote>
+<hr>
+<h2 id="一、系统架构总览"><a href="#一、系统架构总览" class="headerlink" title="一、系统架构总览"></a>一、系统架构总览</h2><p>成本追踪系统由三个文件组成，职责清晰分离：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">modelCost.ts          cost-tracker.ts              costHook.ts</span><br><span class="line">┌─────────────┐       ┌──────────────────────┐     ┌──────────────┐</span><br><span class="line">│ 定价表定义    │       │ 状态累加 &amp; 持久化      │     │ React Hook   │</span><br><span class="line">│ MODEL_COSTS  │──────&gt;│ addToTotalSessionCost│     │ 进程退出时    │</span><br><span class="line">│ calculateUSD │       │ saveCurrentSession   │&lt;────│ 格式化+保存   │</span><br><span class="line">│ Cost()       │       │ formatTotalCost()    │     │              │</span><br><span class="line">└─────────────┘       │ OpenTelemetry上报     │     └──────────────┘</span><br><span class="line">                      └──────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p><strong>数据流</strong>: API调用完成 → <code>calculateUSDCost()</code> 计算单次费用 → <code>addToTotalSessionCost()</code> 累加到会话状态 → 进程退出时 <code>saveCurrentSessionCosts()</code> 写入磁盘 → 下次恢复时 <code>restoreCostStateForSession()</code> 读取</p>
+<hr>
+<h2 id="二、模型定价体系-modelCost-ts"><a href="#二、模型定价体系-modelCost-ts" class="headerlink" title="二、模型定价体系 (modelCost.ts)"></a>二、模型定价体系 (<code>modelCost.ts</code>)</h2><h3 id="2-1-定价层级定义"><a href="#2-1-定价层级定义" class="headerlink" title="2.1 定价层级定义"></a>2.1 定价层级定义</h3><p>系统定义了 <strong>6个定价层级</strong>，每个层级是一个 <code>&#123; input, output &#125;</code> 对象，单位是 **美元&#x2F;百万Token ($&#x2F;MTok)**：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">COST_TIER_3_15    = &#123; input: 3,    output: 15   &#125;  // Sonnet系列</span><br><span class="line">COST_TIER_15_75   = &#123; input: 15,   output: 75   &#125;  // Opus 4 / Opus 4.1</span><br><span class="line">COST_TIER_5_25    = &#123; input: 5,    output: 25   &#125;  // Opus 4.5 / Opus 4.6(常规)</span><br><span class="line">COST_TIER_30_150  = &#123; input: 30,   output: 150  &#125;  // Opus 4.6 fast模式</span><br><span class="line">COST_HAIKU_35     = &#123; input: 0.80, output: 4    &#125;  // Haiku 3.5</span><br><span class="line">COST_HAIKU_45     = &#123; input: 1,    output: 5    &#125;  // Haiku 4.5</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-MODEL-COSTS-映射表"><a href="#2-2-MODEL-COSTS-映射表" class="headerlink" title="2.2 MODEL_COSTS 映射表"></a>2.2 MODEL_COSTS 映射表</h3><p><code>MODEL_COSTS</code> 是一个 <code>Map&lt;string, ModelCostEntry&gt;</code>，键为模型的 <strong>规范化名称</strong>（canonical name），值为对应的定价层级。源码中完整的映射：</p>
+<table>
+<thead>
+<tr>
+<th>模型名称</th>
+<th>定价层级</th>
+<th>Input $&#x2F;MTok</th>
+<th>Output $&#x2F;MTok</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>claude-sonnet-4-20250514</code></td>
+<td>COST_TIER_3_15</td>
+<td>$3</td>
+<td>$15</td>
+</tr>
+<tr>
+<td><code>claude-sonnet-4-0</code></td>
+<td>COST_TIER_3_15</td>
+<td>$3</td>
+<td>$15</td>
+</tr>
+<tr>
+<td><code>claude-3-5-sonnet-20241022</code></td>
+<td>COST_TIER_3_15</td>
+<td>$3</td>
+<td>$15</td>
+</tr>
+<tr>
+<td><code>claude-3-7-sonnet-20250219</code></td>
+<td>COST_TIER_3_15</td>
+<td>$3</td>
+<td>$15</td>
+</tr>
+<tr>
+<td><code>claude-opus-4-20250918</code></td>
+<td>COST_TIER_15_75</td>
+<td>$15</td>
+<td>$75</td>
+</tr>
+<tr>
+<td><code>claude-opus-4-0</code></td>
+<td>COST_TIER_15_75</td>
+<td>$15</td>
+<td>$75</td>
+</tr>
+<tr>
+<td><code>claude-4-1-opus-20250620</code></td>
+<td>COST_TIER_15_75</td>
+<td>$15</td>
+<td>$75</td>
+</tr>
+<tr>
+<td><code>claude-opus-4-5-20250601</code></td>
+<td>COST_TIER_5_25</td>
+<td>$5</td>
+<td>$25</td>
+</tr>
+<tr>
+<td><code>claude-opus-4-6-20250822</code></td>
+<td>COST_TIER_5_25 (常规) &#x2F; COST_TIER_30_150 (fast)</td>
+<td>$5&#x2F;$30</td>
+<td>$25&#x2F;$150</td>
+</tr>
+<tr>
+<td><code>claude-3-5-haiku-20241022</code></td>
+<td>COST_HAIKU_35</td>
+<td>$0.80</td>
+<td>$4</td>
+</tr>
+<tr>
+<td><code>claude-haiku-4-5-20250601</code></td>
+<td>COST_HAIKU_45</td>
+<td>$1</td>
+<td>$5</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>注意</strong>: 表中每个模型可能有多个别名（如 <code>claude-sonnet-4-0</code> 和 <code>claude-sonnet-4-20250514</code> 指向同一定价），MAP 中都有独立条目。</p>
+</blockquote>
+<h3 id="2-3-Opus-4-6-Fast模式特殊定价"><a href="#2-3-Opus-4-6-Fast模式特殊定价" class="headerlink" title="2.3 Opus 4.6 Fast模式特殊定价"></a>2.3 Opus 4.6 Fast模式特殊定价</h3><p>Opus 4.6 是唯一一个有 <strong>双定价层级</strong> 的模型。源码中通过 <code>getOpus46CostTier()</code> 函数判断：</p>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">getOpus46CostTier</span>(<span class="params"><span class="attr">usage</span>: <span class="title class_">TokenUsage</span></span>): <span class="title class_">ModelCostEntry</span> &#123;</span><br><span class="line">  <span class="comment">// 检查 usage 中是否有 speed: &quot;fast&quot; 标记</span></span><br><span class="line">  <span class="keyword">if</span> (usage?.<span class="property">speed</span> === <span class="string">&quot;fast&quot;</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable constant_">COST_TIER_30_150</span>;   <span class="comment">// $30/$150 per MTok</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="variable constant_">COST_TIER_5_25</span>;       <span class="comment">// $5/$25 per MTok (默认/常规)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>设计原因</strong>: Opus 4.6 fast模式牺牲成本换取更低延迟，定价是常规模式的6倍。系统根据API返回的 <code>usage.speed</code> 字段自动选择定价。</p>
+<h3 id="2-4-费用计算核心函数"><a href="#2-4-费用计算核心函数" class="headerlink" title="2.4 费用计算核心函数"></a>2.4 费用计算核心函数</h3><h4 id="calculateUSDCost-model-string-usage-TokenUsage-number"><a href="#calculateUSDCost-model-string-usage-TokenUsage-number" class="headerlink" title="calculateUSDCost(model: string, usage: TokenUsage): number"></a><code>calculateUSDCost(model: string, usage: TokenUsage): number</code></h4><p>这是对外暴露的唯一计算入口：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">calculateUSDCost(model, usage)</span><br><span class="line">  └── tokensToUSDCost(getModelCosts(model, usage), usage)</span><br></pre></td></tr></table></figure>
+
+<p><strong>内部流程</strong>:</p>
+<ol>
+<li><p><strong><code>getModelCosts(model, usage)</code></strong>: </p>
+<ul>
+<li>从 <code>MODEL_COSTS</code> 中查找模型名称</li>
+<li>如果是 Opus 4.6，进入 <code>getOpus46CostTier(usage)</code> 判断 fast&#x2F;常规</li>
+<li><strong>找不到模型</strong> → 调用 <code>setHasUnknownModelCost()</code> 标记（全局状态），然后使用 <strong>默认模型</strong> 的定价作为 fallback</li>
+<li>默认模型通过 <code>getDefaultModel()</code> 获取（通常是 Sonnet 系列）</li>
+</ul>
+</li>
+<li><p><strong><code>tokensToUSDCost(costs, usage)</code></strong>:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cost = (usage.inputTokens * costs.input / 1_000_000)</span><br><span class="line">     + (usage.outputTokens * costs.output / 1_000_000)</span><br><span class="line">     + (usage.cacheCreationInputTokens * costs.input * 1.25 / 1_000_000)</span><br><span class="line">     + (usage.cacheReadInputTokens * costs.input * 0.10 / 1_000_000)</span><br></pre></td></tr></table></figure>
+
+<p><strong>关键定价规则</strong>:</p>
+<ul>
+<li><strong>缓存创建</strong> (cache creation): 比普通输入贵 <strong>25%</strong> (乘以 1.25)</li>
+<li><strong>缓存读取</strong> (cache read): 只需普通输入的 <strong>10%</strong> (乘以 0.10)</li>
+<li>这就是为什么上下文缓存能大幅降低成本的原因</li>
+</ul>
+</li>
+<li><p><strong><code>setHasUnknownModelCost()</code></strong>:</p>
+<ul>
+<li>设置全局标志 <code>hasUnknownModelCost = true</code></li>
+<li>当会话结束格式化输出时，如果此标志为 true，会附加 “cost is estimated” 的提示</li>
+<li>这确保了系统在遇到新模型时不会崩溃，但会告知用户费用仅为估算值</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="三、会话成本追踪-cost-tracker-ts"><a href="#三、会话成本追踪-cost-tracker-ts" class="headerlink" title="三、会话成本追踪 (cost-tracker.ts)"></a>三、会话成本追踪 (<code>cost-tracker.ts</code>)</h2><h3 id="3-1-状态管理架构"><a href="#3-1-状态管理架构" class="headerlink" title="3.1 状态管理架构"></a>3.1 状态管理架构</h3><p>成本状态存储在全局 Store 中（<code>getState()</code>&#x2F;<code>setState()</code>），涉及以下字段：</p>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// State中的成本相关字段</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="attr">totalCost</span>: <span class="built_in">number</span>,              <span class="comment">// 累计美元费用</span></span><br><span class="line">  <span class="attr">totalAPIDuration</span>: <span class="built_in">number</span>,       <span class="comment">// 累计API调用耗时(ms)</span></span><br><span class="line">  <span class="attr">totalModelUsage</span>: <span class="title class_">Record</span>&lt;<span class="built_in">string</span>, &#123;   <span class="comment">// 每个模型的token使用量</span></span><br><span class="line">    <span class="attr">inputTokens</span>: <span class="built_in">number</span>,</span><br><span class="line">    <span class="attr">outputTokens</span>: <span class="built_in">number</span>,</span><br><span class="line">    <span class="attr">cacheCreationInputTokens</span>: <span class="built_in">number</span>,</span><br><span class="line">    <span class="attr">cacheReadInputTokens</span>: <span class="built_in">number</span>,</span><br><span class="line">  &#125;&gt;,</span><br><span class="line">  <span class="attr">fpsMetrics</span>: <span class="title class_">FPSMetrics</span>,         <span class="comment">// 渲染帧率指标</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-成本累加：addToTotalSessionCost"><a href="#3-2-成本累加：addToTotalSessionCost" class="headerlink" title="3.2 成本累加：addToTotalSessionCost()"></a>3.2 成本累加：<code>addToTotalSessionCost()</code></h3><p>这是每次API调用返回后的核心累加函数。<strong>源码逻辑按顺序</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">addToTotalSessionCost(cost, duration, modelUsage, message)</span><br><span class="line">│</span><br><span class="line">├── 1. setState(&#123; totalCost: prev + cost &#125;)</span><br><span class="line">│      // 累加本次费用到总费用</span><br><span class="line">│</span><br><span class="line">├── 2. setState(&#123; totalAPIDuration: prev + duration &#125;)</span><br><span class="line">│      // 累加API耗时</span><br><span class="line">│</span><br><span class="line">├── 3. addToTotalModelUsage(modelUsage)</span><br><span class="line">│      // 按模型名称累加各类Token数</span><br><span class="line">│      // 内部遍历 modelUsage 的每个 [model, tokens] 对</span><br><span class="line">│      // 对 totalModelUsage[model] 做字段级累加</span><br><span class="line">│</span><br><span class="line">├── 4. OpenTelemetry 成本计数器上报</span><br><span class="line">│      // otelCostCounter.add(cost, &#123;</span><br><span class="line">│      //   model: modelName,</span><br><span class="line">│      //   speed: usage.speed || &quot;normal&quot;</span><br><span class="line">│      // &#125;)</span><br><span class="line">│</span><br><span class="line">├── 5. OpenTelemetry Token计数器上报</span><br><span class="line">│      // 对每种 token 类型分别上报:</span><br><span class="line">│      // otelTokenCounter.add(inputTokens, &#123; type: &quot;input&quot;, model &#125;)</span><br><span class="line">│      // otelTokenCounter.add(outputTokens, &#123; type: &quot;output&quot;, model &#125;)</span><br><span class="line">│      // otelTokenCounter.add(cacheCreation, &#123; type: &quot;cache_creation&quot;, model &#125;)</span><br><span class="line">│      // otelTokenCounter.add(cacheRead, &#123; type: &quot;cache_read&quot;, model &#125;)</span><br><span class="line">│</span><br><span class="line">└── 6. Advisor递归处理</span><br><span class="line">       // if (message?.advisorUsage) &#123;</span><br><span class="line">       //   getAdvisorUsage(message) → 提取advisor的子调用费用</span><br><span class="line">       //   递归调用 addToTotalSessionCost() 处理advisor费用</span><br><span class="line">       // &#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Advisor递归追踪"><a href="#Advisor递归追踪" class="headerlink" title="Advisor递归追踪"></a>Advisor递归追踪</h4><p><code>getAdvisorUsage()</code> 函数从 API 响应消息中提取 <strong>advisor（副手&#x2F;子Agent）</strong> 的资源消耗。Advisor 是 Claude Code 内部用于处理某些特殊任务的辅助模型调用（比如安全审查、代码审查等）。</p>
+<p>递归结构确保无论 advisor 嵌套多少层，所有费用都会被正确累加到总费用中。</p>
+<h3 id="3-3-会话持久化"><a href="#3-3-会话持久化" class="headerlink" title="3.3 会话持久化"></a>3.3 会话持久化</h3><h4 id="saveCurrentSessionCosts-fpsMetrics"><a href="#saveCurrentSessionCosts-fpsMetrics" class="headerlink" title="saveCurrentSessionCosts(fpsMetrics?)"></a><code>saveCurrentSessionCosts(fpsMetrics?)</code></h4><p>在进程退出时调用，将当前会话的所有成本数据写入 <strong>项目配置文件</strong>（通过 <code>setProjectConfig()</code>)：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">保存的数据结构 (per session key):</span><br><span class="line">&#123;</span><br><span class="line">  cost: number,                    // 总美元费用</span><br><span class="line">  duration: number,                // 总API耗时</span><br><span class="line">  durationMs: number,              // 总壁钟耗时 (Date.now() - sessionStartTime)</span><br><span class="line">  modelUsage: Record&lt;string, TokenUsage&gt;,  // 每模型token明细</span><br><span class="line">  linesAdded: number,              // git diff统计: 新增行数</span><br><span class="line">  linesRemoved: number,            // git diff统计: 删除行数</span><br><span class="line">  fpsMetrics?: FPSMetrics,         // 可选: UI渲染帧率</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>存储键</strong>: 使用 <code>getSessionId()</code> 生成，每个会话有唯一 ID，存储在项目级别配置中（<code>~/.claude/projects/&lt;project-hash&gt;/config.json</code>）。</p>
+<p><strong>Git统计</strong>: 保存前会执行 <code>git diff --stat</code> 获取当前会话的代码变更量（新增&#x2F;删除行数），记录到持久化数据中。</p>
+<h4 id="getStoredSessionCosts"><a href="#getStoredSessionCosts" class="headerlink" title="getStoredSessionCosts()"></a><code>getStoredSessionCosts()</code></h4><p>读取指定会话的历史成本数据，用于展示历史或恢复。</p>
+<h4 id="restoreCostStateForSession-sessionId"><a href="#restoreCostStateForSession-sessionId" class="headerlink" title="restoreCostStateForSession(sessionId)"></a><code>restoreCostStateForSession(sessionId)</code></h4><p>在恢复一个已有会话时调用（如 <code>--resume</code> 模式），从磁盘读取之前保存的成本状态，恢复到内存 State 中，确保费用累计是连续的。</p>
+<h3 id="3-4-格式化输出：formatTotalCost"><a href="#3-4-格式化输出：formatTotalCost" class="headerlink" title="3.4 格式化输出：formatTotalCost()"></a>3.4 格式化输出：<code>formatTotalCost()</code></h3><p>在会话结束时生成人类可读的成本报告。源码中使用 <code>chalk.dim()</code> 渲染为灰色文本。</p>
+<p><strong>输出格式（实际源码）</strong>:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Total cost: $1.23</span><br><span class="line">  Duration: 45s API time, 2m 30s wall time</span><br><span class="line">  Code: +123 -45 lines changed</span><br><span class="line">  Model usage:</span><br><span class="line">    claude-sonnet-4-20250514: 50,000 input, 12,000 output, 30,000 cache_creation, 200,000 cache_read</span><br><span class="line">    claude-3-5-haiku-20241022: 5,000 input, 2,000 output</span><br></pre></td></tr></table></figure>
+
+<p><strong><code>formatModelUsage()</code></strong> 内部函数：遍历 <code>totalModelUsage</code> Map，对每个模型生成一行，列出各类Token数量。只有非零的Token类型才会显示。</p>
+<p><strong>未知模型费用提示</strong>: 如果 <code>hasUnknownModelCost</code> 标志为 true（在计算时遇到了不在 MODEL_COSTS 表中的模型），输出末尾会附加 <code>(cost is estimated)</code> 提示。</p>
+<hr>
+<h2 id="四、React集成：costHook-ts"><a href="#四、React集成：costHook-ts" class="headerlink" title="四、React集成：costHook.ts"></a>四、React集成：<code>costHook.ts</code></h2><h3 id="4-1-useCostSummary-Hook"><a href="#4-1-useCostSummary-Hook" class="headerlink" title="4.1 useCostSummary() Hook"></a>4.1 <code>useCostSummary()</code> Hook</h3><p>这是整个成本系统与 React UI 层的唯一连接点。完整源码仅23行：</p>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">useCostSummary</span>(<span class="params"></span>): <span class="built_in">void</span> &#123;</span><br><span class="line">  <span class="title function_">useEffect</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="title function_">handler</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">      <span class="keyword">const</span> summary = <span class="title function_">formatTotalCost</span>();</span><br><span class="line">      <span class="keyword">if</span> (summary) &#123;</span><br><span class="line">        <span class="comment">// 输出成本摘要到终端（仅对有计费权限的用户）</span></span><br><span class="line">        process.<span class="property">stderr</span>.<span class="title function_">write</span>(summary + <span class="string">&quot;\n&quot;</span>);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="title function_">saveCurrentSessionCosts</span>(<span class="title function_">getState</span>().<span class="property">fpsMetrics</span>);</span><br><span class="line">    &#125;;</span><br><span class="line">    process.<span class="title function_">on</span>(<span class="string">&quot;exit&quot;</span>, handler);</span><br><span class="line">    <span class="keyword">return</span> <span class="function">() =&gt;</span> &#123;</span><br><span class="line">      process.<span class="title function_">removeListener</span>(<span class="string">&quot;exit&quot;</span>, handler);</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;, []);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>工作原理</strong>:</p>
+<ol>
+<li>使用 React <code>useEffect</code> 注册一次性的 <code>process.exit</code> 事件监听器</li>
+<li>退出时做两件事：<ul>
+<li><code>formatTotalCost()</code> → 格式化输出到 stderr（灰色文本）</li>
+<li><code>saveCurrentSessionCosts()</code> → 持久化到磁盘</li>
+</ul>
+</li>
+<li>cleanup函数移除监听器，防止内存泄漏</li>
+</ol>
+<p><strong>为什么写到 stderr</strong>: 因为 stdout 可能被管道使用（如 <code>claude | grep ...</code>），成本信息属于诊断信息，应该输出到 stderr。</p>
+<p><strong><code>formatTotalCost()</code> 的条件性</strong>: 只有 <code>hasBillingAccess()</code> 为 true 时才返回格式化字符串。API Key用户有计费权限，但某些免费试用或内部用户可能没有，此时返回空字符串，不显示成本。</p>
+<hr>
+<h2 id="五、OpenTelemetry遥测集成"><a href="#五、OpenTelemetry遥测集成" class="headerlink" title="五、OpenTelemetry遥测集成"></a>五、OpenTelemetry遥测集成</h2><h3 id="5-1-两个计数器"><a href="#5-1-两个计数器" class="headerlink" title="5.1 两个计数器"></a>5.1 两个计数器</h3><p>成本系统向 OpenTelemetry 上报两个 <strong>Counter</strong>（单调递增计数器）：</p>
+<ol>
+<li><p><strong><code>otelCostCounter</code></strong>: 费用计数器</p>
+<ul>
+<li>值: 美元金额（浮点数）</li>
+<li>属性: <code>&#123; model: string, speed: &quot;normal&quot; | &quot;fast&quot; &#125;</code></li>
+</ul>
+</li>
+<li><p><strong><code>otelTokenCounter</code></strong>: Token数量计数器</p>
+<ul>
+<li>值: Token数量（整数）</li>
+<li>属性: <code>&#123; type: &quot;input&quot; | &quot;output&quot; | &quot;cache_creation&quot; | &quot;cache_read&quot;, model: string &#125;</code></li>
+</ul>
+</li>
+</ol>
+<h3 id="5-2-遥测用途"><a href="#5-2-遥测用途" class="headerlink" title="5.2 遥测用途"></a>5.2 遥测用途</h3><p>这些指标被发送到 Anthropic 的后端，用于：</p>
+<ul>
+<li>监控不同模型的使用分布</li>
+<li>追踪缓存命中率（cache_read 占比越高说明缓存效果越好）</li>
+<li>检测 Opus 4.6 fast模式的使用频率</li>
+<li>计费审计和异常检测</li>
+</ul>
+<hr>
+<h2 id="六、缓存经济学"><a href="#六、缓存经济学" class="headerlink" title="六、缓存经济学"></a>六、缓存经济学</h2><p>理解缓存定价对优化 Claude Code 使用成本至关重要：</p>
+<h3 id="6-1-缓存定价模型"><a href="#6-1-缓存定价模型" class="headerlink" title="6.1 缓存定价模型"></a>6.1 缓存定价模型</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">普通输入:       1.00x 基础价格</span><br><span class="line">缓存创建:       1.25x 基础价格 (首次写入缓存)</span><br><span class="line">缓存读取:       0.10x 基础价格 (后续命中缓存)</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-2-经济分析"><a href="#6-2-经济分析" class="headerlink" title="6.2 经济分析"></a>6.2 经济分析</h3><p>以 Sonnet 模型（$3&#x2F;MTok input）为例：</p>
+<ul>
+<li>普通输入 100K tokens: $0.30</li>
+<li>缓存创建 100K tokens: $0.375 (贵25%)</li>
+<li>缓存读取 100K tokens: $0.03 (便宜90%)</li>
+</ul>
+<p><strong>盈亏平衡点</strong>: 如果一段上下文被缓存后至少读取 <strong>2次</strong>，总成本就低于每次都直接输入：</p>
+<ul>
+<li>2次直接输入: $0.30 × 2 &#x3D; $0.60</li>
+<li>1次缓存创建 + 1次缓存读取: $0.375 + $0.03 &#x3D; $0.405 ✓</li>
+</ul>
+<p>这就是为什么 Claude Code 的上下文压缩系统（compact）会尽量保留系统提示等高复用内容在缓存中。</p>
+<hr>
+<h2 id="七、完整数据流追踪"><a href="#七、完整数据流追踪" class="headerlink" title="七、完整数据流追踪"></a>七、完整数据流追踪</h2><p>从一次API调用到最终持久化的完整路径：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. QueryEngine 发起API调用</span><br><span class="line">   └── @anthropic-ai/sdk.messages.create(&#123;model, messages, ...&#125;)</span><br><span class="line"></span><br><span class="line">2. API返回 response.usage</span><br><span class="line">   └── &#123; input_tokens, output_tokens, cache_creation_input_tokens, cache_read_input_tokens &#125;</span><br><span class="line"></span><br><span class="line">3. 计算费用</span><br><span class="line">   └── calculateUSDCost(model, usage)</span><br><span class="line">       ├── getModelCosts(model, usage)     // 查表</span><br><span class="line">       │   └── Opus 4.6? → getOpus46CostTier(usage)</span><br><span class="line">       └── tokensToUSDCost(costs, usage)   // 四项相乘相加</span><br><span class="line"></span><br><span class="line">4. 累加到会话状态</span><br><span class="line">   └── addToTotalSessionCost(cost, duration, &#123;[model]: usage&#125;, message)</span><br><span class="line">       ├── setState(&#123; totalCost: +=cost &#125;)</span><br><span class="line">       ├── setState(&#123; totalAPIDuration: +=duration &#125;)</span><br><span class="line">       ├── addToTotalModelUsage(...)</span><br><span class="line">       ├── otelCostCounter.add(cost, attrs)</span><br><span class="line">       ├── otelTokenCounter.add(tokens, attrs)  // 四种类型各一次</span><br><span class="line">       └── advisor递归? → 再次 addToTotalSessionCost()</span><br><span class="line"></span><br><span class="line">5. 进程退出（useCostSummary hook触发）</span><br><span class="line">   ├── formatTotalCost()                   // 格式化输出</span><br><span class="line">   │   └── chalk.dim(cost + duration + codeChanges + modelBreakdown)</span><br><span class="line">   └── saveCurrentSessionCosts(fpsMetrics) // 持久化</span><br><span class="line">       ├── git diff --stat → linesAdded/Removed</span><br><span class="line">       └── setProjectConfig(sessionKey, data)</span><br><span class="line">           └── ~/.claude/projects/&lt;hash&gt;/config.json</span><br><span class="line"></span><br><span class="line">6. 会话恢复</span><br><span class="line">   └── restoreCostStateForSession(sessionId)</span><br><span class="line">       └── getStoredSessionCosts() → setState(restored)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="八、边界情况与容错设计"><a href="#八、边界情况与容错设计" class="headerlink" title="八、边界情况与容错设计"></a>八、边界情况与容错设计</h2><h3 id="8-1-未知模型处理"><a href="#8-1-未知模型处理" class="headerlink" title="8.1 未知模型处理"></a>8.1 未知模型处理</h3><p>当遇到 <code>MODEL_COSTS</code> 中没有的模型名称时：</p>
+<ol>
+<li>使用默认模型的定价作为 fallback（不崩溃）</li>
+<li>设置全局标志 <code>hasUnknownModelCost = true</code></li>
+<li>输出成本时附加 “(cost is estimated)” 提示</li>
+<li>这使得系统在 Anthropic 发布新模型但代码尚未更新时仍能正常工作</li>
+</ol>
+<h3 id="8-2-会话恢复的一致性"><a href="#8-2-会话恢复的一致性" class="headerlink" title="8.2 会话恢复的一致性"></a>8.2 会话恢复的一致性</h3><p><code>restoreCostStateForSession()</code> 确保 <code>--resume</code> 恢复的会话费用是连续累加的，不会因为进程重启而丢失之前的费用记录。</p>
+<h3 id="8-3-并发安全"><a href="#8-3-并发安全" class="headerlink" title="8.3 并发安全"></a>8.3 并发安全</h3><p>所有状态更新通过 <code>setState()</code> 的原子操作完成。由于 Node.js 单线程模型，不存在并发写入问题。但 advisor 递归调用是同步的，确保嵌套费用在主调用返回前就已累加完毕。</p>
+<hr>
+<h2 id="九、设计哲学总结"><a href="#九、设计哲学总结" class="headerlink" title="九、设计哲学总结"></a>九、设计哲学总结</h2><ol>
+<li><strong>分层清晰</strong>: 定价(modelCost) → 追踪(cost-tracker) → 展示(costHook)，每层单一职责</li>
+<li><strong>可扩展</strong>: 新增模型只需在 <code>MODEL_COSTS</code> Map 中添加一行</li>
+<li><strong>容错优先</strong>: 未知模型不崩溃，用 fallback + 提示</li>
+<li><strong>双重持久化</strong>: 内存 State 保证实时性，磁盘 ProjectConfig 保证重启后可恢复</li>
+<li><strong>遥测内建</strong>: OpenTelemetry 从设计之初就集成，不是事后追加</li>
+<li><strong>缓存感知</strong>: 定价公式内建缓存创建&#x2F;读取的差异化系数，与上下文管理系统联动优化成本</li>
+</ol>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析    </a><a class="post-meta__tags" href="/tags/Claude-Code/">Claude Code    </a><a class="post-meta__tags" href="/tags/Agent/">Agent    </a><a class="post-meta__tags" href="/tags/LLM/">LLM    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2026/04/03/%E3%80%90Claude%20Code%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E3%80%9115-%E6%A0%B8%E5%BF%83%E5%B7%A5%E5%85%B7%E5%87%BD%E6%95%B0%E5%BA%93/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【Claude Code源码剖析】15-核心工具函数库</span></div></a></div><div class="next-post pull_right"><a href="/2026/03/28/%E3%80%90Claude%20Code%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E3%80%9113-%E6%8F%92%E4%BB%B6%E4%B8%8E%E6%8A%80%E8%83%BD%E7%B3%BB%E7%BB%9F/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【Claude Code源码剖析】13-插件与技能系统</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2026/05/25/【Claude Code源码剖析】29-UserHooks用户钩子系统/" title="【Claude Code源码剖析】29-User Hooks 用户钩子系统"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】29-User Hooks 用户钩子系统</div></a></div><div class="relatedPosts_item"><a href="/2026/05/18/【Claude Code源码剖析】27-VCR测试基础设施/" title="【Claude Code源码剖析】27-VCR 测试基础设施"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】27-VCR 测试基础设施</div></a></div><div class="relatedPosts_item"><a href="/2026/05/17/【Claude Code源码剖析】26-PlanModeV2规划模式/" title="【Claude Code源码剖析】26-多 Agent 规划系统"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】26-多 Agent 规划系统</div></a></div><div class="relatedPosts_item"><a href="/2026/05/11/【Claude Code源码剖析】25-LSP集成与IDE能力/" title="【Claude Code源码剖析】25-LSP 集成与 IDE 能力"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】25-LSP 集成与 IDE 能力</div></a></div><div class="relatedPosts_item"><a href="/2026/05/10/【Claude Code源码剖析】24-ComputerUse桌面自动化系统/" title="【Claude Code源码剖析】24-桌面自动化子系统"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】24-桌面自动化子系统</div></a></div><div class="relatedPosts_item"><a href="/2026/05/03/【Claude Code源码剖析】23-MemDir自动记忆系统/" title="【Claude Code源码剖析】23-MemDir 自动记忆系统"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】23-MemDir 自动记忆系统</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

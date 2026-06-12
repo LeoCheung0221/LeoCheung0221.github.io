@@ -1,0 +1,512 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【深入理解JVM字节码】第十篇、Java Instrumentation原理 | ONE·PIECE</title><meta name="description" content="【深入理解JVM字节码】第十篇、Java Instrumentation原理"><meta name="keywords" content="JVM"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【深入理解JVM字节码】第十篇、Java Instrumentation原理"><meta name="twitter:description" content="【深入理解JVM字节码】第十篇、Java Instrumentation原理"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/259.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【深入理解JVM字节码】第十篇、Java Instrumentation原理"><meta property="og:url" content="http://tufusi.com/2021/04/15/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%8D%81%E7%AF%87%E3%80%81Instrumentation%E5%8E%9F%E7%90%86/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【深入理解JVM字节码】第十篇、Java Instrumentation原理"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/259.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2021/04/15/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%8D%81%E7%AF%87%E3%80%81Instrumentation%E5%8E%9F%E7%90%86/"><link rel="prev" title="【深入理解JVM字节码】第十一篇、JSR-269插件化注解处理原理" href="http://tufusi.com/2021/04/20/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%8D%81%E4%B8%80%E7%AF%87%E3%80%81JSR-269%E6%8F%92%E4%BB%B6%E5%8C%96%E6%B3%A8%E8%A7%A3%E5%A4%84%E7%90%86%E5%8E%9F%E7%90%86/"><link rel="next" title="【深入理解JVM字节码】第九篇、ASM和Javassist字节码操作工具" href="http://tufusi.com/2021/04/10/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E4%B9%9D%E7%AF%87%E3%80%81ASM%E5%92%8CJavassist%E5%AD%97%E8%8A%82%E7%A0%81%E6%93%8D%E4%BD%9C%E5%B7%A5%E5%85%B7/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81Instrumentation-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、Instrumentation 是什么</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81Instrumentation-%E7%9A%84%E6%A0%B8%E5%BF%83-API"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、Instrumentation 的核心 API</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-java-lang-instrument-%E5%8C%85%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 java.lang.instrument 包结构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-Instrumentation-%E6%8E%A5%E5%8F%A3%E7%9A%84%E6%A0%B8%E5%BF%83%E6%96%B9%E6%B3%95"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 Instrumentation 接口的核心方法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-ClassFileTransformer-%E6%8E%A5%E5%8F%A3"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 ClassFileTransformer 接口</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81Java-Agent-%E5%90%AF%E5%8A%A8%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、Java Agent 启动机制</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-premain%EF%BC%9A%E5%90%AF%E5%8A%A8%E6%97%B6-agent"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 premain：启动时 agent</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-agentmain%EF%BC%9A%E8%BF%90%E8%A1%8C%E6%97%B6%E9%99%84%E5%8A%A0-agent"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 agentmain：运行时附加 agent</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-HotSpot-%E4%B8%AD-agent-%E5%8A%A0%E8%BD%BD%E7%9A%84%E5%BA%95%E5%B1%82%E6%B5%81%E7%A8%8B"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 HotSpot 中 agent 加载的底层流程</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81retransformClasses-%E4%B8%8E-redefineClasses-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、retransformClasses 与 redefineClasses 的区别</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-redefineClasses"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 redefineClasses</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-retransformClasses"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 retransformClasses</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 使用场景对比</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81ART-%E4%B8%AD%E7%9A%84-Instrumentation-%E6%94%AF%E6%8C%81"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、ART 中的 Instrumentation 支持</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-Android-ART-%E7%9A%84-JVMTI-%E6%94%AF%E6%8C%81"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 Android ART 的 JVMTI 支持</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-Android-Profiler-%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 Android Profiler 的实现原理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-D8-R8-%E5%AF%B9-Instrumentation-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 D8&#x2F;R8 对 Instrumentation 的影响</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E5%AE%9E%E6%88%98%EF%BC%9A%E7%BC%96%E5%86%99%E4%B8%80%E4%B8%AA%E6%96%B9%E6%B3%95%E8%80%97%E6%97%B6%E7%BB%9F%E8%AE%A1-Agent"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、实战：编写一个方法耗时统计 Agent</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 项目结构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-Agent-%E5%85%A5%E5%8F%A3"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 Agent 入口</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-ClassFileTransformer-%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">6.3 ClassFileTransformer 实现</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-4-%E4%BD%BF%E7%94%A8-ASM-%E6%A4%8D%E5%85%A5%E8%80%97%E6%97%B6%E7%BB%9F%E8%AE%A1%E4%BB%A3%E7%A0%81"><span class="toc_mobile_items-number">6.4.</span> <span class="toc_mobile_items-text">6.4 使用 ASM 植入耗时统计代码</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-5-%E6%89%93%E5%8C%85%E4%B8%8E%E4%BD%BF%E7%94%A8"><span class="toc_mobile_items-number">6.5.</span> <span class="toc_mobile_items-text">6.5 打包与使用</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-6-Android-%E5%B9%B3%E5%8F%B0%E7%9A%84-Agent-%E4%BD%BF%E7%94%A8"><span class="toc_mobile_items-number">6.6.</span> <span class="toc_mobile_items-text">6.6 Android 平台的 Agent 使用</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81Instrumentation-%E4%B8%8E%E5%85%B6%E4%BB%96%E5%AD%97%E8%8A%82%E7%A0%81%E5%A2%9E%E5%BC%BA%E6%96%B9%E6%A1%88%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、Instrumentation 与其他字节码增强方案的对比</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-Instrumentation-vs-ASM"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">7.1 Instrumentation vs ASM</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-Instrumentation-vs-AspectJ"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">7.2 Instrumentation vs AspectJ</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-3-%E9%80%89%E5%9E%8B%E5%BB%BA%E8%AE%AE"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">7.3 选型建议</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81Instrumentation-%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、Instrumentation 的局限性</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E9%A1%BA%E5%BA%8F%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">8.1 类加载顺序问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E9%9A%94%E7%A6%BB"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">8.2 类加载器隔离</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-3-%E5%BE%AA%E7%8E%AF%E5%BC%95%E7%94%A8%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">8.3.</span> <span class="toc_mobile_items-text">8.3 循环引用问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-4-Android-%E5%B9%B3%E5%8F%B0%E7%9A%84%E9%99%90%E5%88%B6"><span class="toc_mobile_items-number">8.4.</span> <span class="toc_mobile_items-text">8.4 Android 平台的限制</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E5%9C%A8-AOSP-%E4%B8%AD-Instrumentation-%E7%9B%B8%E5%85%B3%E7%9A%84%E6%BA%90%E7%A0%81%E8%B7%AF%E5%BE%84"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、在 AOSP 中 Instrumentation 相关的源码路径</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81%E5%B8%B8%E8%A7%81%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">十、常见面试题</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81Instrumentation-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-number">1.</span> <span class="toc-text">一、Instrumentation 是什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Instrumentation-%E7%9A%84%E6%A0%B8%E5%BF%83-API"><span class="toc-number">2.</span> <span class="toc-text">二、Instrumentation 的核心 API</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-java-lang-instrument-%E5%8C%85%E7%BB%93%E6%9E%84"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 java.lang.instrument 包结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Instrumentation-%E6%8E%A5%E5%8F%A3%E7%9A%84%E6%A0%B8%E5%BF%83%E6%96%B9%E6%B3%95"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 Instrumentation 接口的核心方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-ClassFileTransformer-%E6%8E%A5%E5%8F%A3"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 ClassFileTransformer 接口</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Java-Agent-%E5%90%AF%E5%8A%A8%E6%9C%BA%E5%88%B6"><span class="toc-number">3.</span> <span class="toc-text">三、Java Agent 启动机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-premain%EF%BC%9A%E5%90%AF%E5%8A%A8%E6%97%B6-agent"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 premain：启动时 agent</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-agentmain%EF%BC%9A%E8%BF%90%E8%A1%8C%E6%97%B6%E9%99%84%E5%8A%A0-agent"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 agentmain：运行时附加 agent</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-HotSpot-%E4%B8%AD-agent-%E5%8A%A0%E8%BD%BD%E7%9A%84%E5%BA%95%E5%B1%82%E6%B5%81%E7%A8%8B"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 HotSpot 中 agent 加载的底层流程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81retransformClasses-%E4%B8%8E-redefineClasses-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">4.</span> <span class="toc-text">四、retransformClasses 与 redefineClasses 的区别</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-redefineClasses"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 redefineClasses</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-retransformClasses"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 retransformClasses</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E5%AF%B9%E6%AF%94"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 使用场景对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81ART-%E4%B8%AD%E7%9A%84-Instrumentation-%E6%94%AF%E6%8C%81"><span class="toc-number">5.</span> <span class="toc-text">五、ART 中的 Instrumentation 支持</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Android-ART-%E7%9A%84-JVMTI-%E6%94%AF%E6%8C%81"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 Android ART 的 JVMTI 支持</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-Android-Profiler-%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 Android Profiler 的实现原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-D8-R8-%E5%AF%B9-Instrumentation-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 D8&#x2F;R8 对 Instrumentation 的影响</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%AE%9E%E6%88%98%EF%BC%9A%E7%BC%96%E5%86%99%E4%B8%80%E4%B8%AA%E6%96%B9%E6%B3%95%E8%80%97%E6%97%B6%E7%BB%9F%E8%AE%A1-Agent"><span class="toc-number">6.</span> <span class="toc-text">六、实战：编写一个方法耗时统计 Agent</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 项目结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-Agent-%E5%85%A5%E5%8F%A3"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 Agent 入口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-ClassFileTransformer-%E5%AE%9E%E7%8E%B0"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 ClassFileTransformer 实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E4%BD%BF%E7%94%A8-ASM-%E6%A4%8D%E5%85%A5%E8%80%97%E6%97%B6%E7%BB%9F%E8%AE%A1%E4%BB%A3%E7%A0%81"><span class="toc-number">6.4.</span> <span class="toc-text">6.4 使用 ASM 植入耗时统计代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-5-%E6%89%93%E5%8C%85%E4%B8%8E%E4%BD%BF%E7%94%A8"><span class="toc-number">6.5.</span> <span class="toc-text">6.5 打包与使用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-6-Android-%E5%B9%B3%E5%8F%B0%E7%9A%84-Agent-%E4%BD%BF%E7%94%A8"><span class="toc-number">6.6.</span> <span class="toc-text">6.6 Android 平台的 Agent 使用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81Instrumentation-%E4%B8%8E%E5%85%B6%E4%BB%96%E5%AD%97%E8%8A%82%E7%A0%81%E5%A2%9E%E5%BC%BA%E6%96%B9%E6%A1%88%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc-number">7.</span> <span class="toc-text">七、Instrumentation 与其他字节码增强方案的对比</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-Instrumentation-vs-ASM"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 Instrumentation vs ASM</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-Instrumentation-vs-AspectJ"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 Instrumentation vs AspectJ</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E9%80%89%E5%9E%8B%E5%BB%BA%E8%AE%AE"><span class="toc-number">7.3.</span> <span class="toc-text">7.3 选型建议</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81Instrumentation-%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc-number">8.</span> <span class="toc-text">八、Instrumentation 的局限性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E9%A1%BA%E5%BA%8F%E9%97%AE%E9%A2%98"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 类加载顺序问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E9%9A%94%E7%A6%BB"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 类加载器隔离</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-%E5%BE%AA%E7%8E%AF%E5%BC%95%E7%94%A8%E9%97%AE%E9%A2%98"><span class="toc-number">8.3.</span> <span class="toc-text">8.3 循环引用问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-4-Android-%E5%B9%B3%E5%8F%B0%E7%9A%84%E9%99%90%E5%88%B6"><span class="toc-number">8.4.</span> <span class="toc-text">8.4 Android 平台的限制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E5%9C%A8-AOSP-%E4%B8%AD-Instrumentation-%E7%9B%B8%E5%85%B3%E7%9A%84%E6%BA%90%E7%A0%81%E8%B7%AF%E5%BE%84"><span class="toc-number">9.</span> <span class="toc-text">九、在 AOSP 中 Instrumentation 相关的源码路径</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E5%B8%B8%E8%A7%81%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="toc-number">10.</span> <span class="toc-text">十、常见面试题</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/259.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【深入理解JVM字节码】第十篇、Java Instrumentation原理</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-04-15<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">5.3k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 21 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、Instrumentation-是什么"><a href="#一、Instrumentation-是什么" class="headerlink" title="一、Instrumentation 是什么"></a>一、Instrumentation 是什么</h2><p>Instrumentation 是 Java SE 5 引入的一套 JVM 级别的字节码增强机制，它允许开发者在类加载时期对字节码进行修改，而无需改动原始源代码。这套机制的核心接口定义在 <code>java.lang.instrument</code> 包中，通过 JVMTI（JVM Tool Interface）来与 JVM 底层交互。</p>
+<p>在 Android 平台上，Instrumentation 的概念被进一步扩展。ART（Android Runtime）从 Android 7.0（API 24）开始支持 JVMTI（最初称为 OpenJDK JVMTI），并在 Android 8.0（API 26）之后通过 <code>android.app.Instrumentation</code> 和 <code>debuggable</code> 标志来允许 profiling 工具附加到运行时。Android 9 (API 28) 开始，JVMTI 能力得到大幅提升，通过 <code>wrap.sh</code> 机制甚至可以加载 agent 到 release 版本的 APK（虽然权限受限）。</p>
+<p>Instrumentation 的核心价值在于：</p>
+<ol>
+<li><strong>非侵入性</strong>：不需要修改源代码，不依赖编译器的特殊处理。</li>
+<li><strong>全量覆盖</strong>：所有被类加载器加载的类都可以被拦截和修改。</li>
+<li><strong>运行时灵活性</strong>：<code>retransformClasses</code> 和 <code>redefineClasses</code> 支持在运行时重新转换已加载的类。</li>
+<li><strong>性能分析基础</strong>：几乎所有 JVM 生态的 APM 工具（如 SkyWalking、Pinpoint、Arthas）都基于 Instrumentation 机制。</li>
+</ol>
+<h2 id="二、Instrumentation-的核心-API"><a href="#二、Instrumentation-的核心-API" class="headerlink" title="二、Instrumentation 的核心 API"></a>二、Instrumentation 的核心 API</h2><h3 id="2-1-java-lang-instrument-包结构"><a href="#2-1-java-lang-instrument-包结构" class="headerlink" title="2.1 java.lang.instrument 包结构"></a>2.1 java.lang.instrument 包结构</h3><p>该包包含以下核心类型：</p>
+<table>
+<thead>
+<tr>
+<th align="left">类&#x2F;接口</th>
+<th align="left">作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>java.lang.instrument.Instrumentation</code></td>
+<td align="left">核心接口，提供 transform、redefine、retransform 方法</td>
+</tr>
+<tr>
+<td align="left"><code>java.lang.instrument.ClassFileTransformer</code></td>
+<td align="left">类文件转换器接口，实现 <code>transform</code> 方法</td>
+</tr>
+<tr>
+<td align="left"><code>java.lang.instrument.ClassDefinition</code></td>
+<td align="left">封装一个类的重定义（类名 + 新字节码）</td>
+</tr>
+<tr>
+<td align="left"><code>java.lang.instrument.IllegalClassFormatException</code></td>
+<td align="left">当 transform 返回非法的类文件格式时抛出</td>
+</tr>
+<tr>
+<td align="left"><code>java.lang.instrument.UnmodifiableClassException</code></td>
+<td align="left">对不可修改的类调用 retransformClasses 时抛出</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-Instrumentation-接口的核心方法"><a href="#2-2-Instrumentation-接口的核心方法" class="headerlink" title="2.2 Instrumentation 接口的核心方法"></a>2.2 Instrumentation 接口的核心方法</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Instrumentation</span> &#123;</span><br><span class="line">    <span class="comment">// 添加一个 ClassFileTransformer（启动时通过 premain 指定）</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">addTransformer</span><span class="params">(ClassFileTransformer transformer, <span class="type">boolean</span> canRetransform)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 移除一个 ClassFileTransformer</span></span><br><span class="line">    <span class="type">boolean</span> <span class="title function_">removeTransformer</span><span class="params">(ClassFileTransformer transformer)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 重新转换已加载的类——不会改变类的主体结构（字段数、方法数不变）</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">retransformClasses</span><span class="params">(Class&lt;?&gt;... classes)</span> </span><br><span class="line">        <span class="keyword">throws</span> UnmodifiableClassException;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 重新定义类——可以改变类的主体结构（增删字段/方法），但不能改变类的 schema</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">redefineClasses</span><span class="params">(ClassDefinition... definitions)</span></span><br><span class="line">        <span class="keyword">throws</span> ClassNotFoundException, UnmodifiableClassException;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 获取所有已加载的类</span></span><br><span class="line">    Class[] getAllLoadedClasses();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 获取所有已经被 transform 的类</span></span><br><span class="line">    Class[] getInitiatedClasses(ClassLoader loader);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 获取对象大小</span></span><br><span class="line">    <span class="type">long</span> <span class="title function_">getObjectSize</span><span class="params">(Object objectToSize)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 判断当前 JVM 是否支持 retransform</span></span><br><span class="line">    <span class="type">boolean</span> <span class="title function_">isRetransformClassesSupported</span><span class="params">()</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 判断当前 JVM 是否支持 redefine</span></span><br><span class="line">    <span class="type">boolean</span> <span class="title function_">isRedefineClassesSupported</span><span class="params">()</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 是否原生方法前缀支持</span></span><br><span class="line">    <span class="type">boolean</span> <span class="title function_">isNativeMethodPrefixSupported</span><span class="params">()</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 设置原生方法前缀（用于 native 方法的拦截）</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">setNativeMethodPrefix</span><span class="params">(ClassFileTransformer transformer, String prefix)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-ClassFileTransformer-接口"><a href="#2-3-ClassFileTransformer-接口" class="headerlink" title="2.3 ClassFileTransformer 接口"></a>2.3 ClassFileTransformer 接口</h3><p>这是开发者实现字节码转换的核心接口，只有一个方法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">ClassFileTransformer</span> &#123;</span><br><span class="line">    <span class="type">byte</span>[] transform(</span><br><span class="line">        ClassLoader         loader,</span><br><span class="line">        String              className,       <span class="comment">// 类的内部名称，如 java/lang/String</span></span><br><span class="line">        Class&lt;?&gt;            classBeingRedefined,</span><br><span class="line">        ProtectionDomain    protectionDomain,</span><br><span class="line">        <span class="type">byte</span>[]              classfileBuffer  <span class="comment">// 原始字节码</span></span><br><span class="line">    ) <span class="keyword">throws</span> IllegalClassFormatException;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当 JVM 加载一个类时，会依次调用所有已注册的 ClassFileTransformer：</p>
+<ul>
+<li>传入参数 <code>classfileBuffer</code> 是上一个 transformer 处理后的字节码</li>
+<li>返回值为处理后的字节码（如果返回 null，表示不修改这个类）</li>
+<li><code>classBeingRedefined</code> 在 retransform&#x2F;redefine 场景下会指向正在被重定义的 Class 对象</li>
+</ul>
+<p><strong>注意</strong>：transform 方法必须保证线程安全，因为它会被多个类加载线程并发调用。</p>
+<h2 id="三、Java-Agent-启动机制"><a href="#三、Java-Agent-启动机制" class="headerlink" title="三、Java Agent 启动机制"></a>三、Java Agent 启动机制</h2><h3 id="3-1-premain：启动时-agent"><a href="#3-1-premain：启动时-agent" class="headerlink" title="3.1 premain：启动时 agent"></a>3.1 premain：启动时 agent</h3><p>在 JVM 启动时，通过 <code>-javaagent</code> 参数指定的 agent jar 会在 main 方法执行前被加载。agent jar 的 MANIFEST.MF 必须指定 <code>Premain-Class</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Manifest-Version: 1.0</span><br><span class="line">Premain-Class: com.example.MyAgent</span><br><span class="line">Can-Retransform-Classes: true</span><br><span class="line">Can-Redefine-Classes: true</span><br></pre></td></tr></table></figure>
+
+<p>premain 方法的签名有两种形式：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 形式一：基础版本</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">premain</span><span class="params">(String agentArgs, Instrumentation inst)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 形式二：无参版本（如果形式一不存在，JVM会尝试调用此版本）</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">premain</span><span class="params">(String agentArgs)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>JVM 的启动流程中，agent 加载发生在类加载系统的初始化阶段。以 HotSpot JVM 为例，源码路径 <code>src/hotspot/share/prims/jvmtiEnv.cpp</code> 中的 <code>JvmtiEnv::SetEventCallbacks</code> 和 <code>JvmtiEnv::AddToSystemClassLoaderSearch</code> 是关键的 native 入口。JVM 在 <code>Threads::create_vm</code> 中会调用 <code>JvmtiExport::load_agent_library</code> 来加载 -javaagent 指定的所有 agent。</p>
+<h3 id="3-2-agentmain：运行时附加-agent"><a href="#3-2-agentmain：运行时附加-agent" class="headerlink" title="3.2 agentmain：运行时附加 agent"></a>3.2 agentmain：运行时附加 agent</h3><p>Instrumentation 还支持在 JVM 运行过程中动态附加 agent，这依赖 Attach API（<code>com.sun.tools.attach</code>）：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 获取当前 JVM 的所有虚拟机的 pid</span></span><br><span class="line">List&lt;VirtualMachineDescriptor&gt; vms = VirtualMachine.list();</span><br><span class="line"><span class="comment">// 选择目标 VM</span></span><br><span class="line"><span class="type">VirtualMachineDescriptor</span> <span class="variable">target</span> <span class="operator">=</span> vms.get(<span class="number">0</span>);</span><br><span class="line"><span class="comment">// 附加到目标 VM</span></span><br><span class="line"><span class="type">VirtualMachine</span> <span class="variable">vm</span> <span class="operator">=</span> VirtualMachine.attach(target.id());</span><br><span class="line"><span class="comment">// 加载 agent jar</span></span><br><span class="line">vm.loadAgent(<span class="string">&quot;/path/to/agent.jar&quot;</span>, <span class="string">&quot;agent-arguments&quot;</span>);</span><br><span class="line">vm.detach();</span><br></pre></td></tr></table></figure>
+
+<p>agent jar 的 MANIFEST.MF 需要指定 <code>Agent-Class</code> 而非 <code>Premain-Class</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Manifest-Version: 1.0</span><br><span class="line">Agent-Class: com.example.MyAgent</span><br><span class="line">Can-Retransform-Classes: true</span><br></pre></td></tr></table></figure>
+
+<p>对应的入口方法签名：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">agentmain</span><span class="params">(String agentArgs, Instrumentation inst)</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">agentmain</span><span class="params">(String agentArgs)</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-HotSpot-中-agent-加载的底层流程"><a href="#3-3-HotSpot-中-agent-加载的底层流程" class="headerlink" title="3.3 HotSpot 中 agent 加载的底层流程"></a>3.3 HotSpot 中 agent 加载的底层流程</h3><p>在 HotSpot JVM 中，-javaagent 的加载链路如下：</p>
+<ol>
+<li><code>java.c</code> 中的 <code>JLI_Launch</code> → <code>ParseArguments</code> 解析命令行参数，识别 <code>-javaagent</code></li>
+<li><code>Arguments::add_init_agent</code> 将 agent 路径和参数存入 <code>_agentList</code></li>
+<li><code>Threads::create_vm</code> → <code>JvmtiExport::load_agent_library</code> 遍历 <code>_agentList</code></li>
+<li>通过 <code>os::dll_load</code> 加载 agent 的 .jar 文件（实际先解压 .so &#x2F; .dll）</li>
+<li>查找 <code>Agent_OnLoad</code> 函数（C 语言入口），或通过 <code>JPLISAgent</code> 支持 Java agent</li>
+<li>Java agent 最终通过 <code>sun.instrument.InstrumentationImpl</code> 的 native 方法注册到 JVMTI</li>
+</ol>
+<p>具体的 Java 侧实现位于 JDK 源码的 <code>src/java.instrument/share/classes/sun/instrument/InstrumentationImpl.java</code>，该类的 native 方法对应 HotSpot 的 <code>src/java.instrument/share/native/libinstrument/InstrumentationImplNativeMethods.c</code>。</p>
+<h2 id="四、retransformClasses-与-redefineClasses-的区别"><a href="#四、retransformClasses-与-redefineClasses-的区别" class="headerlink" title="四、retransformClasses 与 redefineClasses 的区别"></a>四、retransformClasses 与 redefineClasses 的区别</h2><p>这是面试中的高频考点。两者的核心区别在于对类结构的修改能力：</p>
+<h3 id="4-1-redefineClasses"><a href="#4-1-redefineClasses" class="headerlink" title="4.1 redefineClasses"></a>4.1 redefineClasses</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">void</span> <span class="title function_">redefineClasses</span><span class="params">(ClassDefinition... definitions)</span></span><br><span class="line">    <span class="keyword">throws</span> ClassNotFoundException, UnmodifiableClassException;</span><br></pre></td></tr></table></figure>
+
+<p><strong>能力边界</strong>：</p>
+<ul>
+<li>可以增加、删除、修改方法体</li>
+<li>可以增加、删除字段</li>
+<li>可以修改方法的访问修饰符</li>
+<li>可以修改类的注解</li>
+<li><strong>不可以</strong>修改类的继承关系（父类、接口列表）</li>
+<li><strong>不可以</strong>修改类的签名（类名）</li>
+</ul>
+<p><strong>实现机制</strong>：在 JVM 内部，redefine 实际上是一次”类替换”。HotSpot 的实现位于 <code>src/hotspot/share/prims/jvmtiRedefineClasses.cpp</code>，核心函数是 <code>VM_RedefineClasses::doit()</code>。它会创建一个新的 <code>InstanceKlass</code> 对象来替换旧的，然后将旧对象标记为 “obsolete”。旧类的已存在实例仍然可以使用旧的方法版本（通过 “EMCP” - Equivalent Method Constant Pool 机制），但新调用会使用新方法。</p>
+<h3 id="4-2-retransformClasses"><a href="#4-2-retransformClasses" class="headerlink" title="4.2 retransformClasses"></a>4.2 retransformClasses</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">void</span> <span class="title function_">retransformClasses</span><span class="params">(Class&lt;?&gt;... classes)</span></span><br><span class="line">    <span class="keyword">throws</span> UnmodifiableClassException;</span><br></pre></td></tr></table></figure>
+
+<p><strong>能力边界</strong>：</p>
+<ul>
+<li><strong>只能修改方法体</strong>（即 Code 属性）</li>
+<li>不能增加或删除方法</li>
+<li>不能增加或删除字段</li>
+<li>不能修改类的继承关系</li>
+<li>不能修改属性、签名等元数据</li>
+</ul>
+<p><strong>实现机制</strong>：retransformClasses 的前提是 addTransformer 时传入了 <code>canRetransform=true</code>。JVM 会保留原始的类文件字节码（在 <code>InstanceKlass</code> 的 <code>_cached_class_file</code> 字段中），当 retransform 被触发时，JVM 从缓存中取出原始字节码，再次经过所有 <code>canRetransform=true</code> 的 transformer 处理。</p>
+<p>在 HotSpot 中，<code>VM_RetransformClasses::doit()</code> 执行 retransform 操作，其核心逻辑是调用 <code>InstanceKlass::set_cached_class_file()</code> 和 <code>JvmtiClassFileLoadEventPoster</code> 来重新触发 ClassFileLoadHook 事件。</p>
+<h3 id="4-3-使用场景对比"><a href="#4-3-使用场景对比" class="headerlink" title="4.3 使用场景对比"></a>4.3 使用场景对比</h3><table>
+<thead>
+<tr>
+<th align="left">场景</th>
+<th align="left">推荐使用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">APM 监控（方法耗时统计）</td>
+<td align="left">retransformClasses</td>
+</tr>
+<tr>
+<td align="left">热修复（修改方法逻辑）</td>
+<td align="left">retransformClasses</td>
+</tr>
+<tr>
+<td align="left">AOP 切面编织</td>
+<td align="left">addTransformer (在类加载时)</td>
+</tr>
+<tr>
+<td align="left">动态增加字段</td>
+<td align="left">redefineClasses</td>
+</tr>
+<tr>
+<td align="left">动态添加接口实现</td>
+<td align="left">redefineClasses</td>
+</tr>
+<tr>
+<td align="left">类结构重构</td>
+<td align="left">redefineClasses</td>
+</tr>
+</tbody></table>
+<h2 id="五、ART-中的-Instrumentation-支持"><a href="#五、ART-中的-Instrumentation-支持" class="headerlink" title="五、ART 中的 Instrumentation 支持"></a>五、ART 中的 Instrumentation 支持</h2><h3 id="5-1-Android-ART-的-JVMTI-支持"><a href="#5-1-Android-ART-的-JVMTI-支持" class="headerlink" title="5.1 Android ART 的 JVMTI 支持"></a>5.1 Android ART 的 JVMTI 支持</h3><p>Android 8.0 (Oreo, API 26) 开始，ART 引入了对 OpenJDK JVMTI 的支持。相关代码位于 AOSP 的 <code>art/openjdkjvmti/</code> 目录下：</p>
+<ul>
+<li><code>art/openjdkjvmti/ti_class.cc</code>：实现 <code>RetransformClasses</code>、<code>RedefineClasses</code> 等 JVMTI 类操作</li>
+<li><code>art/openjdkjvmti/ti_redefine.cc</code>：类的重定义具体实现</li>
+<li><code>art/openjdkjvmti/ti_breakpoint.cc</code>：断点相关实现</li>
+<li><code>art/openjdkjvmti/ti_method.cc</code>：方法级别的 JVMTI 操作</li>
+</ul>
+<p>在 ART 中，retransformClasses 的实现与 dex2oat 紧密相关。ART 使用 <code>RetransformClasses</code> 调用时，会在 <code>art/runtime/jit/jit.cc</code> 中触发 JIT 重新编译：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// art/openjdkjvmti/ti_redefine.cc</span></span><br><span class="line"><span class="function">jvmtiError <span class="title">Redefiner::RedefineClasses</span><span class="params">(jvmtiEnv* env,</span></span></span><br><span class="line"><span class="params"><span class="function">                                       jint class_count,</span></span></span><br><span class="line"><span class="params"><span class="function">                                       <span class="type">const</span> jvmtiClassDefinition* definitions)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 验证输入</span></span><br><span class="line">    <span class="comment">// 2. 为每个类创建新的 ClassDef</span></span><br><span class="line">    <span class="comment">// 3. 调用 ClassLinker::UpdateClass 更新类定义</span></span><br><span class="line">    <span class="comment">// 4. 触发 JIT 重编译</span></span><br><span class="line">    <span class="comment">// 5. 通知 GC 更新根引用</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-Android-Profiler-的实现原理"><a href="#5-2-Android-Profiler-的实现原理" class="headerlink" title="5.2 Android Profiler 的实现原理"></a>5.2 Android Profiler 的实现原理</h3><p>Android Studio 中的 CPU Profiler 和 Memory Profiler 其底层正是通过 JVMTI 与 ART 通信。核心流程：</p>
+<ol>
+<li><code>adb shell am attach-agent &lt;pid&gt; /data/local/tmp/perfa.jar</code> —— 将 profiler agent 附加到目标进程</li>
+<li>Agent 通过 JVMTI 的 <code>SetEventCallbacks</code> 注册事件监听</li>
+<li>对于方法采样：使用 <code>SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_METHOD_ENTRY, ...)</code> 开启方法进入事件</li>
+<li>所有方法进入事件通过 Binder 或 socket 发送到 Android Studio</li>
+</ol>
+<h3 id="5-3-D8-R8-对-Instrumentation-的影响"><a href="#5-3-D8-R8-对-Instrumentation-的影响" class="headerlink" title="5.3 D8&#x2F;R8 对 Instrumentation 的影响"></a>5.3 D8&#x2F;R8 对 Instrumentation 的影响</h3><p>Android 构建工具链中的 D8（desugar）和 R8（shrinking&#x2F;optimization）会对字节码做大幅度修改。在使用 Instrumentation 时需要注意：</p>
+<ul>
+<li>D8 会将 Java 8 的 lambda 表达式 desugar 为匿名内部类</li>
+<li>R8 会内联方法、删除未使用的代码、混淆类名</li>
+<li>因此 Instrumentation 的 transform 规则需要考虑这些修改后的类结构</li>
+</ul>
+<p>建议在 Android 开发中使用 <code>-keep</code> 规则保留关键的类和方法，避免 R8 的优化破坏 Instrumentation 的语义。</p>
+<h2 id="六、实战：编写一个方法耗时统计-Agent"><a href="#六、实战：编写一个方法耗时统计-Agent" class="headerlink" title="六、实战：编写一个方法耗时统计 Agent"></a>六、实战：编写一个方法耗时统计 Agent</h2><h3 id="6-1-项目结构"><a href="#6-1-项目结构" class="headerlink" title="6.1 项目结构"></a>6.1 项目结构</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">method-profiler-agent/</span><br><span class="line">├── pom.xml</span><br><span class="line">└── src/main/java/com/example/agent/</span><br><span class="line">    ├── MethodProfilerAgent.java</span><br><span class="line">    ├── MethodProfilerTransformer.java</span><br><span class="line">    └── MethodProfilerAdvice.java</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-2-Agent-入口"><a href="#6-2-Agent-入口" class="headerlink" title="6.2 Agent 入口"></a>6.2 Agent 入口</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.example.agent;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.instrument.Instrumentation;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MethodProfilerAgent</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// premain: 通过 -javaagent 启动时调用</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">premain</span><span class="params">(String agentArgs, Instrumentation inst)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;[Profiler] premain called, args: &quot;</span> + agentArgs);</span><br><span class="line">        inst.addTransformer(<span class="keyword">new</span> <span class="title class_">MethodProfilerTransformer</span>(), <span class="literal">true</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// agentmain: 运行时 attach 时调用</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">agentmain</span><span class="params">(String agentArgs, Instrumentation inst)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;[Profiler] agentmain called, args: &quot;</span> + agentArgs);</span><br><span class="line">        inst.addTransformer(<span class="keyword">new</span> <span class="title class_">MethodProfilerTransformer</span>(), <span class="literal">true</span>);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 对已加载的类进行 retransform</span></span><br><span class="line">        Class&lt;?&gt;[] loadedClasses = inst.getAllLoadedClasses();</span><br><span class="line">        <span class="keyword">for</span> (Class&lt;?&gt; clazz : loadedClasses) &#123;</span><br><span class="line">            <span class="comment">// 过滤：只能对可修改的类进行 retransform</span></span><br><span class="line">            <span class="keyword">if</span> (inst.isModifiableClass(clazz) </span><br><span class="line">                &amp;&amp; clazz.getName().startsWith(<span class="string">&quot;com.example&quot;</span>)) &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    inst.retransformClasses(clazz);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                    System.err.println(<span class="string">&quot;Failed to retransform: &quot;</span> + clazz.getName());</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-3-ClassFileTransformer-实现"><a href="#6-3-ClassFileTransformer-实现" class="headerlink" title="6.3 ClassFileTransformer 实现"></a>6.3 ClassFileTransformer 实现</h3><p>这里我们使用 ASM 来操作字节码（你也可以选择 Javassist 或 ByteBuddy）：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.example.agent;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.objectweb.asm.*;</span><br><span class="line"><span class="keyword">import</span> org.objectweb.asm.commons.AdviceAdapter;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.instrument.ClassFileTransformer;</span><br><span class="line"><span class="keyword">import</span> java.security.ProtectionDomain;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MethodProfilerTransformer</span> <span class="keyword">implements</span> <span class="title class_">ClassFileTransformer</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">byte</span>[] transform(ClassLoader loader, String className,</span><br><span class="line">                            Class&lt;?&gt; classBeingRedefined,</span><br><span class="line">                            ProtectionDomain protectionDomain,</span><br><span class="line">                            <span class="type">byte</span>[] classfileBuffer) &#123;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 排除 JDK 内部类、ASM 自身的类、以及 lambda 生成的类</span></span><br><span class="line">        <span class="keyword">if</span> (className == <span class="literal">null</span> </span><br><span class="line">            || className.startsWith(<span class="string">&quot;java/&quot;</span>)</span><br><span class="line">            || className.startsWith(<span class="string">&quot;jdk/&quot;</span>)</span><br><span class="line">            || className.startsWith(<span class="string">&quot;sun/&quot;</span>)</span><br><span class="line">            || className.startsWith(<span class="string">&quot;org/objectweb/asm/&quot;</span>)</span><br><span class="line">            || className.startsWith(<span class="string">&quot;com/example/agent/&quot;</span>)</span><br><span class="line">            || className.contains(<span class="string">&quot;$$Lambda$&quot;</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">ClassReader</span> <span class="variable">cr</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ClassReader</span>(classfileBuffer);</span><br><span class="line">            <span class="type">ClassWriter</span> <span class="variable">cw</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ClassWriter</span>(</span><br><span class="line">                cr, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);</span><br><span class="line">            <span class="type">ClassVisitor</span> <span class="variable">cv</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ProfilingClassVisitor</span>(</span><br><span class="line">                Opcodes.ASM9, cw, className.replace(<span class="string">&#x27;/&#x27;</span>, <span class="string">&#x27;.&#x27;</span>));</span><br><span class="line">            cr.accept(cv, ClassReader.EXPAND_FRAMES);</span><br><span class="line">            <span class="keyword">return</span> cw.toByteArray();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            System.err.println(<span class="string">&quot;Failed to transform: &quot;</span> + className);</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;  <span class="comment">// 返回 null 表示不做修改</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-4-使用-ASM-植入耗时统计代码"><a href="#6-4-使用-ASM-植入耗时统计代码" class="headerlink" title="6.4 使用 ASM 植入耗时统计代码"></a>6.4 使用 ASM 植入耗时统计代码</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ProfilingClassVisitor</span> <span class="keyword">extends</span> <span class="title class_">ClassVisitor</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String className;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ProfilingClassVisitor</span><span class="params">(<span class="type">int</span> api, ClassVisitor cv, String className)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(api, cv);</span><br><span class="line">        <span class="built_in">this</span>.className = className;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> MethodVisitor <span class="title function_">visitMethod</span><span class="params">(<span class="type">int</span> access, String name, </span></span><br><span class="line"><span class="params">                                      String descriptor,</span></span><br><span class="line"><span class="params">                                      String signature, </span></span><br><span class="line"><span class="params">                                      String[] exceptions)</span> &#123;</span><br><span class="line">        <span class="type">MethodVisitor</span> <span class="variable">mv</span> <span class="operator">=</span> <span class="built_in">super</span>.visitMethod(access, name, </span><br><span class="line">                                              descriptor, signature, exceptions);</span><br><span class="line">        <span class="comment">// 跳过构造方法 &lt;init&gt; 和静态初始化 &lt;clinit&gt;</span></span><br><span class="line">        <span class="keyword">if</span> (name.equals(<span class="string">&quot;&lt;init&gt;&quot;</span>) || name.equals(<span class="string">&quot;&lt;clinit&gt;&quot;</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> mv;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 跳过抽象方法和 native 方法</span></span><br><span class="line">        <span class="keyword">if</span> ((access &amp; (Opcodes.ACC_ABSTRACT | Opcodes.ACC_NATIVE)) != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> mv;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ProfilingMethodVisitor</span>(Opcodes.ASM9, mv, </span><br><span class="line">                                           access, name, descriptor, className);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ProfilingMethodVisitor</span> <span class="keyword">extends</span> <span class="title class_">AdviceAdapter</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String className;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String methodName;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> startTimeVar;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">protected</span> <span class="title function_">ProfilingMethodVisitor</span><span class="params">(<span class="type">int</span> api, MethodVisitor mv,</span></span><br><span class="line"><span class="params">                                      <span class="type">int</span> access, String name, </span></span><br><span class="line"><span class="params">                                      String desc, String className)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(api, mv, access, name, desc);</span><br><span class="line">        <span class="built_in">this</span>.className = className;</span><br><span class="line">        <span class="built_in">this</span>.methodName = name;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">onMethodEnter</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// long startTime = System.nanoTime();</span></span><br><span class="line">        startTimeVar = newLocal(Type.LONG_TYPE);</span><br><span class="line">        mv.visitMethodInsn(INVOKESTATIC, <span class="string">&quot;java/lang/System&quot;</span>, </span><br><span class="line">                           <span class="string">&quot;nanoTime&quot;</span>, <span class="string">&quot;()J&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">        mv.visitVarInsn(LSTORE, startTimeVar);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">onMethodExit</span><span class="params">(<span class="type">int</span> opcode)</span> &#123;</span><br><span class="line">        <span class="comment">// long cost = System.nanoTime() - startTime;</span></span><br><span class="line">        mv.visitMethodInsn(INVOKESTATIC, <span class="string">&quot;java/lang/System&quot;</span>, </span><br><span class="line">                           <span class="string">&quot;nanoTime&quot;</span>, <span class="string">&quot;()J&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">        mv.visitVarInsn(LLOAD, startTimeVar);</span><br><span class="line">        mv.visitInsn(LSUB);</span><br><span class="line">        <span class="type">int</span> <span class="variable">costVar</span> <span class="operator">=</span> newLocal(Type.LONG_TYPE);</span><br><span class="line">        mv.visitVarInsn(LSTORE, costVar);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 打印耗时：System.out.println(className.methodName cost: &quot; + cost + &quot;ns&quot;);</span></span><br><span class="line">        mv.visitFieldInsn(GETSTATIC, <span class="string">&quot;java/lang/System&quot;</span>, <span class="string">&quot;out&quot;</span>, </span><br><span class="line">                          <span class="string">&quot;Ljava/io/PrintStream;&quot;</span>);</span><br><span class="line">        mv.visitTypeInsn(NEW, <span class="string">&quot;java/lang/StringBuilder&quot;</span>);</span><br><span class="line">        mv.visitInsn(DUP);</span><br><span class="line">        mv.visitMethodInsn(INVOKESPECIAL, <span class="string">&quot;java/lang/StringBuilder&quot;</span>, </span><br><span class="line">                           <span class="string">&quot;&lt;init&gt;&quot;</span>, <span class="string">&quot;()V&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">        mv.visitLdcInsn(className + <span class="string">&quot;.&quot;</span> + methodName + <span class="string">&quot; cost: &quot;</span>);</span><br><span class="line">        mv.visitMethodInsn(INVOKEVIRTUAL, <span class="string">&quot;java/lang/StringBuilder&quot;</span>, </span><br><span class="line">                           <span class="string">&quot;append&quot;</span>, </span><br><span class="line">                           <span class="string">&quot;(Ljava/lang/String;)Ljava/lang/StringBuilder;&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">        mv.visitVarInsn(LLOAD, costVar);</span><br><span class="line">        mv.visitMethodInsn(INVOKEVIRTUAL, <span class="string">&quot;java/lang/StringBuilder&quot;</span>, </span><br><span class="line">                           <span class="string">&quot;append&quot;</span>, <span class="string">&quot;(J)Ljava/lang/StringBuilder;&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">        mv.visitLdcInsn(<span class="string">&quot;ns&quot;</span>);</span><br><span class="line">        mv.visitMethodInsn(INVOKEVIRTUAL, <span class="string">&quot;java/lang/StringBuilder&quot;</span>, </span><br><span class="line">                           <span class="string">&quot;append&quot;</span>, </span><br><span class="line">                           <span class="string">&quot;(Ljava/lang/String;)Ljava/lang/StringBuilder;&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">        mv.visitMethodInsn(INVOKEVIRTUAL, <span class="string">&quot;java/lang/StringBuilder&quot;</span>, </span><br><span class="line">                           <span class="string">&quot;toString&quot;</span>, <span class="string">&quot;()Ljava/lang/String;&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">        mv.visitMethodInsn(INVOKEVIRTUAL, <span class="string">&quot;java/io/PrintStream&quot;</span>, </span><br><span class="line">                           <span class="string">&quot;println&quot;</span>, <span class="string">&quot;(Ljava/lang/String;)V&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-5-打包与使用"><a href="#6-5-打包与使用" class="headerlink" title="6.5 打包与使用"></a>6.5 打包与使用</h3><p>Maven 配置 (<code>pom.xml</code>)：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-jar-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">archive</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">manifestEntries</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;<span class="name">Premain-Class</span>&gt;</span>com.example.agent.MethodProfilerAgent<span class="tag">&lt;/<span class="name">Premain-Class</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;<span class="name">Agent-Class</span>&gt;</span>com.example.agent.MethodProfilerAgent<span class="tag">&lt;/<span class="name">Agent-Class</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;<span class="name">Can-Retransform-Classes</span>&gt;</span>true<span class="tag">&lt;/<span class="name">Can-Retransform-Classes</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;/<span class="name">manifestEntries</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">archive</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-shade-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">phase</span>&gt;</span>package<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">goals</span>&gt;</span><span class="tag">&lt;<span class="name">goal</span>&gt;</span>shade<span class="tag">&lt;/<span class="name">goal</span>&gt;</span><span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">                        <span class="comment">&lt;!-- 将 ASM 依赖打入 jar --&gt;</span></span><br><span class="line">                    <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>使用方式：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 方式一：启动时指定 agent</span></span><br><span class="line">java -javaagent:method-profiler-agent.jar=com.example.MyClass \</span><br><span class="line">     -jar myapp.jar</span><br><span class="line"></span><br><span class="line"><span class="comment"># 方式二：运行时 attach（需要目标 JVM 的 pid）</span></span><br><span class="line"><span class="comment"># 通过 Attach API 或 jcmd 命令</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="6-6-Android-平台的-Agent-使用"><a href="#6-6-Android-平台的-Agent-使用" class="headerlink" title="6.6 Android 平台的 Agent 使用"></a>6.6 Android 平台的 Agent 使用</h3><p>在 Android 上，使用 agent 的方式略有不同。Android 9+ 支持通过 <code>wrap.sh</code> 来加载 agent：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 创建 wrap.sh</span></span><br><span class="line"><span class="comment">#!/system/bin/sh</span></span><br><span class="line"><span class="built_in">export</span> LD_LIBRARY_PATH=<span class="variable">$LD_LIBRARY_PATH</span>:/data/local/tmp</span><br><span class="line"><span class="built_in">exec</span> /system/bin/app_process -Xbootclasspath/a:/data/local/tmp/agent.jar \</span><br><span class="line">    /system/bin --nice-name=com.example.myapp com.example.myapp</span><br></pre></td></tr></table></figure>
+
+<p>更常见的方式是通过 Android Studio Profiler 或使用 <code>run-as</code> + <code>cmd activity</code> 命令来配合 JVMTI agent 进行调试。</p>
+<h2 id="七、Instrumentation-与其他字节码增强方案的对比"><a href="#七、Instrumentation-与其他字节码增强方案的对比" class="headerlink" title="七、Instrumentation 与其他字节码增强方案的对比"></a>七、Instrumentation 与其他字节码增强方案的对比</h2><h3 id="7-1-Instrumentation-vs-ASM"><a href="#7-1-Instrumentation-vs-ASM" class="headerlink" title="7.1 Instrumentation vs ASM"></a>7.1 Instrumentation vs ASM</h3><table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">Instrumentation</th>
+<th align="left">ASM</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">层次</td>
+<td align="left">JVM 内置 API，在类加载时拦截</td>
+<td align="left">字节码操作框架，直接读写 .class 文件</td>
+</tr>
+<tr>
+<td align="left">使用方式</td>
+<td align="left">通过 agent 注册 transformer</td>
+<td align="left">直接操作 ClassReader&#x2F;ClassWriter</td>
+</tr>
+<tr>
+<td align="left">时机</td>
+<td align="left">类加载时或 retransform 时</td>
+<td align="left">编译后、加载前（Gradle plugin）</td>
+</tr>
+<tr>
+<td align="left">运行时修改</td>
+<td align="left">支持（retransform&#x2F;redefine）</td>
+<td align="left">不支持运行时修改</td>
+</tr>
+<tr>
+<td align="left">学习曲线</td>
+<td align="left">中</td>
+<td align="left">高（需深入理解字节码结构）</td>
+</tr>
+<tr>
+<td align="left">典型用途</td>
+<td align="left">APM、热修复、调试器</td>
+<td align="left">AOP 框架（Spring AOP）、代码生成</td>
+</tr>
+</tbody></table>
+<p>实际上，两者是互补关系：ASM 常常被用作 Instrumentation agent 中的字节码操作工具。例如，在 <code>ClassFileTransformer.transform()</code> 方法中，你收到的是原始字节码（byte[]），此时可以使用 ASM 来解析、修改并生成新的字节码。</p>
+<h3 id="7-2-Instrumentation-vs-AspectJ"><a href="#7-2-Instrumentation-vs-AspectJ" class="headerlink" title="7.2 Instrumentation vs AspectJ"></a>7.2 Instrumentation vs AspectJ</h3><table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">Instrumentation</th>
+<th align="left">AspectJ</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">织入时机</td>
+<td align="left">类加载时（load-time weaving）</td>
+<td align="left">编译时（compile-time weaving）或加载时</td>
+</tr>
+<tr>
+<td align="left">抽象层次</td>
+<td align="left">字节码级别，需手动操作</td>
+<td align="left">切面语言（pointcut + advice），高层抽象</td>
+</tr>
+<tr>
+<td align="left">侵入性</td>
+<td align="left">零侵入（不修改源码）</td>
+<td align="left">需引入 AspectJ 注解或语法</td>
+</tr>
+<tr>
+<td align="left">性能</td>
+<td align="left">取决于 transformer 的效率</td>
+<td align="left">静态织入性能好，动态织入有开销</td>
+</tr>
+<tr>
+<td align="left">Android 支持</td>
+<td align="left">有限（需 root&#x2F;debuggable）</td>
+<td align="left">不支持（AspectJ 织入器针对 JVM，非 ART）</td>
+</tr>
+</tbody></table>
+<h3 id="7-3-选型建议"><a href="#7-3-选型建议" class="headerlink" title="7.3 选型建议"></a>7.3 选型建议</h3><ul>
+<li><strong>编译期代码生成</strong>：选择 JSR-269 APT（如 ButterKnife、Dagger、Room）</li>
+<li><strong>编译后字节码修改</strong>：选择 ASM + Gradle Transform（Android）&#x2F; ASM + Maven Plugin（Java）</li>
+<li><strong>运行时监控&#x2F;APM</strong>：选择 Instrumentation + ASM&#x2F;Javassist</li>
+<li><strong>运行时热修复</strong>：选择 Instrumentation 的 retransformClasses 或 Android 的 Tinker&#x2F;Sophix</li>
+<li><strong>AOP 编程</strong>：Spring 项目选择 AspectJ 或 Spring AOP；Android 项目选择 ASM + Gradle Transform</li>
+</ul>
+<h2 id="八、Instrumentation-的局限性"><a href="#八、Instrumentation-的局限性" class="headerlink" title="八、Instrumentation 的局限性"></a>八、Instrumentation 的局限性</h2><h3 id="8-1-类加载顺序问题"><a href="#8-1-类加载顺序问题" class="headerlink" title="8.1 类加载顺序问题"></a>8.1 类加载顺序问题</h3><p>premain 的 transformer 在 main 方法之前注册，但它不能拦截到 Bootstrap ClassLoader 加载的基础类（如 <code>java.lang.String</code>、<code>java.lang.Object</code>）——这些类在 agent 注册之前就已经加载完成。要修改这些类，你需要使用 Boot-Class-Path MANIFEST 属性将 agent 类加入 Bootstrap ClassLoader 的搜索路径，或者使用 <code>retransformClasses</code> 对它们进行重转换。</p>
+<h3 id="8-2-类加载器隔离"><a href="#8-2-类加载器隔离" class="headerlink" title="8.2 类加载器隔离"></a>8.2 类加载器隔离</h3><p>在复杂容器（如 Tomcat、OSGi）中，多个 ClassLoader 可能会加载同名的类。transform 方法的 <code>className</code> 参数使用的是内部名称（如 <code>java/lang/String</code>），无法直接区分是哪个 ClassLoader 的副本。不过 <code>loader</code> 参数提供了 ClassLoader 引用，可以用来做进一步的过滤。</p>
+<h3 id="8-3-循环引用问题"><a href="#8-3-循环引用问题" class="headerlink" title="8.3 循环引用问题"></a>8.3 循环引用问题</h3><p>Agent 自身的类（以及其依赖的类，如 ASM）在被加载时也会触发 transform。如果不做过滤，可能会导致无限循环。解决方案：</p>
+<ul>
+<li>在 transform 方法开头判断类名，排除 agent 自身所在的包</li>
+<li>使用自定义 ClassLoader 加载 agent 相关类</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (className.startsWith(<span class="string">&quot;com/example/agent/&quot;</span>)) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;  <span class="comment">// 跳过 agent 自身的类</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-4-Android-平台的限制"><a href="#8-4-Android-平台的限制" class="headerlink" title="8.4 Android 平台的限制"></a>8.4 Android 平台的限制</h3><p>在 Android 上使用 Instrumentation 面临额外的限制：</p>
+<ul>
+<li>普通应用（非 debuggable、非 root）无法使用 JVMTI</li>
+<li><code>retransformClasses</code> 需要 ART 的 JIT 编译器支持，部分设备可能不支持</li>
+<li>Android 的 APK 打包格式（DEX）与 JVM 的 .class 格式不同，需要先经过转换</li>
+<li>系统分区（&#x2F;system）中的应用受到 dm-verity 保护，不能进行 retransform</li>
+</ul>
+<h2 id="九、在-AOSP-中-Instrumentation-相关的源码路径"><a href="#九、在-AOSP-中-Instrumentation-相关的源码路径" class="headerlink" title="九、在 AOSP 中 Instrumentation 相关的源码路径"></a>九、在 AOSP 中 Instrumentation 相关的源码路径</h2><p>以下是 Android AOSP 中与 Instrumentation 和 JVMTI 相关的重要源码文件：</p>
+<table>
+<thead>
+<tr>
+<th align="left">源码文件</th>
+<th align="left">作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>art/openjdkjvmti/ti_class.cc</code></td>
+<td align="left">JVMTI 类操作（包括 retransform&#x2F;redefine）的实现</td>
+</tr>
+<tr>
+<td align="left"><code>art/openjdkjvmti/ti_redefine.cc</code></td>
+<td align="left">类重定义的核心逻辑</td>
+</tr>
+<tr>
+<td align="left"><code>art/openjdkjvmti/ti_transformation.cc</code></td>
+<td align="left">Transformation 事件的处理</td>
+</tr>
+<tr>
+<td align="left"><code>art/openjdkjvmti/ti_breakpoint.cc</code></td>
+<td align="left">断点设置（也是 Instrumentation 的一部分）</td>
+</tr>
+<tr>
+<td align="left"><code>art/openjdkjvmti/OpenjdkJvmTi.cc</code></td>
+<td align="left">JVMTI 环境的初始化</td>
+</tr>
+<tr>
+<td align="left"><code>art/openjdkjvmti/events.cc</code></td>
+<td align="left">JVMTI 事件分发</td>
+</tr>
+<tr>
+<td align="left"><code>art/runtime/jit/jit.cc</code></td>
+<td align="left">JIT 编译管理，与 retransform 后的重编译相关</td>
+</tr>
+<tr>
+<td align="left"><code>art/runtime/class_linker.cc</code></td>
+<td align="left">类链接器，负责类的加载和链接</td>
+</tr>
+<tr>
+<td align="left"><code>art/runtime/instrumentation.cc</code></td>
+<td align="left">ART 自有的 Instrumentation 支持（方法进入&#x2F;退出事件）</td>
+</tr>
+<tr>
+<td align="left"><code>libcore/dalvik/src/main/java/dalvik/system/Instrumentation.java</code></td>
+<td align="left">Android Framework 层的 Instrumentation 封装</td>
+</tr>
+</tbody></table>
+<h2 id="十、常见面试题"><a href="#十、常见面试题" class="headerlink" title="十、常见面试题"></a>十、常见面试题</h2><p><strong>Q1: ClassFileTransformer 的 transform 方法会在什么时候被调用？</strong></p>
+<p>A: transform 方法在两个时机被调用：(1) 当 JVM 加载一个新类时，在类定义（defineClass）之前，所有已注册的 transformer 会被依次调用。(2) 当调用 <code>retransformClasses()</code> 或 <code>redefineClasses()</code> 时，JVM 会重新触发对已加载类的 transform。在第一种情况下，<code>classBeingRedefined</code> 参数为 null；在第二种情况下，该参数指向正在被重定义的 Class 对象。注意在 transform 方法内部不能对正在被转换的类进行反射操作，否则可能导致死锁或类加载循环。</p>
+<p><strong>Q2: retransformClasses 和 redefineClasses 的本质区别是什么？</strong></p>
+<p>A: 本质区别有两点。(1) 能力范围：retransform 只能修改方法体（即 Code 属性），而 redefine 可以修改类的完整结构，包括增删字段、方法、修改访问修饰符等。(2) 原始字节码的保留：retransform 始终保留原始的类文件字节码（存在 <code>InstanceKlass::_cached_class_file</code> 中），每次 retransform 都是从原始字节码开始再经过所有 transformer；而 redefine 是直接的类替换，被替换后的类的新”原始”版本就是替换时的定义。这意味着多次 retransform 不会叠加，而多次 redefine 会叠加。另外，redefine 会修改常量池，retransform 则不会。</p>
+<p><strong>Q3: 在 Android 上，如何实现对 release 应用的运行时监控？</strong></p>
+<p>A: 在 Android 上对 release 版本进行 Instrumentation 是非常困难的，主要是因为：(1) release APK 的 <code>android:debuggable</code> 为 false，JVMTI 无法附加。(2) ART 对 debuggable&#x3D;false 的进程会做更多优化（如 AOT 编译），减少 JIT 的使用。(3) Android 的安全模型（SELinux、seccomp）限制了 ptrace 和 &#x2F;proc&#x2F;self&#x2F;mem 等常规 Linux 调试手段。可行的方案包括：(a) 使用 root 权限的设备，通过 <code>wrap.sh</code> 在进程启动时加载 agent；(b) 在编译阶段通过 Gradle Transform API 植入监控代码；(c) 使用 Xposed &#x2F; Frida 等 hook 框架进行运行时注入（此方案有合规风险）。对于大多数商业场景，推荐使用编译期字节码增强方案（ASM + Gradle Plugin）而非运行时 Instrumentation。</p>
+<p><strong>Q4: addTransformer(transformer, true) 中的第二个参数有什么作用？</strong></p>
+<p>A: 第二个参数 <code>canRetransform</code> 决定该 transformer 是否能够参与 retransformClasses 触发的转换。如果设为 false（默认），该 transformer 只在类首次加载时被调用，在调用 retransformClasses 时不会触发它。如果设为 true，该 transformer 在类加载时和 retransform 时都会被调用。在 APM 场景下通常需要设为 true，因为已加载的类需要通过 retransformClasses 来再次触发 transform。但需要注意：设置为 true 的 transformer 必须能够正确处理两次（甚至多次）调用同一个类的情况，通常在 transform 方法中通过判断类是否已被处理过来避免重复织入。</p>
+<p><strong>Q5: 为什么 transform 方法不能对同一个类多次织入监控代码？</strong></p>
+<p>A: 如果 transform 方法没有做幂等性判断，每次 retransform 都会向方法体中追加一段监控代码。这会导致：(1) 方法体越来越大，执行效率下降；(2) 监控数据重复上报（每次方法调用被记录多次）；(3) 最终可能超出方法的最大字节码长度限制（65535 字节）。解决方案：在 transform 时检查类的某个标记（如新增一个特定的注解或接口，或检查类名&#x2F;方法名是否已经包含特定的前缀），如果发现类已经被增强过，则跳过织入。</p>
+<p><strong>Q6: premain 和 agentmain 中获取的 Instrumentation 实例有什么区别吗？</strong></p>
+<p>A: 没有区别。无论是通过 premain 还是 agentmain 获取的 Instrumentation 实例，其底层都是同一个 JVMTI 环境的代理。区别在于初始的 JVMTI 环境 capability 设置：在 premain 阶段（OnLoad phase），JVMTI 可以添加 Bootstrap ClassLoader 搜索路径，可以设置 Native Method Prefix——这些操作在 Live phase（agentmain 阶段）是不允许的。因此 premain 拥有更全面的能力，而 agentmain 主要用于运行时监控和诊断。</p>
+<hr>
+<p><strong>参考文档：</strong></p>
+<ul>
+<li>Java SE Instrumentation Package: <a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/8/docs/api/java/lang/instrument/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/lang/instrument/package-summary.html</a></li>
+<li>JVM Tool Interface (JVM TI) Specification</li>
+<li>AOSP: <code>art/openjdkjvmti/</code> 目录下的 JVMTI 实现</li>
+<li>AOSP: <code>art/runtime/instrumentation.cc</code> — ART 自有的 Instrumentation 机制</li>
+</ul>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/JVM/">JVM    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/259.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/04/20/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%8D%81%E4%B8%80%E7%AF%87%E3%80%81JSR-269%E6%8F%92%E4%BB%B6%E5%8C%96%E6%B3%A8%E8%A7%A3%E5%A4%84%E7%90%86%E5%8E%9F%E7%90%86/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/261.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【深入理解JVM字节码】第十一篇、JSR-269插件化注解处理原理</span></div></a></div><div class="next-post pull_right"><a href="/2021/04/10/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E4%B9%9D%E7%AF%87%E3%80%81ASM%E5%92%8CJavassist%E5%AD%97%E8%8A%82%E7%A0%81%E6%93%8D%E4%BD%9C%E5%B7%A5%E5%85%B7/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/244.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【深入理解JVM字节码】第九篇、ASM和Javassist字节码操作工具</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2021/04/05/重拾Android-【深入理解JVM字节码】第八篇、Kotlin字节码原理/" title="【深入理解JVM字节码】第八篇、Kotlin字节码原理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/265.jpg"><div class="relatedPosts_title">【深入理解JVM字节码】第八篇、Kotlin字节码原理</div></a></div><div class="relatedPosts_item"><a href="/2021/03/01/重拾Android-【深入理解JVM字节码】第一篇、class文件结构/" title="【深入理解JVM字节码】第一篇、class文件结构"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/247.jpg"><div class="relatedPosts_title">【深入理解JVM字节码】第一篇、class文件结构</div></a></div><div class="relatedPosts_item"><a href="/2019/05/28/重拾Android-Java进阶之深入理解JVM/" title="Java进阶之深入理解JVM"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/photo-1589371709918-9dfa8c55338e.jpg"><div class="relatedPosts_title">Java进阶之深入理解JVM</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/259.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

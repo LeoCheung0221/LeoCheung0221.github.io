@@ -1,0 +1,787 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【模式识别和机器学习】初窥AI圣经 | ONE·PIECE</title><meta name="description" content="【模式识别和机器学习】初窥AI圣经"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【模式识别和机器学习】初窥AI圣经"><meta name="twitter:description" content="【模式识别和机器学习】初窥AI圣经"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【模式识别和机器学习】初窥AI圣经"><meta property="og:url" content="http://tufusi.com/2020/11/15/%E3%80%90%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB%E5%92%8C%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E3%80%91%E5%88%9D%E7%AA%A5AI%E5%9C%A3%E7%BB%8F/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【模式识别和机器学习】初窥AI圣经"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2020/11/15/%E3%80%90%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB%E5%92%8C%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E3%80%91%E5%88%9D%E7%AA%A5AI%E5%9C%A3%E7%BB%8F/"><link rel="prev" title="区块链——最佳开发工具" href="http://tufusi.com/2020/12/01/%E5%8C%BA%E5%9D%97%E9%93%BE-%E6%9C%80%E4%BD%B3%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/"><link rel="next" title="【统计学习方法死磕系列】条件随机场" href="http://tufusi.com/2020/10/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%9D%A1%E4%BB%B6%E9%9A%8F%E6%9C%BA%E5%9C%BA/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88-PRML-%E8%87%B3%E4%BB%8A%E4%BB%8D%E6%98%AF%E5%BF%85%E8%AF%BB%E7%BB%8F%E5%85%B8%EF%BC%9F"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、为什么 PRML 至今仍是必读经典？</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-PRML-%E7%9A%84%E7%8B%AC%E7%89%B9%E5%AE%9A%E4%BD%8D"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">1.1 PRML 的独特定位</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-2-PRML-%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">1.2 PRML 的核心思想</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81%E7%AB%A0%E8%8A%82%E5%AF%BC%E8%88%AA%E4%B8%8E%E5%AD%A6%E4%B9%A0%E9%87%8D%E7%82%B9"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、章节导航与学习重点</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E5%85%A8%E4%B9%A6-14-%E7%AB%A0%E6%A6%82%E8%A7%88"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 全书 14 章概览</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E7%AB%A0%E8%8A%82%E5%85%B3%E7%B3%BB%E5%9B%BE"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 章节关系图</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81%E6%95%B0%E5%AD%A6%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、数学基础与前置知识</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E5%BF%85%E5%A4%87%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 必备基础知识</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E6%A6%82%E7%8E%87%E8%AE%BA%E9%80%9F%E6%9F%A5%EF%BC%9APRML-%E4%B8%AD%E6%9C%80%E6%A0%B8%E5%BF%83%E7%9A%84%E5%88%86%E5%B8%83"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 概率论速查：PRML 中最核心的分布</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E5%90%84%E7%AB%A0%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、各章核心概念详解</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E7%AC%AC-1-%E7%AB%A0%EF%BC%9A%E5%BC%95%E8%A8%80%E2%80%94%E2%80%94%E6%9B%B2%E7%BA%BF%E6%8B%9F%E5%90%88%E8%83%8C%E5%90%8E%E7%9A%84%E5%93%B2%E5%AD%A6"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 第 1 章：引言——曲线拟合背后的哲学</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E7%AC%AC-3-%E7%AB%A0%EF%BC%9A%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92%E7%9A%84%E4%B8%89%E7%A7%8D%E8%A7%86%E8%A7%92"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 第 3 章：线性回归的三种视角</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-%E7%AC%AC-4-%E7%AB%A0%EF%BC%9A%E5%88%86%E7%B1%BB%E7%9A%84%E4%B8%89%E7%A7%8D%E8%BF%9B%E8%B7%AF"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 第 4 章：分类的三种进路</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-4-%E7%AC%AC-5-%E7%AB%A0%EF%BC%9A%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%EF%BC%88%E7%BB%8F%E5%85%B8-MLP-%E8%A7%86%E8%A7%92%EF%BC%89"><span class="toc_mobile_items-number">4.4.</span> <span class="toc_mobile_items-text">4.4 第 5 章：神经网络（经典 MLP 视角）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-5-%E7%AC%AC-8-%E7%AB%A0%EF%BC%9A%E6%A6%82%E7%8E%87%E5%9B%BE%E6%A8%A1%E5%9E%8B"><span class="toc_mobile_items-number">4.5.</span> <span class="toc_mobile_items-text">4.5 第 8 章：概率图模型</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-6-%E7%AC%AC-9-%E7%AB%A0%EF%BC%9AEM-%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">4.6.</span> <span class="toc_mobile_items-text">4.6 第 9 章：EM 算法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-7-%E7%AC%AC-10-%E7%AB%A0%EF%BC%9A%E5%8F%98%E5%88%86%E6%8E%A8%E6%96%AD"><span class="toc_mobile_items-number">4.7.</span> <span class="toc_mobile_items-text">4.7 第 10 章：变分推断</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-8-%E7%AC%AC-11-%E7%AB%A0%EF%BC%9A%E9%87%87%E6%A0%B7%E6%96%B9%E6%B3%95%EF%BC%88MCMC%EF%BC%89"><span class="toc_mobile_items-number">4.8.</span> <span class="toc_mobile_items-text">4.8 第 11 章：采样方法（MCMC）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81PRML-%E4%B8%8E%E7%8E%B0%E4%BB%A3%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%9A%84%E8%BF%9E%E6%8E%A5"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、PRML 与现代深度学习的连接</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E7%9B%B4%E6%8E%A5%E8%81%94%E7%B3%BB"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 直接联系</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-%E9%97%B4%E6%8E%A5%E4%BD%86%E6%B7%B1%E5%B1%82%E7%9A%84%E8%81%94%E7%B3%BB"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 间接但深层的联系</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E5%AD%A6%E4%B9%A0%E5%BB%BA%E8%AE%AE%E4%B8%8E%E8%B5%84%E6%BA%90"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、学习建议与资源</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E4%B8%89%E9%98%B6%E6%AE%B5%E5%AD%A6%E4%B9%A0%E6%B3%95"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 三阶段学习法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-%E9%85%8D%E5%A5%97%E8%B5%84%E6%BA%90"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 配套资源</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-PRML-%E4%B8%AD%E5%AE%B9%E6%98%93%E5%8D%A1%E4%BD%8F%E7%9A%84%E5%9C%B0%E6%96%B9"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">6.3 PRML 中容易卡住的地方</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E5%85%B3%E9%94%AE%E7%AB%A0%E8%8A%82%E6%B7%B1%E5%BA%A6%E6%89%A9%E5%B1%95"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、关键章节深度扩展</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-%E7%AC%AC-2-%E7%AB%A0%EF%BC%9A%E6%A6%82%E7%8E%87%E5%88%86%E5%B8%83%E2%80%94%E2%80%94%E6%9E%84%E5%BB%BA%E5%AE%8C%E6%95%B4%E7%9A%84%E5%88%86%E5%B8%83%E5%B7%A5%E5%85%B7%E7%AE%B1"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">7.1 第 2 章：概率分布——构建完整的分布工具箱</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-%E7%AC%AC-8-%E7%AB%A0%EF%BC%9A%E6%A6%82%E7%8E%87%E5%9B%BE%E6%A8%A1%E5%9E%8B%E7%9A%84%E4%B8%89%E7%A7%8D%E5%9F%BA%E6%9C%AC%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">7.2 第 8 章：概率图模型的三种基本结构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-3-%E7%AC%AC-12-%E7%AB%A0%EF%BC%9APCA-%E7%9A%84%E6%A6%82%E7%8E%87%E8%A7%86%E8%A7%92"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">7.3 第 12 章：PCA 的概率视角</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81PRML-%E7%9A%84%E6%95%B0%E5%AD%A6%E9%9A%BE%E7%82%B9%E7%AA%81%E7%A0%B4%E6%8C%87%E5%8D%97"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、PRML 的数学难点突破指南</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-%E4%B8%8D%E4%BC%9A%E6%8E%A8%E5%AF%BC%E7%9F%A9%E9%98%B5%E5%BE%AE%E7%A7%AF%E5%88%86%E6%80%8E%E4%B9%88%E5%8A%9E%EF%BC%9F"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">8.1 不会推导矩阵微积分怎么办？</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-%E7%90%86%E8%A7%A3-KL-%E6%95%A3%E5%BA%A6%E4%B8%8D%E5%AF%B9%E7%A7%B0%E6%80%A7%E7%9A%84%E5%AE%9E%E9%99%85%E6%84%8F%E4%B9%89"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">8.2 理解 KL 散度不对称性的实际意义</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E6%A0%B8%E5%BF%83%E4%B9%A0%E9%A2%98%E7%B2%BE%E9%80%89"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、核心习题精选</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88-2025-%E5%B9%B4%E8%BF%98%E8%A6%81%E8%AF%BB-PRML%EF%BC%9F"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">八、为什么 2025 年还要读 PRML？</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E7%AD%94"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">九、面试高频问答</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88-PRML-%E8%87%B3%E4%BB%8A%E4%BB%8D%E6%98%AF%E5%BF%85%E8%AF%BB%E7%BB%8F%E5%85%B8%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">一、为什么 PRML 至今仍是必读经典？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-PRML-%E7%9A%84%E7%8B%AC%E7%89%B9%E5%AE%9A%E4%BD%8D"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 PRML 的独特定位</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-PRML-%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 PRML 的核心思想</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%AB%A0%E8%8A%82%E5%AF%BC%E8%88%AA%E4%B8%8E%E5%AD%A6%E4%B9%A0%E9%87%8D%E7%82%B9"><span class="toc-number">2.</span> <span class="toc-text">二、章节导航与学习重点</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%85%A8%E4%B9%A6-14-%E7%AB%A0%E6%A6%82%E8%A7%88"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 全书 14 章概览</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E7%AB%A0%E8%8A%82%E5%85%B3%E7%B3%BB%E5%9B%BE"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 章节关系图</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%95%B0%E5%AD%A6%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86"><span class="toc-number">3.</span> <span class="toc-text">三、数学基础与前置知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%BF%85%E5%A4%87%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 必备基础知识</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%A6%82%E7%8E%87%E8%AE%BA%E9%80%9F%E6%9F%A5%EF%BC%9APRML-%E4%B8%AD%E6%9C%80%E6%A0%B8%E5%BF%83%E7%9A%84%E5%88%86%E5%B8%83"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 概率论速查：PRML 中最核心的分布</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%90%84%E7%AB%A0%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5%E8%AF%A6%E8%A7%A3"><span class="toc-number">4.</span> <span class="toc-text">四、各章核心概念详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E7%AC%AC-1-%E7%AB%A0%EF%BC%9A%E5%BC%95%E8%A8%80%E2%80%94%E2%80%94%E6%9B%B2%E7%BA%BF%E6%8B%9F%E5%90%88%E8%83%8C%E5%90%8E%E7%9A%84%E5%93%B2%E5%AD%A6"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 第 1 章：引言——曲线拟合背后的哲学</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E7%AC%AC-3-%E7%AB%A0%EF%BC%9A%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92%E7%9A%84%E4%B8%89%E7%A7%8D%E8%A7%86%E8%A7%92"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 第 3 章：线性回归的三种视角</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E7%AC%AC-4-%E7%AB%A0%EF%BC%9A%E5%88%86%E7%B1%BB%E7%9A%84%E4%B8%89%E7%A7%8D%E8%BF%9B%E8%B7%AF"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 第 4 章：分类的三种进路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E7%AC%AC-5-%E7%AB%A0%EF%BC%9A%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%EF%BC%88%E7%BB%8F%E5%85%B8-MLP-%E8%A7%86%E8%A7%92%EF%BC%89"><span class="toc-number">4.4.</span> <span class="toc-text">4.4 第 5 章：神经网络（经典 MLP 视角）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-%E7%AC%AC-8-%E7%AB%A0%EF%BC%9A%E6%A6%82%E7%8E%87%E5%9B%BE%E6%A8%A1%E5%9E%8B"><span class="toc-number">4.5.</span> <span class="toc-text">4.5 第 8 章：概率图模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-%E7%AC%AC-9-%E7%AB%A0%EF%BC%9AEM-%E7%AE%97%E6%B3%95"><span class="toc-number">4.6.</span> <span class="toc-text">4.6 第 9 章：EM 算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-7-%E7%AC%AC-10-%E7%AB%A0%EF%BC%9A%E5%8F%98%E5%88%86%E6%8E%A8%E6%96%AD"><span class="toc-number">4.7.</span> <span class="toc-text">4.7 第 10 章：变分推断</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-8-%E7%AC%AC-11-%E7%AB%A0%EF%BC%9A%E9%87%87%E6%A0%B7%E6%96%B9%E6%B3%95%EF%BC%88MCMC%EF%BC%89"><span class="toc-number">4.8.</span> <span class="toc-text">4.8 第 11 章：采样方法（MCMC）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81PRML-%E4%B8%8E%E7%8E%B0%E4%BB%A3%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%9A%84%E8%BF%9E%E6%8E%A5"><span class="toc-number">5.</span> <span class="toc-text">五、PRML 与现代深度学习的连接</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E7%9B%B4%E6%8E%A5%E8%81%94%E7%B3%BB"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 直接联系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E9%97%B4%E6%8E%A5%E4%BD%86%E6%B7%B1%E5%B1%82%E7%9A%84%E8%81%94%E7%B3%BB"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 间接但深层的联系</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%AD%A6%E4%B9%A0%E5%BB%BA%E8%AE%AE%E4%B8%8E%E8%B5%84%E6%BA%90"><span class="toc-number">6.</span> <span class="toc-text">六、学习建议与资源</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E4%B8%89%E9%98%B6%E6%AE%B5%E5%AD%A6%E4%B9%A0%E6%B3%95"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 三阶段学习法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E9%85%8D%E5%A5%97%E8%B5%84%E6%BA%90"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 配套资源</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-PRML-%E4%B8%AD%E5%AE%B9%E6%98%93%E5%8D%A1%E4%BD%8F%E7%9A%84%E5%9C%B0%E6%96%B9"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 PRML 中容易卡住的地方</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%85%B3%E9%94%AE%E7%AB%A0%E8%8A%82%E6%B7%B1%E5%BA%A6%E6%89%A9%E5%B1%95"><span class="toc-number">7.</span> <span class="toc-text">七、关键章节深度扩展</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E7%AC%AC-2-%E7%AB%A0%EF%BC%9A%E6%A6%82%E7%8E%87%E5%88%86%E5%B8%83%E2%80%94%E2%80%94%E6%9E%84%E5%BB%BA%E5%AE%8C%E6%95%B4%E7%9A%84%E5%88%86%E5%B8%83%E5%B7%A5%E5%85%B7%E7%AE%B1"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 第 2 章：概率分布——构建完整的分布工具箱</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E7%AC%AC-8-%E7%AB%A0%EF%BC%9A%E6%A6%82%E7%8E%87%E5%9B%BE%E6%A8%A1%E5%9E%8B%E7%9A%84%E4%B8%89%E7%A7%8D%E5%9F%BA%E6%9C%AC%E7%BB%93%E6%9E%84"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 第 8 章：概率图模型的三种基本结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E7%AC%AC-12-%E7%AB%A0%EF%BC%9APCA-%E7%9A%84%E6%A6%82%E7%8E%87%E8%A7%86%E8%A7%92"><span class="toc-number">7.3.</span> <span class="toc-text">7.3 第 12 章：PCA 的概率视角</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81PRML-%E7%9A%84%E6%95%B0%E5%AD%A6%E9%9A%BE%E7%82%B9%E7%AA%81%E7%A0%B4%E6%8C%87%E5%8D%97"><span class="toc-number">8.</span> <span class="toc-text">八、PRML 的数学难点突破指南</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E4%B8%8D%E4%BC%9A%E6%8E%A8%E5%AF%BC%E7%9F%A9%E9%98%B5%E5%BE%AE%E7%A7%AF%E5%88%86%E6%80%8E%E4%B9%88%E5%8A%9E%EF%BC%9F"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 不会推导矩阵微积分怎么办？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E7%90%86%E8%A7%A3-KL-%E6%95%A3%E5%BA%A6%E4%B8%8D%E5%AF%B9%E7%A7%B0%E6%80%A7%E7%9A%84%E5%AE%9E%E9%99%85%E6%84%8F%E4%B9%89"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 理解 KL 散度不对称性的实际意义</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E6%A0%B8%E5%BF%83%E4%B9%A0%E9%A2%98%E7%B2%BE%E9%80%89"><span class="toc-number">9.</span> <span class="toc-text">九、核心习题精选</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88-2025-%E5%B9%B4%E8%BF%98%E8%A6%81%E8%AF%BB-PRML%EF%BC%9F"><span class="toc-number">10.</span> <span class="toc-text">八、为什么 2025 年还要读 PRML？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E7%AD%94"><span class="toc-number">11.</span> <span class="toc-text">九、面试高频问答</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【模式识别和机器学习】初窥AI圣经</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2020-11-15<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">6.9k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 24 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>《Pattern Recognition and Machine Learning》（PRML）是 Christopher M. Bishop 于 2006 年出版的经典著作，被学术界和工业界公认为”机器学习圣经”之一。不同于一些偏重工程应用的教材，PRML 从<strong>概率论</strong>和<strong>贝叶斯统计</strong>的视角系统地构建了机器学习的理论框架。本文将提供一份完整的学习指南和概念地图。</p>
+<span id="more"></span>
+
+<hr>
+<h2 id="一、为什么-PRML-至今仍是必读经典？"><a href="#一、为什么-PRML-至今仍是必读经典？" class="headerlink" title="一、为什么 PRML 至今仍是必读经典？"></a>一、为什么 PRML 至今仍是必读经典？</h2><h3 id="1-1-PRML-的独特定位"><a href="#1-1-PRML-的独特定位" class="headerlink" title="1.1 PRML 的独特定位"></a>1.1 PRML 的独特定位</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>PRML</th>
+<th>《统计学习方法》(李航)</th>
+<th>《Deep Learning》(Goodfellow)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>哲学基础</td>
+<td>贝叶斯概率论</td>
+<td>频率学派</td>
+<td>概率 + 工程直觉</td>
+</tr>
+<tr>
+<td>核心方法</td>
+<td>概率图模型</td>
+<td>统计学习理论</td>
+<td>深度神经网络</td>
+</tr>
+<tr>
+<td>数学深度</td>
+<td>高（需要多元微积分+线性代数+概率论）</td>
+<td>中</td>
+<td>中高</td>
+</tr>
+<tr>
+<td>涵盖范围</td>
+<td>经典 ML 全覆盖</td>
+<td>以分类&#x2F;回归为主</td>
+<td>以 DL 为主</td>
+</tr>
+<tr>
+<td>写作年代</td>
+<td>2006（但核心内容不老）</td>
+<td>2012&#x2F;2019</td>
+<td>2016</td>
+</tr>
+<tr>
+<td>与现代 DL 的关系</td>
+<td>提供 DL 的概率论基础</td>
+<td>几乎无关</td>
+<td>直接相关</td>
+</tr>
+</tbody></table>
+<p>PRML 的价值不在于教你跑一个 XGBoost 或训练一个 CNN，而在于它为<strong>理解模型为什么有效</strong>提供了统一的概率框架。当你理解了 EM 算法、变分推断、MCMC，你会发现深度生成模型（VAE、扩散模型）、贝叶斯神经网络、概率编程等前沿话题都建立在这些基础之上。</p>
+<h3 id="1-2-PRML-的核心思想"><a href="#1-2-PRML-的核心思想" class="headerlink" title="1.2 PRML 的核心思想"></a>1.2 PRML 的核心思想</h3><p>PRML 全书围绕一个中心问题展开：<strong>如何从数据中学习概率分布？</strong></p>
+<ul>
+<li>如果我们可以对数据分布 $p(x, t)$ 建模，那么分类就是 $p(t \mid x)$，回归就是 $\mathbb{E}[t \mid x]$</li>
+<li>概率建模意味着我们需要处理<strong>不确定性</strong>——参数的不确定性、模型选择的不确定性、预测的不确定性</li>
+<li>贝叶斯框架通过<strong>先验 + 似然 → 后验</strong>提供了处理不确定性的统一方法</li>
+</ul>
+<hr>
+<h2 id="二、章节导航与学习重点"><a href="#二、章节导航与学习重点" class="headerlink" title="二、章节导航与学习重点"></a>二、章节导航与学习重点</h2><h3 id="2-1-全书-14-章概览"><a href="#2-1-全书-14-章概览" class="headerlink" title="2.1 全书 14 章概览"></a>2.1 全书 14 章概览</h3><table>
+<thead>
+<tr>
+<th>章节</th>
+<th>标题</th>
+<th>页数</th>
+<th>难度</th>
+<th>重要性</th>
+<th>核心内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>引言</td>
+<td>~70</td>
+<td>低</td>
+<td>★★★</td>
+<td>曲线拟合、概率论基础、决策论、信息论</td>
+</tr>
+<tr>
+<td>2</td>
+<td>概率分布</td>
+<td>~70</td>
+<td>中</td>
+<td>★★★</td>
+<td>二项、多项、高斯、Student-t、指数族、无信息先验</td>
+</tr>
+<tr>
+<td>3</td>
+<td>线性回归模型</td>
+<td>~70</td>
+<td>中</td>
+<td>★★★</td>
+<td>基函数、偏差-方差分解、贝叶斯线性回归、证据近似</td>
+</tr>
+<tr>
+<td>4</td>
+<td>线性分类模型</td>
+<td>~70</td>
+<td>中</td>
+<td>★★☆</td>
+<td>判别函数、概率生成模型、概率判别模型、拉普拉斯近似</td>
+</tr>
+<tr>
+<td>5</td>
+<td>神经网络</td>
+<td>~40</td>
+<td>中</td>
+<td>★★☆</td>
+<td>MLP、BP 的贝叶斯视角、正则化</td>
+</tr>
+<tr>
+<td>6</td>
+<td>核方法</td>
+<td>~50</td>
+<td>中高</td>
+<td>★★☆</td>
+<td>对偶表示、构造核、RBF 网络、高斯过程</td>
+</tr>
+<tr>
+<td>7</td>
+<td>稀疏核机</td>
+<td>~40</td>
+<td>中高</td>
+<td>★☆☆</td>
+<td>SVM、RVM</td>
+</tr>
+<tr>
+<td>8</td>
+<td>概率图模型</td>
+<td>~70</td>
+<td>高</td>
+<td>★★★</td>
+<td>贝叶斯网络、马尔可夫随机场、d-分离、推断</td>
+</tr>
+<tr>
+<td>9</td>
+<td>混合模型与 EM</td>
+<td>~50</td>
+<td>高</td>
+<td>★★★</td>
+<td>K-means、GMM、EM 算法通用形式</td>
+</tr>
+<tr>
+<td>10</td>
+<td>近似推断</td>
+<td>~70</td>
+<td>高</td>
+<td>★★★</td>
+<td>变分推断、局部变分法、期望传播（EP）</td>
+</tr>
+<tr>
+<td>11</td>
+<td>采样方法</td>
+<td>~50</td>
+<td>高</td>
+<td>★★★</td>
+<td>MCMC、Metropolis-Hastings、Gibbs、切片采样、HMC</td>
+</tr>
+<tr>
+<td>12</td>
+<td>连续潜变量</td>
+<td>~50</td>
+<td>高</td>
+<td>★★☆</td>
+<td>PCA（概率视角）、PPCA、因子分析、ICA</td>
+</tr>
+<tr>
+<td>13</td>
+<td>序列数据</td>
+<td>~50</td>
+<td>高</td>
+<td>★★☆</td>
+<td>HMM、线性动态系统</td>
+</tr>
+<tr>
+<td>14</td>
+<td>组合模型</td>
+<td>~50</td>
+<td>高</td>
+<td>★☆☆</td>
+<td>组合、Boosting、决策树、条件混合模型</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-章节关系图"><a href="#2-2-章节关系图" class="headerlink" title="2.2 章节关系图"></a>2.2 章节关系图</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">第1章（基础）</span><br><span class="line">  ↓</span><br><span class="line">第2章（概率分布工具箱）</span><br><span class="line">  ↓</span><br><span class="line">第3章（线性回归） ←→ 第4章（线性分类）</span><br><span class="line">  ↓                       ↓</span><br><span class="line">第5章（NN）   ←→  第6-7章（核方法/SVM/RVM）</span><br><span class="line">  ↓</span><br><span class="line">第8章（概率图模型）【全书核心/分水岭】</span><br><span class="line">  ↓</span><br><span class="line">第9章（混合模型+EM）</span><br><span class="line">  ↓</span><br><span class="line">第10章（变分推断） ←→ 第11章（MCMC采样）</span><br><span class="line">  ↓                       ↓</span><br><span class="line">第12章（潜变量模型）  第13章（序列模型）</span><br><span class="line">  ↓</span><br><span class="line">第14章（组合模型）</span><br></pre></td></tr></table></figure>
+
+<p>建议的阅读路线：</p>
+<ul>
+<li><strong>快速路线</strong>（1-2 个月）：第 1 → 2 → 3 → 4 → 8 → 9 → 10</li>
+<li><strong>系统路线</strong>（3-4 个月）：按章节顺序，重点在第 2, 3, 8, 9, 10, 11</li>
+<li><strong>研究路线</strong>（6 个月+）：全书精读 + 每章习题</li>
+</ul>
+<hr>
+<h2 id="三、数学基础与前置知识"><a href="#三、数学基础与前置知识" class="headerlink" title="三、数学基础与前置知识"></a>三、数学基础与前置知识</h2><h3 id="3-1-必备基础知识"><a href="#3-1-必备基础知识" class="headerlink" title="3.1 必备基础知识"></a>3.1 必备基础知识</h3><table>
+<thead>
+<tr>
+<th>数学领域</th>
+<th>要求</th>
+<th>关键概念</th>
+<th>补充材料</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>线性代数</td>
+<td>扎实</td>
+<td>特征值&#x2F;特征向量、矩阵分解（Cholesky, SVD）、正定矩阵、迹和行列式</td>
+<td>Strang《Linear Algebra》</td>
+</tr>
+<tr>
+<td>多元微积分</td>
+<td>扎实</td>
+<td>梯度、Hessian、Jacobian、拉格朗日乘子、方向导数</td>
+<td>Stewart《Calculus》</td>
+</tr>
+<tr>
+<td>概率论</td>
+<td>扎实</td>
+<td>条件概率、贝叶斯定理、期望&#x2F;方差&#x2F;协方差、变换方法、测度论基础</td>
+<td>MIT 6.041 课程</td>
+</tr>
+<tr>
+<td>信息论</td>
+<td>基础</td>
+<td>熵、KL 散度、互信息</td>
+<td>PRML 第 1.6 节足够</td>
+</tr>
+<tr>
+<td>优化</td>
+<td>基础</td>
+<td>凸优化、梯度下降、牛顿法、拉格朗日对偶</td>
+<td>PRML 附录 E 足够</td>
+</tr>
+<tr>
+<td>统计</td>
+<td>基础</td>
+<td>MLE、MAP、置信区间 vs 可信区间</td>
+<td>PRML 第 2 章覆盖</td>
+</tr>
+</tbody></table>
+<h3 id="3-2-概率论速查：PRML-中最核心的分布"><a href="#3-2-概率论速查：PRML-中最核心的分布" class="headerlink" title="3.2 概率论速查：PRML 中最核心的分布"></a>3.2 概率论速查：PRML 中最核心的分布</h3><p><strong>高斯分布（全书最高频的分布）</strong>：</p>
+<p>单变量：$\mathcal{N}(x \mid \mu, \sigma^2) &#x3D; \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right)$</p>
+<p>多变量：$\mathcal{N}(\mathbf{x} \mid \boldsymbol{\mu}, \boldsymbol{\Sigma}) &#x3D; \frac{1}{(2\pi)^{D&#x2F;2} |\boldsymbol{\Sigma}|^{1&#x2F;2}} \exp\left(-\frac{1}{2}(\mathbf{x}-\boldsymbol{\mu})^T \boldsymbol{\Sigma}^{-1}(\mathbf{x}-\boldsymbol{\mu})\right)$</p>
+<p><strong>共轭先验</strong>：如果后验分布与先验分布属于同一分布族，则称该先验为似然函数的共轭先验。例如：</p>
+<ul>
+<li>二项似然 + Beta 先验 → Beta 后验</li>
+<li>高斯似然（已知方差）+ 高斯先验 → 高斯后验</li>
+<li>高斯似然（未知均值）+ Gaussian-Gamma 先验 → Gaussian-Gamma 后验</li>
+</ul>
+<p><strong>指数族分布</strong>：Bishop 反复强调指数族的重要性——大多数常见的概率分布都属于指数族，而指数族有一些优雅的性质（充分统计量、共轭先验存在、最大熵性质）。</p>
+<hr>
+<h2 id="四、各章核心概念详解"><a href="#四、各章核心概念详解" class="headerlink" title="四、各章核心概念详解"></a>四、各章核心概念详解</h2><h3 id="4-1-第-1-章：引言——曲线拟合背后的哲学"><a href="#4-1-第-1-章：引言——曲线拟合背后的哲学" class="headerlink" title="4.1 第 1 章：引言——曲线拟合背后的哲学"></a>4.1 第 1 章：引言——曲线拟合背后的哲学</h3><p>以多项式曲线拟合为例，引入：</p>
+<ul>
+<li><strong>过拟合与正则化</strong>：M&#x3D;9 的多项式完美通过所有训练点但剧烈震荡 → 需要控制模型复杂度</li>
+<li><strong>训练集大小 vs 模型复杂度</strong>：数据越多，可以用越复杂的模型</li>
+<li><strong>MLE vs MAP vs Bayesian</strong>：最大似然估计（仅用似然）、最大后验估计（先验 × 似然）、全贝叶斯（边际化所有参数）</li>
+</ul>
+<p>$$\text{MLE: } \mathbf{w}_{ML} = \arg\max_{\mathbf{w}} p(\mathcal{D} \mid \mathbf{w})$$</p>
+<p>$$\text{MAP: } \mathbf{w}_{MAP} = \arg\max_{\mathbf{w}} p(\mathbf{w} \mid \mathcal{D}) = \arg\max_{\mathbf{w}} p(\mathcal{D} \mid \mathbf{w})p(\mathbf{w})$$</p>
+<p>$$\text{Bayesian: } p(t \mid \mathbf{x}, \mathcal{D}) = \int p(t \mid \mathbf{x}, \mathbf{w}) p(\mathbf{w} \mid \mathcal{D}) d\mathbf{w}$$</p>
+<h3 id="4-2-第-3-章：线性回归的三种视角"><a href="#4-2-第-3-章：线性回归的三种视角" class="headerlink" title="4.2 第 3 章：线性回归的三种视角"></a>4.2 第 3 章：线性回归的三种视角</h3><p>Bishop 用同一组线性模型展示了三种不同的训练哲学：</p>
+<p><strong>频率学派（MLE）</strong>：$\min_{\mathbf{w}} \sum_i (t_i - \mathbf{w}^T \phi(\mathbf{x}_i))^2$ + 可选 L2 正则</p>
+<p><strong>MAP 估计（频率+先验）</strong>：$\min_{\mathbf{w}} \sum_i (t_i - \mathbf{w}^T \phi(\mathbf{x}_i))^2 + \lambda |\mathbf{w}|^2$，等价于高斯先验下的 MAP</p>
+<p><strong>全贝叶斯（后验分布）</strong>：$p(\mathbf{w} \mid \mathcal{D}) &#x3D; \mathcal{N}(\mathbf{w} \mid \mathbf{m}_N, \mathbf{S}_N)$，然后对 $\mathbf{w}$ 积分得到预测分布。预测分布不仅有预测均值，还有预测方差——后者量化了预测的不确定性（在 MLE 和 MAP 中都是缺失的）。</p>
+<p><strong>证据近似（Evidence Approximation &#x2F; Empirical Bayes）</strong>：对超参数 $\alpha$ 和 $\beta$（先验精度和噪声精度）最大化证据（marginal likelihood &#x2F; model evidence）$p(\mathcal{D} \mid \alpha, \beta)$。这是一种介于全贝叶斯和 MAP 之间的折中方案。</p>
+<h3 id="4-3-第-4-章：分类的三种进路"><a href="#4-3-第-4-章：分类的三种进路" class="headerlink" title="4.3 第 4 章：分类的三种进路"></a>4.3 第 4 章：分类的三种进路</h3><table>
+<thead>
+<tr>
+<th>进路</th>
+<th>方法</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>判别函数</td>
+<td>直接找决策边界（Fisher 线性判别、感知机）</td>
+<td>不输出概率，最简单</td>
+</tr>
+<tr>
+<td>概率生成模型</td>
+<td>对每类的 $p(\mathbf{x} \mid C_k)$ 建模，用贝叶斯求 $p(C_k \mid \mathbf{x})$</td>
+<td>可生成新样本，但建模复杂</td>
+</tr>
+<tr>
+<td>概率判别模型</td>
+<td>直接建模 $p(C_k \mid \mathbf{x})$（逻辑回归）</td>
+<td>参数更少，专注分类任务</td>
+</tr>
+</tbody></table>
+<p><strong>拉普拉斯近似（Laplace Approximation）</strong>：在 MAP 估计处用高斯分布近似后验——在高斯分布的均值处做二阶泰勒展开。这是连接 MAP 估计和贝叶斯推断的桥梁方法，也是 PRML 中反复出现的工具。</p>
+<h3 id="4-4-第-5-章：神经网络（经典-MLP-视角）"><a href="#4-4-第-5-章：神经网络（经典-MLP-视角）" class="headerlink" title="4.4 第 5 章：神经网络（经典 MLP 视角）"></a>4.4 第 5 章：神经网络（经典 MLP 视角）</h3><p>PRML 第 5 章对神经网络的讨论是基于 2006 年之前的知识，但以下内容仍然具有深刻价值：</p>
+<ul>
+<li><strong>BP 算法的链式法则推导</strong>（核心，至今未变）</li>
+<li><strong>Hessian 矩阵的计算和用途</strong>：快速优化、拉普拉斯近似、剪枝</li>
+<li><strong>正则化</strong>：weight decay、early stopping、invariance（通过数据增强）</li>
+<li><strong>混合密度网络（MDN）</strong>：输出不是单一值，而是一个混合分布——这在不确定性量化中越来越重要</li>
+</ul>
+<h3 id="4-5-第-8-章：概率图模型"><a href="#4-5-第-8-章：概率图模型" class="headerlink" title="4.5 第 8 章：概率图模型"></a>4.5 第 8 章：概率图模型</h3><p>全书最重要的章节之一。概率图模型是将概率分布结构化为图的方法，使得复杂的联合概率分解为条件概率的乘积：</p>
+<p><strong>有向图（贝叶斯网络）</strong>：</p>
+<p>$$p(\mathbf{x}) = \prod_{k=1}^{K} p(x_k \mid \text{pa}_k)$$</p>
+<p><strong>无向图（马尔可夫随机场）</strong>：</p>
+<p>$$p(\mathbf{x}) = \frac{1}{Z} \prod_{C} \psi_C(\mathbf{x}_C)$$</p>
+<p><strong>d-分离</strong>：判断变量之间是否条件独立的关键判据。这对于理解推断算法的正确性和设计新的图模型至关重要。</p>
+<h3 id="4-6-第-9-章：EM-算法"><a href="#4-6-第-9-章：EM-算法" class="headerlink" title="4.6 第 9 章：EM 算法"></a>4.6 第 9 章：EM 算法</h3><p>EM（Expectation-Maximization）是 Bishop 最引以为豪的通用算法之一。对于含有潜变量 $\mathbf{Z}$ 的模型：</p>
+<p>$$
+\ln p(\mathbf{X} \mid \boldsymbol{\theta}) = \mathcal{L}(q, \boldsymbol{\theta}) + \text{KL}(q \parallel p)
+$$</p>
+<p>其中 $\mathcal{L}(q, \boldsymbol{\theta})$ 是证据下界（ELBO, Evidence Lower Bound）：</p>
+<p>$$\mathcal{L}(q, \boldsymbol{\theta}) = \int q(\mathbf{Z}) \ln\left(\frac{p(\mathbf{X}, \mathbf{Z} \mid \boldsymbol{\theta})}{q(\mathbf{Z})}\right) d\mathbf{Z}$$</p>
+<p>EM 算法的两步迭代：</p>
+<ul>
+<li><strong>E 步</strong>：固定 $\boldsymbol{\theta}^{\text{old}}$，最大化 $\mathcal{L}$ 关于 $q$，得 $q(\mathbf{Z}) &#x3D; p(\mathbf{Z} \mid \mathbf{X}, \boldsymbol{\theta}^{\text{old}})$</li>
+<li><strong>M 步</strong>：固定 $q$，最大化 $\mathcal{L}$ 关于 $\boldsymbol{\theta}$</li>
+</ul>
+<p>注意：EM 的 E 步要求后验 $p(\mathbf{Z} \mid \mathbf{X}, \boldsymbol{\theta})$ 可以精确计算。当这不可行时（大多数有趣的情况），就需要第 10 章的变分 EM。</p>
+<h3 id="4-7-第-10-章：变分推断"><a href="#4-7-第-10-章：变分推断" class="headerlink" title="4.7 第 10 章：变分推断"></a>4.7 第 10 章：变分推断</h3><p>当精确推断不可行时，变分推断提供了一个确定性近似方案。核心思想：用一族参数化的分布 $q(\mathbf{Z} \mid \boldsymbol{\omega})$ 来近似真实后验 $p(\mathbf{Z} \mid \mathbf{X})$，通过最大化 ELBO 来找到最优的 $\boldsymbol{\omega}$。</p>
+<p><strong>均值场近似（Mean-Field Approximation）</strong>：假设各变量的后验相互独立：</p>
+<p>$$q(\mathbf{Z}) = \prod_{i=1}^{M} q_i(\mathbf{Z}_i)$$</p>
+<p>在这个假设下，每个 $q_i$ 的最佳形式为：</p>
+<p>$$\ln q_i^*(\mathbf{Z}_i) = \mathbb{E}_{j \neq i}[\ln p(\mathbf{X}, \mathbf{Z})] + \text{const}$$</p>
+<p>这与<strong>坐标上升（Coordinate Ascent）</strong>的迭代求解完美匹配。</p>
+<p><strong>变分推断 vs MCMC</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>变分推断</th>
+<th>MCMC</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>性质</td>
+<td>确定性近似</td>
+<td>随机精确（无限采样极限下精确）</td>
+</tr>
+<tr>
+<td>计算</td>
+<td>通常更快</td>
+<td>通常更慢</td>
+</tr>
+<tr>
+<td>收敛判定</td>
+<td>明确（ELBO 收敛）</td>
+<td>模糊（需要收敛诊断）</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>大规模数据、实时推断</td>
+<td>小规模数据的精确推断</td>
+</tr>
+</tbody></table>
+<h3 id="4-8-第-11-章：采样方法（MCMC）"><a href="#4-8-第-11-章：采样方法（MCMC）" class="headerlink" title="4.8 第 11 章：采样方法（MCMC）"></a>4.8 第 11 章：采样方法（MCMC）</h3><p>当变分推断的假设过于严苛时，MCMC 提供了另一个选择——通过构造一条以目标分布为平稳分布的马尔可夫链来生成样本。</p>
+<p><strong>Metropolis-Hastings 算法</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. 从提议分布 q(z* | z^(τ)) 中采样候选点 z*</span><br><span class="line">2. 以概率 A = min(1, p(z*)q(z^(τ) | z*) / (p(z^(τ))q(z* | z^(τ)))) 接受</span><br><span class="line">3. 如果接受：z^(τ+1) = z*，否则：z^(τ+1) = z^(τ)</span><br></pre></td></tr></table></figure>
+
+<p><strong>Gibbs 采样</strong>：Metropolis-Hastings 的特例，提议分布为条件分布 $q(z_k^* \mid z_{-k}) &#x3D; p(z_k^* \mid z_{-k})$，接受概率恒为 1。</p>
+<p><strong>HMC（Hamiltonian Monte Carlo &#x2F; Hybrid Monte Carlo）</strong>：利用目标分布的梯度信息，在相空间中进行哈密顿动力学模拟，能更有效地探索高维分布。HMC 是现代概率编程语言（Stan, PyMC, NumPyro）的默认采样算法之一。</p>
+<hr>
+<h2 id="五、PRML-与现代深度学习的连接"><a href="#五、PRML-与现代深度学习的连接" class="headerlink" title="五、PRML 与现代深度学习的连接"></a>五、PRML 与现代深度学习的连接</h2><h3 id="5-1-直接联系"><a href="#5-1-直接联系" class="headerlink" title="5.1 直接联系"></a>5.1 直接联系</h3><table>
+<thead>
+<tr>
+<th>PRML 概念</th>
+<th>现代 DL 对应</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>反向传播（5.3 节）</td>
+<td>所有 DL 框架的基础（autograd 是其自动化实现）</td>
+</tr>
+<tr>
+<td>贝叶斯线性回归</td>
+<td>贝叶斯神经网络、Laplace Redux</td>
+</tr>
+<tr>
+<td>EM 算法</td>
+<td>VAE 的训练（ELBO 最大化 &#x3D; EM 的连续潜变量推广）</td>
+</tr>
+<tr>
+<td>变分推断（第 10 章）</td>
+<td>VAE, VQ-VAE, Diffusion Models 的变分下界</td>
+</tr>
+<tr>
+<td>高斯过程（6.4 节）</td>
+<td>Deep GP, Neural Tangent Kernel (NTK)</td>
+</tr>
+<tr>
+<td>混合密度网络（5.6 节）</td>
+<td>现代不确定性估计的核心组件</td>
+</tr>
+<tr>
+<td>Hessian 对角近似（5.4 节）</td>
+<td>二阶优化器（KFAC, Shampoo, AdaHessian）</td>
+</tr>
+<tr>
+<td>证据近似（3.5 节）</td>
+<td>Type-II MLE, Deep Kernel Learning</td>
+</tr>
+</tbody></table>
+<h3 id="5-2-间接但深层的联系"><a href="#5-2-间接但深层的联系" class="headerlink" title="5.2 间接但深层的联系"></a>5.2 间接但深层的联系</h3><ul>
+<li><strong>概率视角的 PCA（12.2 节）</strong>：将 PCA 解释为线性高斯模型下的 MLE → 推广到非线性隐变量模型 → 变分自编码器（VAE）</li>
+<li><strong>指数族 + 共轭先验</strong>：理解贝叶斯深度学习的理论基础</li>
+<li><strong>信息论（1.6 节）</strong>：KL 散度 → 变分推断的损失函数；互信息 → InfoNCE、对比学习</li>
+<li><strong>贝叶斯模型平均 vs 模型选择</strong>：理解 Deep Ensemble 为什么比单模型好</li>
+</ul>
+<hr>
+<h2 id="六、学习建议与资源"><a href="#六、学习建议与资源" class="headerlink" title="六、学习建议与资源"></a>六、学习建议与资源</h2><h3 id="6-1-三阶段学习法"><a href="#6-1-三阶段学习法" class="headerlink" title="6.1 三阶段学习法"></a>6.1 三阶段学习法</h3><p><strong>阶段 1（基础了解，2-4 周）</strong>：</p>
+<ul>
+<li>通读第 1 章，理解概率建模的基本思想</li>
+<li>选择性阅读第 2 章（根据数学基础）</li>
+<li>阅读第 3 章（线性回归的三种范式，全书核心思想的集中体现）</li>
+</ul>
+<p><strong>阶段 2（核心掌握，1-2 个月）</strong>：</p>
+<ul>
+<li>第 8 章（图模型）→ 第 9 章（EM）→ 第 10 章（变分推断）→ 第 11 章（MCMC）</li>
+<li>这四章构成了 PRML 的”计算核心”，也是最能区别于一般 ML 教材的内容</li>
+</ul>
+<p><strong>阶段 3（深入研究，2-4 个月）</strong>：</p>
+<ul>
+<li>精读剩余章节（第 5, 6, 7, 12, 13, 14 章）</li>
+<li>每章选做至少 5 道习题</li>
+</ul>
+<h3 id="6-2-配套资源"><a href="#6-2-配套资源" class="headerlink" title="6.2 配套资源"></a>6.2 配套资源</h3><table>
+<thead>
+<tr>
+<th>资源类型</th>
+<th>推荐</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>官方习题解答</td>
+<td>Bishop 官网提供了部分习题解（<code>https://www.microsoft.com/en-us/research/people/cmbishop/</code>）</td>
+</tr>
+<tr>
+<td>视频课程</td>
+<td>Tübingen 大学 Philipp Hennig 的”Probabilistic Machine Learning”（现代视角）</td>
+</tr>
+<tr>
+<td>代码实现</td>
+<td><code>ctgk/PRML</code>（GitHub，Python 实现的 PRML 算法）</td>
+</tr>
+<tr>
+<td>配套书籍（进阶）</td>
+<td>Murphy《Probabilistic Machine Learning》系列（2022&#x2F;2023，全面现代化）、Bishop 新书《Deep Learning: Foundations and Concepts》（2023）</td>
+</tr>
+<tr>
+<td>数学补充</td>
+<td>若觉得数学吃力，先看附录 B（概率论）、附录 C（矩阵性质）、附录 E（拉格朗日乘子）</td>
+</tr>
+</tbody></table>
+<h3 id="6-3-PRML-中容易卡住的地方"><a href="#6-3-PRML-中容易卡住的地方" class="headerlink" title="6.3 PRML 中容易卡住的地方"></a>6.3 PRML 中容易卡住的地方</h3><ol>
+<li><strong>2.3 节（高斯分布）</strong>：多变量高斯的条件分布和边缘分布的矩阵推导较长，可先接受结论跳过证明</li>
+<li><strong>4.4 节（拉普拉斯近似）</strong>：初次阅读可能不理解其重要性，在变分推断章节（第 10 章）再看会清晰很多</li>
+<li><strong>10.1-10.4 节（变分推断）</strong>：均值场推断的”坐标上升”推导是全书的数学高难点，建议配合视频讲解</li>
+<li><strong>11.5 节（HMC）</strong>：如果缺乏物理背景，可以暂时跳过哈密顿动力学的物理解释，关注算法的伪代码即可</li>
+</ol>
+<hr>
+<h2 id="七、关键章节深度扩展"><a href="#七、关键章节深度扩展" class="headerlink" title="七、关键章节深度扩展"></a>七、关键章节深度扩展</h2><h3 id="7-1-第-2-章：概率分布——构建完整的分布工具箱"><a href="#7-1-第-2-章：概率分布——构建完整的分布工具箱" class="headerlink" title="7.1 第 2 章：概率分布——构建完整的分布工具箱"></a>7.1 第 2 章：概率分布——构建完整的分布工具箱</h3><p>第 2 章是全书数学最密集的章节之一，也是后续所有推导的基础。以下是需要重点关注的核心分布及其关系：</p>
+<p><strong>指数族（Exponential Family）的统一视角</strong>：</p>
+<p>几乎所有常用的概率分布都可以写成指数族形式：</p>
+<p>$$
+p(\mathbf{x} \mid \boldsymbol{\eta}) = h(\mathbf{x}) g(\boldsymbol{\eta}) \exp(\boldsymbol{\eta}^T \mathbf{u}(\mathbf{x}))
+$$</p>
+<p>其中 $\boldsymbol{\eta}$ 是自然参数（natural parameter），$\mathbf{u}(\mathbf{x})$ 是充分统计量（sufficient statistic）。</p>
+<p>为什么指数族如此重要？因为：</p>
+<ol>
+<li><strong>充分统计量存在</strong>：$\mathbf{u}(\mathbf{x})$ 包含了 $\mathbf{x}$ 关于参数的全部信息</li>
+<li><strong>共轭先验存在</strong>：任何指数族分布都有共轭先验，也属于指数族</li>
+<li><strong>最大熵性质</strong>：在给定约束（充分统计量的期望固定）下，指数族是熵最大的分布——即在给定信息约束下，它是最”不武断”的选择</li>
+<li><strong>梯度与充分统计量的关系</strong>：$\nabla_{\boldsymbol{\eta}} \ln g(\boldsymbol{\eta}) &#x3D; -\mathbb{E}[\mathbf{u}(\mathbf{x})]$</li>
+</ol>
+<p><strong>Beta 分布与顺序学习</strong>：</p>
+<p>Beta 分布的重要性远超表象。它是伯努利&#x2F;二项似然的共轭先验：</p>
+<p>$$\text{Beta}(\mu \mid a, b) = \frac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)} \mu^{a-1} (1-\mu)^{b-1}$$</p>
+<p>顺序贝叶斯更新：观察到一个新数据点（正面）后：</p>
+<p>$$p(\mu \mid \mathcal{D}, \text{正面}) \propto \text{Beta}(\mu \mid a, b) \times \mu = \text{Beta}(\mu \mid a+1, b)$$</p>
+<p>即后验先验的 a 参数加 1。这种”加计数”的直观更新方式揭示了贝叶斯学习的美妙之处——先验的 a 和 b 可以理解为”假想的先前观察计数”。</p>
+<p><strong>Wishart 分布与高斯推断</strong>：</p>
+<p>对于多变量高斯分布，均值的共轭先验仍是高斯，但协方差矩阵的共轭先验是 Wishart 分布。联合推断时使用 Gaussian-Wishart（或 Gaussian-Gamma）先验。这一套分布族构成了贝叶斯线性模型、高斯混合模型、因子分析等模型推断的基础。</p>
+<h3 id="7-2-第-8-章：概率图模型的三种基本结构"><a href="#7-2-第-8-章：概率图模型的三种基本结构" class="headerlink" title="7.2 第 8 章：概率图模型的三种基本结构"></a>7.2 第 8 章：概率图模型的三种基本结构</h3><p>理解以下三种基本图结构的条件独立性关系是读懂图模型的关键：</p>
+<p><strong>Head-to-Tail（链式）</strong>：$A \rightarrow B \rightarrow C$</p>
+<ul>
+<li>无条件时：$A$ 与 $C$ 相关（通过 B）</li>
+<li>条件于 B：$A \perp!!!\perp C \mid B$（B 被观察后，A 和 C 条件独立）</li>
+<li>直观理解：如果 B 已知，A 不能通过 B 传递额外信息给 C</li>
+</ul>
+<p><strong>Tail-to-Tail（分叉）</strong>：$A \leftarrow B \rightarrow C$</p>
+<ul>
+<li>无条件时：$A$ 与 $C$ 相关（共享原因 B）</li>
+<li>条件于 B：$A \perp!!!\perp C \mid B$</li>
+<li>直观理解：解释消除（explaining away）的对称结构——知道共同原因后，其结果之间独立</li>
+<li>这就是”朴素贝叶斯”的图结构：给定类别，特征之间条件独立</li>
+</ul>
+<p><strong>Head-to-Head（汇合&#x2F;V-Structure）</strong>：$A \rightarrow B \leftarrow C$</p>
+<ul>
+<li>无条件时：$A$ 与 $C$ <strong>独立</strong>（无信息通道）</li>
+<li>条件于 B：$A$ 与 $C$ <strong>相关</strong>！</li>
+<li>直观理解：解释消除（explaining away）——如果观察到结果 B 发生了，那么 A 和 C 作为两个可能的”原因”会互相竞争。知道 A 很大程度上导致了 B，就会降低 C 导致 B 的可信度。</li>
+<li>这是三个结构中唯一一个”条件后变相关”的反直觉情况</li>
+</ul>
+<p><strong>d-分离（Directed Separation）的形式化定义</strong>：</p>
+<p>一个节点集合 $\mathcal{C}$ d-分离了节点 A 和 B，当且仅当连接 A 和 B 的所有路径都被 $\mathcal{C}$ “阻塞”：</p>
+<ul>
+<li>如果路径包含 Head-to-Tail 或 Tail-to-Tail 节点，且该节点在 $\mathcal{C}$ 中，路径被阻塞</li>
+<li>如果路径包含 Head-to-Head 节点，且该节点及所有后代都不在 $\mathcal{C}$ 中，路径被阻塞</li>
+</ul>
+<h3 id="7-3-第-12-章：PCA-的概率视角"><a href="#7-3-第-12-章：PCA-的概率视角" class="headerlink" title="7.3 第 12 章：PCA 的概率视角"></a>7.3 第 12 章：PCA 的概率视角</h3><p>标准 PCA 可以被重新解释为概率模型——概率 PCA（Probabilistic PCA, PPCA）：</p>
+<p><strong>传统 PCA</strong>：线性投影，最大化投影后方差（或最小化重构误差）。</p>
+<p><strong>概率 PCA</strong>：假设数据生成过程为：</p>
+<p>$$\mathbf{x} = \mathbf{W}\mathbf{z} + \boldsymbol{\mu} + \boldsymbol{\epsilon}$$</p>
+<p>其中潜变量 $\mathbf{z} \sim \mathcal{N}(0, \mathbf{I})$，噪声 $\boldsymbol{\epsilon} \sim \mathcal{N}(0, \sigma^2 \mathbf{I})$。</p>
+<p>通过最大似然估计 $\mathbf{W}$，得到的最大似然解与标准 PCA 的主成分方向一致（差一个旋转矩阵）。但 PPCA 的优势在于：</p>
+<ol>
+<li><strong>概率框架</strong>：可以计算数据点的对数似然，用于模型选择（选择主成分数量）</li>
+<li><strong>处理缺失值</strong>：通过 EM 算法自然地处理缺失数据（旧 PCA 需要专门的方法如迭代 PCA）</li>
+<li><strong>推广到非线性</strong>：从 PPCA 出发，将线性映射 $\mathbf{W}\mathbf{z}$ 替换为神经网络 $f_\theta(\mathbf{z})$，我们就得到了变分自编码器（VAE）的基础结构</li>
+<li><strong>贝叶斯 PCA</strong>：在 $\mathbf{W}$ 上加先验（如 ARD 先验），可以自动确定有效的主成分数量</li>
+</ol>
+<hr>
+<h2 id="八、PRML-的数学难点突破指南"><a href="#八、PRML-的数学难点突破指南" class="headerlink" title="八、PRML 的数学难点突破指南"></a>八、PRML 的数学难点突破指南</h2><h3 id="8-1-不会推导矩阵微积分怎么办？"><a href="#8-1-不会推导矩阵微积分怎么办？" class="headerlink" title="8.1 不会推导矩阵微积分怎么办？"></a>8.1 不会推导矩阵微积分怎么办？</h3><p>PRML 中有大量矩阵求导。核心公式速查：</p>
+<table>
+<thead>
+<tr>
+<th>形式</th>
+<th>导数</th>
+<th>出现章节</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$\frac{\partial}{\partial \mathbf{x}} \mathbf{a}^T \mathbf{x}$</td>
+<td>$\mathbf{a}$</td>
+<td>第 4 章</td>
+</tr>
+<tr>
+<td>$\frac{\partial}{\partial \mathbf{x}} \mathbf{x}^T \mathbf{A} \mathbf{x}$</td>
+<td>$(\mathbf{A} + \mathbf{A}^T)\mathbf{x}$</td>
+<td>第 3 章</td>
+</tr>
+<tr>
+<td>$\frac{\partial}{\partial \mathbf{A}} \ln</td>
+<td>\mathbf{A}</td>
+<td>$</td>
+</tr>
+<tr>
+<td>$\frac{\partial}{\partial \mathbf{A}} \mathbf{x}^T \mathbf{A}^{-1} \mathbf{y}$</td>
+<td>$-\mathbf{A}^{-T} \mathbf{x} \mathbf{y}^T \mathbf{A}^{-T}$</td>
+<td>各种</td>
+</tr>
+</tbody></table>
+<p>建议：PRML 附录 C（矩阵性质）+ Petersen &amp; Pedersen 的《The Matrix Cookbook》作为查表工具。</p>
+<h3 id="8-2-理解-KL-散度不对称性的实际意义"><a href="#8-2-理解-KL-散度不对称性的实际意义" class="headerlink" title="8.2 理解 KL 散度不对称性的实际意义"></a>8.2 理解 KL 散度不对称性的实际意义</h3><p>KL 散度 $\text{KL}(q \parallel p) &#x3D; \int q(x) \ln\frac{q(x)}{p(x)} dx$ 是不对称的。</p>
+<ul>
+<li><strong>$\text{KL}(q \parallel p)$（前向 KL &#x2F; 排他性 KL）</strong>：在 $p$ 大的地方 $q$ 也必须大，否则惩罚很重 → 变分推断使用此方向 → 导致 $q$ 趋于”模式搜索”（mode-seeking），倾向于集中在 $p$ 的一个峰值上</li>
+<li><strong>$\text{KL}(p \parallel q)$（后向 KL &#x2F; 包容性 KL）</strong>：在 $p$ 有概率的地方 $q$ 也必须有 → 期望传播（EP）使用此方向 → 导致 $q$ 趋于”模式覆盖”（mode-covering），倾向于覆盖 $p$ 的所有区域</li>
+</ul>
+<p>直观理解：$q$ 是近似分布，$p$ 是真实分布。</p>
+<ul>
+<li>前向 KL 关心的是”万一 $p$ 说某件事可能发生，而 $q$ 说不可能”→ 惩罚非常大 → $q$ 会保守地集中在 $p$ 的高概率区域</li>
+<li>后向 KL 关心的是”万一 $q$ 说某件事可能发生，但 $p$ 说不可能”→ 惩罚非常大 → $q$ 会试图覆盖 $p$ 的所有概率区域</li>
+</ul>
+<hr>
+<h2 id="九、核心习题精选"><a href="#九、核心习题精选" class="headerlink" title="九、核心习题精选"></a>九、核心习题精选</h2><p>以下是值得亲手推导的习题（按难度排序）：</p>
+<p><strong>入门</strong>：</p>
+<ul>
+<li>1.5（证明最小化期望损失等价于选择最大后验类别）</li>
+<li>2.15（证明高斯分布的熵公式）</li>
+<li>3.6（推导线性基函数模型的 MLE 解）</li>
+</ul>
+<p><strong>中等</strong>：</p>
+<ul>
+<li>3.16（推导贝叶斯线性回归的证据函数）</li>
+<li>4.15（推导 probit 回归的 EM 算法）</li>
+<li>8.14（证明 d-分离的某些性质）</li>
+<li>9.11（推导 GMM 的 EM 更新公式）</li>
+</ul>
+<p><strong>困难</strong>：</p>
+<ul>
+<li>10.16（推导变分混合模型的变分下界）</li>
+<li>11.17（实现 HMC 并对某分布采样）</li>
+<li>13.8（推导 HMM 的前向后向算法）</li>
+</ul>
+<hr>
+<h2 id="八、为什么-2025-年还要读-PRML？"><a href="#八、为什么-2025-年还要读-PRML？" class="headerlink" title="八、为什么 2025 年还要读 PRML？"></a>八、为什么 2025 年还要读 PRML？</h2><ol>
+<li>**概率思维是 ML 的”第一性原理”**：理解了贝叶斯推断，就理解了几乎所有机器学习模型的底层逻辑</li>
+<li><strong>变分推断和 MCMC 正变得比以往任何时候都更重要</strong>：生成式 AI 时代的核心数学工具</li>
+<li><strong>从 PRML 到 Bishop 2023 新书的连续统</strong>：PRML 提供了理论基础，新书《Deep Learning: Foundations and Concepts》提供了现代视角</li>
+<li><strong>面试和研究都绕不开</strong>：无论是 PhD 申请面试还是工业界 ML 研究岗，”PRML 读到哪了”仍然是一个有分量的问题</li>
+<li><strong>避免”调参侠”陷阱</strong>：只有坚实的理论功底，才能从现象级工程师变成能设计和改进算法的工程师</li>
+</ol>
+<hr>
+<h2 id="九、面试高频问答"><a href="#九、面试高频问答" class="headerlink" title="九、面试高频问答"></a>九、面试高频问答</h2><p><strong>Q1: PRML 的核心理念是什么？它与其他 ML 教材最大的区别在哪里？</strong></p>
+<p>PRML 的核心理念是一切问题都可以从<strong>概率建模</strong>的角度来理解。其他教材可能从优化（loss minimization）的角度组织内容，PRML 则始终从概率分布的角度出发——模型的输出是一个概率分布（预测分布），而不是一个点估计。这种视角在处理不确定性、模型比较、先验知识融入等方面有天然优势。特别是整本书用<strong>贝叶斯框架</strong>串联所有算法，让你看到线性回归、SVM、神经网络、EM、变分推断这些看似无关的方法其实共享同一个概率基础。</p>
+<p><strong>Q2: 请用 PRML 的框架解释 EM 算法和变分推断的关系。</strong></p>
+<p>EM 和变分推断都是用来处理”有潜变量时如何最大化对数似然”的问题，区别在于 E 步是否能精确计算后验。两者的统一公式是 ELBO（证据下界）：</p>
+<p>$$\ln p(\mathbf{X} \mid \boldsymbol{\theta}) = \underbrace{\mathbb{E}_q[\ln p(\mathbf{X}, \mathbf{Z} \mid \boldsymbol{\theta})] + H[q]}_{\text{ELBO } \mathcal{L}(q, \boldsymbol{\theta})} + \underbrace{\text{KL}(q \parallel p(\mathbf{Z} \mid \mathbf{X}, \boldsymbol{\theta}))}_{\geq 0}$$</p>
+<p>EM 算法的 E 步：令 $q(\mathbf{Z}) &#x3D; p(\mathbf{Z} \mid \mathbf{X}, \boldsymbol{\theta}^{\text{old}})$，使得 KL 项变为 0，ELBO 等于对数似然（紧密性）。但这要求后验可以精确计算。</p>
+<p>变分推断：当后验不可精确计算时，我们约束 $q(\mathbf{Z})$ 在一个更简单的函数族（如均值场：$q(\mathbf{Z}) &#x3D; \prod_i q_i(Z_i)$）中，然后最大化 ELBO——即找”约束族内最接近真实后验的近似”。此时 KL 项 &gt; 0，ELBO 是 $\ln p$ 的下界。</p>
+<p><strong>Q3: 贝叶斯线性回归和 Ridge 回归看起来形式很像，它们的本质区别是什么？</strong></p>
+<p>Ridge 回归（频率学派）：$\min_{\mathbf{w}} |\mathbf{y} - \mathbf{X}\mathbf{w}|^2 + \lambda |\mathbf{w}|^2$，得到一个点估计 $\hat{\mathbf{w}}$。</p>
+<p>贝叶斯线性回归（贝叶斯学派）：为 $\mathbf{w}$ 赋予高斯先验 $p(\mathbf{w}) &#x3D; \mathcal{N}(\mathbf{w} \mid 0, \alpha^{-1}\mathbf{I})$，计算后验 $p(\mathbf{w} \mid \mathcal{D}) &#x3D; \mathcal{N}(\mathbf{w} \mid \mathbf{m}_N, \mathbf{S}_N)$。<strong>后验均值 $\mathbf{m}_N$ 的公式等价于 Ridge 的解</strong>（当 $\lambda &#x3D; \alpha &#x2F; \beta$ 时），但区别在于：</p>
+<ol>
+<li>贝叶斯回归给出的是<strong>整个后验分布</strong>，而不仅仅是均值。后验协方差 $\mathbf{S}_N$ 量化了参数的不确定性。</li>
+<li>贝叶斯回归的预测也是分布（预测分布），包含了噪声不确定性和参数不确定性：$\sigma_N^2(\mathbf{x}) &#x3D; \beta^{-1} + \phi(\mathbf{x})^T \mathbf{S}_N \phi(\mathbf{x})$</li>
+<li>贝叶斯框架中，超参数 $\alpha$ 和 $\beta$ 可以通过最大化证据（marginal likelihood）自动选择，而不需要交叉验证</li>
+</ol>
+<p><strong>Q4: PRML 中的”证据近似（Evidence Approximation）”是什么？它与交叉验证选超参数有什么不同？</strong></p>
+<p>证据近似（也称 Empirical Bayes 或 Type-II MLE）是通过最大化边缘似然（marginal likelihood &#x2F; model evidence）$p(\mathcal{D} \mid \alpha, \beta)$ 来选择超参数。与交叉验证相比：</p>
+<ul>
+<li><strong>证据近似</strong>是纯训练集操作（不需要验证集），最大化的是训练数据的边际概率——隐含了 Occam’s Razor 效应（贝叶斯证据自动惩罚过于复杂的模型）</li>
+<li><strong>交叉验证</strong>需要划分验证集，是一种频率学派的模型选择方法</li>
+</ul>
+<p>在实践中，证据近似在贝叶斯线性回归等简单模型中效果很好（甚至能得到解析解），但在复杂模型（如深度网络）中难以直接应用。</p>
+<p><strong>Q5: MCMC 和变分推断在什么场景下应该选哪个？</strong></p>
+<p>选择依据：</p>
+<ul>
+<li><strong>精度要求高 + 计算预算充足</strong>：MCMC。MCMC 在极限下是精确的（马尔可夫链收敛到真实后验），适合学术研究、模型开发阶段。</li>
+<li><strong>速度要求高 + 可接受近似</strong>：变分推断。变分推断通常快 1-3 个数量级，适合大规模数据、在线学习、生产环境。</li>
+<li><strong>后验是单峰且近似高斯</strong>：两者效果相近，优先选变分推断（快）。</li>
+<li><strong>后验是多峰的复杂分布</strong>：MCMC 更可靠。均值场变分推断在多峰分布上可能完全遗漏某个模式（mode collapse）。</li>
+<li><strong>需要估计模型的证据（marginal likelihood）用于模型比较</strong>：变分推断（ELBO 是 $\ln p(\mathcal{D})$ 的下界，可直接用于模型比较）。MCMC 估计 marginal likelihood 通常更麻烦。</li>
+</ul>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2020/11/15/%E3%80%90%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB%E5%92%8C%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E3%80%91%E5%88%9D%E7%AA%A5AI%E5%9C%A3%E7%BB%8F/">http://tufusi.com/2020/11/15/%E3%80%90%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB%E5%92%8C%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E3%80%91%E5%88%9D%E7%AA%A5AI%E5%9C%A3%E7%BB%8F/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2020/12/01/%E5%8C%BA%E5%9D%97%E9%93%BE-%E6%9C%80%E4%BD%B3%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/hitesh-choudhary-JNxTZzpHmsI-unsplash.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>区块链——最佳开发工具</span></div></a></div><div class="next-post pull_right"><a href="/2020/10/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%9D%A1%E4%BB%B6%E9%9A%8F%E6%9C%BA%E5%9C%BA/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【统计学习方法死磕系列】条件随机场</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

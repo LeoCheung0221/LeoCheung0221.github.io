@@ -1,0 +1,480 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>解读开源框架系列-RxJava响应式编程框架设计 | ONE·PIECE</title><meta name="description" content="解读开源框架系列-RxJava响应式编程框架设计"><meta name="keywords" content="RxJava,响应式编程,源码分析"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="解读开源框架系列-RxJava响应式编程框架设计"><meta name="twitter:description" content="解读开源框架系列-RxJava响应式编程框架设计"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/458.jpg"><meta property="og:type" content="article"><meta property="og:title" content="解读开源框架系列-RxJava响应式编程框架设计"><meta property="og:url" content="http://tufusi.com/2022/03/01/%E8%A7%A3%E8%AF%BB%E5%BC%80%E6%BA%90%E6%A1%86%E6%9E%B6%E7%B3%BB%E5%88%97-RxJava%E5%93%8D%E5%BA%94%E5%BC%8F%E7%BC%96%E7%A8%8B%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="解读开源框架系列-RxJava响应式编程框架设计"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/458.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2022/03/01/%E8%A7%A3%E8%AF%BB%E5%BC%80%E6%BA%90%E6%A1%86%E6%9E%B6%E7%B3%BB%E5%88%97-RxJava%E5%93%8D%E5%BA%94%E5%BC%8F%E7%BC%96%E7%A8%8B%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1/"><link rel="prev" title="解读开源框架系列-IOC架构设计" href="http://tufusi.com/2022/03/05/%E8%A7%A3%E8%AF%BB%E5%BC%80%E6%BA%90%E6%A1%86%E6%9E%B6%E7%B3%BB%E5%88%97-IOC%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/"><link rel="next" title="解读开源框架系列-网络访问框架设计" href="http://tufusi.com/2022/02/25/%E8%A7%A3%E8%AF%BB%E5%BC%80%E6%BA%90%E6%A1%86%E6%9E%B6%E7%B3%BB%E5%88%97-%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E5%93%8D%E5%BA%94%E5%BC%8F%E7%BC%96%E7%A8%8B%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、响应式编程的核心思想</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81Observable-%E6%97%8F%E7%9A%84%E5%9B%9B%E7%A7%8D%E7%B1%BB%E5%9E%8B"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、Observable 族的四种类型</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-Observable"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 Observable</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-Flowable"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 Flowable</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-Single"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 Single</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-4-Completable"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">2.4 Completable</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-5-Maybe"><span class="toc_mobile_items-number">2.5.</span> <span class="toc_mobile_items-text">2.5 Maybe</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81Observable-Observer-%E8%AE%A2%E9%98%85%E6%A8%A1%E5%9E%8B%E6%B7%B1%E5%85%A5"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、Observable&#x2F;Observer 订阅模型深入</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E6%93%8D%E4%BD%9C%E7%AC%A6%E9%93%BE%E4%B8%8E%E8%A3%85%E9%A5%B0%E5%99%A8%E6%A8%A1%E5%BC%8F"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、操作符链与装饰器模式</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-flatMap-%E4%B8%8E%E5%86%85%E9%83%A8-Observable-%E7%AE%A1%E7%90%86"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 flatMap 与内部 Observable 管理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E6%93%8D%E4%BD%9C%E7%AC%A6%E8%9E%8D%E5%90%88%EF%BC%88Operator-Fusion%EF%BC%89"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 操作符融合（Operator Fusion）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81%E7%BA%BF%E7%A8%8B%E8%B0%83%E5%BA%A6%E4%B8%8E-Scheduler-%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、线程调度与 Scheduler 机制</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-IoScheduler-%E5%86%85%E9%83%A8%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 IoScheduler 内部实现</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-AndroidSchedulers-mainThread-%E5%86%85%E9%83%A8%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 AndroidSchedulers.mainThread() 内部实现</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-subscribeOn-%E5%92%8C-observeOn-%E7%9A%84%E7%BA%BF%E7%A8%8B%E5%88%87%E6%8D%A2%E5%8E%9F%E7%90%86"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 subscribeOn 和 observeOn 的线程切换原理</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E8%83%8C%E5%8E%8B%EF%BC%88Backpressure%EF%BC%89%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、背压（Backpressure）策略</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-Flowable-%E5%86%85%E9%83%A8%E9%98%9F%E5%88%97"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 Flowable 内部队列</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81Disposable-%E4%B8%8E%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E9%98%B2%E6%8A%A4"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、Disposable 与内存泄漏防护</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-dispose-%E7%9A%84%E5%8E%9F%E5%AD%90%E6%80%A7%E4%BC%A0%E6%92%AD"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">7.1 dispose 的原子性传播</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81RxJava-2-x-%E4%B8%8E-3-x-%E7%9A%84%E5%B7%AE%E5%BC%82"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、RxJava 2.x 与 3.x 的差异</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-RxJava-%E4%B8%8E-Kotlin-Coroutines-%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">8.1 RxJava 与 Kotlin Coroutines 的对比</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81RxJavaPlugins-%E5%85%A8%E5%B1%80%E9%92%A9%E5%AD%90"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、RxJavaPlugins 全局钩子</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81%E9%9D%A2%E8%AF%95%E5%B8%B8%E9%97%AE%E9%A2%98%E7%9B%AE"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">十、面试常问题目</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%93%8D%E5%BA%94%E5%BC%8F%E7%BC%96%E7%A8%8B%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">1.</span> <span class="toc-text">一、响应式编程的核心思想</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Observable-%E6%97%8F%E7%9A%84%E5%9B%9B%E7%A7%8D%E7%B1%BB%E5%9E%8B"><span class="toc-number">2.</span> <span class="toc-text">二、Observable 族的四种类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Observable"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 Observable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Flowable"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 Flowable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Single"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 Single</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Completable"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 Completable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-Maybe"><span class="toc-number">2.5.</span> <span class="toc-text">2.5 Maybe</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Observable-Observer-%E8%AE%A2%E9%98%85%E6%A8%A1%E5%9E%8B%E6%B7%B1%E5%85%A5"><span class="toc-number">3.</span> <span class="toc-text">三、Observable&#x2F;Observer 订阅模型深入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%93%8D%E4%BD%9C%E7%AC%A6%E9%93%BE%E4%B8%8E%E8%A3%85%E9%A5%B0%E5%99%A8%E6%A8%A1%E5%BC%8F"><span class="toc-number">4.</span> <span class="toc-text">四、操作符链与装饰器模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-flatMap-%E4%B8%8E%E5%86%85%E9%83%A8-Observable-%E7%AE%A1%E7%90%86"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 flatMap 与内部 Observable 管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%93%8D%E4%BD%9C%E7%AC%A6%E8%9E%8D%E5%90%88%EF%BC%88Operator-Fusion%EF%BC%89"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 操作符融合（Operator Fusion）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E7%BA%BF%E7%A8%8B%E8%B0%83%E5%BA%A6%E4%B8%8E-Scheduler-%E6%9C%BA%E5%88%B6"><span class="toc-number">5.</span> <span class="toc-text">五、线程调度与 Scheduler 机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-IoScheduler-%E5%86%85%E9%83%A8%E5%AE%9E%E7%8E%B0"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 IoScheduler 内部实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-AndroidSchedulers-mainThread-%E5%86%85%E9%83%A8%E5%AE%9E%E7%8E%B0"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 AndroidSchedulers.mainThread() 内部实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-subscribeOn-%E5%92%8C-observeOn-%E7%9A%84%E7%BA%BF%E7%A8%8B%E5%88%87%E6%8D%A2%E5%8E%9F%E7%90%86"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 subscribeOn 和 observeOn 的线程切换原理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E8%83%8C%E5%8E%8B%EF%BC%88Backpressure%EF%BC%89%E7%AD%96%E7%95%A5"><span class="toc-number">6.</span> <span class="toc-text">六、背压（Backpressure）策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-Flowable-%E5%86%85%E9%83%A8%E9%98%9F%E5%88%97"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 Flowable 内部队列</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81Disposable-%E4%B8%8E%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E9%98%B2%E6%8A%A4"><span class="toc-number">7.</span> <span class="toc-text">七、Disposable 与内存泄漏防护</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-dispose-%E7%9A%84%E5%8E%9F%E5%AD%90%E6%80%A7%E4%BC%A0%E6%92%AD"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 dispose 的原子性传播</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81RxJava-2-x-%E4%B8%8E-3-x-%E7%9A%84%E5%B7%AE%E5%BC%82"><span class="toc-number">8.</span> <span class="toc-text">八、RxJava 2.x 与 3.x 的差异</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-RxJava-%E4%B8%8E-Kotlin-Coroutines-%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 RxJava 与 Kotlin Coroutines 的对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81RxJavaPlugins-%E5%85%A8%E5%B1%80%E9%92%A9%E5%AD%90"><span class="toc-number">9.</span> <span class="toc-text">九、RxJavaPlugins 全局钩子</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E9%9D%A2%E8%AF%95%E5%B8%B8%E9%97%AE%E9%A2%98%E7%9B%AE"><span class="toc-number">10.</span> <span class="toc-text">十、面试常问题目</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/458.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">解读开源框架系列-RxJava响应式编程框架设计</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2022-03-01<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">5.4k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 21 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、响应式编程的核心思想"><a href="#一、响应式编程的核心思想" class="headerlink" title="一、响应式编程的核心思想"></a>一、响应式编程的核心思想</h2><p>响应式编程（Reactive Programming）是一种面向数据流和变化传播的编程范式。在命令式编程中，表达式 <code>a = b + c</code> 只在赋值那一刻计算一次；而在响应式编程中，当 b 或 c 发生变化时，a 会自动更新。RxJava 将这一思想带入 JVM 生态，用 <strong>Observable（可观察对象）</strong> 表示数据流，用 <strong>Observer（观察者）</strong> 订阅并响应这些数据流。</p>
+<p>RxJava 的四个核心角色：</p>
+<ol>
+<li><strong>ObservableSource</strong>：数据的生产者，负责发射数据（onNext）、发射完成信号（onComplete）或错误信号（onError）。</li>
+<li><strong>Observer</strong>：数据的消费者，通过 <code>subscribe(Observer)</code> 与上游建立订阅关系。</li>
+<li><strong>Disposable</strong>：用于取消订阅，防止内存泄漏。调用 <code>dispose()</code> 后，上游将停止发射数据。</li>
+<li><strong>Operator（操作符）</strong>：在上下游之间对数据流进行变换、过滤、聚合等操作。</li>
+</ol>
+<p>RxJava 对 Reactive Streams 规范的实现体现在 <code>Flowable</code> 中，其核心接口定义在 <code>org.reactivestreams</code> 包的四个接口中：<code>Publisher&lt;T&gt;</code>、<code>Subscriber&lt;T&gt;</code>、<code>Subscription</code>、<code>Processor&lt;T,R&gt;</code>。这套规范已被纳入 JDK 9 的 <code>java.util.concurrent.Flow</code>。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 最简单的订阅模型</span></span><br><span class="line">Observable.just(<span class="string">&quot;Hello&quot;</span>, <span class="string">&quot;World&quot;</span>)</span><br><span class="line">    .map(String::toUpperCase)</span><br><span class="line">    .filter(s -&gt; s.startsWith(<span class="string">&quot;H&quot;</span>))</span><br><span class="line">    .subscribe(System.out::println);</span><br></pre></td></tr></table></figure>
+
+<p>这条链路的执行流程是：just 发射两个字符串 → map 转换为大写 → filter 过滤 → 订阅者打印。每一层操作符都创建一个新的 Observable，形成<strong>装饰器模式</strong>的嵌套结构。</p>
+<h2 id="二、Observable-族的四种类型"><a href="#二、Observable-族的四种类型" class="headerlink" title="二、Observable 族的四种类型"></a>二、Observable 族的四种类型</h2><p>RxJava 2.x&#x2F;3.x 提供了五种响应式类型，它们各有适用场景：</p>
+<h3 id="2-1-Observable"><a href="#2-1-Observable" class="headerlink" title="2.1 Observable"></a>2.1 Observable<T></h3><p>发射 0 到 N 个数据，以 onComplete 或 onError 终止。<strong>不支持背压</strong>，适用于 GUI 事件、少量数据流（最多几千个元素）。典型场景：按钮点击事件、单个网络请求响应。</p>
+<h3 id="2-2-Flowable"><a href="#2-2-Flowable" class="headerlink" title="2.2 Flowable"></a>2.2 Flowable<T></h3><p>发射 0 到 N 个数据，<strong>支持背压</strong>。实现了 Reactive Streams 规范，通过 <code>request(n)</code> 让下游控制上游的发射速率。适用于大量数据流：数据库查询结果、文件读取、传感器事件流。额外开销比 Observable 大（需要维护请求计数和队列）。</p>
+<h3 id="2-3-Single"><a href="#2-3-Single" class="headerlink" title="2.3 Single"></a>2.3 Single<T></h3><p>发射<strong>恰好 1 个</strong>数据或 1 个错误。没有 onComplete 回调——onSuccess 替代了 onNext+onComplete。适用于”请求-响应”模式：网络请求、数据库查询。内部实现比 Observable 简单，不需要处理多元素和完成信号的关系。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Single.just(<span class="string">&quot;Hello&quot;</span>)</span><br><span class="line">    .map(String::length)</span><br><span class="line">    .subscribe(</span><br><span class="line">        length -&gt; System.out.println(<span class="string">&quot;Length: &quot;</span> + length),</span><br><span class="line">        Throwable::printStackTrace</span><br><span class="line">    );</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-Completable"><a href="#2-4-Completable" class="headerlink" title="2.4 Completable"></a>2.4 Completable</h3><p>只关心操作是否完成，不发射数据。只有 onComplete 和 onError 两种终止信号。适用于：写入数据库、文件操作、发送分析事件——只关心成功或失败，不需要返回值。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Completable.fromAction(() -&gt; database.deleteAll())</span><br><span class="line">    .subscribe(</span><br><span class="line">        () -&gt; Log.d(<span class="string">&quot;TAG&quot;</span>, <span class="string">&quot;Delete completed&quot;</span>),</span><br><span class="line">        throwable -&gt; Log.e(<span class="string">&quot;TAG&quot;</span>, <span class="string">&quot;Delete failed&quot;</span>, throwable)</span><br><span class="line">    );</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-5-Maybe"><a href="#2-5-Maybe" class="headerlink" title="2.5 Maybe"></a>2.5 Maybe<T></h3><p>结合了 Single 和 Completable：可能发射 1 个数据，也可能不发射任何数据就完成，或发射一个错误。适用于：从缓存中查找数据——可能找到（onSuccess）、可能找不到（onComplete）、可能出错（onError）。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Maybe.fromCallable(() -&gt; cache.get(<span class="string">&quot;key&quot;</span>))</span><br><span class="line">    .subscribe(</span><br><span class="line">        value -&gt; System.out.println(<span class="string">&quot;Found: &quot;</span> + value),</span><br><span class="line">        Throwable::printStackTrace,</span><br><span class="line">        () -&gt; System.out.println(<span class="string">&quot;Not found&quot;</span>)</span><br><span class="line">    );</span><br></pre></td></tr></table></figure>
+
+<p><strong>选择指南</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>数据量</th>
+<th>完成信号</th>
+<th>背压</th>
+<th>典型场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Observable</td>
+<td>0..N</td>
+<td>onComplete</td>
+<td>无</td>
+<td>UI 事件、单个 API 调用</td>
+</tr>
+<tr>
+<td>Flowable</td>
+<td>0..N</td>
+<td>onComplete</td>
+<td>有</td>
+<td>大数据流、数据库查询</td>
+</tr>
+<tr>
+<td>Single</td>
+<td>1</td>
+<td>onSuccess</td>
+<td>无</td>
+<td>网络请求</td>
+</tr>
+<tr>
+<td>Completable</td>
+<td>0</td>
+<td>onComplete</td>
+<td>无</td>
+<td>写操作</td>
+</tr>
+<tr>
+<td>Maybe</td>
+<td>0..1</td>
+<td>onComplete&#x2F;onSuccess</td>
+<td>无</td>
+<td>缓存查询</td>
+</tr>
+</tbody></table>
+<h2 id="三、Observable-Observer-订阅模型深入"><a href="#三、Observable-Observer-订阅模型深入" class="headerlink" title="三、Observable&#x2F;Observer 订阅模型深入"></a>三、Observable&#x2F;Observer 订阅模型深入</h2><p>在 RxJava 2.x 源码中，<code>Observable</code> 是一个抽象类，内部持有 <code>ObservableSource&lt;T&gt;</code> 接口引用。<code>ObservableCreate</code> 是 <code>Observable</code> 最基础的实现类，构造函数接收 <code>ObservableOnSubscribe&lt;T&gt;</code>，后者定义了 <code>subscribe(ObservableEmitter&lt;T&gt; emitter)</code> 方法。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// RxJava 2.x 源码：io.reactivex.ObservableCreate</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">ObservableCreate</span>&lt;T&gt; <span class="keyword">extends</span> <span class="title class_">Observable</span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="keyword">final</span> ObservableOnSubscribe&lt;T&gt; source;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ObservableCreate</span><span class="params">(ObservableOnSubscribe&lt;T&gt; source)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.source = source;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">subscribeActual</span><span class="params">(Observer&lt;? <span class="built_in">super</span> T&gt; observer)</span> &#123;</span><br><span class="line">        CreateEmitter&lt;T&gt; parent = <span class="keyword">new</span> <span class="title class_">CreateEmitter</span>&lt;T&gt;(observer);</span><br><span class="line">        observer.onSubscribe(parent);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            source.subscribe(parent);  <span class="comment">// 触发数据发射</span></span><br><span class="line">        &#125; <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">            Exceptions.throwIfFatal(ex);</span><br><span class="line">            parent.onError(ex);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意这里的 <code>subscribeActual</code> 方法。Observable 的 <code>subscribe(Observer)</code> 方法最终会调用子类的 <code>subscribeActual</code>。这是<strong>模板方法模式</strong>——父类 Observable 定义 <code>subscribe</code> 的通用逻辑（如空检查、线程调度），子类实现 <code>subscribeActual</code> 完成具体的发射逻辑。</p>
+<p><code>CreateEmitter</code> 内部持有 <code>Observer</code> 的引用，负责将上游的 <code>onNext/onError/onComplete</code> 转发给下游，同时检查 <code>isDisposed()</code> 状态，一旦取消订阅就停止发射。这实现了<strong>背压（Backpressure）</strong>的最基本形式——通过 Disposable 终止数据流。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// CreateEmitter 的部分源码</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">CreateEmitter</span>&lt;T&gt; <span class="keyword">extends</span> <span class="title class_">AtomicReference</span>&lt;Disposable&gt;</span><br><span class="line">        <span class="keyword">implements</span> <span class="title class_">ObservableEmitter</span>&lt;T&gt;, Disposable &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> Observer&lt;? <span class="built_in">super</span> T&gt; observer;</span><br><span class="line"></span><br><span class="line">    CreateEmitter(Observer&lt;? <span class="built_in">super</span> T&gt; observer) &#123;</span><br><span class="line">        <span class="built_in">this</span>.observer = observer;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onNext</span><span class="params">(T t)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (!isDisposed()) &#123;</span><br><span class="line">            observer.onNext(t);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">dispose</span><span class="params">()</span> &#123;</span><br><span class="line">        DisposableHelper.dispose(<span class="built_in">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>DisposableHelper</strong> 是一个工具类，使用 CAS 原子操作管理 Disposable 的状态。它将 Disposable 引用封装在 <code>AtomicReference&lt;Disposable&gt;</code> 中：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// io.reactivex.internal.disposables.DisposableHelper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> <span class="title class_">DisposableHelper</span> <span class="keyword">implements</span> <span class="title class_">Disposable</span> &#123;</span><br><span class="line">    DISPOSED;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">boolean</span> <span class="title function_">dispose</span><span class="params">(AtomicReference&lt;Disposable&gt; field)</span> &#123;</span><br><span class="line">        <span class="type">Disposable</span> <span class="variable">current</span> <span class="operator">=</span> field.get();</span><br><span class="line">        <span class="type">Disposable</span> <span class="variable">d</span> <span class="operator">=</span> DISPOSED;</span><br><span class="line">        <span class="keyword">if</span> (current != d) &#123;</span><br><span class="line">            current = field.getAndSet(d);</span><br><span class="line">            <span class="keyword">if</span> (current != d) &#123;</span><br><span class="line">                <span class="keyword">if</span> (current != <span class="literal">null</span>) &#123;</span><br><span class="line">                    current.dispose();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">boolean</span> <span class="title function_">isDisposed</span><span class="params">(AtomicReference&lt;Disposable&gt; field)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> field.get() == DISPOSED;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个枚举实现非常巧妙：使用单例 <code>DISPOSED</code> 作为已取消状态的标记，CAS 保证线程安全。一旦 <code>getAndSet(DISPOSED)</code> 成功，后续所有 <code>isDisposed()</code> 检查都返回 true，且 dispose() 只执行一次。</p>
+<h2 id="四、操作符链与装饰器模式"><a href="#四、操作符链与装饰器模式" class="headerlink" title="四、操作符链与装饰器模式"></a>四、操作符链与装饰器模式</h2><p>操作符是 RxJava 的核心竞争力。常用的变换类操作符（map、flatMap、concatMap、switchMap）、过滤类操作符（filter、take、skip、distinct）、组合类操作符（zip、merge、combineLatest）都以 Observable 的子类实现。</p>
+<p>以 <code>map</code> 操作符为例，RxJava 2.x 的 <code>ObservableMap</code> 类源码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// io.reactivex.internal.operators.observable.ObservableMap</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">ObservableMap</span>&lt;T, U&gt; <span class="keyword">extends</span> <span class="title class_">AbstractObservableWithUpstream</span>&lt;T, U&gt; &#123;</span><br><span class="line">    <span class="keyword">final</span> Function&lt;? <span class="built_in">super</span> T, ? <span class="keyword">extends</span> <span class="title class_">U</span>&gt; function;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ObservableMap</span><span class="params">(ObservableSource&lt;T&gt; source, Function&lt;? <span class="built_in">super</span> T, ? extends U&gt; function)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(source);  <span class="comment">// source 是上游的 Observable</span></span><br><span class="line">        <span class="built_in">this</span>.function = function;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">subscribeActual</span><span class="params">(Observer&lt;? <span class="built_in">super</span> U&gt; t)</span> &#123;</span><br><span class="line">        source.subscribe(<span class="keyword">new</span> <span class="title class_">MapObserver</span>&lt;T, U&gt;(t, function));  <span class="comment">// 包装下游 Observer</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">MapObserver</span>&lt;T, U&gt; <span class="keyword">extends</span> <span class="title class_">BasicFuseableObserver</span>&lt;T, U&gt; &#123;</span><br><span class="line">        <span class="keyword">final</span> Function&lt;? <span class="built_in">super</span> T, ? <span class="keyword">extends</span> <span class="title class_">U</span>&gt; mapper;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onNext</span><span class="params">(T t)</span> &#123;</span><br><span class="line">            <span class="type">U</span> <span class="variable">v</span> <span class="operator">=</span> ObjectHelper.requireNonNull(mapper.apply(t), <span class="string">&quot;The mapper returned null&quot;</span>);</span><br><span class="line">            downstream.onNext(v);  <span class="comment">// 变换后传给下游</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>典型的操作符链 <code>Observable.just(1).map(x -&gt; x * 2).filter(x -&gt; x &gt; 0)</code> 构建出的对象图：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ObservableJust → ObservableMap → ObservableFilter</span><br><span class="line">       ↑ parent        ↑ parent        ↑ parent</span><br></pre></td></tr></table></figure>
+
+<p>每个操作符都持有上游的引用（upstream&#x2F;source），订阅时自下而上逐层包装 Observer，数据发射时再自上而下逐层传递。这就是 <strong>assembly-time（装配期）</strong> 与 <strong>subscription-time（订阅期）</strong> 的区分：</p>
+<ul>
+<li>装配期：操作符链中的对象被创建，形成嵌套引用。此时数据尚未流动。</li>
+<li>订阅期：<code>subscribe()</code> 被调用，从下游向上游逐层调用 <code>subscribe</code>，每一层创建对应的 Observer 包装，最终触发顶层的 <code>subscribeActual</code>。</li>
+</ul>
+<p>这一设计的精妙之处在于：数据流是惰性的（lazy），只有在订阅时才真正启动；而且每一层操作符之间是完全解耦的，可以自由组合。</p>
+<h3 id="4-1-flatMap-与内部-Observable-管理"><a href="#4-1-flatMap-与内部-Observable-管理" class="headerlink" title="4.1 flatMap 与内部 Observable 管理"></a>4.1 flatMap 与内部 Observable 管理</h3><p><code>flatMap</code> 的操作更加复杂。它将每个上游元素映射为一个 Observable，然后将这些 Observable <strong>合并（merge）</strong> 为一个输出流。注意 flatMap 不保证事件顺序，因为多个内部 Observable 可能交错发射。如果需要顺序保证，应使用 <code>concatMap</code>。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// flatMap 合并内部 Observable 的核心逻辑（简化）</span></span><br><span class="line"><span class="comment">// io.reactivex.internal.operators.observable.ObservableFlatMap</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onNext</span><span class="params">(T t)</span> &#123;</span><br><span class="line">    ObservableSource&lt;? <span class="keyword">extends</span> <span class="title class_">R</span>&gt; p;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        p = ObjectHelper.requireNonNull(mapper.apply(t), <span class="string">&quot;The mapper returned null&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Throwable e) &#123;</span><br><span class="line">        onError(e);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    p.subscribe(<span class="keyword">new</span> <span class="title class_">InnerObserver</span>());  <span class="comment">// 每个内部 Observable 独立订阅</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>concatMap</strong> 的区别在于它维护一个内部队列，前一个 Observable 完成后再订阅下一个，保证顺序。<strong>switchMap</strong> 则在新 Observable 到来时取消（dispose）前一个内部 Observable 的订阅——适用于搜索框输入联想场景（只需最新搜索词的结果）。</p>
+<h3 id="4-2-操作符融合（Operator-Fusion）"><a href="#4-2-操作符融合（Operator-Fusion）" class="headerlink" title="4.2 操作符融合（Operator Fusion）"></a>4.2 操作符融合（Operator Fusion）</h3><p>RxJava 2.x 引入了操作符融合机制，这是一项重要的性能优化。<code>BasicFuseableObserver</code> 中的 “Fuseable” 就是这个概念。当相邻的两个操作符满足条件时，可以通过 <code>QueueDisposable</code> &#x2F; <code>QueueSubscription</code> 接口直接传递数据，跳过 Observer 包装的开销。</p>
+<p>融合分两种模式：</p>
+<ol>
+<li><strong>同步融合（SYNC）</strong>：上游 <code>Observable.just()</code> 直接提供一个已计算完成的数据队列，下游 <code>map</code> 的 Observer 无需通过 onNext 回调，而是直接通过 <code>poll()</code> 获取数据并变换。</li>
+<li><strong>异步融合（ASYNC）</strong>：上游是异步数据源（如 <code>Observable.range()</code>），下游操作符通过 <code>requestFusion()</code> 协商进入融合模式，用 <code>poll()</code> + <code>drain()</code> 的拉取模式替代逐次 onNext 推送。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// BasicFuseableObserver 中的融合协商</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onSubscribe</span><span class="params">(Disposable d)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (DisposableHelper.validate(<span class="built_in">this</span>.upstream, d)) &#123;</span><br><span class="line">        <span class="built_in">this</span>.upstream = d;</span><br><span class="line">        <span class="keyword">if</span> (d <span class="keyword">instanceof</span> QueueDisposable) &#123;</span><br><span class="line">            QueueDisposable&lt;T&gt; qd = (QueueDisposable&lt;T&gt;) d;</span><br><span class="line">            <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> qd.requestFusion(QueueDisposable.ANY);</span><br><span class="line">            <span class="keyword">if</span> (m == QueueDisposable.SYNC) &#123;</span><br><span class="line">                sourceMode = SYNC;</span><br><span class="line">                queue = qd;</span><br><span class="line">                done = <span class="literal">true</span>;</span><br><span class="line">                downstream.onSubscribe(<span class="built_in">this</span>);  <span class="comment">// 立刻通知下游</span></span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (m == QueueDisposable.ASYNC) &#123;</span><br><span class="line">                sourceMode = ASYNC;</span><br><span class="line">                queue = qd;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        downstream.onSubscribe(<span class="built_in">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>融合情况下，<code>map</code> 不再用 <code>onNext</code> 逐个接收数据，而是从 <code>queue.poll()</code> 批量拉取。这显著减少了方法调用栈深度和 Observer 链上的逐层转发开销。</p>
+<h2 id="五、线程调度与-Scheduler-机制"><a href="#五、线程调度与-Scheduler-机制" class="headerlink" title="五、线程调度与 Scheduler 机制"></a>五、线程调度与 Scheduler 机制</h2><p>RxJava 的线程切换通过 <code>subscribeOn</code> 和 <code>observeOn</code> 完成。这是面试中的高频考点。</p>
+<p><strong>subscribeOn</strong>：指定上游 Observable 的工作线程，即 <code>subscribeActual</code> 中发射数据的线程。如果在链中多次调用 <code>subscribeOn</code>，只有第一个（离源头最近的）生效。原因是下游调用 subscribeOn 时，上游已经在上一个 subscribeOn 指定的线程上被订阅了。</p>
+<p><strong>observeOn</strong>：指定下游 Observer 接收数据的线程。可以在链中多次调用，每次调用后的下游都在新线程上工作。</p>
+<p>Scheduler 的实现核心是 <code>Scheduler.Worker</code>，它是一个可调度的执行单元。RxJava 内置几种 Scheduler：</p>
+<table>
+<thead>
+<tr>
+<th>Scheduler</th>
+<th>底层实现</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Schedulers.io()</code></td>
+<td>无上限的 CachedThreadPool</td>
+<td>网络请求、文件 I&#x2F;O</td>
+</tr>
+<tr>
+<td><code>Schedulers.computation()</code></td>
+<td>固定大小（CPU 核数）的线程池</td>
+<td>计算密集型操作</td>
+</tr>
+<tr>
+<td><code>Schedulers.newThread()</code></td>
+<td>每次新建线程</td>
+<td>需要完全隔离的任务</td>
+</tr>
+<tr>
+<td><code>AndroidSchedulers.mainThread()</code></td>
+<td>Handler（Looper.getMainLooper()）</td>
+<td>UI 更新</td>
+</tr>
+<tr>
+<td><code>Schedulers.single()</code></td>
+<td>单线程</td>
+<td>需要顺序执行的任务</td>
+</tr>
+<tr>
+<td><code>Schedulers.trampoline()</code></td>
+<td>当前线程的队列</td>
+<td>递归调度避免栈溢出</td>
+</tr>
+</tbody></table>
+<h3 id="5-1-IoScheduler-内部实现"><a href="#5-1-IoScheduler-内部实现" class="headerlink" title="5.1 IoScheduler 内部实现"></a>5.1 IoScheduler 内部实现</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// io.reactivex.internal.schedulers.IoScheduler</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">IoScheduler</span> <span class="keyword">extends</span> <span class="title class_">Scheduler</span> &#123;</span><br><span class="line">    <span class="keyword">final</span> AtomicReference&lt;CachedWorkerPool&gt; pool;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Worker <span class="title function_">createWorker</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">EventLoopWorker</span>(pool.get());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// CachedWorkerPool 维护一个 ScheduledExecutorService</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">CachedWorkerPool</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span> &#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> ScheduledExecutorService executorService;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> CompositeDisposable allWorkers;</span><br><span class="line"></span><br><span class="line">        ScheduledExecutorService <span class="title function_">create</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> Executors.newScheduledThreadPool(<span class="number">1</span>, threadFactory);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 定期清理闲置线程（默认 60 秒无任务则回收）</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="comment">// 检查并移除空闲超过 60 秒的 worker</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>关键设计：<code>Schedulers.io()</code> 虽然”无上限”，但并非每次创建新线程。它使用线程池缓存，核心线程数为 0，最大线程数为 Integer.MAX_VALUE，线程空闲 60 秒后回收。这使得 IO 调度器能应对大量并发 IO 请求，同时空闲时不会持有不必要的线程。</p>
+<h3 id="5-2-AndroidSchedulers-mainThread-内部实现"><a href="#5-2-AndroidSchedulers-mainThread-内部实现" class="headerlink" title="5.2 AndroidSchedulers.mainThread() 内部实现"></a>5.2 AndroidSchedulers.mainThread() 内部实现</h3><p><code>AndroidSchedulers.mainThread()</code> 的实现原理非常简单：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// rxandroid: AndroidSchedulers.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">AndroidSchedulers</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Scheduler</span> <span class="variable">MAIN_THREAD</span> <span class="operator">=</span> RxAndroidPlugins.initMainThreadScheduler(</span><br><span class="line">        () -&gt; <span class="keyword">new</span> <span class="title class_">HandlerScheduler</span>(<span class="keyword">new</span> <span class="title class_">Handler</span>(Looper.getMainLooper()), <span class="literal">true</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// HandlerScheduler 的 schedule 方法</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> Disposable <span class="title function_">schedule</span><span class="params">(Runnable run, <span class="type">long</span> delay, TimeUnit unit)</span> &#123;</span><br><span class="line">    run = RxJavaPlugins.onSchedule(run);</span><br><span class="line">    <span class="type">ScheduledRunnable</span> <span class="variable">scheduled</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ScheduledRunnable</span>(handler, run);</span><br><span class="line">    <span class="type">Message</span> <span class="variable">message</span> <span class="operator">=</span> Message.obtain(handler, scheduled);</span><br><span class="line">    message.obj = <span class="built_in">this</span>;</span><br><span class="line">    handler.sendMessageDelayed(message, unit.toMillis(delay));</span><br><span class="line">    <span class="keyword">return</span> scheduled;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>HandlerScheduler</code> 通过 <code>Handler.sendMessageDelayed()</code> 将任务投递到主线程的 MessageQueue。<code>ScheduledRunnable</code> 实现了 <code>Disposable</code>，可以通过 <code>handler.removeCallbacks()</code> 取消尚未执行的任务。<code>message.obj = this</code> 的设置用于在取消时找到对应的 Message（通过 <code>handler.removeCallbacksAndMessages(this)</code>）。</p>
+<p>源码路径：<code>rxandroid/src/main/java/rx/android/schedulers/HandlerScheduler.java</code></p>
+<h3 id="5-3-subscribeOn-和-observeOn-的线程切换原理"><a href="#5-3-subscribeOn-和-observeOn-的线程切换原理" class="headerlink" title="5.3 subscribeOn 和 observeOn 的线程切换原理"></a>5.3 subscribeOn 和 observeOn 的线程切换原理</h3><p><strong>subscribeOn 的实现</strong> —— 以 <code>ObservableSubscribeOn</code> 为例：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// io.reactivex.internal.operators.observable.ObservableSubscribeOn</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">ObservableSubscribeOn</span>&lt;T&gt; <span class="keyword">extends</span> <span class="title class_">AbstractObservableWithUpstream</span>&lt;T, T&gt; &#123;</span><br><span class="line">    <span class="keyword">final</span> Scheduler scheduler;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">subscribeActual</span><span class="params">(<span class="keyword">final</span> Observer&lt;? <span class="built_in">super</span> T&gt; observer)</span> &#123;</span><br><span class="line">        <span class="comment">// 将订阅动作包装成 Runnable，提交到 Scheduler</span></span><br><span class="line">        Scheduler.<span class="type">Worker</span> <span class="variable">w</span> <span class="operator">=</span> scheduler.createWorker();</span><br><span class="line">        observer.onSubscribe(w);  <span class="comment">// 让下游可以取消整个调度</span></span><br><span class="line"></span><br><span class="line">        w.schedule(<span class="keyword">new</span> <span class="title class_">SubscribeTask</span>(<span class="keyword">new</span> <span class="title class_">SubscribeOnObserver</span>&lt;T&gt;(observer)));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">SubscribeTask</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span> &#123;</span><br><span class="line">        <span class="keyword">final</span> SubscribeOnObserver&lt;T&gt; parent;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="comment">// 在 Scheduler 的线程中执行上游的 subscribe</span></span><br><span class="line">            source.subscribe(parent);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>observeOn 的实现</strong> —— 以 <code>ObservableObserveOn</code> 为例：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// io.reactivex.internal.operators.observable.ObservableObserveOn</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onNext</span><span class="params">(T t)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (sourceMode != QueueDisposable.ASYNC) &#123;</span><br><span class="line">        queue.offer(t);  <span class="comment">// 将数据放入队列</span></span><br><span class="line">    &#125;</span><br><span class="line">    schedule();  <span class="comment">// 调度到目标线程消费队列</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">schedule</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (outputFused) &#123;</span><br><span class="line">        worker.schedule(<span class="built_in">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>observeOn 的核心是一个<strong>生产者-消费者队列</strong>：上游的 onNext 将数据放入 <code>SpscArrayQueue</code>（单生产者单消费者无锁队列），然后在目标 Scheduler 上调度一个 Worker 消费队列，消费时逐条调用下游 Observer 的 onNext。</p>
+<h2 id="六、背压（Backpressure）策略"><a href="#六、背压（Backpressure）策略" class="headerlink" title="六、背压（Backpressure）策略"></a>六、背压（Backpressure）策略</h2><p>当上游发射数据的速度超过下游消费的速度时，就会产生背压。RxJava 2.x 将 Observable 拆分为两类：</p>
+<ul>
+<li><strong>Observable</strong>：不支持背压（适合少量数据、GUI 事件）</li>
+<li><strong>Flowable</strong>：支持背压（适合大量数据、流式处理）</li>
+</ul>
+<p>Flowable 的背压策略通过 <code>BackpressureStrategy</code> 枚举定义（源码路径 <code>io.reactivex.BackpressureStrategy</code>）：</p>
+<ol>
+<li><strong>MISSING</strong>：不做任何处理，下游需要自行通过 <code>request(n)</code> 控制速率。数据可能溢出导致 <code>MissingBackpressureException</code>。</li>
+<li><strong>ERROR</strong>：当数据堆积时直接抛出 <code>MissingBackpressureException</code>。</li>
+<li><strong>BUFFER</strong>：无界缓冲，所有数据先入队列。可能导致 OOM。</li>
+<li><strong>DROP</strong>：丢弃下游来不及处理的数据。</li>
+<li><strong>LATEST</strong>：仅保留最新的一个数据，旧的被丢弃。</li>
+</ol>
+<p>Flowable 内部的背压协议基于 Reactive Streams 规范的 <code>Subscription.request(n)</code> 机制：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 下游告诉上游：我准备好了，给我 n 个数据</span></span><br><span class="line">subscription.request(<span class="number">10</span>);</span><br></pre></td></tr></table></figure>
+
+<p>在 <code>FlowableCreate</code> 中，<code>FlowableEmitter</code> 实现了 <code>request(n)</code> 的感知：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// FlowableCreate.java - 关键字段</span></span><br><span class="line"><span class="keyword">final</span> <span class="type">AtomicLong</span> <span class="variable">requested</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicLong</span>();  <span class="comment">// 下游请求的数量</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 每次发射检查是否需要</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onNext</span><span class="params">(T t)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (requested.get() != <span class="number">0</span>) &#123;</span><br><span class="line">        actual.onNext(t);</span><br><span class="line">        BackpressureHelper.produced(requested, <span class="number">1</span>);  <span class="comment">// 减少请求计数</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>io.reactivex.internal.util.BackpressureHelper</code> 包含用于管理请求计数的工具方法，使用 CAS（Compare-And-Swap）保证原子性：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">long</span> <span class="title function_">produced</span><span class="params">(AtomicLong requested, <span class="type">long</span> n)</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">current</span> <span class="operator">=</span> requested.get();</span><br><span class="line">        <span class="keyword">if</span> (current == Long.MAX_VALUE) &#123;</span><br><span class="line">            <span class="keyword">return</span> Long.MAX_VALUE;  <span class="comment">// 无界模式</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">long</span> <span class="variable">update</span> <span class="operator">=</span> current - n;</span><br><span class="line">        <span class="keyword">if</span> (update &lt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="comment">// 上游发射超过了请求数量，这是 bug</span></span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalStateException</span>(<span class="string">&quot;More produced than requested: &quot;</span> + update);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (requested.compareAndSet(current, update)) &#123;</span><br><span class="line">            <span class="keyword">return</span> update;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>Long.MAX_VALUE</code> 的语义是”下游接受无限数据”（如调用 <code>request(Long.MAX_VALUE)</code>），此时 <code>produced()</code> 直接返回，无任何限制。这是 Flowable 内建的”退路”——如果某些操作符不支持背压，可以直接请求最大值来退化成无背压行为。</p>
+<h3 id="6-1-Flowable-内部队列"><a href="#6-1-Flowable-内部队列" class="headerlink" title="6.1 Flowable 内部队列"></a>6.1 Flowable 内部队列</h3><p><code>FlowableCreate</code> 内部根据不同 <code>BackpressureStrategy</code> 使用不同的队列实现：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// FlowableCreate 内部</span></span><br><span class="line"><span class="keyword">if</span> (backpressure == BackpressureStrategy.MISSING) &#123;</span><br><span class="line">    emitter = <span class="keyword">new</span> <span class="title class_">MissingEmitter</span>&lt;T&gt;(t);</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (backpressure == BackpressureStrategy.ERROR) &#123;</span><br><span class="line">    emitter = <span class="keyword">new</span> <span class="title class_">ErrorAsyncEmitter</span>&lt;T&gt;(t);</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (backpressure == BackpressureStrategy.DROP) &#123;</span><br><span class="line">    emitter = <span class="keyword">new</span> <span class="title class_">DropAsyncEmitter</span>&lt;T&gt;(t);</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (backpressure == BackpressureStrategy.LATEST) &#123;</span><br><span class="line">    emitter = <span class="keyword">new</span> <span class="title class_">LatestAsyncEmitter</span>&lt;T&gt;(t);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    emitter = <span class="keyword">new</span> <span class="title class_">BufferAsyncEmitter</span>&lt;T&gt;(t, capacity); <span class="comment">// BUFFER</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="七、Disposable-与内存泄漏防护"><a href="#七、Disposable-与内存泄漏防护" class="headerlink" title="七、Disposable 与内存泄漏防护"></a>七、Disposable 与内存泄漏防护</h2><p>任何订阅如果不取消，都可能导致 Activity&#x2F;Fragment 无法被 GC 回收。RxJava 提供了三级防御机制：</p>
+<p><strong>第一级：手动管理 Disposable</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">CompositeDisposable</span> <span class="variable">compositeDisposable</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CompositeDisposable</span>();</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">onCreate</span><span class="params">(Bundle savedInstanceState)</span> &#123;</span><br><span class="line">    <span class="type">Disposable</span> <span class="variable">d</span> <span class="operator">=</span> Observable.interval(<span class="number">1</span>, TimeUnit.SECONDS)</span><br><span class="line">        .subscribe(count -&gt; textView.setText(String.valueOf(count)));</span><br><span class="line">    compositeDisposable.add(d);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">onDestroy</span><span class="params">()</span> &#123;</span><br><span class="line">    compositeDisposable.clear();  <span class="comment">// 批量取消所有订阅</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>CompositeDisposable</code> 内部使用 <code>OpenHashSet&lt;Disposable&gt;</code> 存储，并提供原子性的 <code>add/delete/clear</code> 操作。<code>clear()</code> 不仅清空集合，还会对每个 Disposable 调用 <code>dispose()</code>。</p>
+<p><strong>第二级：RxLifecycle &#x2F; AutoDispose</strong></p>
+<p>AutoDispose 通过拦截 <code>subscribe</code> 调用，自动在生命周期结束时取消订阅。其核心是在 Observer 和上游之间插入一个 <code>AutoDisposingObserver</code>，监听 LifecycleOwner 的 ON_DESTROY 事件。</p>
+<p>AutoDispose 使用 <code>as()</code> 操作符和 <code>ScopeProvider</code> 模式：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 使用 AutoDispose</span></span><br><span class="line">myObservable</span><br><span class="line">    .as(AutoDispose.autoDisposable(AndroidLifecycleScopeProvider.from(<span class="built_in">this</span>)))</span><br><span class="line">    .subscribe(data -&gt; updateUI(data));</span><br></pre></td></tr></table></figure>
+
+<p><code>AndroidLifecycleScopeProvider</code> 监听 Lifecycle 事件，在 <code>ON_DESTROY</code> 时触发 dispose 信号。具体实现是在 <code>LiveDataReactiveStreams</code> 中将 Lifecycle 的 <code>ON_DESTROY</code> 事件映射为 <code>emit(Unit)</code> 到 <code>Maybe&lt;Lifecycle.Event&gt;</code>，然后 <code>AutoDisposingObserver</code> 在收到事件时 dispose 上游。</p>
+<p><strong>第三级：UndeliverableException 处理</strong></p>
+<p>当 <code>onError</code> 发生后订阅已终止，后续的事件无法投递，会抛出 <code>UndeliverableException</code>。应通过 <code>RxJavaPlugins.setErrorHandler()</code> 设置全局异常处理器：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">RxJavaPlugins.setErrorHandler(e -&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> (e <span class="keyword">instanceof</span> UndeliverableException) &#123;</span><br><span class="line">        Log.w(<span class="string">&quot;RxJava&quot;</span>, <span class="string">&quot;Undeliverable exception&quot;</span>, e);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        Thread.currentThread().getUncaughtExceptionHandler()</span><br><span class="line">            .uncaughtException(Thread.currentThread(), e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-1-dispose-的原子性传播"><a href="#7-1-dispose-的原子性传播" class="headerlink" title="7.1 dispose 的原子性传播"></a>7.1 dispose 的原子性传播</h3><p>dispose 的传播方向是从下游向上游。<code>DisposableHelper.dispose()</code> 首先断开下游的 Disposable 引用（通过设置 CAS 为 DISPOSED），然后调用上游的 dispose。这是一个原子操作——一旦 CAS 成功，后续所有 <code>onNext/onError/onComplete</code> 调用都会在 <code>isDisposed()</code> 检查处被拦截。</p>
+<h2 id="八、RxJava-2-x-与-3-x-的差异"><a href="#八、RxJava-2-x-与-3-x-的差异" class="headerlink" title="八、RxJava 2.x 与 3.x 的差异"></a>八、RxJava 2.x 与 3.x 的差异</h2><p>RxJava 3.x 基于 Java 8，引入了 <code>java.util.concurrent.Flow</code> 兼容性。关键变化包括：</p>
+<ul>
+<li>所有操作符、类使用 Java 8 方法引用和 lambda</li>
+<li><code>Completable</code>、<code>Single</code>、<code>Maybe</code> 的操作符增加</li>
+<li><code>Flowable</code> 可直接转换为 <code>Flow.Publisher</code></li>
+<li>移除了 <code>Observable.flatMap()</code> 过时方法，统一到 <code>flatMap</code> 的规范实现</li>
+<li>引入了 <code>@CheckReturnValue</code> 注解，所有返回 Disposable&#x2F;Subscription 的操作符方法都被标记，防止丢失订阅引用</li>
+</ul>
+<p>生产环境建议使用 3.x，2.x 已进入维护模式。</p>
+<h3 id="8-1-RxJava-与-Kotlin-Coroutines-的对比"><a href="#8-1-RxJava-与-Kotlin-Coroutines-的对比" class="headerlink" title="8.1 RxJava 与 Kotlin Coroutines 的对比"></a>8.1 RxJava 与 Kotlin Coroutines 的对比</h3><p>随着 Kotlin 在 Android 开发中的普及，Coroutines 逐渐成为 RxJava 的主要替代方案。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>RxJava</th>
+<th>Kotlin Coroutines</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>编程模型</td>
+<td>响应式流（Observable&#x2F;Flowable）</td>
+<td>结构化并发（suspend&#x2F;Flow）</td>
+</tr>
+<tr>
+<td>线程切换</td>
+<td>subscribeOn&#x2F;observeOn</td>
+<td>withContext&#x2F;flowOn</td>
+</tr>
+<tr>
+<td>背压</td>
+<td>Flowable 原生支持</td>
+<td>Flow 原生支持（Channel.BUFFERED 等）</td>
+</tr>
+<tr>
+<td>错误处理</td>
+<td>onError 回调链</td>
+<td>try-catch &#x2F; catch 操作符</td>
+</tr>
+<tr>
+<td>操作符丰富度</td>
+<td>极丰富（200+ 操作符）</td>
+<td>基础齐全（正在快速增长）</td>
+</tr>
+<tr>
+<td>学习曲线</td>
+<td>陡峭</td>
+<td>相对平缓</td>
+</tr>
+<tr>
+<td>调试体验</td>
+<td>困难（操作符链深，堆栈难读）</td>
+<td>相对容易（suspend 堆栈可读性好）</td>
+</tr>
+<tr>
+<td>生命周期绑定</td>
+<td>需额外库（AutoDispose）</td>
+<td>天然与 lifecycleScope 集成</td>
+</tr>
+<tr>
+<td>Java 互操作</td>
+<td>原生支持</td>
+<td>需要少量适配</td>
+</tr>
+<tr>
+<td>性能</td>
+<td>有装饰器链开销</td>
+<td>有协程切换开销，通常更轻量</td>
+</tr>
+</tbody></table>
+<p>RxJava 的优势在于操作符生态极其丰富，对于复杂的流转换（如 <code>debounce</code> + <code>switchMap</code> + <code>distinctUntilChanged</code> 的搜索框场景）有成熟的范式。Coroutines 的优势在于与 Kotlin 语言深度集成，代码更接近同步写法，调试更简单。</p>
+<h2 id="九、RxJavaPlugins-全局钩子"><a href="#九、RxJavaPlugins-全局钩子" class="headerlink" title="九、RxJavaPlugins 全局钩子"></a>九、RxJavaPlugins 全局钩子</h2><p><code>RxJavaPlugins</code> 是 RxJava 提供的全局 Hook 机制，主要有三个用途：</p>
+<ol>
+<li><strong>全局错误处理</strong>：<code>setErrorHandler()</code></li>
+<li><strong>调度器替换</strong>：<code>setInitIoSchedulerHandler()</code> &#x2F; <code>setInitComputationSchedulerHandler()</code> 等在 Scheduler 创建前注入自定义实例</li>
+<li><strong>Observable 创建拦截</strong>：<code>setOnObservableAssembly()</code> 对所有 Observalbe 装配过程注入监控</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 全局监控所有 Observable 的创建（调试/性能分析用）</span></span><br><span class="line">RxJavaPlugins.setOnObservableAssembly(observable -&gt; &#123;</span><br><span class="line">    <span class="comment">// 在装配时记录堆栈</span></span><br><span class="line">    <span class="keyword">return</span> observable;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>这是测试和生产环境中实现统一日志、性能追踪的入口。</p>
+<h2 id="十、面试常问题目"><a href="#十、面试常问题目" class="headerlink" title="十、面试常问题目"></a>十、面试常问题目</h2><p><strong>Q1: subscribeOn 和 observeOn 的区别？多次调用 subscribeOn 会怎样？</strong></p>
+<p>subscribeOn 影响上游数据发射所在的线程，只第一个生效（最近的源头）。observeOn 影响下游数据接收所在的线程，可以多次调用以切换不同阶段的线程。例如：<code>.subscribeOn(Schedulers.io()).map(...).observeOn(AndroidSchedulers.mainThread()).subscribe(...)</code> 表示在 IO 线程发数据、做 map 变换，在主线程接收结果。</p>
+<p><strong>Q2: map 和 flatMap 的区别是什么？</strong></p>
+<p>map 是一对一变换，将 T 类型转换为 U 类型；flatMap 是一对多变换，将 T 映射为一个 Observable&lt;U&gt;，然后将所有内部 Observable 合并（merge）输出。flatMap 不能保证顺序，concatMap 保证顺序但有性能开销（需要等前一个内部 Observable 完成），switchMap 在新事件到来时取消旧的内部 Observable。</p>
+<p><strong>Q3: RxJava 如何防止内存泄漏？必须手动 dispose 吗？</strong></p>
+<p>RxJava 提供 CompositeDisposable 进行批量取消；推荐使用 AutoDispose 或 RxLifecycle 将订阅绑定到生命周期；也可使用 takeUntil() 操作符配合生命周期事件自动取消。核心原则：每个 subscribe 返回的 Disposable 必须在适当生命周期方法中 dispose。</p>
+<p><strong>Q4: Observable 和 Flowable 的核心区别是什么？</strong></p>
+<p>Observable 不支持背压，适用于少量、低频事件（GUI 点击、单个网络请求结果）。Flowable 支持背压，实现了 Reactive Streams 规范，通过 request(n) 机制让下游控制上游发射速率，适用于大量数据流（数据库查询结果、传感器事件流）。Flowable 额外开销更大（需维护原子计数器和队列），仅在需要背压时使用。</p>
+<p><strong>Q5: 操作符融合（Operator Fusion）解决了什么问题？</strong></p>
+<p>操作符融合解决了操作符链中逐层包装 Observer 带来的性能开销。当相邻的两个操作符满足条件时（如 Observable.just() + map），它们可以通过 QueueDisposable 接口直接推送&#x2F;拉取数据，跳过 Observer 的一次包装和方法调用。这是 RxJava 2.x 的重要性能优化，在大量数据的场景（如 range().map().filter()）下性能提升可达 30-50%。</p>
+<hr>
+<p><strong>参考源码路径：</strong></p>
+<ul>
+<li>RxJava 核心：<code>https://github.com/ReactiveX/RxJava/tree/2.x/src/main/java/io/reactivex</code></li>
+<li>Observable 创建：<code>io.reactivex.internal.operators.observable.ObservableCreate</code></li>
+<li>Map 操作符：<code>io.reactivex.internal.operators.observable.ObservableMap</code></li>
+<li>背压策略：<code>io.reactivex.BackpressureStrategy</code></li>
+<li>Flowable 创建：<code>io.reactivex.internal.operators.flowable.FlowableCreate</code></li>
+<li>RxAndroid Scheduler：<code>rxandroid/src/main/java/rx/android/schedulers/AndroidSchedulers.java</code></li>
+<li>Reactive Streams 规范：<code>http://www.reactive-streams.org/</code></li>
+<li>AutoDispose：<code>https://github.com/uber/AutoDispose</code></li>
+<li>Operator Fusion：<code>io.reactivex.internal.fuseable.QueueDisposable</code></li>
+</ul>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/RxJava/">RxJava    </a><a class="post-meta__tags" href="/tags/%E5%93%8D%E5%BA%94%E5%BC%8F%E7%BC%96%E7%A8%8B/">响应式编程    </a><a class="post-meta__tags" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/458.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2022/03/05/%E8%A7%A3%E8%AF%BB%E5%BC%80%E6%BA%90%E6%A1%86%E6%9E%B6%E7%B3%BB%E5%88%97-IOC%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/445.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>解读开源框架系列-IOC架构设计</span></div></a></div><div class="next-post pull_right"><a href="/2022/02/25/%E8%A7%A3%E8%AF%BB%E5%BC%80%E6%BA%90%E6%A1%86%E6%9E%B6%E7%B3%BB%E5%88%97-%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/426.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>解读开源框架系列-网络访问框架设计</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2019/06/10/重拾Android-【必知必会SDK】之RxJava/" title="【必知必会SDK】之RxJava"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/apothecary-87-CVBQdww5JZU-unsplash.jpg"><div class="relatedPosts_title">【必知必会SDK】之RxJava</div></a></div><div class="relatedPosts_item"><a href="/2019/06/01/重拾Android-Java进阶之RxJava编程原理/" title="Java进阶之RxJava编程原理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/图片20.jpg"><div class="relatedPosts_title">Java进阶之RxJava编程原理</div></a></div><div class="relatedPosts_item"><a href="/2026/05/25/【Claude Code源码剖析】29-UserHooks用户钩子系统/" title="【Claude Code源码剖析】29-User Hooks 用户钩子系统"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】29-User Hooks 用户钩子系统</div></a></div><div class="relatedPosts_item"><a href="/2026/05/18/【Claude Code源码剖析】27-VCR测试基础设施/" title="【Claude Code源码剖析】27-VCR 测试基础设施"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】27-VCR 测试基础设施</div></a></div><div class="relatedPosts_item"><a href="/2026/05/17/【Claude Code源码剖析】26-PlanModeV2规划模式/" title="【Claude Code源码剖析】26-多 Agent 规划系统"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】26-多 Agent 规划系统</div></a></div><div class="relatedPosts_item"><a href="/2026/05/11/【Claude Code源码剖析】25-LSP集成与IDE能力/" title="【Claude Code源码剖析】25-LSP 集成与 IDE 能力"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】25-LSP 集成与 IDE 能力</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/458.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

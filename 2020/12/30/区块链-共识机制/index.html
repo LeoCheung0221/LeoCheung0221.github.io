@@ -1,0 +1,455 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>区块链———共识机制 | ONE·PIECE</title><meta name="description" content="区块链———共识机制"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="区块链———共识机制"><meta name="twitter:description" content="区块链———共识机制"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/hitesh-choudhary-JNxTZzpHmsI-unsplash.jpg"><meta property="og:type" content="article"><meta property="og:title" content="区块链———共识机制"><meta property="og:url" content="http://tufusi.com/2020/12/30/%E5%8C%BA%E5%9D%97%E9%93%BE-%E5%85%B1%E8%AF%86%E6%9C%BA%E5%88%B6/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="区块链———共识机制"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/hitesh-choudhary-JNxTZzpHmsI-unsplash.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2020/12/30/%E5%8C%BA%E5%9D%97%E9%93%BE-%E5%85%B1%E8%AF%86%E6%9C%BA%E5%88%B6/"><link rel="prev" title="【深入内核篇】Android启动过程" href="http://tufusi.com/2021/01/05/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91Android%E5%90%AF%E5%8A%A8%E8%BF%87%E7%A8%8B/"><link rel="next" title="区块链算法分析-共识算法大比拼" href="http://tufusi.com/2020/12/25/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%AE%97%E6%B3%95%E5%88%86%E6%9E%90-%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95%E5%A4%A7%E6%AF%94%E6%8B%BC/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E5%85%B1%E8%AF%86%E6%9C%BA%E5%88%B6%E6%A6%82%E8%BF%B0"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、共识机制概述</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81PoW%EF%BC%9AProof-of-Work%EF%BC%8C%E5%B7%A5%E4%BD%9C%E9%87%8F%E8%AF%81%E6%98%8E"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、PoW：Proof of Work，工作量证明</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-SHA-256-%E6%8C%96%E7%9F%BF%E5%8E%9F%E7%90%86"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 SHA-256 挖矿原理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E9%9A%BE%E5%BA%A6%E8%B0%83%E6%95%B4%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 难度调整机制</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-51-%E6%94%BB%E5%87%BB%E4%B8%8E%E5%AE%89%E5%85%A8%E6%80%A7%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 51% 攻击与安全性分析</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-4-PoW-%E7%9A%84%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">2.4 PoW 的优缺点</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81PoS%EF%BC%9AProof-of-Stake%EF%BC%8C%E6%9D%83%E7%9B%8A%E8%AF%81%E6%98%8E"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、PoS：Proof of Stake，权益证明</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E5%9F%BA%E6%9C%AC%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 基本工作原理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E6%97%A0%E5%88%A9%E5%AE%B3%E5%85%B3%E7%B3%BB%E9%97%AE%E9%A2%98%EF%BC%88Nothing-at-Stake%EF%BC%89"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 无利害关系问题（Nothing-at-Stake）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-Casper-FFG%EF%BC%88Friendly-Finality-Gadget%EF%BC%89"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 Casper FFG（Friendly Finality Gadget）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-LMD-GHOST-%E5%88%86%E5%8F%89%E9%80%89%E6%8B%A9%E8%A7%84%E5%88%99"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">3.4 LMD GHOST 分叉选择规则</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-5-PoS-%E7%9A%84%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc_mobile_items-number">3.5.</span> <span class="toc_mobile_items-text">3.5 PoS 的优缺点</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81DPoS%EF%BC%9ADelegated-Proof-of-Stake%EF%BC%8C%E6%8E%88%E6%9D%83%E6%9D%83%E7%9B%8A%E8%AF%81%E6%98%8E"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、DPoS：Delegated Proof of Stake，授权权益证明</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 工作流程</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E6%8A%95%E7%A5%A8%E6%9D%83%E9%87%8D"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 投票权重</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-BFT-%E5%85%B1%E8%AF%86%E7%BB%84%E4%BB%B6"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 BFT 共识组件</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-4-DPoS-%E7%9A%84%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc_mobile_items-number">4.4.</span> <span class="toc_mobile_items-text">4.4 DPoS 的优缺点</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81PBFT%EF%BC%9APractical-Byzantine-Fault-Tolerance"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、PBFT：Practical Byzantine Fault Tolerance</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E6%8B%9C%E5%8D%A0%E5%BA%AD%E5%B0%86%E5%86%9B%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 拜占庭将军问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-%E4%B8%89%E9%98%B6%E6%AE%B5%E5%8D%8F%E8%AE%AE"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 三阶段协议</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-%E8%A7%86%E5%9B%BE%E5%8F%98%E6%9B%B4%EF%BC%88View-Change%EF%BC%89"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 视图变更（View Change）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-4-Checkpoint%EF%BC%88%E6%A3%80%E6%9F%A5%E7%82%B9%EF%BC%89"><span class="toc_mobile_items-number">5.4.</span> <span class="toc_mobile_items-text">5.4 Checkpoint（检查点）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-5-PBFT-%E7%9A%84%E5%A4%8D%E6%9D%82%E5%BA%A6%E4%B8%8E%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc_mobile_items-number">5.5.</span> <span class="toc_mobile_items-text">5.5 PBFT 的复杂度与局限性</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81Raft-%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、Raft 共识算法</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 核心机制</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-%E9%A2%86%E5%AF%BC%E8%80%85%E9%80%89%E4%B8%BE%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 领导者选举详解</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-%E6%97%A5%E5%BF%97%E5%A4%8D%E5%88%B6"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">6.3 日志复制</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-4-Raft-%E4%B8%8E-PBFT-%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">6.4.</span> <span class="toc_mobile_items-text">6.4 Raft 与 PBFT 对比</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94%E6%80%BB%E7%BB%93"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、共识算法对比总结</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-%E5%AE%89%E5%85%A8%E6%80%A7%E6%A8%A1%E5%9E%8B%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">7.1 安全性模型对比</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-%E6%9C%80%E7%BB%88%E6%80%A7%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">7.2 最终性对比</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-3-%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95%E7%9A%84%E5%85%A8%E6%99%AF%E5%9B%BE"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">7.3 共识算法的全景图</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-4-%E9%80%89%E5%9E%8B%E5%BB%BA%E8%AE%AE"><span class="toc_mobile_items-number">7.4.</span> <span class="toc_mobile_items-text">7.4 选型建议</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81%E6%96%B0%E4%B8%80%E4%BB%A3%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、新一代共识算法</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-Tendermint-%E5%85%B1%E8%AF%86"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">8.1 Tendermint 共识</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-HotStuff-%E5%85%B1%E8%AF%86"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">8.2 HotStuff 共识</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-3-Avalanche-%E5%85%B1%E8%AF%86"><span class="toc_mobile_items-number">8.3.</span> <span class="toc_mobile_items-text">8.3 Avalanche 共识</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-4-%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95%E6%BC%94%E8%BF%9B%E8%B7%AF%E7%BA%BF%E5%9B%BE"><span class="toc_mobile_items-number">8.4.</span> <span class="toc_mobile_items-text">8.4 共识算法演进路线图</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E6%9C%80%E9%95%BF%E9%93%BE%E8%A7%84%E5%88%99%E4%B8%8E%E5%88%86%E5%8F%89"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、深入理解最长链规则与分叉</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-1-%E9%93%BE%E9%87%8D%E7%BB%84%EF%BC%88Chain-Reorganization%EF%BC%89"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">9.1 链重组（Chain Reorganization）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-2-%E8%87%AA%E7%A7%81%E6%8C%96%E7%9F%BF%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">9.2 自私挖矿策略</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81%E5%85%B1%E8%AF%86%E6%9C%BA%E5%88%B6%E7%9A%84%E5%AE%9E%E9%99%85%E8%80%83%E9%87%8F"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">十、共识机制的实际考量</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-1-%E9%95%BF%E7%A8%8B%E6%94%BB%E5%87%BB%EF%BC%88Long-Range-Attack%EF%BC%89"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">10.1 长程攻击（Long-Range Attack）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-2-%E6%B4%BB%E6%80%A7%E4%B8%8E%E5%AE%89%E5%85%A8%E6%80%A7%E7%9A%84%E6%9D%83%E8%A1%A1"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">10.2 活性与安全性的权衡</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-3-%E5%85%B1%E8%AF%86%E6%9C%BA%E5%88%B6%E7%9A%84%E9%87%8F%E5%AD%90%E5%AE%89%E5%85%A8%E8%80%83%E8%99%91"><span class="toc_mobile_items-number">10.3.</span> <span class="toc_mobile_items-text">10.3 共识机制的量子安全考虑</span></a></li></ol></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%85%B1%E8%AF%86%E6%9C%BA%E5%88%B6%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">一、共识机制概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81PoW%EF%BC%9AProof-of-Work%EF%BC%8C%E5%B7%A5%E4%BD%9C%E9%87%8F%E8%AF%81%E6%98%8E"><span class="toc-number">2.</span> <span class="toc-text">二、PoW：Proof of Work，工作量证明</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-SHA-256-%E6%8C%96%E7%9F%BF%E5%8E%9F%E7%90%86"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 SHA-256 挖矿原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E9%9A%BE%E5%BA%A6%E8%B0%83%E6%95%B4%E6%9C%BA%E5%88%B6"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 难度调整机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-51-%E6%94%BB%E5%87%BB%E4%B8%8E%E5%AE%89%E5%85%A8%E6%80%A7%E5%88%86%E6%9E%90"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 51% 攻击与安全性分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-PoW-%E7%9A%84%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 PoW 的优缺点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81PoS%EF%BC%9AProof-of-Stake%EF%BC%8C%E6%9D%83%E7%9B%8A%E8%AF%81%E6%98%8E"><span class="toc-number">3.</span> <span class="toc-text">三、PoS：Proof of Stake，权益证明</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%9F%BA%E6%9C%AC%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 基本工作原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%97%A0%E5%88%A9%E5%AE%B3%E5%85%B3%E7%B3%BB%E9%97%AE%E9%A2%98%EF%BC%88Nothing-at-Stake%EF%BC%89"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 无利害关系问题（Nothing-at-Stake）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Casper-FFG%EF%BC%88Friendly-Finality-Gadget%EF%BC%89"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 Casper FFG（Friendly Finality Gadget）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-LMD-GHOST-%E5%88%86%E5%8F%89%E9%80%89%E6%8B%A9%E8%A7%84%E5%88%99"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 LMD GHOST 分叉选择规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-PoS-%E7%9A%84%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc-number">3.5.</span> <span class="toc-text">3.5 PoS 的优缺点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81DPoS%EF%BC%9ADelegated-Proof-of-Stake%EF%BC%8C%E6%8E%88%E6%9D%83%E6%9D%83%E7%9B%8A%E8%AF%81%E6%98%8E"><span class="toc-number">4.</span> <span class="toc-text">四、DPoS：Delegated Proof of Stake，授权权益证明</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 工作流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%8A%95%E7%A5%A8%E6%9D%83%E9%87%8D"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 投票权重</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-BFT-%E5%85%B1%E8%AF%86%E7%BB%84%E4%BB%B6"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 BFT 共识组件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-DPoS-%E7%9A%84%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc-number">4.4.</span> <span class="toc-text">4.4 DPoS 的优缺点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81PBFT%EF%BC%9APractical-Byzantine-Fault-Tolerance"><span class="toc-number">5.</span> <span class="toc-text">五、PBFT：Practical Byzantine Fault Tolerance</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%8B%9C%E5%8D%A0%E5%BA%AD%E5%B0%86%E5%86%9B%E9%97%AE%E9%A2%98"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 拜占庭将军问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E4%B8%89%E9%98%B6%E6%AE%B5%E5%8D%8F%E8%AE%AE"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 三阶段协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E8%A7%86%E5%9B%BE%E5%8F%98%E6%9B%B4%EF%BC%88View-Change%EF%BC%89"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 视图变更（View Change）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-Checkpoint%EF%BC%88%E6%A3%80%E6%9F%A5%E7%82%B9%EF%BC%89"><span class="toc-number">5.4.</span> <span class="toc-text">5.4 Checkpoint（检查点）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-PBFT-%E7%9A%84%E5%A4%8D%E6%9D%82%E5%BA%A6%E4%B8%8E%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc-number">5.5.</span> <span class="toc-text">5.5 PBFT 的复杂度与局限性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81Raft-%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95"><span class="toc-number">6.</span> <span class="toc-text">六、Raft 共识算法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 核心机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E9%A2%86%E5%AF%BC%E8%80%85%E9%80%89%E4%B8%BE%E8%AF%A6%E8%A7%A3"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 领导者选举详解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E6%97%A5%E5%BF%97%E5%A4%8D%E5%88%B6"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 日志复制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-Raft-%E4%B8%8E-PBFT-%E5%AF%B9%E6%AF%94"><span class="toc-number">6.4.</span> <span class="toc-text">6.4 Raft 与 PBFT 对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94%E6%80%BB%E7%BB%93"><span class="toc-number">7.</span> <span class="toc-text">七、共识算法对比总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E5%AE%89%E5%85%A8%E6%80%A7%E6%A8%A1%E5%9E%8B%E5%AF%B9%E6%AF%94"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 安全性模型对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E6%9C%80%E7%BB%88%E6%80%A7%E5%AF%B9%E6%AF%94"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 最终性对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95%E7%9A%84%E5%85%A8%E6%99%AF%E5%9B%BE"><span class="toc-number">7.3.</span> <span class="toc-text">7.3 共识算法的全景图</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-4-%E9%80%89%E5%9E%8B%E5%BB%BA%E8%AE%AE"><span class="toc-number">7.4.</span> <span class="toc-text">7.4 选型建议</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E6%96%B0%E4%B8%80%E4%BB%A3%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95"><span class="toc-number">8.</span> <span class="toc-text">八、新一代共识算法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-Tendermint-%E5%85%B1%E8%AF%86"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 Tendermint 共识</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-HotStuff-%E5%85%B1%E8%AF%86"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 HotStuff 共识</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-Avalanche-%E5%85%B1%E8%AF%86"><span class="toc-number">8.3.</span> <span class="toc-text">8.3 Avalanche 共识</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-4-%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95%E6%BC%94%E8%BF%9B%E8%B7%AF%E7%BA%BF%E5%9B%BE"><span class="toc-number">8.4.</span> <span class="toc-text">8.4 共识算法演进路线图</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E6%9C%80%E9%95%BF%E9%93%BE%E8%A7%84%E5%88%99%E4%B8%8E%E5%88%86%E5%8F%89"><span class="toc-number">9.</span> <span class="toc-text">九、深入理解最长链规则与分叉</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E9%93%BE%E9%87%8D%E7%BB%84%EF%BC%88Chain-Reorganization%EF%BC%89"><span class="toc-number">9.1.</span> <span class="toc-text">9.1 链重组（Chain Reorganization）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E8%87%AA%E7%A7%81%E6%8C%96%E7%9F%BF%E7%AD%96%E7%95%A5"><span class="toc-number">9.2.</span> <span class="toc-text">9.2 自私挖矿策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E5%85%B1%E8%AF%86%E6%9C%BA%E5%88%B6%E7%9A%84%E5%AE%9E%E9%99%85%E8%80%83%E9%87%8F"><span class="toc-number">10.</span> <span class="toc-text">十、共识机制的实际考量</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-%E9%95%BF%E7%A8%8B%E6%94%BB%E5%87%BB%EF%BC%88Long-Range-Attack%EF%BC%89"><span class="toc-number">10.1.</span> <span class="toc-text">10.1 长程攻击（Long-Range Attack）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-%E6%B4%BB%E6%80%A7%E4%B8%8E%E5%AE%89%E5%85%A8%E6%80%A7%E7%9A%84%E6%9D%83%E8%A1%A1"><span class="toc-number">10.2.</span> <span class="toc-text">10.2 活性与安全性的权衡</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-3-%E5%85%B1%E8%AF%86%E6%9C%BA%E5%88%B6%E7%9A%84%E9%87%8F%E5%AD%90%E5%AE%89%E5%85%A8%E8%80%83%E8%99%91"><span class="toc-number">10.3.</span> <span class="toc-text">10.3 共识机制的量子安全考虑</span></a></li></ol></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/hitesh-choudhary-JNxTZzpHmsI-unsplash.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">区块链———共识机制</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2020-12-30<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E5%8C%BA%E5%9D%97%E9%93%BE/">区块链</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">7.2k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 25 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>区块链是一种去中心化的分布式账本，可以简单理解为分布在全球各个节点的分布式数据库，数据库由区块按时间顺序相连而成，区块中记录的是数笔交易。为了能支持这一套系统的运行，需要各节点矿工的参与，他们参与的主要原因是因为有奖励，奖励可以去交易所换成钱，他们这样参与的过程类似于挖矿，所以被称为”矿工”。矿工在什么样的规则下才会得到奖励，这样的规则在区块链中叫共识机制。以下是几种常见的共识机制。</p>
+<span id="more"></span>
+
+<h2 id="一、共识机制概述"><a href="#一、共识机制概述" class="headerlink" title="一、共识机制概述"></a>一、共识机制概述</h2><p>区块链中最重要的便是共识算法。比特币使用的是 PoW（Proof of Work，工作量证明），以太坊（2022 年合并后）使用的是 PoS（Proof of Stake，权益证明）。DPoS（Delegated Proof of Stake，股份授权证明）进一步削减算力浪费，同时加强了区块链的安全性。对于不需要货币体系的许可链或私有链，传统的一致性算法如 PBFT（实用拜占庭容错）、Paxos、Raft 等成为首选。</p>
+<p><strong>共识算法的核心目标：</strong></p>
+<ol>
+<li><strong>一致性（Agreement）</strong>：所有诚实节点对同一值达成一致</li>
+<li><strong>有效性（Validity）</strong>：达成一致的值是由诚实节点提出的</li>
+<li><strong>容错性（Fault Tolerance）</strong>：在一定数量的恶意&#x2F;故障节点存在下，系统仍能正常工作</li>
+<li><strong>终止性（Termination）</strong>：所有诚实节点最终做出决定（不无限等待）</li>
+</ol>
+<p><strong>FLP 不可能定理</strong>：在纯异步系统中，即使只有一个节点故障，也不存在确定性的共识算法。这解释了为什么实际系统要么使用同步假设（如 PBFT），要么使用概率性共识（如 PoW 的 Nakamoto 共识）。</p>
+<p><strong>CAP 定理中的共识</strong>：区块链共识算法本质上是在可用性（Availability）和一致性（Consistency）之间做权衡。PoW&#x2F;PoS 倾向于可用性（最终一致性），PBFT 倾向于强一致性。</p>
+<hr>
+<h2 id="二、PoW：Proof-of-Work，工作量证明"><a href="#二、PoW：Proof-of-Work，工作量证明" class="headerlink" title="二、PoW：Proof of Work，工作量证明"></a>二、PoW：Proof of Work，工作量证明</h2><p>PoW 是比特币的核心创新，由中本聪在 2008 年白皮书中提出。其核心思想是：节点通过解决计算难题来竞争记账权，谁先解出题目，谁就获得出块权利和奖励。</p>
+<h3 id="2-1-SHA-256-挖矿原理"><a href="#2-1-SHA-256-挖矿原理" class="headerlink" title="2.1 SHA-256 挖矿原理"></a>2.1 SHA-256 挖矿原理</h3><p>比特币使用 SHA-256 哈希算法作为工作量证明的基础。挖矿的本质是寻找一个 nonce 值，使得区块头的双重 SHA-256 哈希值小于目标值（target）。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">挖矿过程（伪代码）：</span><br><span class="line">1. 组装区块头: version + prev_block_hash + merkle_root + timestamp + bits + nonce</span><br><span class="line">2. 计算: hash = SHA256(SHA256(block_header))</span><br><span class="line">3. 判断: hash &lt; target ?</span><br><span class="line">   是 → 成功出块，广播区块</span><br><span class="line">   否 → nonce++，回到步骤 1</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> hashlib</span><br><span class="line"><span class="keyword">import</span> struct</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">sha256d</span>(<span class="params">data: <span class="built_in">bytes</span></span>) -&gt; <span class="built_in">bytes</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;双重 SHA-256 哈希（比特币的标准哈希）&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> hashlib.sha256(hashlib.sha256(data).digest()).digest()</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">mine_block</span>(<span class="params">prev_hash: <span class="built_in">str</span>, merkle_root: <span class="built_in">str</span>, bits: <span class="built_in">int</span>, max_nonce: <span class="built_in">int</span> = <span class="number">2</span>**<span class="number">32</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    模拟比特币挖矿</span></span><br><span class="line"><span class="string">    bits: 难度目标（如 486604799 代表约 3.8T 难度）</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># 从 bits 计算 target</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">bits_to_target</span>(<span class="params">bits: <span class="built_in">int</span></span>) -&gt; <span class="built_in">int</span>:</span><br><span class="line">        exponent = bits &gt;&gt; <span class="number">24</span></span><br><span class="line">        mantissa = bits &amp; <span class="number">0xFFFFFF</span></span><br><span class="line">        <span class="keyword">return</span> mantissa * (<span class="number">2</span> ** (<span class="number">8</span> * (exponent - <span class="number">3</span>)))</span><br><span class="line"></span><br><span class="line">    target = bits_to_target(bits)</span><br><span class="line">    version = <span class="number">536870912</span>  <span class="comment"># BIP9 version</span></span><br><span class="line">    timestamp = <span class="built_in">int</span>(time.time())</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> nonce <span class="keyword">in</span> <span class="built_in">range</span>(max_nonce):</span><br><span class="line">        <span class="comment"># 组装区块头（80 字节）</span></span><br><span class="line">        header = struct.pack(</span><br><span class="line">            <span class="string">&#x27;&lt;I32s32sIII&#x27;</span>,</span><br><span class="line">            version,</span><br><span class="line">            <span class="built_in">bytes</span>.fromhex(prev_hash)[::-<span class="number">1</span>],  <span class="comment"># 小端序</span></span><br><span class="line">            <span class="built_in">bytes</span>.fromhex(merkle_root)[::-<span class="number">1</span>],</span><br><span class="line">            timestamp,</span><br><span class="line">            bits,</span><br><span class="line">            nonce</span><br><span class="line">        )</span><br><span class="line">        hash_result = sha256d(header)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 判断是否小于 target</span></span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">int</span>.from_bytes(hash_result, <span class="string">&#x27;little&#x27;</span>) &lt; target:</span><br><span class="line">            <span class="keyword">return</span> &#123;</span><br><span class="line">                <span class="string">&#x27;nonce&#x27;</span>: nonce,</span><br><span class="line">                <span class="string">&#x27;hash&#x27;</span>: hash_result[::-<span class="number">1</span>].<span class="built_in">hex</span>(),  <span class="comment"># 大端序显示</span></span><br><span class="line">                <span class="string">&#x27;header&#x27;</span>: header.<span class="built_in">hex</span>()</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">None</span>  <span class="comment"># 未找到有效 nonce</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 难度公式：</span></span><br><span class="line"><span class="comment"># difficulty = genesis_target / current_target</span></span><br><span class="line"><span class="comment"># 其中 genesis_target 是创世区块的 target（最大值）</span></span><br><span class="line"><span class="comment"># 当前比特币网络难度约 80T+（2024年）</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 全网算力计算：</span></span><br><span class="line"><span class="comment"># 若难度 = D，则预期哈希次数 = D * 2^32</span></span><br><span class="line"><span class="comment"># 出块时间 = 预期哈希次数 / 全网算力</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-难度调整机制"><a href="#2-2-难度调整机制" class="headerlink" title="2.2 难度调整机制"></a>2.2 难度调整机制</h3><p>比特币每 2016 个区块（约 2 周）调整一次难度，目标是维持 10 分钟的平均出块间隔。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">难度调整公式：</span><br><span class="line">new_target = old_target * (actual_time / 20160 minutes)</span><br><span class="line"></span><br><span class="line">其中 actual_time 是过去 2016 个区块的实际时间</span><br><span class="line">约束：</span><br><span class="line">- 调整因子限制在 [1/4, 4] 之内</span><br><span class="line">- 防止难度突变导致网络不稳定</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">calculate_new_difficulty</span>(<span class="params">prev_target: <span class="built_in">int</span>, actual_time: <span class="built_in">int</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;计算新的难度目标&quot;&quot;&quot;</span></span><br><span class="line">    EXPECTED_TIME = <span class="number">2016</span> * <span class="number">10</span> * <span class="number">60</span>  <span class="comment"># 2016 个区块 × 10 分钟 = 20160 分钟</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 限制实际时间的范围（防止极端情况）</span></span><br><span class="line">    actual_time = <span class="built_in">max</span>(EXPECTED_TIME // <span class="number">4</span>, <span class="built_in">min</span>(EXPECTED_TIME * <span class="number">4</span>, actual_time))</span><br><span class="line"></span><br><span class="line">    new_target = prev_target * actual_time // EXPECTED_TIME</span><br><span class="line"></span><br><span class="line">    <span class="comment"># target 不能超过最大 target（创世区块的 target）</span></span><br><span class="line">    MAX_TARGET = <span class="number">0xFFFF</span> * (<span class="number">2</span> ** <span class="number">208</span>)</span><br><span class="line">    new_target = <span class="built_in">min</span>(new_target, MAX_TARGET)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> new_target</span><br><span class="line"></span><br><span class="line"><span class="comment"># 极端情况示例：</span></span><br><span class="line"><span class="comment"># 如果算力翻倍（actual_time ≈ 10080 分钟）：</span></span><br><span class="line"><span class="comment"># new_target = prev_target * 10080 / 20160 = prev_target / 2</span></span><br><span class="line"><span class="comment"># 难度翻倍，维持出块速度</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-51-攻击与安全性分析"><a href="#2-3-51-攻击与安全性分析" class="headerlink" title="2.3 51% 攻击与安全性分析"></a>2.3 51% 攻击与安全性分析</h3><p>51% 攻击是指攻击者控制了全网超过 50% 的算力，从而能够：</p>
+<ol>
+<li><strong>双花攻击（Double Spending）</strong>：在一条链上进行交易后，生成一条更长的、不含该交易的链，使原始交易被回滚</li>
+<li><strong>拒绝服务（DoS）</strong>：阻止特定交易被打包进区块</li>
+<li><strong>自私挖矿（Selfish Mining）</strong>：隐藏区块，在适当时机释放以获得竞争优势</li>
+</ol>
+<p><strong>攻击成本估算：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">攻击成本 = 算力成本 + 电力成本</span><br><span class="line"></span><br><span class="line">以比特币为例（2024年估算）：</span><br><span class="line">- 全网算力 ≈ 600 EH/s（600 × 10^18 H/s）</span><br><span class="line">- 控制 51% 算力需要 ≈ 306 EH/s</span><br><span class="line">- Antminer S21 (200 TH/s) 单价约 $5000</span><br><span class="line">- 所需矿机数：306 EH/s / 200 TH/s = 1,530,000 台</span><br><span class="line">- 硬件成本：1,530,000 × $5000 ≈ $76.5 亿</span><br><span class="line">- 日电力成本：约 $500 万</span><br><span class="line">- 攻击一小时总成本：约 $7700 万</span><br><span class="line"></span><br><span class="line">此外，51% 攻击会导致币价暴跌，攻击者持有的币也会贬值</span><br><span class="line">这形成了经济上的反身性保护</span><br></pre></td></tr></table></figure>
+
+<p><strong>最长链规则（Longest Chain Rule）</strong>：所有节点默认跟随累计工作量最多的链（通常也是最长的链）。这条规则简单而有效，保证了在 PoW 网络中，只要诚实节点掌握超过 50% 的算力，诚实链最终会是最长的。</p>
+<p><strong>孤块（Orphan Blocks）</strong>：当两个矿工几乎同时挖出有效区块时，网络会暂时分叉。最终其中一个区块会被多数算力接纳为主链的一部分，另一个被废弃的区块称为孤块。比特币的孤块率通常在 0.2-0.5%。</p>
+<h3 id="2-4-PoW-的优缺点"><a href="#2-4-PoW-的优缺点" class="headerlink" title="2.4 PoW 的优缺点"></a>2.4 PoW 的优缺点</h3><p><strong>优点：</strong></p>
+<ul>
+<li>安全性经过 15 年验证，是最成熟的共识机制</li>
+<li>去中心化程度高，任何人都可以参与挖矿</li>
+<li>经济模型清晰，物理算力提供客观的安全度量</li>
+</ul>
+<p><strong>缺点：</strong></p>
+<ul>
+<li>巨大的能源消耗（比特币年耗电 ≈ 140 TWh，与阿根廷全国相当）</li>
+<li>出块速度慢（比特币 10 分钟，确认需要 6 个区块 ≈ 1 小时）</li>
+<li>算力趋于集中（矿池化）</li>
+<li>交易吞吐量低（比特币约 7 TPS）</li>
+</ul>
+<hr>
+<h2 id="三、PoS：Proof-of-Stake，权益证明"><a href="#三、PoS：Proof-of-Stake，权益证明" class="headerlink" title="三、PoS：Proof of Stake，权益证明"></a>三、PoS：Proof of Stake，权益证明</h2><p>PoS 的核心思想是：验证者的投票权与其持有的代币数量（权益）成正比，而非计算的哈希数量。以太坊于 2022 年 9 月 15 日完成了”合并”（The Merge），从 PoW 正式切换到 PoS。</p>
+<h3 id="3-1-基本工作原理"><a href="#3-1-基本工作原理" class="headerlink" title="3.1 基本工作原理"></a>3.1 基本工作原理</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">PoS 流程：</span><br><span class="line">1. 用户质押代币成为验证者（以太坊要求 32 ETH）</span><br><span class="line">2. 每个 slot（12 秒），随机选出一个验证者提议新区块</span><br><span class="line">3. 每个 slot，随机选出一个验证者委员会对区块进行投票</span><br><span class="line">4. 如果区块获得超过 2/3 的投票，则最终确定（finalized）</span><br><span class="line">5. 诚实验证者获得奖励，作恶验证者被罚没（slashing）</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-无利害关系问题（Nothing-at-Stake）"><a href="#3-2-无利害关系问题（Nothing-at-Stake）" class="headerlink" title="3.2 无利害关系问题（Nothing-at-Stake）"></a>3.2 无利害关系问题（Nothing-at-Stake）</h3><p>在早期的 PoS 设计中，验证者可以在多个分叉上同时投票且不存在成本（没有 PoW 那样的电力消耗），导致共识难以收敛。</p>
+<p><strong>解决方案 — 罚没（Slashing）：</strong></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 以太坊的罚没条件（伪代码）</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">SlashingConditions</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">check_double_vote</span>(<span class="params">self, validator, vote1, vote2</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;同一验证者对同一 slot 的两个不同区块投票&quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">if</span> vote1.slot == vote2.slot <span class="keyword">and</span> vote1.block != vote2.block:</span><br><span class="line">            <span class="keyword">return</span> SlashingPenalty(validator)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">check_surround_vote</span>(<span class="params">self, validator, vote1, vote2</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;环绕投票：一个投票被另一个投票的范围所包围&quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">if</span> (vote1.source_epoch &lt; vote2.source_epoch <span class="keyword">and</span></span><br><span class="line">            vote1.target_epoch &gt; vote2.target_epoch):</span><br><span class="line">            <span class="keyword">return</span> SlashingPenalty(validator)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">SlashingPenalty</span>:</span><br><span class="line">        <span class="keyword">def</span> <span class="title function_">apply</span>(<span class="params">self, validator</span>):</span><br><span class="line">            <span class="comment"># 罚没金额（以太坊最低罚没 1 ETH，最高可达全部质押）</span></span><br><span class="line">            penalty = <span class="built_in">max</span>(<span class="number">1</span>, validator.effective_balance // <span class="number">32</span>)</span><br><span class="line">            validator.balance -= penalty</span><br><span class="line">            <span class="comment"># 强制退出验证者集合</span></span><br><span class="line">            validator.exit()</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-Casper-FFG（Friendly-Finality-Gadget）"><a href="#3-3-Casper-FFG（Friendly-Finality-Gadget）" class="headerlink" title="3.3 Casper FFG（Friendly Finality Gadget）"></a>3.3 Casper FFG（Friendly Finality Gadget）</h3><p>Casper FFG 是以太坊的最终性确认机制，运行在 PoS 链之上，提供区块的绝对最终性。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Casper FFG 的核心概念：</span><br><span class="line"></span><br><span class="line">1. Checkpoint（检查点）：每个 epoch（32 个 slot）的边界区块</span><br><span class="line">2. Justification（合理化）：checkpoint 获得超过 2/3 验证者投票</span><br><span class="line">3. Finalization（最终确定性）：连续两个 epoch 的 checkpoint 都被 justified</span><br><span class="line"></span><br><span class="line">最终确定的区块永远不可回滚，这是 PoS 相比 PoW 的关键优势。</span><br><span class="line"></span><br><span class="line">状态转换：</span><br><span class="line">- epoch 0: justified</span><br><span class="line">- epoch 1: 投票 epoch 0-1 → justified, epoch 0 finalized</span><br><span class="line">- epoch 2: 投票 epoch 1-2 → justified, epoch 1 finalized</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-4-LMD-GHOST-分叉选择规则"><a href="#3-4-LMD-GHOST-分叉选择规则" class="headerlink" title="3.4 LMD GHOST 分叉选择规则"></a>3.4 LMD GHOST 分叉选择规则</h3><p>LMD GHOST（Latest Message Driven Greedy Heaviest Observed SubTree）是以太坊使用的分叉选择规则：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">LMD GHOST 算法（简化）：</span><br><span class="line">1. 从最新的 justified checkpoint 开始</span><br><span class="line">2. 在每个 slot，选择获得最多验证者投票（按权重）的子区块</span><br><span class="line">3. 递归执行，直到到达叶子区块</span><br><span class="line">4. 返回的叶子区块即为链头</span><br><span class="line"></span><br><span class="line">&quot;Latest Message&quot;：每个验证者最近一次投票的权重</span><br><span class="line">&quot;Greedy Heaviest&quot;：始终选择投票权重最大的子树</span><br><span class="line"></span><br><span class="line">这个规则确保在正常情况下，链会快速收敛，不会产生长期分叉。</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-5-PoS-的优缺点"><a href="#3-5-PoS-的优缺点" class="headerlink" title="3.5 PoS 的优缺点"></a>3.5 PoS 的优缺点</h3><p><strong>优点：</strong></p>
+<ul>
+<li>能源效率极高（能耗降低约 99.95%）</li>
+<li>出块速度快（以太坊 12 秒&#x2F;slot）</li>
+<li>最终确定性：区块一旦 finalized 即不可回滚</li>
+<li>降低硬件门槛（普通电脑可运行验证者节点）</li>
+</ul>
+<p><strong>缺点：</strong></p>
+<ul>
+<li>“富者愈富”风险（大户拥有更大投票权）</li>
+<li>对初始代币分配敏感</li>
+<li>长程攻击：攻击者购买历史私钥重建伪造历史</li>
+<li>较 PoW 缺少 15 年的实战验证</li>
+</ul>
+<hr>
+<h2 id="四、DPoS：Delegated-Proof-of-Stake，授权权益证明"><a href="#四、DPoS：Delegated-Proof-of-Stake，授权权益证明" class="headerlink" title="四、DPoS：Delegated Proof of Stake，授权权益证明"></a>四、DPoS：Delegated Proof of Stake，授权权益证明</h2><p>DPoS 是 Dan Larimer（BitShares、Steem、EOS 的创始人）提出的 PoS 变体。持有代币的人投票选举出若干超级节点（见证人）代表他们进行区块生产和共识。</p>
+<h3 id="4-1-工作流程"><a href="#4-1-工作流程" class="headerlink" title="4.1 工作流程"></a>4.1 工作流程</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">DPoS 流程：</span><br><span class="line">1. 代币持有者通过质押投票选举见证人（通常 21-101 个）</span><br><span class="line">2. 见证人轮流出块（通常 3 秒一个区块）</span><br><span class="line">3. 如果一个见证人错过出块，将被跳过</span><br><span class="line">4. 见证人若作恶或不作为，可被投票罢免</span><br><span class="line">5. 见证人获得区块奖励，通常会将部分分配给投票者</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-投票权重"><a href="#4-2-投票权重" class="headerlink" title="4.2 投票权重"></a>4.2 投票权重</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">投票权重 = 质押代币数量 × 质押时长（部分实现）</span><br><span class="line"></span><br><span class="line">投票机制：</span><br><span class="line">- 代理投票（Liquid Democracy）：可以将票权代理给其他人</span><br><span class="line">- 一票多投：1 个代币可以同时投给多个见证人（最多 30 个）</span><br><span class="line">- 衰减投票：长时间不活跃的投票者权重逐渐降低</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-BFT-共识组件"><a href="#4-3-BFT-共识组件" class="headerlink" title="4.3 BFT 共识组件"></a>4.3 BFT 共识组件</h3><p>EOS 的 DPoS 在见证人之间使用 BFT 共识实现区块的即时最终确认：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">EOS 的共识管线：</span><br><span class="line">1. 见证人轮流产生区块（Producer Schedule）</span><br><span class="line">2. 每个区块需要 2/3 + 1 的见证人确认</span><br><span class="line">3. 如果一个区块获得足够确认，即不可逆（irreversible）</span><br><span class="line">4. 如果有见证人没有在 3 秒内出块，下一个见证人接替出块</span><br><span class="line"></span><br><span class="line">确认时间：3 秒出块 × 2/3 确认 ≈ 45 秒（21 个见证人）</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-4-DPoS-的优缺点"><a href="#4-4-DPoS-的优缺点" class="headerlink" title="4.4 DPoS 的优缺点"></a>4.4 DPoS 的优缺点</h3><p><strong>优点：</strong></p>
+<ul>
+<li>极高的交易吞吐量（EOS 可达数千 TPS）</li>
+<li>确认时间短（EOS 约 45 秒不可逆）</li>
+<li>代表制避免了全网的广播风暴</li>
+<li>通过投票机制进行社区治理</li>
+</ul>
+<p><strong>缺点：</strong></p>
+<ul>
+<li>去中心化程度有限（21 个见证人容易被协同或贿赂）</li>
+<li>投票参与率低（普通持币者缺乏投票动力）</li>
+<li>寡头垄断风险（大节点长期垄断见证人位置）</li>
+<li>贿选和交易投票问题</li>
+</ul>
+<hr>
+<h2 id="五、PBFT：Practical-Byzantine-Fault-Tolerance"><a href="#五、PBFT：Practical-Byzantine-Fault-Tolerance" class="headerlink" title="五、PBFT：Practical Byzantine Fault Tolerance"></a>五、PBFT：Practical Byzantine Fault Tolerance</h2><p>PBFT（实用拜占庭容错）是 Miguel Castro 和 Barbara Liskov 在 1999 年提出的经典共识算法，能够容忍不超过 1&#x2F;3 的拜占庭节点。</p>
+<h3 id="5-1-拜占庭将军问题"><a href="#5-1-拜占庭将军问题" class="headerlink" title="5.1 拜占庭将军问题"></a>5.1 拜占庭将军问题</h3><p>拜占庭将军问题的核心：多个将军（节点）需要通过信使（网络消息）达成一致的进攻或撤退决定。其中有些将军是叛徒（拜占庭节点），会发送错误信息。目标是：所有忠诚将军必须达成一致的决定。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">模型假设：</span><br><span class="line">- 总节点数: N</span><br><span class="line">- 拜占庭节点数: f</span><br><span class="line">- 条件: N &gt;= 3f + 1</span><br><span class="line">- 即最多容忍不超过 1/3 的拜占庭节点</span><br><span class="line"></span><br><span class="line">直观理解：</span><br><span class="line">- 假设有 3f+1 个节点</span><br><span class="line">- 拜占庭节点可能不发送消息或发送错误消息</span><br><span class="line">- 诚实节点需要至少 2f+1 个消息来达成多数</span><br><span class="line">- 这样即使 f 个拜占庭节点捣乱，诚实节点之间仍有 f+1 的净优势</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-三阶段协议"><a href="#5-2-三阶段协议" class="headerlink" title="5.2 三阶段协议"></a>5.2 三阶段协议</h3><p>PBFT 的共识过程分为 Pre-Prepare、Prepare、Commit 三个阶段：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">视图 v 中的流程（主节点为 replica p = v mod N）：</span><br><span class="line"></span><br><span class="line">1. PRE-PREPARE 阶段：</span><br><span class="line">   - 客户端发送请求到主节点</span><br><span class="line">   - 主节点广播 &lt;&lt;PRE-PREPARE, v, n, d&gt;, m&gt; 到所有副本</span><br><span class="line">     (v=视图编号, n=序列号, d=消息摘要, m=原始消息)</span><br><span class="line"></span><br><span class="line">2. PREPARE 阶段：</span><br><span class="line">   - 每个副本验证 PRE-PREPARE 的合法性</span><br><span class="line">   - 验证通过后广播 &lt;PREPARE, v, n, d, i&gt;</span><br><span class="line">   - 当副本收到 2f 个 PREPARE（加上自己的，共 2f+1）</span><br><span class="line">     → 进入 PREPARED 状态</span><br><span class="line"></span><br><span class="line">3. COMMIT 阶段：</span><br><span class="line">   - 处于 PREPARED 状态的副本广播 &lt;COMMIT, v, n, d, i&gt;</span><br><span class="line">   - 当收到 2f+1 个 COMMIT 消息</span><br><span class="line">     → 执行请求，回复客户端</span><br><span class="line"></span><br><span class="line">4. 客户端等待 f+1 个相同回复 → 确认结果</span><br><span class="line"></span><br><span class="line">关键约束：</span><br><span class="line">- 接收 PRE-PREPARE 的条件：副本未接受过同一 view 中另一个不同摘要的 n</span><br><span class="line">- 通过 2f+1 的多数票确保安全性</span><br><span class="line">- 即使 f 个节点是拜占庭的，仍有 f+1 个诚实节点提供了正确信息</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-3-视图变更（View-Change）"><a href="#5-3-视图变更（View-Change）" class="headerlink" title="5.3 视图变更（View Change）"></a>5.3 视图变更（View Change）</h3><p>当主节点故障或作恶时，PBFT 通过视图变更机制更换主节点：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">视图变更流程：</span><br><span class="line">1. 副本检测到主节点超时（未接收到新请求或未推动共识进程）</span><br><span class="line">2. 发送 &lt;VIEW-CHANGE, v+1, h, P, i&gt; 消息</span><br><span class="line">   (h=最新稳定检查点序列号, P=该副本在 seq &gt; h 的所有 prepared 消息集合)</span><br><span class="line">3. 新主节点（replica (v+1) mod N）收集 2f+1 个 VIEW-CHANGE 消息</span><br><span class="line">4. 新主节点广播 &lt;NEW-VIEW, v+1, V, O&gt; 消息</span><br><span class="line">   (V=收集到的 VIEW-CHANGE 消息集合, O=需要重新执行的未完成请求)</span><br><span class="line"></span><br><span class="line">关键：确保视图变更后，新视图延续旧视图中已 prepared 的请求</span><br><span class="line">——这是 PBFT 安全性的核心保障</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-4-Checkpoint（检查点）"><a href="#5-4-Checkpoint（检查点）" class="headerlink" title="5.4 Checkpoint（检查点）"></a>5.4 Checkpoint（检查点）</h3><p>为了减少状态存储和消息验证的开销，PBFT 使用检查点机制：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">检查点协议：</span><br><span class="line">- 每个副本定期创建稳定检查点（如每 100 个请求）</span><br><span class="line">- 广播 &lt;CHECKPOINT, n, d, i&gt; 消息</span><br><span class="line">- 当收到 2f+1 个相同检查点摘要 → 检查点被证明（stable checkpoint）</span><br><span class="line">- 旧的请求日志和状态可以被清除</span><br><span class="line">- View Change 消息只需要携带 stable checkpoint 之后的 prepared 请求</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-5-PBFT-的复杂度与局限性"><a href="#5-5-PBFT-的复杂度与局限性" class="headerlink" title="5.5 PBFT 的复杂度与局限性"></a>5.5 PBFT 的复杂度与局限性</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">好消息：</span><br><span class="line">- 消息复杂度: O(N^2) — 每个阶段所有节点互相通信</span><br><span class="line">- 延迟: 3 个消息轮次（不含客户端响应）</span><br><span class="line">- 无需代币或算力投入</span><br><span class="line"></span><br><span class="line">坏消息：</span><br><span class="line">- 无法扩展到大量节点（通常 N &lt;= 100）</span><br><span class="line">- 对网络假设较敏感（半同步网络假设）</span><br><span class="line">- 需要已知的固定的节点集合（许可链模型）</span><br><span class="line">- 对拜占庭节点的容忍度有限（&lt; 1/3）</span><br><span class="line"></span><br><span class="line">实际应用：</span><br><span class="line">- Hyperledger Fabric (早期版本)</span><br><span class="line">- Tendermint 共识引擎（Cosmos 生态的基础）</span><br><span class="line">- Zilliqa（公链，使用 PBFT 作为委员会共识）</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="六、Raft-共识算法"><a href="#六、Raft-共识算法" class="headerlink" title="六、Raft 共识算法"></a>六、Raft 共识算法</h2><p>Raft 是一个为可理解性而设计的共识算法，适用于非拜占庭环境（节点不会恶意说谎，但可能 crash-fail）。</p>
+<h3 id="6-1-核心机制"><a href="#6-1-核心机制" class="headerlink" title="6.1 核心机制"></a>6.1 核心机制</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Raft 的三项核心：</span><br><span class="line"></span><br><span class="line">1. Leader Election（领导者选举）：</span><br><span class="line">   - 节点状态：Follower → Candidate → Leader</span><br><span class="line">   - Leader 定期发送心跳（heartbeat）维持权威</span><br><span class="line">   - Follower 超时未收到心跳 → 变为 Candidate → 发起投票</span><br><span class="line">   - 获得多数票（&gt; N/2）的 Candidate 成为 Leader</span><br><span class="line">   - 随机超时避免分票（split vote）</span><br><span class="line"></span><br><span class="line">2. Log Replication（日志复制）：</span><br><span class="line">   - Leader 接收客户端请求 → 追加到本地日志</span><br><span class="line">   - 广播 AppendEntries RPC 给 Followers</span><br><span class="line">   - 收到多数确认 → 提交（commit）→ 返回客户端</span><br><span class="line">   - Followers 在下次心跳中获知 commit index → apply 到状态机</span><br><span class="line"></span><br><span class="line">3. Safety（安全性）：</span><br><span class="line">   - 选举限制：Candidate 的日志必须至少和多数节点一样新</span><br><span class="line">   - 只允许 Leader 追加日志（不允许覆盖已有条目）</span><br><span class="line">   - 通过 term（任期）机制防止老 Leader 继续操作</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-2-领导者选举详解"><a href="#6-2-领导者选举详解" class="headerlink" title="6.2 领导者选举详解"></a>6.2 领导者选举详解</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">任期（Term）：</span><br><span class="line">- 逻辑时钟，每个 term 最多一个 Leader</span><br><span class="line">- 任期递增，所有 RPC 消息都携带 term</span><br><span class="line">- 收到更高 term → 更新自己的 term，转为 Follower</span><br><span class="line"></span><br><span class="line">选举过程：</span><br><span class="line">1. Follower 超时（150-300ms 随机）→ 转为 Candidate</span><br><span class="line">2. term++，投票给自己，发送 RequestVote RPC</span><br><span class="line">3. 三种结果：</span><br><span class="line">   a. 获得多数票 → 成为 Leader</span><br><span class="line">   b. 其他节点成为 Leader → 收到其心跳 → 退回 Follower</span><br><span class="line">   c. 分票（split vote）→ 等待新一轮超时 → 重新选举</span><br><span class="line">4. 随机超时是避免分票的关键设计</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-3-日志复制"><a href="#6-3-日志复制" class="headerlink" title="6.3 日志复制"></a>6.3 日志复制</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">日志条目结构: &#123;term, index, command&#125;</span><br><span class="line"></span><br><span class="line">日志一致性保证：</span><br><span class="line">- 如果两个日志条目在相同 index 有相同 term → 它们存储相同 command</span><br><span class="line">- 如果两个日志条目在相同 index 有相同 term → 之前所有条目均相同</span><br><span class="line">- AppendEntries RPC 携带 prevLogIndex 和 prevLogTerm：</span><br><span class="line">  - Follower 检查自己的日志是否匹配</span><br><span class="line">  - 不匹配 → Leader 回退一个 index 重试</span><br><span class="line">  - 匹配 → Follower 用 Leader 的日志覆盖该 index 之后的所有条目</span><br><span class="line"></span><br><span class="line">提交（Commit）：</span><br><span class="line">- 当日志条目被复制到多数节点 → Leader 标记为 committed</span><br><span class="line">- 之后所有节点的状态机按序 apply committed 条目</span><br><span class="line">- Leader 的 committed index 通过心跳传播给 Followers</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-4-Raft-与-PBFT-对比"><a href="#6-4-Raft-与-PBFT-对比" class="headerlink" title="6.4 Raft 与 PBFT 对比"></a>6.4 Raft 与 PBFT 对比</h3><table>
+<thead>
+<tr>
+<th>特征</th>
+<th>Raft</th>
+<th>PBFT</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>容错类型</td>
+<td>Crash-fault only</td>
+<td>Byzantine-fault (恶意)</td>
+</tr>
+<tr>
+<td>最大容错数</td>
+<td>&lt; N&#x2F;2 (ceiling)</td>
+<td>&lt; N&#x2F;3</td>
+</tr>
+<tr>
+<td>消息复杂度</td>
+<td>O(N)</td>
+<td>O(N^2)</td>
+</tr>
+<tr>
+<td>领导者</td>
+<td>强领导者</td>
+<td>弱主节点</td>
+</tr>
+<tr>
+<td>实现难度</td>
+<td>中等</td>
+<td>高</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>联盟链、私有链</td>
+<td>联盟链、部分公链</td>
+</tr>
+<tr>
+<td>典型产出</td>
+<td>etcd, Consul, Hyperledger Fabric (v1.4+)</td>
+<td>Tendermint, Zilliqa</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="七、共识算法对比总结"><a href="#七、共识算法对比总结" class="headerlink" title="七、共识算法对比总结"></a>七、共识算法对比总结</h2><h3 id="7-1-安全性模型对比"><a href="#7-1-安全性模型对比" class="headerlink" title="7.1 安全性模型对比"></a>7.1 安全性模型对比</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">经济安全性（PoW/PoS）：</span><br><span class="line">- 依赖 51% 假设（算力/权益）</span><br><span class="line">- 攻击有经济成本</span><br><span class="line">- 安全性是概率性的</span><br><span class="line"></span><br><span class="line">拜占庭容错安全性（PBFT/Tendermint）：</span><br><span class="line">- 依赖 1/3 假设（拜占庭节点比例）</span><br><span class="line">- 攻击需要控制关键节点</span><br><span class="line">- 安全性是绝对性的（finalized 即不可逆）</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-2-最终性对比"><a href="#7-2-最终性对比" class="headerlink" title="7.2 最终性对比"></a>7.2 最终性对比</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">概率性最终性：</span><br><span class="line">- PoW：6 确认 ≈ 1 小时（99.9% 概率不可逆）</span><br><span class="line">- 最长链可能被重组（实际发生率极低）</span><br><span class="line"></span><br><span class="line">绝对最终性：</span><br><span class="line">- Casper FFG（以太坊 PoS）：约 2 个 epoch ≈ 12.8 分钟</span><br><span class="line">- PBFT/Tendermint：2-3 轮通信 ≈ 几秒</span><br><span class="line">- 一旦 finalize，绝不可逆</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-3-共识算法的全景图"><a href="#7-3-共识算法的全景图" class="headerlink" title="7.3 共识算法的全景图"></a>7.3 共识算法的全景图</h3><table>
+<thead>
+<tr>
+<th>算法</th>
+<th>类型</th>
+<th>TPS</th>
+<th>去中心化</th>
+<th>最终性</th>
+<th>代表项目</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PoW (Nakamoto)</td>
+<td>概率性</td>
+<td>~7</td>
+<td>高</td>
+<td>无</td>
+<td>Bitcoin, Litecoin, Dogecoin</td>
+</tr>
+<tr>
+<td>PoS (Casper)</td>
+<td>概率性+确定性</td>
+<td>~30</td>
+<td>高</td>
+<td>~13min</td>
+<td>Ethereum 2.0</td>
+</tr>
+<tr>
+<td>DPoS</td>
+<td>BFT+选举</td>
+<td>~数千</td>
+<td>低</td>
+<td>~1min</td>
+<td>EOS, TRON, BitShares</td>
+</tr>
+<tr>
+<td>PBFT</td>
+<td>经典 BFT</td>
+<td>~数千</td>
+<td>极低</td>
+<td>即时</td>
+<td>Hyperledger, Zilliqa</td>
+</tr>
+<tr>
+<td>Tendermint</td>
+<td>BFT+PoS</td>
+<td>~数千</td>
+<td>中</td>
+<td>即时</td>
+<td>Cosmos Hub</td>
+</tr>
+<tr>
+<td>HotStuff</td>
+<td>BFT</td>
+<td>~数千</td>
+<td>低</td>
+<td>即时</td>
+<td>Diem (Libra), Aptos, Sui</td>
+</tr>
+<tr>
+<td>Avalanche</td>
+<td>亚稳态</td>
+<td>~数千</td>
+<td>高</td>
+<td>即时(~1s)</td>
+<td>Avalanche</td>
+</tr>
+<tr>
+<td>HoneyBadgerBFT</td>
+<td>异步 BFT</td>
+<td>低</td>
+<td>低</td>
+<td>即时</td>
+<td>研究项目</td>
+</tr>
+<tr>
+<td>Raft</td>
+<td>非拜占庭</td>
+<td>高</td>
+<td>—</td>
+<td>—</td>
+<td>etcd, Fabric 排序服务</td>
+</tr>
+</tbody></table>
+<h3 id="7-4-选型建议"><a href="#7-4-选型建议" class="headerlink" title="7.4 选型建议"></a>7.4 选型建议</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">选择共识算法时需考虑：</span><br><span class="line">1. 网络类型：公链还是联盟链？</span><br><span class="line">2. 节点信任模型：拜占庭环境还是 crash-fault？</span><br><span class="line">3. 去中心化程度：节点数是千级、百级还是十级？</span><br><span class="line">4. 性能需求：TPS、延迟、最终确定时间？</span><br><span class="line">5. 安全预算：愿意付出多少安全成本（能源、质押）？</span><br><span class="line"></span><br><span class="line">公链首推：PoS/Casper、Tendermint（兼顾安全性和可扩展性）</span><br><span class="line">联盟链首推：PBFT、HotStuff（低延迟、高吞吐）</span><br><span class="line">简单场景：Raft（易于理解和实现，无拜占庭威胁）</span><br></pre></td></tr></table></figure>
+
+<h2 id="八、新一代共识算法"><a href="#八、新一代共识算法" class="headerlink" title="八、新一代共识算法"></a>八、新一代共识算法</h2><h3 id="8-1-Tendermint-共识"><a href="#8-1-Tendermint-共识" class="headerlink" title="8.1 Tendermint 共识"></a>8.1 Tendermint 共识</h3><p>Tendermint 是 Cosmos 生态的核心共识引擎，它结合了 PBFT 的安全性和 PoS 的去中心化经济模型：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Tendermint 共识流程（每轮）：</span><br><span class="line"></span><br><span class="line">1. Propose 阶段：</span><br><span class="line">   - 通过确定性算法选出一个 Proposer（按 voting power 轮转）</span><br><span class="line">   - Proposer 广播一个提议区块</span><br><span class="line"></span><br><span class="line">2. Pre-vote 阶段：</span><br><span class="line">   - 每个验证者验证提议区块</span><br><span class="line">   - 验证通过 → 广播 PREVOTE 消息</span><br><span class="line">   - 等待收集 2/3+ PREVOTE → 进入下一阶段</span><br><span class="line">   - 超时或无效区块 → 广播 nil PREVOTE</span><br><span class="line"></span><br><span class="line">3. Pre-commit 阶段：</span><br><span class="line">   - 收到 2/3+ 有效 PREVOTE → 广播 PRECOMMIT</span><br><span class="line">   - 收到 2/3+ PRECOMMIT → 区块被提交（committed）</span><br><span class="line"></span><br><span class="line">4. Commit 阶段：</span><br><span class="line">   - 执行区块中的所有交易</span><br><span class="line">   - 更新状态根哈希</span><br><span class="line">   - 进入下一高度</span><br><span class="line"></span><br><span class="line">超时处理：</span><br><span class="line">- Propose 超时 → 发起新一轮（round++），换新 Proposer</span><br><span class="line">- Pre-vote 超时 → 广播 nil PREVOTE</span><br><span class="line">- Pre-commit 超时 → 发起新一轮</span><br><span class="line"></span><br><span class="line">安全性保证：</span><br><span class="line">- 每个高度只允许 commit 一个区块（同一 round 或不同 round）</span><br><span class="line">- 锁定机制：验证者在某个 round 发了 PRECOMMIT 后，</span><br><span class="line">  在后续 round 不能对冲突的区块发 PREVOTE</span><br><span class="line">- 验证者集合变更延迟到 2 个区块后生效</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-2-HotStuff-共识"><a href="#8-2-HotStuff-共识" class="headerlink" title="8.2 HotStuff 共识"></a>8.2 HotStuff 共识</h3><p>HotStuff 是由 VMware Research 提出的 BFT 共识协议，被 Diem（原 Libra）、Aptos 和 Sui 采用。其核心创新是线性通信复杂度：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">HotStuff 的三阶段（链式结构）：</span><br><span class="line"></span><br><span class="line">每个阶段产生一个 Quorum Certificate（QC，法定人数证书）：</span><br><span class="line">- PrepareQC：证明提议被接受</span><br><span class="line">- PrecommitQC：证明进入锁定状态  </span><br><span class="line">- CommitQC：证明可以提交</span><br><span class="line"></span><br><span class="line">关键特性：</span><br><span class="line">1. 链式（Chained）设计：阶段之间通过哈希链接</span><br><span class="line">2. 线性通信：Leader 收集投票（O(N)），不需要每个节点互相广播（O(N^2)）</span><br><span class="line">3. 流水线（Pipelined）：一个提议在不同轮次中扮演不同阶段的角色</span><br><span class="line">4. Pacemaker：独立的超时和领导者替换模块</span><br><span class="line"></span><br><span class="line">与 PBFT 的对比：</span><br><span class="line">- PBFT 消息复杂度：O(N^2)（每阶段全节点广播）</span><br><span class="line">- HotStuff 消息复杂度：O(N)（投票→Leader→聚合→广播）</span><br><span class="line">- 这使得 HotStuff 可以支持更多验证者（100+）</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-3-Avalanche-共识"><a href="#8-3-Avalanche-共识" class="headerlink" title="8.3 Avalanche 共识"></a>8.3 Avalanche 共识</h3><p>Avalanche 是一种全新的共识协议族，基于亚稳态（metastable）机制，不使用传统的 BFT 投票或 PoW：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Avalanche 的四个核心机制：</span><br><span class="line"></span><br><span class="line">1. Slush（单色共识）：</span><br><span class="line">   - 节点随机采样 k 个邻居</span><br><span class="line">   - 如果 α 比例的邻居偏好不同于自己 → 切换偏好</span><br><span class="line">   - 重复直到稳定</span><br><span class="line">   - 特点：无状态，不记忆历史</span><br><span class="line"></span><br><span class="line">2. Snowflake（添加记忆）：</span><br><span class="line">   - 和 Slush 一样，但增加计数器</span><br><span class="line">   - 连续有多少轮偏好保持不变 → 计数递增</span><br><span class="line">   - 达到阈值 β → 接受该颜色（最终确定）</span><br><span class="line"></span><br><span class="line">3. Snowball（增强置信度）：</span><br><span class="line">   - 为每种颜色维护一个置信度计数器</span><br><span class="line">   - 每次都基于当前偏好进行查询</span><br><span class="line">   - 比 Snowflake 更鲁棒</span><br><span class="line"></span><br><span class="line">4. Avalanche（有向无环图 DAG）：</span><br><span class="line">   - 交易形成 DAG（而非线性链）</span><br><span class="line">   - 每个新交易引用多个祖先交易</span><br><span class="line">   - 通过有向投票决定冲突交易集合的接受顺序</span><br><span class="line"></span><br><span class="line">核心优势：</span><br><span class="line">- 亚稳态：没有领导者，没有委员会选举</span><br><span class="line">- 高吞吐：数千 TPS，亚秒级最终确认</span><br><span class="line">- 鲁棒性：对拜占庭节点的容忍度可参数化</span><br><span class="line">- 无需质押锁定：验证者自由进出</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-4-共识算法演进路线图"><a href="#8-4-共识算法演进路线图" class="headerlink" title="8.4 共识算法演进路线图"></a>8.4 共识算法演进路线图</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">2008  ── PoW (Bitcoin) ─── 去中心化共识的开端</span><br><span class="line">  │</span><br><span class="line">2009  ── PBFT 形式化应用 ── 许可链共识</span><br><span class="line">  │</span><br><span class="line">2013  ── Raft (etcd) ─── 非拜占庭共识</span><br><span class="line">  │</span><br><span class="line">2014  ── DPoS (BitShares) ── 委托民主制</span><br><span class="line">  │</span><br><span class="line">2016  ── Tendermint ── BFT + PoS 融合</span><br><span class="line">  │</span><br><span class="line">2018  ── Casper FFG ── PoS 最终性叠加层</span><br><span class="line">  │</span><br><span class="line">2019  ── HotStuff ── 线性复杂度 BFT</span><br><span class="line">  │</span><br><span class="line">2020  ── Avalanche ── 亚稳态共识</span><br><span class="line">  │</span><br><span class="line">2022  ── Ethereum Merge ── PoW→PoS 历史性转折</span><br><span class="line">  │</span><br><span class="line">2023+ ── 分片共识、DAG 共识、零知识共识等前沿方向</span><br></pre></td></tr></table></figure>
+
+<h2 id="九、深入理解最长链规则与分叉"><a href="#九、深入理解最长链规则与分叉" class="headerlink" title="九、深入理解最长链规则与分叉"></a>九、深入理解最长链规则与分叉</h2><h3 id="9-1-链重组（Chain-Reorganization）"><a href="#9-1-链重组（Chain-Reorganization）" class="headerlink" title="9.1 链重组（Chain Reorganization）"></a>9.1 链重组（Chain Reorganization）</h3><p>当出现竞争分叉时，节点需要选择跟随哪条链。在 PoW 中，节点始终选择累积工作量最大的链：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">场景：网络中出现两个有效的竞争区块（块 A 和块 B）</span><br><span class="line"></span><br><span class="line">T=0: 两个矿工同时发现有效区块</span><br><span class="line">  Chain 1: ... → A</span><br><span class="line">  Chain 2: ... → B</span><br><span class="line"></span><br><span class="line">T=1: 下一个区块被挖出</span><br><span class="line">  Chain 1: ... → A → X (矿工 power=51%)</span><br><span class="line">  Chain 2: ... → B → Y (矿工 power=49%)</span><br><span class="line"></span><br><span class="line">  Chain 1 累积难度 &gt; Chain 2 → 网络收敛到 Chain 1</span><br><span class="line">  块 B 成为孤块，B 中的交易被重新放回内存池</span><br><span class="line">  块 Y 也被丢弃</span><br><span class="line"></span><br><span class="line">重组深度：</span><br><span class="line">- 1 区块重组：偶发（孤块率 ~0.3%）</span><br><span class="line">- 2 区块重组：罕见</span><br><span class="line">- 6+ 区块重组：极度罕见（视为不可能）</span><br></pre></td></tr></table></figure>
+
+<h3 id="9-2-自私挖矿策略"><a href="#9-2-自私挖矿策略" class="headerlink" title="9.2 自私挖矿策略"></a>9.2 自私挖矿策略</h3><p>自私挖矿是 PoW 中最重要的策略性攻击之一：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">自私挖矿流程：</span><br><span class="line">1. 自私矿工挖到区块后不立即广播，而是隐藏</span><br><span class="line">2. 其他矿工在上一区块后继续挖矿</span><br><span class="line">3. 自私矿工在其隐藏区块之后继续挖下一个区块</span><br><span class="line">4. 当诚实矿工挖出区块时：</span><br><span class="line">   - 如果自私矿工已领先 2 个区块 → 立即广播，诚实矿工的区块作废</span><br><span class="line">   - 如果自私矿工只领先 1 个区块 → 同时广播竞争</span><br><span class="line">   - 如果自私矿工落后 → 放弃隐藏链，跟随诚实链</span><br><span class="line"></span><br><span class="line">收益分析（理论结果）：</span><br><span class="line">- 如果自私矿工占算力 α &gt; 33%，策略有利可图</span><br><span class="line">- Eyal &amp; Sirer (2014) 证明：α &gt; 1/3 即可获超额收益</span><br><span class="line">- 实际中，矿池之间的博弈使得自私挖矿较难实施</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="十、共识机制的实际考量"><a href="#十、共识机制的实际考量" class="headerlink" title="十、共识机制的实际考量"></a>十、共识机制的实际考量</h2><h3 id="10-1-长程攻击（Long-Range-Attack）"><a href="#10-1-长程攻击（Long-Range-Attack）" class="headerlink" title="10.1 长程攻击（Long-Range Attack）"></a>10.1 长程攻击（Long-Range Attack）</h3><p>这是 PoS 独有的威胁——攻击者无需当前的大量权益，只需购买历史上持有大量权益的私钥：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">攻击方式：</span><br><span class="line">1. 从交易所或网络中获取已被出售的历史私钥</span><br><span class="line">2. 因为私钥在历史上持有大量权益</span><br><span class="line">3. 攻击者从 genesis 或早期 checkpoint 开始构建一条假链</span><br><span class="line">4. 假链在早期有足够权益支持，看似合法</span><br><span class="line">5. 新加入的节点可能接受这条更长的假链</span><br><span class="line"></span><br><span class="line">防御方案：</span><br><span class="line">- Weak Subjectivity（弱主观性）：</span><br><span class="line">  新节点只接受最近 N 个 epoch 内 finalize 的 checkpoint</span><br><span class="line">  确保不会回滚到太远的过去</span><br><span class="line">- 社交共识（硬分叉）：</span><br><span class="line">  社区通过社交层协商决定正确的分叉</span><br><span class="line">- Key-evolving Cryptography（密钥演化）：</span><br><span class="line">  随时间自动更新验证者密钥</span><br></pre></td></tr></table></figure>
+
+<h3 id="10-2-活性与安全性的权衡"><a href="#10-2-活性与安全性的权衡" class="headerlink" title="10.2 活性与安全性的权衡"></a>10.2 活性与安全性的权衡</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CAP 定理视角下的共识算法设计：</span><br><span class="line">- Consistency（一致性）— 所有节点看到相同的状态</span><br><span class="line">- Availability（可用性）— 系统始终可处理请求</span><br><span class="line">- Partition Tolerance（分区容错）— 网络分区时系统继续工作</span><br><span class="line"></span><br><span class="line">PoW 链在网络分区时：</span><br><span class="line">- 两个分区各自继续出块（可用性优先）</span><br><span class="line">- 分区恢复后，较短的链被重组（一致性被推迟）</span><br><span class="line"></span><br><span class="line">PBFT 链在网络分区时：</span><br><span class="line">- 若某一分区没有 2/3+ 的节点 → 停止服务（一致性优先）</span><br><span class="line">- 若某一分区有 2/3+ 的节点 → 该分区继续运行</span><br><span class="line">- 分区恢复后，小分区自动同步大分区的状态</span><br><span class="line"></span><br><span class="line">Tendermint 采用 BFT 安全模型：</span><br><span class="line">- 1/3+ 验证者离线 → 链停止（牺牲活性，保证安全性）</span><br><span class="line">- PoW/PoS 以太坊采用链增长优先策略（牺牲即时确定性，保证活性）</span><br></pre></td></tr></table></figure>
+
+<h3 id="10-3-共识机制的量子安全考虑"><a href="#10-3-共识机制的量子安全考虑" class="headerlink" title="10.3 共识机制的量子安全考虑"></a>10.3 共识机制的量子安全考虑</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">量子计算对共识机制的威胁：</span><br><span class="line"></span><br><span class="line">PoW (SHA-256)：</span><br><span class="line">- Grover 算法：搜索 nonce 的加速比 √N → 有效搜索空间减半</span><br><span class="line">- 但 PoW 的竞争性质使所有人同步获益 → 相对安全性不变</span><br><span class="line">- 仍然需要极大的量子比特数（数百万物理量子比特）</span><br><span class="line"></span><br><span class="line">PoS (ECDSA/EdDSA 签名)：</span><br><span class="line">- Shor 算法：可能破解椭圆曲线密码学</span><br><span class="line">- 需要迁移到后量子签名方案（如基于 Lattice 的签名）</span><br><span class="line">- 以太坊已在规划后量子密码学升级路径</span><br><span class="line"></span><br><span class="line">PBFT/类 BFT 共识：</span><br><span class="line">- 核心共识逻辑不依赖密码学难题</span><br><span class="line">- 仅消息签名可能受量子影响</span><br><span class="line">- 替换签名算法即可升级</span><br></pre></td></tr></table></figure>
+
+<p>共识机制是区块链技术栈中最核心也最复杂的组成部分。从比特币的 PoW 开创了去中心化共识的先河，到以太坊的 PoS 实现了能源友好和最终确定性，再到 PBFT&#x2F;Raft 在联盟链领域的广泛应用，共识算法的演进推动着整个区块链行业的发展方向。理解各种共识机制的优劣与适用场景，是做好区块链架构设计的基础。</p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2020/12/30/%E5%8C%BA%E5%9D%97%E9%93%BE-%E5%85%B1%E8%AF%86%E6%9C%BA%E5%88%B6/">http://tufusi.com/2020/12/30/%E5%8C%BA%E5%9D%97%E9%93%BE-%E5%85%B1%E8%AF%86%E6%9C%BA%E5%88%B6/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/hitesh-choudhary-JNxTZzpHmsI-unsplash.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/01/05/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91Android%E5%90%AF%E5%8A%A8%E8%BF%87%E7%A8%8B/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/283345.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【深入内核篇】Android启动过程</span></div></a></div><div class="next-post pull_right"><a href="/2020/12/25/%E5%8C%BA%E5%9D%97%E9%93%BE%E7%AE%97%E6%B3%95%E5%88%86%E6%9E%90-%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95%E5%A4%A7%E6%AF%94%E6%8B%BC/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/hitesh-choudhary-JNxTZzpHmsI-unsplash.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>区块链算法分析-共识算法大比拼</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/hitesh-choudhary-JNxTZzpHmsI-unsplash.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

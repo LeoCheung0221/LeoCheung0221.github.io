@@ -1,0 +1,476 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【深入理解JVM字节码】第十三篇、应用破解Vs防破解 | ONE·PIECE</title><meta name="description" content="【深入理解JVM字节码】第十三篇、应用破解Vs防破解"><meta name="keywords" content="字节码,逆向安全"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【深入理解JVM字节码】第十三篇、应用破解Vs防破解"><meta name="twitter:description" content="【深入理解JVM字节码】第十三篇、应用破解Vs防破解"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/253.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【深入理解JVM字节码】第十三篇、应用破解Vs防破解"><meta property="og:url" content="http://tufusi.com/2021/05/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%8D%81%E4%B8%89%E7%AF%87%E3%80%81%E5%BA%94%E7%94%A8%E7%A0%B4%E8%A7%A3Vs%E9%98%B2%E7%A0%B4%E8%A7%A3/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【深入理解JVM字节码】第十三篇、应用破解Vs防破解"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/253.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2021/05/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%8D%81%E4%B8%89%E7%AF%87%E3%80%81%E5%BA%94%E7%94%A8%E7%A0%B4%E8%A7%A3Vs%E9%98%B2%E7%A0%B4%E8%A7%A3/"><link rel="prev" title="【深入理解JVM字节码】第十四篇、APM实现原理" href="http://tufusi.com/2021/05/05/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%8D%81%E5%9B%9B%E7%AF%87%E3%80%81APM%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/"><link rel="next" title="【深入理解JVM字节码】第十二篇、cglib动态代理原理" href="http://tufusi.com/2021/04/25/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%8D%81%E4%BA%8C%E7%AF%87%E3%80%81cglib%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86%E5%8E%9F%E7%90%86/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E6%94%BB%E9%98%B2%E5%8F%8C%E6%96%B9%E7%9A%84%E6%88%98%E5%9C%BA"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、攻防双方的战场</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-APK-%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E9%80%9F%E8%A7%88"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">1.1 APK 文件结构速览</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81%E5%B8%B8%E8%A7%81%E7%A0%B4%E8%A7%A3%E6%89%8B%E6%AE%B5"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、常见破解手段</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-APK-%E5%8F%8D%E7%BC%96%E8%AF%91%E4%B8%8E-smali-%E4%BB%A3%E7%A0%81%E4%BF%AE%E6%94%B9"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 APK 反编译与 smali 代码修改</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E4%BD%BF%E7%94%A8-JADX-%E7%9B%B4%E6%8E%A5%E5%8F%8D%E7%BC%96%E8%AF%91%E4%B8%BA-Java"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 使用 JADX 直接反编译为 Java</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-License-%E6%A0%A1%E9%AA%8C%E7%BB%95%E8%BF%87"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 License 校验绕过</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-4-%E5%BA%94%E7%94%A8%E5%86%85%E8%B4%AD%E4%B9%B0%EF%BC%88IAP%EF%BC%89%E7%BB%95%E8%BF%87"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">2.4 应用内购买（IAP）绕过</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-5-%E5%B9%BF%E5%91%8A%E7%A7%BB%E9%99%A4"><span class="toc_mobile_items-number">2.5.</span> <span class="toc_mobile_items-text">2.5 广告移除</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-6-%E4%BA%8C%E6%AC%A1%E6%89%93%E5%8C%85%EF%BC%88Repackaging%EF%BC%89"><span class="toc_mobile_items-number">2.6.</span> <span class="toc_mobile_items-text">2.6 二次打包（Repackaging）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81%E9%98%B2%E7%A0%B4%E8%A7%A3%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、防破解技术体系</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E4%BB%A3%E7%A0%81%E6%B7%B7%E6%B7%86"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 代码混淆</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E6%8E%A7%E5%88%B6%E6%B5%81%E6%B7%B7%E6%B7%86%E6%8A%80%E6%9C%AF%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 控制流混淆技术详解</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-%E5%AE%8C%E6%95%B4%E6%80%A7%E6%A3%80%E6%B5%8B"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 完整性检测</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-%E5%8F%8D%E8%B0%83%E8%AF%95%E6%8A%80%E6%9C%AF"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">3.4 反调试技术</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-5-Root-Magisk-%E6%A3%80%E6%B5%8B"><span class="toc_mobile_items-number">3.5.</span> <span class="toc_mobile_items-text">3.5 Root &#x2F; Magisk 检测</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E9%AB%98%E7%BA%A7%E5%AF%B9%E6%8A%97%E4%B8%8E%E5%8A%A0%E5%9B%BA%E6%96%B9%E6%A1%88"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、高级对抗与加固方案</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E5%8A%A8%E6%80%81%E5%8A%A0%E8%BD%BD%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%88%86%E7%A6%BB"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 动态加载与代码分离</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E7%AC%AC%E4%B8%89%E6%96%B9%E5%8A%A0%E5%9B%BA%E6%9C%8D%E5%8A%A1"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 第三方加固服务</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-%E6%9C%8D%E5%8A%A1%E7%AB%AF%E9%AA%8C%E8%AF%81"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 服务端验证</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-4-%E4%BB%A3%E7%A0%81%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%88VMP%EF%BC%89"><span class="toc_mobile_items-number">4.4.</span> <span class="toc_mobile_items-text">4.4 代码虚拟化（VMP）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81AOSP-%E5%AE%89%E5%85%A8%E7%9B%B8%E5%85%B3%E6%BA%90%E7%A0%81%E8%B7%AF%E5%BE%84"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、AOSP 安全相关源码路径</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E5%B8%B8%E8%A7%81%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、常见面试题</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%94%BB%E9%98%B2%E5%8F%8C%E6%96%B9%E7%9A%84%E6%88%98%E5%9C%BA"><span class="toc-number">1.</span> <span class="toc-text">一、攻防双方的战场</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-APK-%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E9%80%9F%E8%A7%88"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 APK 文件结构速览</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%B8%B8%E8%A7%81%E7%A0%B4%E8%A7%A3%E6%89%8B%E6%AE%B5"><span class="toc-number">2.</span> <span class="toc-text">二、常见破解手段</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-APK-%E5%8F%8D%E7%BC%96%E8%AF%91%E4%B8%8E-smali-%E4%BB%A3%E7%A0%81%E4%BF%AE%E6%94%B9"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 APK 反编译与 smali 代码修改</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E4%BD%BF%E7%94%A8-JADX-%E7%9B%B4%E6%8E%A5%E5%8F%8D%E7%BC%96%E8%AF%91%E4%B8%BA-Java"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 使用 JADX 直接反编译为 Java</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-License-%E6%A0%A1%E9%AA%8C%E7%BB%95%E8%BF%87"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 License 校验绕过</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%BA%94%E7%94%A8%E5%86%85%E8%B4%AD%E4%B9%B0%EF%BC%88IAP%EF%BC%89%E7%BB%95%E8%BF%87"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 应用内购买（IAP）绕过</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E5%B9%BF%E5%91%8A%E7%A7%BB%E9%99%A4"><span class="toc-number">2.5.</span> <span class="toc-text">2.5 广告移除</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-%E4%BA%8C%E6%AC%A1%E6%89%93%E5%8C%85%EF%BC%88Repackaging%EF%BC%89"><span class="toc-number">2.6.</span> <span class="toc-text">2.6 二次打包（Repackaging）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E9%98%B2%E7%A0%B4%E8%A7%A3%E6%8A%80%E6%9C%AF%E4%BD%93%E7%B3%BB"><span class="toc-number">3.</span> <span class="toc-text">三、防破解技术体系</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E4%BB%A3%E7%A0%81%E6%B7%B7%E6%B7%86"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 代码混淆</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%8E%A7%E5%88%B6%E6%B5%81%E6%B7%B7%E6%B7%86%E6%8A%80%E6%9C%AF%E8%AF%A6%E8%A7%A3"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 控制流混淆技术详解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%AE%8C%E6%95%B4%E6%80%A7%E6%A3%80%E6%B5%8B"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 完整性检测</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%8F%8D%E8%B0%83%E8%AF%95%E6%8A%80%E6%9C%AF"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 反调试技术</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-Root-Magisk-%E6%A3%80%E6%B5%8B"><span class="toc-number">3.5.</span> <span class="toc-text">3.5 Root &#x2F; Magisk 检测</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E9%AB%98%E7%BA%A7%E5%AF%B9%E6%8A%97%E4%B8%8E%E5%8A%A0%E5%9B%BA%E6%96%B9%E6%A1%88"><span class="toc-number">4.</span> <span class="toc-text">四、高级对抗与加固方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%8A%A8%E6%80%81%E5%8A%A0%E8%BD%BD%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%88%86%E7%A6%BB"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 动态加载与代码分离</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E7%AC%AC%E4%B8%89%E6%96%B9%E5%8A%A0%E5%9B%BA%E6%9C%8D%E5%8A%A1"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 第三方加固服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E6%9C%8D%E5%8A%A1%E7%AB%AF%E9%AA%8C%E8%AF%81"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 服务端验证</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E4%BB%A3%E7%A0%81%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%88VMP%EF%BC%89"><span class="toc-number">4.4.</span> <span class="toc-text">4.4 代码虚拟化（VMP）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81AOSP-%E5%AE%89%E5%85%A8%E7%9B%B8%E5%85%B3%E6%BA%90%E7%A0%81%E8%B7%AF%E5%BE%84"><span class="toc-number">5.</span> <span class="toc-text">五、AOSP 安全相关源码路径</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%B8%B8%E8%A7%81%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="toc-number">6.</span> <span class="toc-text">六、常见面试题</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/253.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【深入理解JVM字节码】第十三篇、应用破解Vs防破解</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-05-01<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">5.7k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 21 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、攻防双方的战场"><a href="#一、攻防双方的战场" class="headerlink" title="一、攻防双方的战场"></a>一、攻防双方的战场</h2><p>Android 应用安全领域有一句经典名言：”只要代码运行在用户的设备上，它就不再安全。” APK 文件本质上是一个 ZIP 压缩包，包含 DEX 字节码、资源文件和原生库。攻击者可以轻易提取、反编译、修改并重新打包你的应用。这场攻防战从 Android 诞生之初就一直在进行，至今仍在演进。</p>
+<p>本章从攻击者和防御者两个视角，系统性地拆解 APK 破解的常见手段以及对应的防护策略。理解攻击手法，是设计有效防御的前提。</p>
+<h3 id="1-1-APK-文件结构速览"><a href="#1-1-APK-文件结构速览" class="headerlink" title="1.1 APK 文件结构速览"></a>1.1 APK 文件结构速览</h3><p>在深入破解技术之前，先快速回顾 APK 的物理结构：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">APK (ZIP格式)</span><br><span class="line">├── META-INF/</span><br><span class="line">│   ├── MANIFEST.MF     # 每个文件的 SHA-256 摘要</span><br><span class="line">│   ├── CERT.SF         # MANIFEST.MF 的签名</span><br><span class="line">│   └── CERT.RSA/EC     # 开发者证书和签名字段</span><br><span class="line">├── AndroidManifest.xml # 二进制 XML（AXML 格式）</span><br><span class="line">├── classes.dex         # 主 DEX 文件（Dalvik 字节码）</span><br><span class="line">├── classes2.dex ...    # 多 DEX（MultiDex）</span><br><span class="line">├── resources.arsc      # 编译后的资源表</span><br><span class="line">├── res/                # 资源文件（二进制 XML + 图片）</span><br><span class="line">├── lib/armeabi-v7a/    # 原生库（.so）</span><br><span class="line">└── assets/             # 原始资源文件</span><br></pre></td></tr></table></figure>
+
+<p>逆向分析的对应工具链：</p>
+<table>
+<thead>
+<tr>
+<th align="left">APK 组件</th>
+<th align="left">逆向工具</th>
+<th align="left">输出格式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">AndroidManifest.xml</td>
+<td align="left">AXMLPrinter2, apktool, Androguard</td>
+<td align="left">可读 XML</td>
+</tr>
+<tr>
+<td align="left">classes.dex</td>
+<td align="left">baksmali, jadx, dex2jar + JD-GUI</td>
+<td align="left">smali &#x2F; Java</td>
+</tr>
+<tr>
+<td align="left">resources.arsc</td>
+<td align="left">apktool, aapt2</td>
+<td align="left">可读资源表</td>
+</tr>
+<tr>
+<td align="left">.so 文件</td>
+<td align="left">IDA Pro, Ghidra, radare2</td>
+<td align="left">汇编 &#x2F; 伪C</td>
+</tr>
+<tr>
+<td align="left">签名信息</td>
+<td align="left">keytool, apksigner</td>
+<td align="left">证书信息</td>
+</tr>
+</tbody></table>
+<h2 id="二、常见破解手段"><a href="#二、常见破解手段" class="headerlink" title="二、常见破解手段"></a>二、常见破解手段</h2><h3 id="2-1-APK-反编译与-smali-代码修改"><a href="#2-1-APK-反编译与-smali-代码修改" class="headerlink" title="2.1 APK 反编译与 smali 代码修改"></a>2.1 APK 反编译与 smali 代码修改</h3><p>这是最基础也最常见的攻击方式。攻击流程如下：</p>
+<p><strong>第一步：解包</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 使用 apktool 解包</span></span><br><span class="line">apktool d target.apk -o output_dir/</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出目录结构：</span></span><br><span class="line"><span class="comment"># output_dir/</span></span><br><span class="line"><span class="comment"># ├── AndroidManifest.xml  (可读文本)</span></span><br><span class="line"><span class="comment"># ├── smali/               (反编译的 smali 代码)</span></span><br><span class="line"><span class="comment"># ├── res/                 (解码后的资源)</span></span><br><span class="line"><span class="comment"># └── ...</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>第二步：修改 smali 代码</strong></p>
+<p>攻击者可以在 smali 代码中找到关键逻辑并修改。例如，一个简单的 License 校验函数：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 原始 Java 代码</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isLicensed</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> LicenseManager.check(getPackageName());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对应的 smali 代码：</p>
+<figure class="highlight smali"><table><tr><td class="code"><pre><span class="line"><span class="keyword">.method</span><span class="keyword"> public</span> isLicensed()Z</span><br><span class="line"><span class="keyword">    .locals</span> 1</span><br><span class="line">   <span class="built_in"> invoke-virtual </span>&#123;p0&#125;, <span class="class">Lcom/example/App;</span>-&gt;getPackageName()<span class="class">Ljava/lang/String;</span></span><br><span class="line">   <span class="built_in"> move-result-object </span>v0</span><br><span class="line">   <span class="built_in"> invoke-static </span>&#123;v0&#125;, <span class="class">Lcom/example/LicenseManager;</span>-&gt;check(<span class="class">Ljava/lang/String;</span>)Z</span><br><span class="line">   <span class="built_in"> move-result </span>v0</span><br><span class="line">   <span class="built_in"> return </span>v0<span class="keyword"></span></span><br><span class="line"><span class="keyword">.end method</span></span><br></pre></td></tr></table></figure>
+
+<p>攻击者只需修改一行：</p>
+<figure class="highlight smali"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 原始：invoke-static &#123;v0&#125;, Lcom/example/LicenseManager;-&gt;check(Ljava/lang/String;)Z→v0</span></span><br><span class="line"><span class="comment"># 修改为：</span><span class="built_in"></span></span><br><span class="line"><span class="built_in">const/4 </span>v0, 0x1   <span class="comment"># 直接返回 true</span><span class="built_in"></span></span><br><span class="line"><span class="built_in">return </span>v0</span><br></pre></td></tr></table></figure>
+
+<p><strong>第三步：重新打包并签名</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 重新打包</span></span><br><span class="line">apktool b output_dir/ -o modified.apk</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成调试签名</span></span><br><span class="line">keytool -genkey -v -keystore debug.keystore -<span class="built_in">alias</span> debug -keyalg RSA \</span><br><span class="line">    -keysize 2048 -validity 10000</span><br><span class="line">jarsigner -verbose -keystore debug.keystore modified.apk debug</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-使用-JADX-直接反编译为-Java"><a href="#2-2-使用-JADX-直接反编译为-Java" class="headerlink" title="2.2 使用 JADX 直接反编译为 Java"></a>2.2 使用 JADX 直接反编译为 Java</h3><p>JADX 是目前最流行的 DEX-to-Java 反编译器，它直接将 DEX 字节码反编译为可读性极高的 Java 代码：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">jadx target.apk -d decompiled/</span><br></pre></td></tr></table></figure>
+
+<p>JADX 的反编译质量远超 dex2jar+JD-GUI 组合，能够：</p>
+<ul>
+<li>还原大部分控制流结构（if&#x2F;for&#x2F;while）</li>
+<li>还原泛型参数</li>
+<li>识别常见库的特征（Retrofit、OkHttp、Glide 等）</li>
+<li>支持多 DEX 文件</li>
+</ul>
+<h3 id="2-3-License-校验绕过"><a href="#2-3-License-校验绕过" class="headerlink" title="2.3 License 校验绕过"></a>2.3 License 校验绕过</h3><p>很多付费应用采用本地 License 校验。常见的校验点：</p>
+<p><strong>方式一：PackageManager 校验</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">PackageManager</span> <span class="variable">pm</span> <span class="operator">=</span> context.getPackageManager();</span><br><span class="line"><span class="type">PackageInfo</span> <span class="variable">pi</span> <span class="operator">=</span> pm.getPackageInfo(context.getPackageName(), </span><br><span class="line">                                    PackageManager.GET_SIGNATURES);</span><br><span class="line">Signature[] signatures = pi.signatures;</span><br><span class="line"><span class="comment">// 判断签名是否匹配开发者的证书</span></span><br></pre></td></tr></table></figure>
+
+<p>攻击者的绕过方式：在 smali 中找到 <code>checkSignatures()</code> 方法，将其返回值改为 true，或直接 Hook <code>PackageManager.getPackageInfo()</code> 方法返回伪造的 PackageInfo。</p>
+<p><strong>方式二：Google Play Licensing (LVL)</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// LVL 通过与 Google Play 服务通信验证 License</span></span><br><span class="line">mLicenseChecker.checkAccess(<span class="keyword">new</span> <span class="title class_">LicenseCheckerCallback</span>() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">allow</span><span class="params">()</span> &#123; <span class="comment">/* 授权通过 */</span> &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">dontAllow</span><span class="params">()</span> &#123; <span class="comment">/* 授权拒绝 */</span> &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>攻击方式：</p>
+<ol>
+<li>修改 smali，让 <code>checkAccess</code> 的回调始终进入 <code>allow()</code> 分支</li>
+<li>使用 Lucky Patcher 自动 patch LVL 和 Google Billing</li>
+<li>通过 Xposed&#x2F;Frida Hook <code>LicenseChecker.checkAccess()</code> 方法</li>
+</ol>
+<h3 id="2-4-应用内购买（IAP）绕过"><a href="#2-4-应用内购买（IAP）绕过" class="headerlink" title="2.4 应用内购买（IAP）绕过"></a>2.4 应用内购买（IAP）绕过</h3><p>Google Play Billing 是应用内购买的主要实现方式。攻击者通过：</p>
+<ol>
+<li><strong>Lucky Patcher</strong>：自动 patch Google Billing 的响应，将购买状态修改为成功</li>
+<li><strong>Freedom</strong>：拦截 Billing Service 通信，伪造购买凭证</li>
+<li><strong>修改 smali</strong>：找到购买回调 <code>onPurchasesUpdated()</code>，将 <code>BillingResult.responseCode</code> 修改为 <code>OK</code></li>
+</ol>
+<figure class="highlight smali"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 原始代码检查 responseCode == OK</span><span class="built_in"></span></span><br><span class="line"><span class="built_in">if-ne </span>v0, v1,<span class="keyword"> :cond_fail</span></span><br><span class="line"><span class="comment"># 攻击者修改：删除条件跳转，直接进入成功分支</span></span><br><span class="line"><span class="comment"># if-ne v0, v1, :cond_fail  &lt;-- 注释掉或删除</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>更高阶的防护</strong>：购买状态不应仅依赖客户端的 <code>BillingResult</code>。应该在服务端验证 Google Play 的 <code>Purchase</code> 对象（通过 <code>purchase.getPurchaseToken()</code> 调用 Google Play Developer API 验证购买真实性）。</p>
+<h3 id="2-5-广告移除"><a href="#2-5-广告移除" class="headerlink" title="2.5 广告移除"></a>2.5 广告移除</h3><p>免费应用通常通过展示广告盈利。攻击者移除广告的手段：</p>
+<ol>
+<li>删除 AndroidManifest.xml 中的 AdActivity 声明</li>
+<li>修改布局文件，将广告 View 的 visibility 改为 GONE</li>
+<li>在 smali 中删除 <code>loadAd()</code> 调用</li>
+<li>使用 AdAway 在 hosts 文件中屏蔽广告服务器域名</li>
+</ol>
+<h3 id="2-6-二次打包（Repackaging）"><a href="#2-6-二次打包（Repackaging）" class="headerlink" title="2.6 二次打包（Repackaging）"></a>2.6 二次打包（Repackaging）</h3><p>攻击者反编译应用后，注入恶意代码（如广告 SDK、信息窃取模块），然后重新打包并签名，通过第三方应用市场分发。这是渠道盗版的主要形式。</p>
+<h2 id="三、防破解技术体系"><a href="#三、防破解技术体系" class="headerlink" title="三、防破解技术体系"></a>三、防破解技术体系</h2><h3 id="3-1-代码混淆"><a href="#3-1-代码混淆" class="headerlink" title="3.1 代码混淆"></a>3.1 代码混淆</h3><p><strong>ProGuard &#x2F; R8</strong></p>
+<p>ProGuard 是 Android 默认的混淆器，R8 是 Google 从 Android Gradle Plugin 3.4.0 开始引入的全新代码缩减和混淆器。R8 相比 ProGuard 的优势：</p>
+<ul>
+<li>同时处理 shrinking（移除无用代码）、optimization（优化字节码）和 obfuscation（混淆命名）</li>
+<li>与 D8 集成更紧密，减少构建时间</li>
+<li>支持更激进的优化（如方法内联、类合并）</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 基础混淆配置 (proguard-rules.pro)</span><br><span class="line">-keepattributes Signature           # 保留泛型签名</span><br><span class="line">-keepattributes *Annotation*        # 保留注解</span><br><span class="line">-keepattributes SourceFile,LineNumberTable  # 保留调试信息</span><br><span class="line"></span><br><span class="line"># 保留关键入口（否则会被移除）</span><br><span class="line">-keep public class * extends android.app.Activity</span><br><span class="line">-keep public class * extends android.app.Service</span><br><span class="line">-keep public class * extends android.content.BroadcastReceiver</span><br><span class="line"></span><br><span class="line"># 字符串加密（需要第三方方案如 DexGuard）</span><br><span class="line"># ProGuard/R8 本身不提供字符串加密</span><br></pre></td></tr></table></figure>
+
+<p><strong>DexGuard</strong>（商业产品）</p>
+<p>DexGuard 是 GuardSquare 的商业混淆和保护产品，提供比 ProGuard&#x2F;R8 更高级的保护：</p>
+<ul>
+<li>字符串加密：将字符串常量加密，运行时解密</li>
+<li>类加密：加密整个类，运行时动态解密</li>
+<li>控制流混淆：插入虚假分支、将条件分支转换为间接跳转</li>
+<li>资源加密：加密 assets 和 raw 资源</li>
+<li>Native 代码保护：调用混淆（将 Java 方法通过 JNI 调用 native 实现）</li>
+<li>完整性校验：检测 APK 是否被篡改</li>
+</ul>
+<h3 id="3-2-控制流混淆技术详解"><a href="#3-2-控制流混淆技术详解" class="headerlink" title="3.2 控制流混淆技术详解"></a>3.2 控制流混淆技术详解</h3><p>控制混淆的目的是让反编译后的代码难以理解。常见技术：</p>
+<p><strong>（1）不透明谓词（Opaque Predicate）</strong></p>
+<p>插入一个结果永远是 true 或永远是 false 的条件判断，但反编译器无法推断：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 原始代码</span></span><br><span class="line"><span class="type">int</span> <span class="variable">result</span> <span class="operator">=</span> a + b;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 混淆后</span></span><br><span class="line"><span class="type">int</span> <span class="variable">x</span> <span class="operator">=</span> <span class="number">15</span>;</span><br><span class="line"><span class="type">int</span> <span class="variable">y</span> <span class="operator">=</span> <span class="number">7</span>;</span><br><span class="line"><span class="type">int</span> <span class="variable">z</span> <span class="operator">=</span> x * x - <span class="number">2</span> * x * y + y * y;  <span class="comment">// 实际上 z = (x-y)^2 = 64</span></span><br><span class="line"><span class="type">int</span> <span class="variable">result</span> <span class="operator">=</span> (z == <span class="number">64</span>) ? (a + b) : -<span class="number">1</span>;  <span class="comment">// 永远走 true 分支</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>（2）控制流平坦化（Control Flow Flattening）</strong></p>
+<p>将所有基本块放在同一个 switch-case 中，通过一个状态变量控制执行顺序：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 原始代码</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compute</span><span class="params">(<span class="type">int</span> n)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">sum</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (i % <span class="number">2</span> == <span class="number">0</span>) &#123;</span><br><span class="line">            sum += i;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            sum -= i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> sum;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 平坦化后（伪代码）</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compute</span><span class="params">(<span class="type">int</span> n)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">state</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="type">int</span> <span class="variable">sum</span> <span class="operator">=</span> <span class="number">0</span>, i = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">        <span class="keyword">switch</span> (state) &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">0</span>: sum = <span class="number">0</span>; i = <span class="number">0</span>; state = <span class="number">1</span>; <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">1</span>: <span class="keyword">if</span> (i &lt; n) state = <span class="number">2</span>; <span class="keyword">else</span> state = <span class="number">6</span>; <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">2</span>: <span class="keyword">if</span> (i % <span class="number">2</span> == <span class="number">0</span>) state = <span class="number">3</span>; <span class="keyword">else</span> state = <span class="number">4</span>; <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">3</span>: sum += i; state = <span class="number">5</span>; <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">4</span>: sum -= i; state = <span class="number">5</span>; <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">5</span>: i++; state = <span class="number">1</span>; <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">6</span>: <span class="keyword">return</span> sum;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>（3）虚假控制流（Bogus Control Flow）</strong></p>
+<p>插入永远不会执行的代码路径，干扰分析人员的理解：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 插入一个永远为 false 的条件分支</span></span><br><span class="line"><span class="keyword">if</span> ((<span class="string">&quot;foo&quot;</span> + <span class="string">&quot;bar&quot;</span>).equals(<span class="string">&quot;foobar&quot;</span>) &amp;&amp; System.currentTimeMillis() &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="comment">// 这个分支永远不会被执行，但会增加分析的难度</span></span><br><span class="line">    executeEvilCode();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-完整性检测"><a href="#3-3-完整性检测" class="headerlink" title="3.3 完整性检测"></a>3.3 完整性检测</h3><p><strong>（1）APK 签名验证</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isSignatureValid</span><span class="params">(Context context)</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="type">PackageInfo</span> <span class="variable">pi</span> <span class="operator">=</span> context.getPackageManager()</span><br><span class="line">            .getPackageInfo(context.getPackageName(),</span><br><span class="line">                            PackageManager.GET_SIGNATURES);</span><br><span class="line">        Signature[] signatures = pi.signatures;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 获取预期的签名哈希（编译时计算好，硬编码在这里）</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">expectedSignature</span> <span class="operator">=</span> <span class="string">&quot;3082...&quot;</span>; <span class="comment">// 发布证书的 SHA-256</span></span><br><span class="line">        </span><br><span class="line">        <span class="type">MessageDigest</span> <span class="variable">md</span> <span class="operator">=</span> MessageDigest.getInstance(<span class="string">&quot;SHA-256&quot;</span>);</span><br><span class="line">        <span class="type">byte</span>[] digest = md.digest(signatures[<span class="number">0</span>].toByteArray());</span><br><span class="line">        <span class="type">String</span> <span class="variable">actualSignature</span> <span class="operator">=</span> bytesToHex(digest);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> expectedSignature.equals(actualSignature);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>安全增强建议</strong>：</p>
+<ul>
+<li>不要直接比较签名字符串，因为这可以通过字符串搜索轻易定位</li>
+<li>将签名哈希拆分为多个部分，分散在不同的类中</li>
+<li>在 native 层进行签名验证（通过 JNI 调用 Java 的 PackageManager API）</li>
+</ul>
+<p><strong>（2）DEX 校验和检测</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isDexIntegrityValid</span><span class="params">(Context context)</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 获取当前 APK 的路径</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">apkPath</span> <span class="operator">=</span> context.getPackageCodePath();</span><br><span class="line">        <span class="type">ZipFile</span> <span class="variable">zipFile</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ZipFile</span>(apkPath);</span><br><span class="line">        <span class="type">ZipEntry</span> <span class="variable">dexEntry</span> <span class="operator">=</span> zipFile.getEntry(<span class="string">&quot;classes.dex&quot;</span>);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 计算实际 CRC</span></span><br><span class="line">        <span class="type">CRC32</span> <span class="variable">crc32</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CRC32</span>();</span><br><span class="line">        <span class="type">InputStream</span> <span class="variable">is</span> <span class="operator">=</span> zipFile.getInputStream(dexEntry);</span><br><span class="line">        <span class="type">byte</span>[] buffer = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">8192</span>];</span><br><span class="line">        <span class="type">int</span> len;</span><br><span class="line">        <span class="keyword">while</span> ((len = is.read(buffer)) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            crc32.update(buffer, <span class="number">0</span>, len);</span><br><span class="line">        &#125;</span><br><span class="line">        is.close();</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 与预期的 CRC 比较</span></span><br><span class="line">        <span class="type">long</span> <span class="variable">expectedCrc</span> <span class="operator">=</span> <span class="number">0xABCD1234L</span>; <span class="comment">// 编译时计算好的 CRC</span></span><br><span class="line">        <span class="keyword">return</span> crc32.getValue() == expectedCrc;</span><br><span class="line">        </span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>（3）Native 层的完整性校验</strong></p>
+<p>将校验逻辑放在 native 库中可以提高逆向门槛：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// native-lib.c</span></span><br><span class="line">JNIEXPORT jboolean JNICALL</span><br><span class="line"><span class="title function_">Java_com_example_IntegrityCheck_verifySignature</span><span class="params">(JNIEnv* env, jobject thiz)</span> &#123;</span><br><span class="line">    <span class="comment">// 获取当前 APK 路径</span></span><br><span class="line">    <span class="comment">// 读取 META-INF/CERT.RSA</span></span><br><span class="line">    <span class="comment">// 解析 X.509 证书</span></span><br><span class="line">    <span class="comment">// 验证签名链</span></span><br><span class="line">    <span class="comment">// 返回验证结果</span></span><br><span class="line">    <span class="comment">// 注意：使用内联汇编或控制混淆来保护关键常量</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-4-反调试技术"><a href="#3-4-反调试技术" class="headerlink" title="3.4 反调试技术"></a>3.4 反调试技术</h3><p><strong>（1）ptrace 检测</strong></p>
+<p>Android 调试器（如 gdb、lldb）通过 ptrace 系统调用附加到目标进程。应用可以检测自身是否被 ptrace：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/ptrace.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">bool</span> <span class="title function_">isBeingDebugged</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 尝试 ptrace 自身</span></span><br><span class="line">    <span class="comment">// 如果已经有一个 tracer 附加，ptrace 会失败</span></span><br><span class="line">    <span class="keyword">if</span> (ptrace(PTRACE_TRACEME, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;  <span class="comment">// 有其他进程正在 trace 本进程</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 分离 ptrace</span></span><br><span class="line">    ptrace(PTRACE_DETACH, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>（2）TracerPid 检测</strong></p>
+<p>Android 的 <code>/proc/self/status</code> 文件中包含一个 <code>TracerPid</code> 字段，如果该值不为 0，说明有进程正在调试当前进程：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">bool</span> <span class="title function_">checkTracerPid</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">char</span> buf[<span class="number">4096</span>];</span><br><span class="line">    FILE* fp = fopen(<span class="string">&quot;/proc/self/status&quot;</span>, <span class="string">&quot;r&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (fp == <span class="literal">NULL</span>) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">while</span> (fgets(buf, <span class="keyword">sizeof</span>(buf), fp)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">strncmp</span>(buf, <span class="string">&quot;TracerPid:&quot;</span>, <span class="number">10</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="type">int</span> pid = atoi(buf + <span class="number">10</span>);</span><br><span class="line">            fclose(fp);</span><br><span class="line">            <span class="keyword">return</span> pid != <span class="number">0</span>;  <span class="comment">// true 表示被调试</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    fclose(fp);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>对抗提示</strong>：攻击者可以使用内核模块或 Xposed 模块 Hook <code>fopen</code> 和 <code>fgets</code> 返回伪造的 <code>/proc/self/status</code> 内容，将 TracerPid 伪装为 0。因此不能仅依赖一种检测手段。</p>
+<p><strong>（3）时间检测</strong></p>
+<p>调试器在单步执行时会显著降低代码运行速度。通过检测两段代码之间的执行时间，可以判断是否被调试：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;time.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">bool</span> <span class="title function_">checkTiming</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> <span class="title">start</span>, <span class="title">end</span>;</span></span><br><span class="line">    clock_gettime(CLOCK_MONOTONIC, &amp;start);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 执行一些简单的操作</span></span><br><span class="line">    <span class="keyword">volatile</span> <span class="type">int</span> x = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10000</span>; i++) &#123;</span><br><span class="line">        x += i;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    clock_gettime(CLOCK_MONOTONIC, &amp;end);</span><br><span class="line">    </span><br><span class="line">    <span class="type">long</span> diff_ns = (end.tv_sec - start.tv_sec) * <span class="number">1000000000L</span> </span><br><span class="line">                   + (end.tv_nsec - start.tv_nsec);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> diff_ns &gt; <span class="number">10000000L</span>;  <span class="comment">// 超过 10ms 可能被单步调试</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>（4）断点检测</strong></p>
+<p>调试器通过插入断点指令（在 ARM 上是 <code>BKPT</code> 指令，编码为 <code>0xE1200070</code> 或 <code>0xBE00</code> 等）来暂停程序执行。可以在运行时扫描代码段的断点指令：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">checkBreakpoints</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 获取函数代码的起始地址</span></span><br><span class="line">    <span class="type">void</span>* funcAddr = &amp;myCriticalFunction;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span>* ptr = (<span class="type">unsigned</span> <span class="type">char</span>*)funcAddr;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; <span class="number">64</span>; i++) &#123;</span><br><span class="line">        <span class="comment">// 在 ARM 上检测 BKPT 指令</span></span><br><span class="line">        <span class="type">unsigned</span> <span class="type">int</span> instruction = *((<span class="type">unsigned</span> <span class="type">int</span>*)(ptr + i));</span><br><span class="line">        <span class="keyword">if</span> ((instruction &amp; <span class="number">0xFFF000F0</span>) == <span class="number">0xE1200070</span>) &#123;</span><br><span class="line">            <span class="comment">// 发现断点！</span></span><br><span class="line">            <span class="built_in">abort</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-5-Root-Magisk-检测"><a href="#3-5-Root-Magisk-检测" class="headerlink" title="3.5 Root &#x2F; Magisk 检测"></a>3.5 Root &#x2F; Magisk 检测</h3><p>Root 检测是安全防护的第一道门。没有 root 权限，攻击者的能力会受到很大限制。</p>
+<p><strong>方法一：检查 su 二进制文件</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">checkSu</span><span class="params">()</span> &#123;</span><br><span class="line">    String[] paths = &#123;</span><br><span class="line">        <span class="string">&quot;/system/bin/su&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/system/xbin/su&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/sbin/su&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/system/sbin/su&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/vendor/bin/su&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/data/local/su&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/data/local/bin/su&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/system/sd/xbin/su&quot;</span>,</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="keyword">for</span> (String path : paths) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">new</span> <span class="title class_">File</span>(path).exists()) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;  <span class="comment">// 发现 su，可能已 root</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>方法二：检查 Magisk 特征</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">checkMagisk</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 检查 Magisk 挂载点的特征</span></span><br><span class="line">    <span class="comment">// Magisk 通常在 /sbin/.magisk/ 下</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;/sbin/.magisk&quot;</span>).exists();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>方法三：检测已安装的 root 管理应用</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">isRootManagementAppInstalled</span><span class="params">()</span> &#123;</span><br><span class="line">    String[] knownApps = &#123;</span><br><span class="line">        <span class="string">&quot;com.topjohnwu.magisk&quot;</span>,          <span class="comment">// Magisk Manager</span></span><br><span class="line">        <span class="string">&quot;eu.chainfire.supersu&quot;</span>,          <span class="comment">// SuperSU</span></span><br><span class="line">        <span class="string">&quot;com.noshufou.android.su&quot;</span>,       <span class="comment">// Superuser</span></span><br><span class="line">        <span class="string">&quot;com.kingroot.kinguser&quot;</span>,         <span class="comment">// KingRoot</span></span><br><span class="line">    &#125;;</span><br><span class="line">    </span><br><span class="line">    <span class="type">PackageManager</span> <span class="variable">pm</span> <span class="operator">=</span> getPackageManager();</span><br><span class="line">    <span class="keyword">for</span> (String pkg : knownApps) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            pm.getPackageInfo(pkg, <span class="number">0</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (PackageManager.NameNotFoundException e) &#123;</span><br><span class="line">            <span class="comment">// 未安装</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>方法四：执行 which 命令</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="type">Process</span> <span class="variable">process</span> <span class="operator">=</span> Runtime.getRuntime().exec(<span class="string">&quot;which su&quot;</span>);</span><br><span class="line">    <span class="type">BufferedReader</span> <span class="variable">reader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(process.getInputStream()));</span><br><span class="line">    <span class="type">String</span> <span class="variable">line</span> <span class="operator">=</span> reader.readLine();</span><br><span class="line">    <span class="keyword">if</span> (line != <span class="literal">null</span> &amp;&amp; !line.isEmpty()) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;  <span class="comment">// su 命令可用</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    <span class="comment">// 忽略</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>对抗技巧</strong>：Magisk 提供了 MagiskHide 功能，可以对特定应用隐藏 root 状态。因此 root 检测应该放在 native 层，并且结合多种检测手段。</p>
+<h2 id="四、高级对抗与加固方案"><a href="#四、高级对抗与加固方案" class="headerlink" title="四、高级对抗与加固方案"></a>四、高级对抗与加固方案</h2><h3 id="4-1-动态加载与代码分离"><a href="#4-1-动态加载与代码分离" class="headerlink" title="4.1 动态加载与代码分离"></a>4.1 动态加载与代码分离</h3><p>将核心功能编译为独立的 DEX&#x2F;JAR 文件，不放在 APK 中。应用启动时从服务器下载（需要 HTTPS + 签名验证），通过 <code>DexClassLoader</code> 动态加载：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">File</span> <span class="variable">dexDir</span> <span class="operator">=</span> context.getDir(<span class="string">&quot;dex&quot;</span>, Context.MODE_PRIVATE);</span><br><span class="line"><span class="type">DexClassLoader</span> <span class="variable">loader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DexClassLoader</span>(</span><br><span class="line">    downloadedDexPath,    <span class="comment">// 下载的动态 DEX 路径</span></span><br><span class="line">    dexDir.getAbsolutePath(),</span><br><span class="line">    <span class="literal">null</span>,</span><br><span class="line">    context.getClassLoader()</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">Class&lt;?&gt; coreClass = loader.loadClass(<span class="string">&quot;com.example.CoreEngine&quot;</span>);</span><br><span class="line"><span class="type">Object</span> <span class="variable">coreInstance</span> <span class="operator">=</span> coreClass.newInstance();</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意</strong>：动态加载的代码同样可以被 dump 出来分析（通过 <code>DexClassLoader</code> 加载的 DEX 文件以 odex 形式存在于应用私有目录中）。</p>
+<h3 id="4-2-第三方加固服务"><a href="#4-2-第三方加固服务" class="headerlink" title="4.2 第三方加固服务"></a>4.2 第三方加固服务</h3><p>国内主流加固服务商：</p>
+<table>
+<thead>
+<tr>
+<th align="left">加固服务</th>
+<th align="left">特点</th>
+<th align="left">保护强度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">360 加固保</td>
+<td align="left">DEX 加密 + SO 加密 + 反调试</td>
+<td align="left">高</td>
+</tr>
+<tr>
+<td align="left">腾讯乐固</td>
+<td align="left">DEX 壳保护 + 资源加密</td>
+<td align="left">高</td>
+</tr>
+<tr>
+<td align="left">梆梆加固</td>
+<td align="left">DEX 虚拟化 + 内存保护</td>
+<td align="left">高</td>
+</tr>
+<tr>
+<td align="left">阿里聚安全</td>
+<td align="left">DEX 隐藏 + VMP（虚拟机保护）</td>
+<td align="left">极高</td>
+</tr>
+<tr>
+<td align="left">网易易盾</td>
+<td align="left">DEX 加密 + SO 加固 + 反注入</td>
+<td align="left">高</td>
+</tr>
+</tbody></table>
+<p>加固的基本原理：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">原始 APK</span><br><span class="line">  ↓</span><br><span class="line">加固 SDK (打包阶段)</span><br><span class="line">  ↓</span><br><span class="line">加固后 APK</span><br><span class="line">  ├── classes.dex         (壳 DEX，负责解密和加载真实代码)</span><br><span class="line">  ├── assets/encrypted/   (加密后的真实 DEX 文件)</span><br><span class="line">  ├── lib/libprotect.so   (native 保护层)</span><br><span class="line">  └── ...</span><br><span class="line">  ↓</span><br><span class="line">运行时</span><br><span class="line">  ├── 壳 DEX 启动 → 加载 libprotect.so</span><br><span class="line">  ├── libprotect.so 解密 assets/encrypted/ 中的真实 DEX</span><br><span class="line">  ├── 将解密后的 DEX 加载到内存，或通过 DexClassLoader 加载</span><br><span class="line">  └── 执行真实应用代码</span><br></pre></td></tr></table></figure>
+
+<p><strong>加固的攻防演进</strong>：</p>
+<ul>
+<li><strong>DEX 整体加密</strong> → 攻击者通过内存 dump（如 <code>dex_dump</code>）在运行时提取解密后的 DEX</li>
+<li><strong>DEX 分段解密</strong> → 攻击者通过 Hook <code>DexFile</code> 相关方法逐段收集</li>
+<li><strong>VMP（虚拟机保护）</strong> → 将关键方法编译为自定义的虚拟机指令，攻击者需要逆向虚拟机的指令集</li>
+<li><strong>对抗 VMP</strong> → 通过符号执行和污点分析推导 VMP 指令语义</li>
+</ul>
+<h3 id="4-3-服务端验证"><a href="#4-3-服务端验证" class="headerlink" title="4.3 服务端验证"></a>4.3 服务端验证</h3><p>最根本的安全原则：<strong>不信任客户端</strong>。所有关键逻辑都应在服务端做最终验证。</p>
+<ul>
+<li><strong>License 验证</strong>：客户端发起验证请求 → 服务端返回加密的 License Token → 客户端仅做基本检查</li>
+<li><strong>应用内购买</strong>：客户端完成支付后 → 将 <code>PurchaseToken</code> 发送到服务端 → 服务端调用 Google Play Developer API 验证 → 服务端发货</li>
+<li><strong>核心算法</strong>：将关键算法放在服务端，客户端仅做输入收集和结果展示</li>
+<li><strong>配置文件</strong>：动态配置（如功能开关、广告策略）由服务端下发，不在 APK 中硬编码</li>
+</ul>
+<h3 id="4-4-代码虚拟化（VMP）"><a href="#4-4-代码虚拟化（VMP）" class="headerlink" title="4.4 代码虚拟化（VMP）"></a>4.4 代码虚拟化（VMP）</h3><p>VMP（Virtual Machine Protection）是最强的代码保护技术之一。它将关键方法的字节码编译为自定义虚拟机（VM）的指令，然后在自定义 VM 中解释执行。这意味着：</p>
+<ul>
+<li>反编译器（JADX 等）无法还原原始逻辑（因为代码已不是标准 DEX 字节码）</li>
+<li>攻击者需要先逆向自定义 VM 的指令集，再分析 VM 字节码</li>
+<li>每条 VM 指令可以被单独加密，进一步增加分析难度</li>
+</ul>
+<p>VMP 的代价是性能：自定义 VM 的指令执行效率通常比原生字节码慢 5-50 倍。因此通常只对关键方法（如 License 验证、签名校验、加密算法）使用 VMP。</p>
+<h2 id="五、AOSP-安全相关源码路径"><a href="#五、AOSP-安全相关源码路径" class="headerlink" title="五、AOSP 安全相关源码路径"></a>五、AOSP 安全相关源码路径</h2><table>
+<thead>
+<tr>
+<th align="left">组件</th>
+<th align="left">源码路径</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">APK 签名验证</td>
+<td align="left"><code>frameworks/base/core/java/android/content/pm/PackageParser.java</code></td>
+<td align="left">安装时验证 APK 签名</td>
+</tr>
+<tr>
+<td align="left">APK 安装</td>
+<td align="left"><code>frameworks/base/services/core/java/com/android/server/pm/PackageManagerService.java</code></td>
+<td align="left">安装流程，包含签名校验</td>
+</tr>
+<tr>
+<td align="left">DEX 加载</td>
+<td align="left"><code>art/runtime/class_linker.cc</code></td>
+<td align="left">类加载与链接</td>
+</tr>
+<tr>
+<td align="left">DEX 文件操作</td>
+<td align="left"><code>art/runtime/dex_file.cc</code></td>
+<td align="left">DEX 文件解析</td>
+</tr>
+<tr>
+<td align="left">Binder 安全</td>
+<td align="left"><code>frameworks/native/libs/binder/IPCThreadState.cpp</code></td>
+<td align="left">Binder 调用者的 UID&#x2F;PID 检查</td>
+</tr>
+<tr>
+<td align="left">SELinux</td>
+<td align="left"><code>system/sepolicy/</code></td>
+<td align="left">进程安全上下文</td>
+</tr>
+<tr>
+<td align="left">dm-verity</td>
+<td align="left"><code>system/extras/verity/</code></td>
+<td align="left">系统分区完整性保护</td>
+</tr>
+</tbody></table>
+<h2 id="六、常见面试题"><a href="#六、常见面试题" class="headerlink" title="六、常见面试题"></a>六、常见面试题</h2><p><strong>Q1: ProGuard&#x2F;R8 混淆后的代码还能被反编译吗？混淆能提供多少安全保护？</strong></p>
+<p>A: 混淆后的代码完全可以被反编译。混淆只是将类名、方法名、变量名替换为无意义的短名称（如 a、b、c），并移除未使用的代码，但它不会改变代码的逻辑结构。JADX 等反编译器仍然可以还原控制流、数据流和调用关系。混淆的本质是<strong>增加逆向分析的时间成本和理解难度</strong>，而不是阻止逆向。类比来说，混淆相当于把一本书的章节标题和关键词都换成了无意义的代号——内容还在，但理解起来困难得多。真正有效的保护需要结合多种技术：混淆 + 字符串加密 + 控制流平坦化 + 完整性检测 + 反调试 + 服务端验证。</p>
+<p><strong>Q2: 为什么不能直接在客户端做 License 校验？即使把校验函数放在 native 层也没用吗？</strong></p>
+<p>A: 纯客户端校验在理论上就是不可行的，因为攻击者控制着代码运行的环境。不论校验函数是用 Java 写的还是用 C 写的，不论做了多少混淆和加密，攻击者最终都能通过 Hook 框架（Xposed&#x2F;Frida）拦截关键的判断点，将返回值修改为 true。放在 native 层只是提高了门槛——攻击者需要掌握 ARM 汇编和 native Hook 技术（如使用 Cydia Substrate 或 Frida 的 Native Hook），但并非不可能。唯一安全的做法是：客户端发起校验请求 → 服务端根据设备指纹、签名、购买记录等做综合判断 → 返回加密的授权结果 → 客户端仅做本地解密和展示。即使攻击者伪造了某个请求的成功响应，服务端的核心逻辑仍然受到保护。</p>
+<p><strong>Q3: 什么是”加壳”？壳程序是如何保护原始 DEX 的？</strong></p>
+<p>A: 加壳是将原始 APK 的 DEX 文件加密后，嵌入到一个”壳” APK 中。壳程序（Shell DEX）是真正启动时执行的代码，它的职责是：解密原始 DEX → 加载解密后的 DEX → 将控制权交给原始应用。常见的实现方式：(1) 将原始 DEX 加密后放在 assets 目录中，壳程序使用 native 方法解密；(2) 将原始 DEX 附加在壳 DEX 的尾部（dex-tail 技术），壳程序通过解析 ZIP 格式定位并加载；(3) 动态从服务器下载 DEX。壳程序的弱点在于：无论外层保护多强，原始 DEX 最终必须在内存中解密为明文才能被 ART 执行。攻击者可以在 <code>DexClassLoader</code> 的加载点或内存中 dump 出解密后的 DEX。为对抗内存 dump，高级壳会使用分片解密（只解密当前执行的方法，执行完后立即擦除）和反 dump 技术。</p>
+<p><strong>Q4: 什么是 Frida？攻击者如何利用 Frida 绕过安全检测？</strong></p>
+<p>A: Frida 是一个动态代码注入框架，它可以将 JavaScript 代码注入到目标进程中，从而实现 Hook 函数调用、修改参数和返回值、追踪函数调用栈等操作。攻击者使用 Frida 绕过安全检测的典型手法：(1) Hook <code>isLicensed()</code> 方法，强制返回 true；(2) Hook <code>PackageManager.getPackageInfo()</code>，伪造签名信息；(3) Hook <code>checkSu()</code>，返回 false 隐藏 root 状态；(4) Hook 时间检测函数，返回预期的执行时间；(5) 通过 <code>Interceptor.attach</code> 挂载到 native 函数，修改参数或返回值。防御 Frida 的方法包括：检测 Frida 的特征端口（默认 27042）、检测 Frida 的特征文件（<code>/data/local/tmp/frida-server</code>）、检测 Frida 注入的线程名特征（如 <code>frida</code>、<code>gum-js-loop</code>）、使用 inline hook 检测（Frida 修改函数入口时会留下特征指令）等。</p>
+<p><strong>Q5: Android 应用的签名验证机制是如何工作的？为什么重新签名后签名一定不同？</strong></p>
+<p>A: Android 使用 APK Signature Scheme（v1&#x2F;v2&#x2F;v3）来保证 APK 的完整性和来源认证。V1 方案（JAR 签名）：计算 APK 中每个文件的 SHA 摘要存储在 MANIFEST.MF 中，然后对 MANIFEST.MF 计算摘要存储在 CERT.SF 中，最后用开发者的私钥对 CERT.SF 签名生成 CERT.RSA。V2 方案（APK Signature Scheme v2）：在 ZIP 文件的数据块中插入一个 APK Signing Block，对整个 APK 内容（除 Signing Block 本身外）进行签名。V3 方案增加了密钥轮换支持。重新签名后之所以签名不同，是因为攻击者没有原始开发者的私钥——他们只能用自己的私钥生成新的签名，而证书的 issuer、serial number、公钥等信息都与原始的不同。应用在安装时，PackageManagerService 会验证签名的一致性。但要注意，签名验证只在安装时发生——运行时获取签名的 <code>PackageManager.getPackageInfo()</code> API 返回的是当前 APK 的实际签名，而不是开发者的原始签名。</p>
+<p><strong>Q6: 如果我开发的是一个免费应用（不涉及 License 或内购），还需要做防破解吗？</strong></p>
+<p>A: 需要，但要基于风险评估来决定投入多少资源。免费应用面临的主要威胁不是 License 绕过，而是：(1) 二次打包——攻击者反编译你的应用，注入恶意代码（窃取用户数据、植入广告、发起 DDoS 攻击），然后通过第三方应用市场分发，损害你的品牌声誉；(2) 广告劫持——攻击者替换你的广告 ID，将你的广告收入转移到他们的账户；(3) 协议破解——如果你的应用与服务端有自定义协议，攻击者可能通过逆向协议实现来编写恶意客户端（刷量、群控）。因此即使是免费应用，也建议至少做基础防护：开启 ProGuard&#x2F;R8 混淆、对关键字符串使用编码（不直接明文存储）、在 native 层做签名校验、对敏感接口请求添加签名参数。基础防护的投入产出比很高——攻破门槛从”5 分钟”提高到”数小时”，能够阻止大部分没有经验的攻击者。</p>
+<hr>
+<p><strong>参考文档：</strong></p>
+<ul>
+<li>Android Security Documentation: <a target="_blank" rel="noopener" href="https://source.android.com/docs/security">https://source.android.com/docs/security</a></li>
+<li>AOSP: <code>frameworks/base/core/java/android/content/pm/</code></li>
+<li>AOSP: <code>frameworks/base/services/core/java/com/android/server/pm/PackageManagerService.java</code></li>
+<li>JEB Decompiler: <a target="_blank" rel="noopener" href="https://www.pnfsoftware.com/">https://www.pnfsoftware.com/</a></li>
+<li>Frida: <a target="_blank" rel="noopener" href="https://frida.re/">https://frida.re/</a></li>
+<li>Xposed Framework: <a target="_blank" rel="noopener" href="https://github.com/rovo89/Xposed">https://github.com/rovo89/Xposed</a></li>
+</ul>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%AD%97%E8%8A%82%E7%A0%81/">字节码    </a><a class="post-meta__tags" href="/tags/%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8/">逆向安全    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/253.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/05/05/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%8D%81%E5%9B%9B%E7%AF%87%E3%80%81APM%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/254.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【深入理解JVM字节码】第十四篇、APM实现原理</span></div></a></div><div class="next-post pull_right"><a href="/2021/04/25/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%8D%81%E4%BA%8C%E7%AF%87%E3%80%81cglib%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86%E5%8E%9F%E7%90%86/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/257.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【深入理解JVM字节码】第十二篇、cglib动态代理原理</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2021/06/01/高级Android-【逆向安全技术-基础篇】dex文件格式解析/" title="【逆向安全技术-基础篇】dex文件格式解析"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【逆向安全技术-基础篇】dex文件格式解析</div></a></div><div class="relatedPosts_item"><a href="/2022/07/05/重拾Android-【全埋点方案系列】AppClick全埋点之ASM处理/" title="【全埋点方案系列】AppClick全埋点之ASM处理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【全埋点方案系列】AppClick全埋点之ASM处理</div></a></div><div class="relatedPosts_item"><a href="/2021/04/20/重拾Android-【深入理解JVM字节码】第十一篇、JSR-269插件化注解处理原理/" title="【深入理解JVM字节码】第十一篇、JSR-269插件化注解处理原理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/261.jpg"><div class="relatedPosts_title">【深入理解JVM字节码】第十一篇、JSR-269插件化注解处理原理</div></a></div><div class="relatedPosts_item"><a href="/2021/04/05/重拾Android-【深入理解JVM字节码】第八篇、Kotlin字节码原理/" title="【深入理解JVM字节码】第八篇、Kotlin字节码原理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/265.jpg"><div class="relatedPosts_title">【深入理解JVM字节码】第八篇、Kotlin字节码原理</div></a></div><div class="relatedPosts_item"><a href="/2021/03/25/重拾Android-【深入理解JVM字节码】第六篇、反射实现原理/" title="【深入理解JVM字节码】第六篇、反射实现原理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/270.jpg"><div class="relatedPosts_title">【深入理解JVM字节码】第六篇、反射实现原理</div></a></div><div class="relatedPosts_item"><a href="/2021/03/15/重拾Android-【深入理解JVM字节码】第四篇、泛型与字节码/" title="【深入理解JVM字节码】第四篇、泛型与字节码"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/251.jpg"><div class="relatedPosts_title">【深入理解JVM字节码】第四篇、泛型与字节码</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/253.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

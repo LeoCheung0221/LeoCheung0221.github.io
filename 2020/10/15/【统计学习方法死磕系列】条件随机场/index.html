@@ -1,0 +1,966 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【统计学习方法死磕系列】条件随机场 | ONE·PIECE</title><meta name="description" content="【统计学习方法死磕系列】条件随机场"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【统计学习方法死磕系列】条件随机场"><meta name="twitter:description" content="【统计学习方法死磕系列】条件随机场"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【统计学习方法死磕系列】条件随机场"><meta property="og:url" content="http://tufusi.com/2020/10/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%9D%A1%E4%BB%B6%E9%9A%8F%E6%9C%BA%E5%9C%BA/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【统计学习方法死磕系列】条件随机场"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2020/10/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%9D%A1%E4%BB%B6%E9%9A%8F%E6%9C%BA%E5%9C%BA/"><link rel="prev" title="【模式识别和机器学习】初窥AI圣经" href="http://tufusi.com/2020/11/15/%E3%80%90%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB%E5%92%8C%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E3%80%91%E5%88%9D%E7%AA%A5AI%E5%9C%A3%E7%BB%8F/"><link rel="next" title="【sklearn笔记】线性规划" href="http://tufusi.com/2020/10/01/%E3%80%90sklearn%E7%AC%94%E8%AE%B0%E3%80%91%E7%BA%BF%E6%80%A7%E8%A7%84%E5%88%92/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">写在前面</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#1-%E6%A6%82%E7%8E%87%E5%9B%BE%E6%A8%A1%E5%9E%8B%E5%9F%BA%E7%A1%80%EF%BC%9A%E6%9C%89%E5%90%91%E5%9B%BE-vs-%E6%97%A0%E5%90%91%E5%9B%BE"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">1. 概率图模型基础：有向图 vs 无向图</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-%E6%A6%82%E7%8E%87%E5%9B%BE%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">1.1 概率图模型的分类</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-2-%E6%9C%89%E5%90%91%E5%9B%BE-vs-%E6%97%A0%E5%90%91%E5%9B%BE%E7%9A%84%E8%A1%A8%E8%BE%BE%E8%83%BD%E5%8A%9B"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">1.2 有向图 vs 无向图的表达能力</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-3-%E6%9D%A1%E4%BB%B6%E7%8B%AC%E7%AB%8B%E6%80%A7%E4%B8%8E%E5%9B%BE%E5%88%86%E7%A6%BB"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">1.3 条件独立性与图分离</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-Hammersley-Clifford-%E5%AE%9A%E7%90%86"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">2. Hammersley-Clifford 定理</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E5%AE%9A%E7%90%86%E9%99%88%E8%BF%B0"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">2.1 定理陈述</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E6%9E%81%E5%A4%A7%E5%9B%A2%E4%B8%8E%E5%9B%A0%E5%AD%90%E5%88%86%E8%A7%A3"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">2.2 极大团与因子分解</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-%E7%BA%BF%E6%80%A7%E9%93%BE%E6%9D%A1%E4%BB%B6%E9%9A%8F%E6%9C%BA%E5%9C%BA"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">3. 线性链条件随机场</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E6%AD%A3%E5%BC%8F%E5%AE%9A%E4%B9%89"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">3.1 正式定义</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E5%8F%82%E6%95%B0%E5%8C%96%E5%BD%A2%E5%BC%8F"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">3.2 参数化形式</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-%E7%89%B9%E5%BE%81%E5%87%BD%E6%95%B0%E7%9A%84%E8%AE%BE%E8%AE%A1%E7%A4%BA%E4%BE%8B"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">3.3 特征函数的设计示例</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-CRF-%E4%B8%8E-HMM-%E7%9A%84%E5%AF%B9%E6%AF%94%E8%A7%86%E8%A7%92"><span class="toc_mobile_items-number">4.4.</span> <span class="toc_mobile_items-text">3.4 CRF 与 HMM 的对比视角</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-%E7%BA%BF%E6%80%A7%E9%93%BE-CRF-%E7%9A%84%E7%9F%A9%E9%98%B5%E5%BD%A2%E5%BC%8F"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">4. 线性链 CRF 的矩阵形式</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E5%BC%95%E5%85%A5%E7%9F%A9%E9%98%B5%E8%A1%A8%E7%A4%BA"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">4.1 引入矩阵表示</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E8%8E%B7%E5%8F%96%E6%9D%A1%E4%BB%B6%E6%A6%82%E7%8E%87"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">4.2 获取条件概率</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-CRF-%E7%9A%84%E5%89%8D%E5%90%91-%E5%90%8E%E5%90%91%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">5. CRF 的前向-后向算法</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E5%89%8D%E5%90%91%E5%90%91%E9%87%8F"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">5.1 前向向量</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-%E5%90%8E%E5%90%91%E5%90%91%E9%87%8F"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">5.2 后向向量</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-%E5%BD%92%E4%B8%80%E5%8C%96%E5%9B%A0%E5%AD%90%E4%B8%8E%E5%89%8D%E5%90%91-%E5%90%8E%E5%90%91%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">5.3 归一化因子与前向-后向的关系</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-4-%E8%BE%B9%E9%99%85%E6%A6%82%E7%8E%87"><span class="toc_mobile_items-number">6.4.</span> <span class="toc_mobile_items-text">5.4 边际概率</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-%E5%8F%82%E6%95%B0%E5%AD%A6%E4%B9%A0"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">6. 参数学习</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E6%9E%81%E5%A4%A7%E4%BC%BC%E7%84%B6%E4%BC%B0%E8%AE%A1"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">6.1 极大似然估计</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-%E5%AF%B9%E6%95%B0%E4%BC%BC%E7%84%B6%E7%9A%84%E5%87%B8%E6%80%A7"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">6.2 对数似然的凸性</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">6.3 优化方法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-4-%E5%AF%B9%E6%95%B0%E4%BC%BC%E7%84%B6%E7%9A%84-L2-%E6%AD%A3%E5%88%99%E5%8C%96"><span class="toc_mobile_items-number">7.4.</span> <span class="toc_mobile_items-text">6.4 对数似然的 L2 正则化</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-5-IIS-%E7%AE%97%E6%B3%95%E5%9C%A8-CRF-%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8"><span class="toc_mobile_items-number">7.5.</span> <span class="toc_mobile_items-text">6.5 IIS 算法在 CRF 中的应用</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#7-Viterbi-%E8%A7%A3%E7%A0%81"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">7. Viterbi 解码</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-CRF-%E7%9A%84-Viterbi-%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">7.1 CRF 的 Viterbi 算法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-%E7%AE%97%E6%B3%95%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">7.2 算法伪代码</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-%E6%A0%87%E7%AD%BE%E5%81%8F%E7%BD%AE%E9%97%AE%E9%A2%98%E4%B8%8E-MEMM"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">8. 标签偏置问题与 MEMM</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-%E6%A0%87%E7%AD%BE%E5%81%8F%E7%BD%AE%E9%97%AE%E9%A2%98%EF%BC%88Label-Bias-Problem%EF%BC%89"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">8.1 标签偏置问题（Label Bias Problem）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-CRF-%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E6%A0%87%E7%AD%BE%E5%81%8F%E7%BD%AE"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">8.2 CRF 如何避免标签偏置</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-Bi-LSTM-CRF-%E4%B8%8E%E7%8E%B0%E4%BB%A3%E5%BA%8F%E5%88%97%E6%A0%87%E6%B3%A8"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">9. Bi-LSTM-CRF 与现代序列标注</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-1-%E4%BB%8E%E6%89%8B%E5%B7%A5%E7%89%B9%E5%BE%81%E5%88%B0%E8%87%AA%E5%8A%A8%E7%89%B9%E5%BE%81"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">9.1 从手工特征到自动特征</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-2-%E8%AE%AD%E7%BB%83%E4%B8%8E%E6%8E%A8%E7%90%86"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">9.2 训练与推理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-3-%E4%B8%BA%E4%BB%80%E4%B9%88-LSTM-%E4%B9%8B%E5%90%8E%E8%BF%98%E8%A6%81%E5%8A%A0-CRF-%E5%B1%82%EF%BC%9F"><span class="toc_mobile_items-number">10.3.</span> <span class="toc_mobile_items-text">9.3 为什么 LSTM 之后还要加 CRF 层？</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#10-CRF-%E5%B7%A5%E5%85%B7%E7%AE%80%E4%BB%8B"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">10. CRF++ 工具简介</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-1-%E6%95%B0%E6%8D%AE%E6%A0%BC%E5%BC%8F"><span class="toc_mobile_items-number">11.1.</span> <span class="toc_mobile_items-text">10.1 数据格式</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-2-%E7%89%B9%E5%BE%81%E6%A8%A1%E6%9D%BF"><span class="toc_mobile_items-number">11.2.</span> <span class="toc_mobile_items-text">10.2 特征模板</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-3-%E8%AE%AD%E7%BB%83%E4%B8%8E%E9%A2%84%E6%B5%8B"><span class="toc_mobile_items-number">11.3.</span> <span class="toc_mobile_items-text">10.3 训练与预测</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#11-%E6%95%B0%E5%80%BC%E8%AE%A1%E7%AE%97%E7%A4%BA%E4%BE%8B%EF%BC%9ACRF-%E7%9A%84%E5%AE%8C%E6%95%B4%E6%8E%A8%E5%AF%BC"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">11. 数值计算示例：CRF 的完整推导</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-1-%E9%97%AE%E9%A2%98%E8%AE%BE%E5%AE%9A"><span class="toc_mobile_items-number">12.1.</span> <span class="toc_mobile_items-text">11.1 问题设定</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-2-%E5%89%8D%E5%90%91%E9%80%92%E6%8E%A8"><span class="toc_mobile_items-number">12.2.</span> <span class="toc_mobile_items-text">11.2 前向递推</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-3-%E8%BE%B9%E9%99%85%E6%A6%82%E7%8E%87%E8%AE%A1%E7%AE%97"><span class="toc_mobile_items-number">12.3.</span> <span class="toc_mobile_items-text">11.3 边际概率计算</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-4-Viterbi-%E8%A7%A3%E7%A0%81"><span class="toc_mobile_items-number">12.4.</span> <span class="toc_mobile_items-text">11.4 Viterbi 解码</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#12-%E5%8A%BF%E5%87%BD%E6%95%B0%E8%AE%BE%E8%AE%A1%E4%B8%8E%E7%89%B9%E5%BE%81%E5%B7%A5%E7%A8%8B"><span class="toc_mobile_items-number">13.</span> <span class="toc_mobile_items-text">12. 势函数设计与特征工程</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#12-1-%E5%8E%9F%E5%AD%90%E7%89%B9%E5%BE%81%E8%AE%BE%E8%AE%A1"><span class="toc_mobile_items-number">13.1.</span> <span class="toc_mobile_items-text">12.1 原子特征设计</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#12-2-CRF-%E7%89%B9%E5%BE%81%E6%A8%A1%E6%9D%BF%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">13.2.</span> <span class="toc_mobile_items-text">12.2 CRF++ 特征模板详解</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#13-%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E7%AD%94"><span class="toc_mobile_items-number">14.</span> <span class="toc_mobile_items-text">13. 面试高频问答</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#14-%E6%9D%A1%E4%BB%B6%E9%9A%8F%E6%9C%BA%E5%9C%BA%E7%9A%84%E6%9C%80%E5%A4%A7%E7%86%B5%E8%A7%86%E8%A7%92"><span class="toc_mobile_items-number">15.</span> <span class="toc_mobile_items-text">14. 条件随机场的最大熵视角</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#14-1-CRF-%E4%BD%9C%E4%B8%BA%E6%9D%A1%E4%BB%B6%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B"><span class="toc_mobile_items-number">15.1.</span> <span class="toc_mobile_items-text">14.1 CRF 作为条件最大熵模型</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#14-2-%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9%E4%B8%8E%E6%A8%A1%E5%9E%8B%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="toc_mobile_items-number">15.2.</span> <span class="toc_mobile_items-text">14.2 特征选择与模型复杂度</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#14-3-%E9%93%BE%E5%BC%8F-CRF-%E7%9A%84%E9%99%90%E5%88%B6"><span class="toc_mobile_items-number">15.3.</span> <span class="toc_mobile_items-text">14.3 链式 CRF 的限制</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#15-%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E7%AD%94%EF%BC%88%E7%BB%AD%EF%BC%89"><span class="toc_mobile_items-number">16.</span> <span class="toc_mobile_items-text">15. 面试高频问答（续）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#16-%E4%B8%80%E8%88%AC-CRF-%E7%9A%84%E6%8E%A8%E6%96%AD%E4%B8%8E%E5%AD%A6%E4%B9%A0"><span class="toc_mobile_items-number">17.</span> <span class="toc_mobile_items-text">16. 一般 CRF 的推断与学习</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#16-1-%E7%B2%BE%E7%A1%AE%E6%8E%A8%E6%96%AD%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc_mobile_items-number">17.1.</span> <span class="toc_mobile_items-text">16.1 精确推断的局限性</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#16-2-%E8%BF%91%E4%BC%BC%E6%8E%A8%E6%96%AD%E6%96%B9%E6%B3%95"><span class="toc_mobile_items-number">17.2.</span> <span class="toc_mobile_items-text">16.2 近似推断方法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#16-3-%E7%BB%93%E6%9E%84%E5%8C%96-SVM-%E4%BD%9C%E4%B8%BA-CRF-%E7%9A%84%E6%9B%BF%E4%BB%A3"><span class="toc_mobile_items-number">17.3.</span> <span class="toc_mobile_items-text">16.3 结构化 SVM 作为 CRF 的替代</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#17-%E6%80%BB%E7%BB%93"><span class="toc_mobile_items-number">18.</span> <span class="toc_mobile_items-text">17. 总结</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="toc-number">1.</span> <span class="toc-text">写在前面</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E6%A6%82%E7%8E%87%E5%9B%BE%E6%A8%A1%E5%9E%8B%E5%9F%BA%E7%A1%80%EF%BC%9A%E6%9C%89%E5%90%91%E5%9B%BE-vs-%E6%97%A0%E5%90%91%E5%9B%BE"><span class="toc-number">2.</span> <span class="toc-text">1. 概率图模型基础：有向图 vs 无向图</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E6%A6%82%E7%8E%87%E5%9B%BE%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-number">2.1.</span> <span class="toc-text">1.1 概率图模型的分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E6%9C%89%E5%90%91%E5%9B%BE-vs-%E6%97%A0%E5%90%91%E5%9B%BE%E7%9A%84%E8%A1%A8%E8%BE%BE%E8%83%BD%E5%8A%9B"><span class="toc-number">2.2.</span> <span class="toc-text">1.2 有向图 vs 无向图的表达能力</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E6%9D%A1%E4%BB%B6%E7%8B%AC%E7%AB%8B%E6%80%A7%E4%B8%8E%E5%9B%BE%E5%88%86%E7%A6%BB"><span class="toc-number">2.3.</span> <span class="toc-text">1.3 条件独立性与图分离</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Hammersley-Clifford-%E5%AE%9A%E7%90%86"><span class="toc-number">3.</span> <span class="toc-text">2. Hammersley-Clifford 定理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%AE%9A%E7%90%86%E9%99%88%E8%BF%B0"><span class="toc-number">3.1.</span> <span class="toc-text">2.1 定理陈述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%9E%81%E5%A4%A7%E5%9B%A2%E4%B8%8E%E5%9B%A0%E5%AD%90%E5%88%86%E8%A7%A3"><span class="toc-number">3.2.</span> <span class="toc-text">2.2 极大团与因子分解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E7%BA%BF%E6%80%A7%E9%93%BE%E6%9D%A1%E4%BB%B6%E9%9A%8F%E6%9C%BA%E5%9C%BA"><span class="toc-number">4.</span> <span class="toc-text">3. 线性链条件随机场</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%AD%A3%E5%BC%8F%E5%AE%9A%E4%B9%89"><span class="toc-number">4.1.</span> <span class="toc-text">3.1 正式定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%8F%82%E6%95%B0%E5%8C%96%E5%BD%A2%E5%BC%8F"><span class="toc-number">4.2.</span> <span class="toc-text">3.2 参数化形式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E7%89%B9%E5%BE%81%E5%87%BD%E6%95%B0%E7%9A%84%E8%AE%BE%E8%AE%A1%E7%A4%BA%E4%BE%8B"><span class="toc-number">4.3.</span> <span class="toc-text">3.3 特征函数的设计示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-CRF-%E4%B8%8E-HMM-%E7%9A%84%E5%AF%B9%E6%AF%94%E8%A7%86%E8%A7%92"><span class="toc-number">4.4.</span> <span class="toc-text">3.4 CRF 与 HMM 的对比视角</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E7%BA%BF%E6%80%A7%E9%93%BE-CRF-%E7%9A%84%E7%9F%A9%E9%98%B5%E5%BD%A2%E5%BC%8F"><span class="toc-number">5.</span> <span class="toc-text">4. 线性链 CRF 的矩阵形式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%BC%95%E5%85%A5%E7%9F%A9%E9%98%B5%E8%A1%A8%E7%A4%BA"><span class="toc-number">5.1.</span> <span class="toc-text">4.1 引入矩阵表示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E8%8E%B7%E5%8F%96%E6%9D%A1%E4%BB%B6%E6%A6%82%E7%8E%87"><span class="toc-number">5.2.</span> <span class="toc-text">4.2 获取条件概率</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-CRF-%E7%9A%84%E5%89%8D%E5%90%91-%E5%90%8E%E5%90%91%E7%AE%97%E6%B3%95"><span class="toc-number">6.</span> <span class="toc-text">5. CRF 的前向-后向算法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E5%89%8D%E5%90%91%E5%90%91%E9%87%8F"><span class="toc-number">6.1.</span> <span class="toc-text">5.1 前向向量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E5%90%8E%E5%90%91%E5%90%91%E9%87%8F"><span class="toc-number">6.2.</span> <span class="toc-text">5.2 后向向量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E5%BD%92%E4%B8%80%E5%8C%96%E5%9B%A0%E5%AD%90%E4%B8%8E%E5%89%8D%E5%90%91-%E5%90%8E%E5%90%91%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">6.3.</span> <span class="toc-text">5.3 归一化因子与前向-后向的关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E8%BE%B9%E9%99%85%E6%A6%82%E7%8E%87"><span class="toc-number">6.4.</span> <span class="toc-text">5.4 边际概率</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E5%8F%82%E6%95%B0%E5%AD%A6%E4%B9%A0"><span class="toc-number">7.</span> <span class="toc-text">6. 参数学习</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E6%9E%81%E5%A4%A7%E4%BC%BC%E7%84%B6%E4%BC%B0%E8%AE%A1"><span class="toc-number">7.1.</span> <span class="toc-text">6.1 极大似然估计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%AF%B9%E6%95%B0%E4%BC%BC%E7%84%B6%E7%9A%84%E5%87%B8%E6%80%A7"><span class="toc-number">7.2.</span> <span class="toc-text">6.2 对数似然的凸性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95"><span class="toc-number">7.3.</span> <span class="toc-text">6.3 优化方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E5%AF%B9%E6%95%B0%E4%BC%BC%E7%84%B6%E7%9A%84-L2-%E6%AD%A3%E5%88%99%E5%8C%96"><span class="toc-number">7.4.</span> <span class="toc-text">6.4 对数似然的 L2 正则化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-5-IIS-%E7%AE%97%E6%B3%95%E5%9C%A8-CRF-%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8"><span class="toc-number">7.5.</span> <span class="toc-text">6.5 IIS 算法在 CRF 中的应用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Viterbi-%E8%A7%A3%E7%A0%81"><span class="toc-number">8.</span> <span class="toc-text">7. Viterbi 解码</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-CRF-%E7%9A%84-Viterbi-%E7%AE%97%E6%B3%95"><span class="toc-number">8.1.</span> <span class="toc-text">7.1 CRF 的 Viterbi 算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E7%AE%97%E6%B3%95%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc-number">8.2.</span> <span class="toc-text">7.2 算法伪代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E6%A0%87%E7%AD%BE%E5%81%8F%E7%BD%AE%E9%97%AE%E9%A2%98%E4%B8%8E-MEMM"><span class="toc-number">9.</span> <span class="toc-text">8. 标签偏置问题与 MEMM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E6%A0%87%E7%AD%BE%E5%81%8F%E7%BD%AE%E9%97%AE%E9%A2%98%EF%BC%88Label-Bias-Problem%EF%BC%89"><span class="toc-number">9.1.</span> <span class="toc-text">8.1 标签偏置问题（Label Bias Problem）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-CRF-%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E6%A0%87%E7%AD%BE%E5%81%8F%E7%BD%AE"><span class="toc-number">9.2.</span> <span class="toc-text">8.2 CRF 如何避免标签偏置</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-Bi-LSTM-CRF-%E4%B8%8E%E7%8E%B0%E4%BB%A3%E5%BA%8F%E5%88%97%E6%A0%87%E6%B3%A8"><span class="toc-number">10.</span> <span class="toc-text">9. Bi-LSTM-CRF 与现代序列标注</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E4%BB%8E%E6%89%8B%E5%B7%A5%E7%89%B9%E5%BE%81%E5%88%B0%E8%87%AA%E5%8A%A8%E7%89%B9%E5%BE%81"><span class="toc-number">10.1.</span> <span class="toc-text">9.1 从手工特征到自动特征</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E8%AE%AD%E7%BB%83%E4%B8%8E%E6%8E%A8%E7%90%86"><span class="toc-number">10.2.</span> <span class="toc-text">9.2 训练与推理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-%E4%B8%BA%E4%BB%80%E4%B9%88-LSTM-%E4%B9%8B%E5%90%8E%E8%BF%98%E8%A6%81%E5%8A%A0-CRF-%E5%B1%82%EF%BC%9F"><span class="toc-number">10.3.</span> <span class="toc-text">9.3 为什么 LSTM 之后还要加 CRF 层？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-CRF-%E5%B7%A5%E5%85%B7%E7%AE%80%E4%BB%8B"><span class="toc-number">11.</span> <span class="toc-text">10. CRF++ 工具简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-%E6%95%B0%E6%8D%AE%E6%A0%BC%E5%BC%8F"><span class="toc-number">11.1.</span> <span class="toc-text">10.1 数据格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-%E7%89%B9%E5%BE%81%E6%A8%A1%E6%9D%BF"><span class="toc-number">11.2.</span> <span class="toc-text">10.2 特征模板</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-3-%E8%AE%AD%E7%BB%83%E4%B8%8E%E9%A2%84%E6%B5%8B"><span class="toc-number">11.3.</span> <span class="toc-text">10.3 训练与预测</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-%E6%95%B0%E5%80%BC%E8%AE%A1%E7%AE%97%E7%A4%BA%E4%BE%8B%EF%BC%9ACRF-%E7%9A%84%E5%AE%8C%E6%95%B4%E6%8E%A8%E5%AF%BC"><span class="toc-number">12.</span> <span class="toc-text">11. 数值计算示例：CRF 的完整推导</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-1-%E9%97%AE%E9%A2%98%E8%AE%BE%E5%AE%9A"><span class="toc-number">12.1.</span> <span class="toc-text">11.1 问题设定</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-2-%E5%89%8D%E5%90%91%E9%80%92%E6%8E%A8"><span class="toc-number">12.2.</span> <span class="toc-text">11.2 前向递推</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-3-%E8%BE%B9%E9%99%85%E6%A6%82%E7%8E%87%E8%AE%A1%E7%AE%97"><span class="toc-number">12.3.</span> <span class="toc-text">11.3 边际概率计算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-4-Viterbi-%E8%A7%A3%E7%A0%81"><span class="toc-number">12.4.</span> <span class="toc-text">11.4 Viterbi 解码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-%E5%8A%BF%E5%87%BD%E6%95%B0%E8%AE%BE%E8%AE%A1%E4%B8%8E%E7%89%B9%E5%BE%81%E5%B7%A5%E7%A8%8B"><span class="toc-number">13.</span> <span class="toc-text">12. 势函数设计与特征工程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#12-1-%E5%8E%9F%E5%AD%90%E7%89%B9%E5%BE%81%E8%AE%BE%E8%AE%A1"><span class="toc-number">13.1.</span> <span class="toc-text">12.1 原子特征设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-2-CRF-%E7%89%B9%E5%BE%81%E6%A8%A1%E6%9D%BF%E8%AF%A6%E8%A7%A3"><span class="toc-number">13.2.</span> <span class="toc-text">12.2 CRF++ 特征模板详解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E7%AD%94"><span class="toc-number">14.</span> <span class="toc-text">13. 面试高频问答</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-%E6%9D%A1%E4%BB%B6%E9%9A%8F%E6%9C%BA%E5%9C%BA%E7%9A%84%E6%9C%80%E5%A4%A7%E7%86%B5%E8%A7%86%E8%A7%92"><span class="toc-number">15.</span> <span class="toc-text">14. 条件随机场的最大熵视角</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#14-1-CRF-%E4%BD%9C%E4%B8%BA%E6%9D%A1%E4%BB%B6%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B"><span class="toc-number">15.1.</span> <span class="toc-text">14.1 CRF 作为条件最大熵模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-2-%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9%E4%B8%8E%E6%A8%A1%E5%9E%8B%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="toc-number">15.2.</span> <span class="toc-text">14.2 特征选择与模型复杂度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-3-%E9%93%BE%E5%BC%8F-CRF-%E7%9A%84%E9%99%90%E5%88%B6"><span class="toc-number">15.3.</span> <span class="toc-text">14.3 链式 CRF 的限制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#15-%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E7%AD%94%EF%BC%88%E7%BB%AD%EF%BC%89"><span class="toc-number">16.</span> <span class="toc-text">15. 面试高频问答（续）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#16-%E4%B8%80%E8%88%AC-CRF-%E7%9A%84%E6%8E%A8%E6%96%AD%E4%B8%8E%E5%AD%A6%E4%B9%A0"><span class="toc-number">17.</span> <span class="toc-text">16. 一般 CRF 的推断与学习</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#16-1-%E7%B2%BE%E7%A1%AE%E6%8E%A8%E6%96%AD%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc-number">17.1.</span> <span class="toc-text">16.1 精确推断的局限性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#16-2-%E8%BF%91%E4%BC%BC%E6%8E%A8%E6%96%AD%E6%96%B9%E6%B3%95"><span class="toc-number">17.2.</span> <span class="toc-text">16.2 近似推断方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#16-3-%E7%BB%93%E6%9E%84%E5%8C%96-SVM-%E4%BD%9C%E4%B8%BA-CRF-%E7%9A%84%E6%9B%BF%E4%BB%A3"><span class="toc-number">17.3.</span> <span class="toc-text">16.3 结构化 SVM 作为 CRF 的替代</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#17-%E6%80%BB%E7%BB%93"><span class="toc-number">18.</span> <span class="toc-text">17. 总结</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【统计学习方法死磕系列】条件随机场</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2020-10-15<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0/">统计学习</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">13.4k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 50 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h2><p>条件随机场（Conditional Random Field, CRF）是概率图模型家族中的判别式模型。它直接对条件概率 $P(Y|X)$ 建模，避免了 HMM 需要为观测分布 $P(X)$ 建模（而我们又不关心 $P(X)$）的问题。在序列标注任务中，CRF 可以自由地使用任意全局特征，且不存在 HMM 的观测独立性假设——这使其成为 NLP 序列标注任务（分词、词性标注、NER）中长达十多年的 SOTA 方法。</p>
+<p>与 HMM 相比，CRF 的数学框架更为抽象（涉及无向图模型、势函数、全局归一化），因此也更容易让初学者感到困惑。本文将从无向概率图模型的基础出发，推导到 Hammersley-Clifford 定理，再聚焦于线性链 CRF 的参数化形式、前向-后向算法、Viterbi 解码和 IIS 训练。全文力求推导严密、案例具体。</p>
+<hr>
+<h2 id="1-概率图模型基础：有向图-vs-无向图"><a href="#1-概率图模型基础：有向图-vs-无向图" class="headerlink" title="1. 概率图模型基础：有向图 vs 无向图"></a>1. 概率图模型基础：有向图 vs 无向图</h2><h3 id="1-1-概率图模型的分类"><a href="#1-1-概率图模型的分类" class="headerlink" title="1.1 概率图模型的分类"></a>1.1 概率图模型的分类</h3><p>概率图模型（Probabilistic Graphical Model）用图结构表示随机变量之间的条件依赖关系。</p>
+<ul>
+<li><strong>有向图模型（贝叶斯网络, Bayesian Network）</strong>：用有向无环图（DAG）表示因果关系。联合分布分解为每个节点给定父节点的条件概率之积。</li>
+</ul>
+<p>$$P(X_1, \ldots, X_n) = \prod_{i=1}^{n} P(X_i | \text{Pa}(X_i))$$</p>
+<ul>
+<li><strong>无向图模型（马尔可夫随机场, Markov Random Field, MRF）</strong>：用无向图表示相关关系。联合分布分解为所有极大团的势函数之积。</li>
+</ul>
+<p>$$P(X_1, \ldots, X_n) = \frac{1}{Z} \prod_{C \in \mathcal{C}} \Psi_C(X_C)$$</p>
+<p>其中 $\mathcal{C}$ 是所有极大团（maximal clique），$\Psi_C$ 是定义在团 $C$ 上的非负势函数（potential function），$Z &#x3D; \sum_{X} \prod_{C} \Psi_C(X_C)$ 是归一化常数（配分函数, Partition Function）。</p>
+<h3 id="1-2-有向图-vs-无向图的表达能力"><a href="#1-2-有向图-vs-无向图的表达能力" class="headerlink" title="1.2 有向图 vs 无向图的表达能力"></a>1.2 有向图 vs 无向图的表达能力</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>贝叶斯网络（有向）</th>
+<th>马尔可夫随机场（无向）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>边的含义</td>
+<td>因果关系 &#x2F; 条件分布</td>
+<td>相关关系 &#x2F; 势函数</td>
+</tr>
+<tr>
+<td>分解形式</td>
+<td>条件概率之积</td>
+<td>势函数之积</td>
+</tr>
+<tr>
+<td>归一化</td>
+<td>天然归一化（条件概率）</td>
+<td>需要全局归一化 $Z$</td>
+</tr>
+<tr>
+<td>参数学习</td>
+<td>通常容易（局部似然）</td>
+<td>需要全局归一化（更难）</td>
+</tr>
+<tr>
+<td>循环依赖 (A-B-C-A)</td>
+<td>不可表示（DAG 要求无环）</td>
+<td>可表示</td>
+</tr>
+<tr>
+<td>独立性编码</td>
+<td>$d$-separation</td>
+<td>图分离（graph separation）</td>
+</tr>
+</tbody></table>
+<p><strong>CRF 的关键特征</strong>：CRF 是 $P(Y|X)$ 的 MRF，即给定 $X$ 的条件下，$Y$ 构成一个 MRF。CRF 不建模 $P(X)$，因此是一个判别式模型——这是它区别于 HMM（生成式）和一般 MRF 的核心。</p>
+<h3 id="1-3-条件独立性与图分离"><a href="#1-3-条件独立性与图分离" class="headerlink" title="1.3 条件独立性与图分离"></a>1.3 条件独立性与图分离</h3><p>在无向图中，条件独立性的判断由<strong>图分离（Graph Separation）</strong>给出：</p>
+<p><strong>全局马尔可夫性</strong>：对于无向图中三个互不相交的节点集合 $A, B, C$，如果从 $A$ 到 $B$ 的所有路径都经过 $C$（即 $C$ 分离了 $A$ 和 $B$），则 $A \perp B | C$。</p>
+<p>对于线性链（即链式结构$Y_1 - Y_2 - \cdots - Y_T$），这退化为熟悉的性质：</p>
+<ul>
+<li>$Y_t \perp {Y_1, \ldots, Y_{t-2}, Y_{t+2}, \ldots, Y_T} | {Y_{t-1}, Y_{t+1}}$</li>
+<li>即 $Y_t$ 给定左右邻居后，与其他所有节点独立——这是马尔可夫性的无向图版。</li>
+</ul>
+<hr>
+<h2 id="2-Hammersley-Clifford-定理"><a href="#2-Hammersley-Clifford-定理" class="headerlink" title="2. Hammersley-Clifford 定理"></a>2. Hammersley-Clifford 定理</h2><h3 id="2-1-定理陈述"><a href="#2-1-定理陈述" class="headerlink" title="2.1 定理陈述"></a>2.1 定理陈述</h3><p>Hammersley-Clifford 定理是 MRF 的理论基石，它建立了<strong>概率分布与图结构之间的对应关系</strong>。</p>
+<p><strong>定理（Hammersley-Clifford）</strong>：对于一个正的联合概率分布 $P(X) &gt; 0$，$P$ 满足无向图 $\mathcal{G}$ 的所有条件独立性（即 $P$ 是一个 MRF on $\mathcal{G}$），当且仅当 $P$ 可以分解为该图所有极大团上的势函数之积：</p>
+<p>$$P(X) = \frac{1}{Z} \prod_{C \in \mathcal{C}} \Psi_C(X_C)$$</p>
+<p>其中 $\mathcal{C}$ 是 $\mathcal{G}$ 的极大团集合，$\Psi_C(X_C) \geq 0$ 是定义在团变量 $X_C$ 上的势函数。</p>
+<p>这个定理的重要性在于：</p>
+<ol>
+<li>它证明了”满足条件独立性的分布”和”可分解为团势函数之积的分布”是等价的</li>
+<li>它告诉我们可以通过定义团上的势函数来隐式地编码条件独立性——这是 CRF 模型设计的理论基础</li>
+</ol>
+<h3 id="2-2-极大团与因子分解"><a href="#2-2-极大团与因子分解" class="headerlink" title="2.2 极大团与因子分解"></a>2.2 极大团与因子分解</h3><p><strong>定义（团, Clique）</strong>：团是图中两两相连的节点子集。极大团（Maximal Clique）是不能再加入任何节点而仍保持完全连接的团。</p>
+<p>对于线性链结构 $Y_1 - Y_2 - \cdots - Y_T$：</p>
+<ul>
+<li>极大团是每条边及其两端点：${Y_t, Y_{t+1}}$，共 $T-1$ 个</li>
+<li>（如果有节点势函数，单节点也是团）</li>
+</ul>
+<p>因此在链 CRF 中，联合分布可分解为：</p>
+<p>$$P(Y) = \frac{1}{Z} \prod_{t=1}^{T-1} \Psi_t(Y_t, Y_{t+1})$$</p>
+<p>若包含节点势函数：</p>
+<p>$$P(Y) = \frac{1}{Z} \prod_{t=1}^{T} \Phi_t(Y_t) \prod_{t=1}^{T-1} \Psi_t(Y_t, Y_{t+1})$$</p>
+<hr>
+<h2 id="3-线性链条件随机场"><a href="#3-线性链条件随机场" class="headerlink" title="3. 线性链条件随机场"></a>3. 线性链条件随机场</h2><h3 id="3-1-正式定义"><a href="#3-1-正式定义" class="headerlink" title="3.1 正式定义"></a>3.1 正式定义</h3><p><strong>定义（线性链条件随机场, Linear-chain CRF）</strong>：设 $X &#x3D; (X_1, \ldots, X_T)$ 和 $Y &#x3D; (Y_1, \ldots, Y_T)$ 均为线性链表示的随机变量序列。在给定 $X$ 的条件下，$Y$ 构成一个线性链 MRF：即</p>
+<p>$$P(Y_t | X, Y_1, \ldots, Y_{t-1}, Y_{t+1}, \ldots, Y_T) = P(Y_t | X, Y_{t-1}, Y_{t+1})$$</p>
+<p>(给定输入 $X$ 和 $Y_t$ 的左右邻居后，$Y_t$ 与其他 $Y$ 条件独立)</p>
+<h3 id="3-2-参数化形式"><a href="#3-2-参数化形式" class="headerlink" title="3.2 参数化形式"></a>3.2 参数化形式</h3><p>根据 Hammersley-Clifford 定理，线性链 CRF 的条件概率可以分解为：</p>
+<p>$$P(Y|X) = \frac{1}{Z(X)} \exp\left( \sum_{t=1}^{T} \sum_{k=1}^{K_1} \lambda_k f_k(Y_t, X, t) + \sum_{t=1}^{T-1} \sum_{l=1}^{K_2} \mu_l g_l(Y_t, Y_{t+1}, X, t) \right)$$</p>
+<p>其中：</p>
+<ul>
+<li>$f_k$：<strong>状态特征函数（state feature）</strong>，依赖于单个位置的状态 $Y_t$ 和观测 $X$</li>
+<li>$g_l$：<strong>转移特征函数（transition feature）</strong>，依赖于相邻状态 $Y_t, Y_{t+1}$ 和观测 $X$</li>
+<li>$\lambda_k, \mu_l$：对应的特征权重（参数）</li>
+<li>$Z(X) &#x3D; \sum_{Y} \exp(\ldots)$：归一化因子（对给定 $X$ 求和所有可能的 $Y$ 序列）</li>
+</ul>
+<p><strong>统一记法</strong>：可以将两类特征函数统一为 $F_j(Y_{t-1}, Y_t, X, t)$，对应统一权重 $w_j$：</p>
+<p>$$P(Y|X) = \frac{1}{Z(X)} \exp\left( \sum_{t=1}^{T} \sum_{j=1}^{J} w_j F_j(Y_{t-1}, Y_t, X, t) \right)$$</p>
+<p>其中 $Y_0$ 定义为特殊的起始标记（如 <code>&lt;START&gt;</code>）。</p>
+<h3 id="3-3-特征函数的设计示例"><a href="#3-3-特征函数的设计示例" class="headerlink" title="3.3 特征函数的设计示例"></a>3.3 特征函数的设计示例</h3><p><strong>状态特征（State Features）</strong>——仅依赖当前位置的状态和观测：</p>
+<p>$$f_k(Y_t, X, t) = \begin{cases} 1 & \text{if } Y_t = \text{NOUN} \text{ and } X_t = \text{'learning'} \\ 0 & \text{otherwise} \end{cases}$$</p>
+<p>这表示：当位置 $t$ 的观测词是 “learning” 且标注是 NOUN 时，特征激活。</p>
+<p><strong>转移特征（Transition Features）</strong>——依赖相邻标注：</p>
+<p>$$g_l(Y_t, Y_{t+1}, X, t) = \begin{cases} 1 & \text{if } Y_t = \text{ADJ} \text{ and } Y_{t+1} = \text{NOUN} \\ 0 & \text{otherwise} \end{cases}$$</p>
+<p>这表示：形容词后跟名词时，特征激活。这是一个典型的语言学先验——英文中形容词通常修饰其后的名词。</p>
+<p><strong>特征权重的作用</strong>：</p>
+<ul>
+<li>如果 $w_{\text{ADJ, NOUN}} &gt; 0$（正权重），模型倾向于在形容词后标注名词</li>
+<li>如果 $w_{\text{ADJ, NOUN}} &lt; 0$（负权重），模型倾向于避免这种标注序列</li>
+</ul>
+<h3 id="3-4-CRF-与-HMM-的对比视角"><a href="#3-4-CRF-与-HMM-的对比视角" class="headerlink" title="3.4 CRF 与 HMM 的对比视角"></a>3.4 CRF 与 HMM 的对比视角</h3><p>HMM 可以视为 CRF 的一个”特例”——当特征函数的设计恰好对应 HMM 的对数转移概率和对数发射概率时：</p>
+<p>$$\begin{aligned}
+P(Y|X)_{\text{HMM}} &= \frac{\prod_t P(Y_t|Y_{t-1}) \cdot P(X_t|Y_t)}{\sum_{Y'} \prod_t P(Y'_t|Y'_{t-1}) \cdot P(X_t|Y'_t)} \\
+&= \frac{\exp\left(\sum_t \log a_{Y_{t-1}Y_t} + \sum_t \log b_{Y_t}(X_t)\right)}{\sum_{Y'} \exp(\ldots)}
+\end{aligned}$$</p>
+<p>这恰好是 CRF 在特定特征函数下的形式（取权重为对数概率）。因此：</p>
+<p>$$\text{HMM} \subset \text{CRF}$$</p>
+<p>CRF 比 HMM 更强大在于：</p>
+<ol>
+<li>特征可以依赖整个 $X$（不限于 $X_t$）——可以使用上下文特征</li>
+<li>特征可以是任意实值函数，不必对应概率</li>
+<li>特征之间可以重叠、相关——不存在 HMM 中”参数独立”的限制</li>
+</ol>
+<hr>
+<h2 id="4-线性链-CRF-的矩阵形式"><a href="#4-线性链-CRF-的矩阵形式" class="headerlink" title="4. 线性链 CRF 的矩阵形式"></a>4. 线性链 CRF 的矩阵形式</h2><h3 id="4-1-引入矩阵表示"><a href="#4-1-引入矩阵表示" class="headerlink" title="4.1 引入矩阵表示"></a>4.1 引入矩阵表示</h3><p>对于链式结构，我们可以将因子分解写为矩阵乘积的形式——这为前向-后向算法提���了方便的代数框架。</p>
+<p>将特征权重和特征函数聚合为”得分”（score）：</p>
+<p>$$s_t(y_{t-1}, y_t) = \sum_{j=1}^{J} w_j F_j(y_{t-1}, y_t, X, t)$$</p>
+<p>注意 $t&#x3D;1$ 时定义 $s_1(y_0, y_1) &#x3D; \sum_j w_j F_j(y_{\text{start}}, y_1, X, 1)$。</p>
+<p>定义 $N \times N$ 矩阵（$N$ 是 $Y$ 的取值个数）：</p>
+<p>$$M_t(y_{t-1}, y_t) = \exp(s_t(y_{t-1}, y_t))$$</p>
+<p>则条件概率可以写为矩阵乘积的形式：</p>
+<p>$$P(Y|X) = \frac{1}{Z(X)} \prod_{t=1}^{T} M_t(Y_{t-1}, Y_t)$$</p>
+<p>而归一化因子为：</p>
+<p>$$Z(X) = \sum_{Y} \prod_{t=1}^{T} M_t(Y_{t-1}, Y_t) = [M_1 M_2 \cdots M_T]_{\text{start, end}}$$</p>
+<p>即所有 $M_t$ 乘积矩阵中从起始状态到结束状态的元素。这与 HMM 的前向递推在数学上是同构的——归一化因子 $Z(X)$ 对所有可能路径的”得分”求和（而非 HMM 中对概率求和）。</p>
+<h3 id="4-2-获取条件概率"><a href="#4-2-获取条件概率" class="headerlink" title="4.2 获取条件概率"></a>4.2 获取条件概率</h3><p>给定参数后，我们可以计算：</p>
+<ul>
+<li>$P(Y_t &#x3D; y | X)$：时刻 $t$ 状态为 $y$ 的边际概率</li>
+<li>$P(Y_t &#x3D; y, Y_{t+1} &#x3D; y’ | X)$：相邻状态的联合边际概率</li>
+</ul>
+<p>这些计算依赖前向-后向算法。</p>
+<hr>
+<h2 id="5-CRF-的前向-后向算法"><a href="#5-CRF-的前向-后向算法" class="headerlink" title="5. CRF 的前向-后向算法"></a>5. CRF 的前向-后向算法</h2><h3 id="5-1-前向向量"><a href="#5-1-前向向量" class="headerlink" title="5.1 前向向量"></a>5.1 前向向量</h3><p>定义前向向量 $\alpha_t$，其中 $\alpha_t(y)$ 表示：在时刻 $t$ 状态为 $y$，且观测了 $X_{1:t}$（实际 CRF 中 $X$ 全程可见，”前向”只是对 $Y$ 而言）的所有路径的未归一化得分之和。</p>
+<p>$$\alpha_t(y) = \sum_{y_{1:t-1}} \exp\left( \sum_{\tau=1}^{t} s_\tau(y_{\tau-1}, y_\tau) \right) \quad \text{其中 } y_t = y$$</p>
+<p><strong>递推公式</strong>：</p>
+<p>$$\alpha_{t+1}(y') = \sum_{y} \alpha_t(y) \cdot \exp(s_{t+1}(y, y'))$$</p>
+<p>或写成向量-矩阵形式：</p>
+<p>$$\alpha_{t+1} = \alpha_t M_{t+1}$$</p>
+<p>其中 $\alpha_t$ 是 $1 \times N$ 的向量。</p>
+<p>初始化：$\alpha_0(y_{\text{start}}) &#x3D; 1$，其余为 0。（在实现中通常 $t&#x3D;1$ 从实际序列开始。）</p>
+<h3 id="5-2-后向向量"><a href="#5-2-后向向量" class="headerlink" title="5.2 后向向量"></a>5.2 后向向量</h3><p>定义后向向量 $\beta_t$，其中 $\beta_t(y)$ 表示：在时刻 $t$ 状态为 $y$ 的条件下，从 $t+1$ 到 $T$ 的所有路径的未归一化得分之和。</p>
+<p>$$\beta_t(y) = \sum_{y_{t+1:T}} \exp\left( \sum_{\tau=t+1}^{T} s_\tau(y_{\tau-1}, y_\tau) \right) \quad \text{其中 } y_t = y$$</p>
+<p><strong>递推公式</strong>：</p>
+<p>$$\beta_t(y) = \sum_{y'} \exp(s_{t+1}(y, y')) \cdot \beta_{t+1}(y')$$</p>
+<p>初始化：$\beta_T(y) &#x3D; 1$（对所有 $y$）。</p>
+<h3 id="5-3-归一化因子与前向-后向的关系"><a href="#5-3-归一化因子与前向-后向的关系" class="headerlink" title="5.3 归一化因子与前向-后向的关系"></a>5.3 归一化因子与前向-后向的关系</h3><p>归一化因子 $Z(X)$ 可以通过多种方式计算：</p>
+<p>$$Z(X) = \sum_{y} \alpha_T(y)$$</p>
+<p>$$Z(X) = \sum_{y} \beta_0(y) \cdot \exp(s_1(y_{\text{start}}, y))$$</p>
+<p>$$Z(X) = \sum_{y} \alpha_t(y) \cdot \beta_t(y), \quad \forall t$$</p>
+<h3 id="5-4-边际概率"><a href="#5-4-边际概率" class="headerlink" title="5.4 边际概率"></a>5.4 边际概率</h3><p><strong>单节点边际概率</strong>：</p>
+<p>$$P(Y_t = y | X) = \frac{\alpha_t(y) \cdot \beta_t(y)}{Z(X)}$$</p>
+<p><strong>相邻节点边际概率</strong>：</p>
+<p>$$P(Y_t = y, Y_{t+1} = y' | X) = \frac{\alpha_t(y) \cdot \exp(s_{t+1}(y, y')) \cdot \beta_{t+1}(y')}{Z(X)}$$</p>
+<p>这与 HMM 中 $\gamma_t(i)$ 和 $\xi_t(i,j)$ 的形式完全对应。HMM 的前向概率和 CRF 的前向向量在数学结构上是同构的，区别仅在于：</p>
+<ul>
+<li>HMM 中 $\alpha_t(i)$ 是”概率”</li>
+<li>CRF 中 $\alpha_t(y)$ 是”未归一化的得分”</li>
+<li>但两者除以各自的总和后，都成为归一化的条件概率</li>
+</ul>
+<hr>
+<h2 id="6-参数学习"><a href="#6-参数学习" class="headerlink" title="6. 参数学习"></a>6. 参数学习</h2><h3 id="6-1-极大似然估计"><a href="#6-1-极大似然估计" class="headerlink" title="6.1 极大似然估计"></a>6.1 极大似然估计</h3><p>给定训练数据 $\mathcal{D} &#x3D; {(X^{(d)}, Y^{(d)})}_{d&#x3D;1}^{D}$（监督学习），CRF 的对数似然为：</p>
+<p>$$\ell(w) = \sum_{d=1}^{D} \log P(Y^{(d)} | X^{(d)}; w)$$</p>
+<p>$$= \sum_{d=1}^{D} \left[ \sum_{t=1}^{T_d} \sum_{j=1}^{J} w_j F_j(Y_{t-1}^{(d)}, Y_t^{(d)}, X^{(d)}, t) - \log Z(X^{(d)}) \right]$$</p>
+<p><strong>对数似然的梯度</strong>：</p>
+<p>$$\frac{\partial \ell}{\partial w_j} = \sum_{d=1}^{D} \left[ \sum_{t=1}^{T_d} F_j(Y_{t-1}^{(d)}, Y_t^{(d)}, X^{(d)}, t) - E_{P(Y|X^{(d)})}\left[ \sum_{t=1}^{T_d} F_j(Y_{t-1}, Y_t, X^{(d)}, t) \right] \right]$$</p>
+<p><strong>梯度 &#x3D; 经验特征的计数 - 模型期望特征的计数</strong></p>
+<ul>
+<li>第一项是特征 $F_j$ 在训练数据上的经验计数</li>
+<li>第二项是特征 $F_j$ 在当前模型 $P(Y|X^{(d)})$ 下的期望计数（通过前向-后向计算边际概率后加权求和）</li>
+</ul>
+<p>当梯度为 0 时，经验期望 &#x3D; 模型期望——这恰好是<strong>最大熵原理的约束条件</strong>。这说明 CRF 的 MLE 等价于最大熵模型的对偶问题。</p>
+<h3 id="6-2-对数似然的凸性"><a href="#6-2-对数似然的凸性" class="headerlink" title="6.2 对数似然的凸性"></a>6.2 对数似然的凸性</h3><p>CRF 的对数似然 $\ell(w)$ 是参数 $w$ 的<strong>凹函数</strong>。具体来说：</p>
+<p>$$\frac{\partial \ell}{\partial w_j} = \text{经验计数} - \text{模型期望}$$</p>
+<p>$$\frac{\partial^2 \ell}{\partial w_j \partial w_k} = -\text{Cov}_{P(Y|X)}[F_j, F_k] \leq 0$$</p>
+<p>二阶导数是特征在模型分布下的协方差的负值——必定是半负定的。因此 $\ell(w)$ 是凹函数，存在唯一的全局最大值（在特征不共线的前提下）。</p>
+<p>由于 $\ell$ 是凹函数，梯度下降&#x2F;上升可以保证收敛到全局最优。</p>
+<h3 id="6-3-优化方法"><a href="#6-3-优化方法" class="headerlink" title="6.3 优化方法"></a>6.3 优化方法</h3><p>CRF 的训练通常使用以下优化方法：</p>
+<p><strong>1. 梯度下降（Gradient Ascent）</strong>：</p>
+<p>$$w_j \leftarrow w_j + \eta \cdot \frac{\partial \ell}{\partial w_j}$$</p>
+<p><strong>2. L-BFGS</strong>：最常用的方法，利用二阶导数信息的拟牛顿法。结合 line search 确定步长。适用于特征数量在 $10^2-10^4$ 的中等规模 CRF。</p>
+<p><strong>3. 随机梯度下降（SGD）</strong>：每次用一个小批量数据估计梯度。适用于大规模训练数据（如数百万序列）。</p>
+<p><strong>4. IIS（Improved Iterative Scaling）</strong>：当特征满足 $F_j \geq 0$ 且 $\sum_j F_j &#x3D; \text{constant}$ 时可用。CRF 的 IIS 训练要求每轮迭代中求解前向-后向来计算特征期望。</p>
+<h3 id="6-4-对数似然的-L2-正则化"><a href="#6-4-对数似然的-L2-正则化" class="headerlink" title="6.4 对数似然的 L2 正则化"></a>6.4 对数似然的 L2 正则化</h3><p>为防止过拟合（特别是特征数量远大于训练样本数时），通常加入 L2 正则化：</p>
+<p>$$\ell_{\text{reg}}(w) = \ell(w) - \frac{\lambda}{2} \sum_{j} w_j^2$$</p>
+<p>梯度变为：</p>
+<p>$$\frac{\partial \ell_{\text{reg}}}{\partial w_j} = \frac{\partial \ell}{\partial w_j} - \lambda w_j$$</p>
+<p>加入 L2 后对数似然仍然是凹函数（凹函数减去凸函数 $\lambda w_j^2&#x2F;2$ 仍是凹的）。</p>
+<p>L1 正则化（稀疏化特征权重）也常被使用，但需要使用 OWL-QN（L-BFGS 的 L1 扩展）等特殊优化器。</p>
+<h3 id="6-5-IIS-算法在-CRF-中的应用"><a href="#6-5-IIS-算法在-CRF-中的应用" class="headerlink" title="6.5 IIS 算法在 CRF 中的应用"></a>6.5 IIS 算法在 CRF 中的应用</h3><p>IIS 的训练步骤与最大熵模型类似，但特征期望的计算需要前向-后向算法。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Algorithm: IIS for Linear-chain CRF</span><br><span class="line">Input: 训练数据 D = &#123;(X^&#123;(d)&#125;, Y^&#123;(d)&#125;)&#125;; 特征函数 F_j</span><br><span class="line">Output: 权重 w</span><br><span class="line"></span><br><span class="line">1. 初始化 w = 0</span><br><span class="line">2. 计算经验期望 Ẽ_j = (1/D) Σ_d Σ_t F_j(Y_&#123;t-1&#125;^&#123;(d)&#125;, Y_t^&#123;(d)&#125;, X^&#123;(d)&#125;, t)</span><br><span class="line">3. repeat:</span><br><span class="line">4.     // 计算模型期望（E-step 对应）</span><br><span class="line">5.     for each 序列 (X^&#123;(d)&#125;, Y^&#123;(d)&#125;):</span><br><span class="line">6.         用当前 w 计算前向 α 和后向 β</span><br><span class="line">7.         计算 Z(X^&#123;(d)&#125;)</span><br><span class="line">8.         计算边际概率 P(Y_t|X) 和 P(Y_t,Y_&#123;t+1&#125;|X)</span><br><span class="line">9.         累加特征期望 E_j</span><br><span class="line">10.    // 更新权重（M-step 对应）</span><br><span class="line">11.    for each j:</span><br><span class="line">12.        δ_j = (1/M) log(Ẽ_j / E_j)</span><br><span class="line">13.        w_j = w_j + δ_j</span><br><span class="line">14. until 收敛</span><br></pre></td></tr></table></figure>
+
+<p>收敛速度：IIS 保证对数似然每次迭代单调递增。收敛率通常为线性，慢于 L-BFGS。因此现代 CRF 实现更倾向于使用 L-BFGS。</p>
+<hr>
+<h2 id="7-Viterbi-解码"><a href="#7-Viterbi-解码" class="headerlink" title="7. Viterbi 解码"></a>7. Viterbi 解码</h2><h3 id="7-1-CRF-的-Viterbi-算法"><a href="#7-1-CRF-的-Viterbi-算法" class="headerlink" title="7.1 CRF 的 Viterbi 算法"></a>7.1 CRF 的 Viterbi 算法</h3><p>给定 $X$ 和参数 $w$，求最可能的状态序列：</p>
+<p>$$Y^* = \arg\max_Y P(Y|X) = \arg\max_Y \sum_{t=1}^{T} s_t(Y_{t-1}, Y_t)$$</p>
+<p>其中 $s_t$ 是步骤得分。这与 HMM 的 Viterbi 算法完全同构，只需将概率乘法换成得分加法。</p>
+<h3 id="7-2-算法伪代码"><a href="#7-2-算法伪代码" class="headerlink" title="7.2 算法伪代码"></a>7.2 算法伪代码</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Algorithm: Viterbi for Linear-chain CRF</span><br><span class="line">Input: 得分矩阵 s_t(y_&#123;t-1&#125;, y_t) for t=1..T</span><br><span class="line">Output: 最优标注序列 Y*</span><br><span class="line"></span><br><span class="line">1. // 初始化 (t=1)</span><br><span class="line">2. for each state y:</span><br><span class="line">3.     δ_1(y) = s_1(y_start, y)   // y_start 是起始状态</span><br><span class="line">4.     ψ_1(y) = 0</span><br><span class="line">5. // 递推</span><br><span class="line">6. for t = 1 to T-1:</span><br><span class="line">7.     for each y&#x27;:</span><br><span class="line">8.         δ_&#123;t+1&#125;(y&#x27;) = max_y [δ_t(y) + s_&#123;t+1&#125;(y, y&#x27;)]</span><br><span class="line">9.         ψ_&#123;t+1&#125;(y&#x27;) = argmax_y [δ_t(y) + s_&#123;t+1&#125;(y, y&#x27;)]</span><br><span class="line">10. // 终止</span><br><span class="line">11. score* = max_y δ_T(y),  y_T* = argmax_y δ_T(y)</span><br><span class="line">12. // 回溯</span><br><span class="line">13. for t = T-1 down to 1:</span><br><span class="line">14.     y_t* = ψ_&#123;t+1&#125;(y_&#123;t+1&#125;*)</span><br><span class="line">15. return Y* = (y_1*, ..., y_T*)</span><br></pre></td></tr></table></figure>
+
+<p>复杂度：$O(T \cdot N^2)$（$N$ 个标签类型，$T$ 个位置）。与 HMM 相同。</p>
+<p><strong>注意</strong>：这里的 $\delta_t(y)$ 含义与 HMM 中略有不同：</p>
+<ul>
+<li>HMM: $\delta_t(i)$ 是”到达状态 $i$ 的最优路径的概率”</li>
+<li>CRF: $\delta_t(y)$ 是”到达状态 $y$ 的最优路径的<strong>对数得分</strong>“（即 $\log$ 概率去除了归一化常数）</li>
+</ul>
+<p>由于 $\log$ 是单调函数，最大化概率等价于最大化对数得分。</p>
+<hr>
+<h2 id="8-标签偏置问题与-MEMM"><a href="#8-标签偏置问题与-MEMM" class="headerlink" title="8. 标签偏置问题与 MEMM"></a>8. 标签偏置问题与 MEMM</h2><h3 id="8-1-标签偏置问题（Label-Bias-Problem）"><a href="#8-1-标签偏置问题（Label-Bias-Problem）" class="headerlink" title="8.1 标签偏置问题（Label Bias Problem）"></a>8.1 标签偏置问题（Label Bias Problem）</h3><p>在理解 CRF 之前，有必要了解它的前身 MEMM（Maximum Entropy Markov Model）及后者的标签偏置问题。</p>
+<p>MEMM 将每个位置的标注建模为给定前一个标注和观测的条件分布：</p>
+<p>$$P(Y_t | Y_{t-1}, X) = \frac{\exp(\sum_j w_j f_j(Y_t, Y_{t-1}, X, t))}{\sum_{y'} \exp(\sum_j w_j f_j(y', Y_{t-1}, X, t))}$$</p>
+<p>注意：在每个位置 $t$，MEMM <strong>局部归一化</strong>（对每个 $Y_{t-1}$ 独立归一化）。</p>
+<p><strong>标签偏置的表现</strong>：假设从状态 A 出发，有两条路：A → B（转移概率 0.9）和 A → C（转移概率 0.1）。从状态 C 又有两条路，从状态 B 只有一条路。由于局部归一化，B 之后的唯一路径获得全部概率质量（1.0），而 C 之后的两条路各自获得一定的概率质量。最终，即使 B 之后的唯一路径对应的整体序列概率不高，局部归一化仍会使 MEMM 偏向于通过 B 的路径——因为它强制了从 B 出去的分布是确定性的。</p>
+<p><strong>根本原因</strong>：局部归一化使得模型”忘记”了前几步的低概率事件——每个位置的归一化只考虑了从前一个状态出发的局部分布，而不考虑全局路径的相对优劣。这导致 MEMM 偏好”出度小”的状态（即转移目标少的状态），即使全局来看这些路径并不更优。</p>
+<h3 id="8-2-CRF-如何避免标签偏置"><a href="#8-2-CRF-如何避免标签偏置" class="headerlink" title="8.2 CRF 如何避免标签偏置"></a>8.2 CRF 如何避免标签偏置</h3><p>CRF 使用全局归一化：</p>
+<p>$$P(Y|X) = \frac{\exp(\sum_{t,j} w_j F_j(Y_{t-1}, Y_t, X, t))}{\sum_{Y'} \exp(\sum_{t,j} w_j F_j(Y'_{t-1}, Y'_t, X, t))}$$</p>
+<p>分母 $Z(X)$ 是对<strong>所有可能的完整路径</strong>求和——不进行局部分别归一化。这意味着：</p>
+<ol>
+<li>从一个状态出发到不同后继的”分支”之间可以正确比较整体路径的好坏</li>
+<li>某个状态后面的唯一后继不会”抢夺”全部概率——因为归一化发生在全局层面</li>
+<li>MEMM 的标签偏置问题在 CRF 中被彻底消除了</li>
+</ol>
+<p><strong>MEMM vs CRF 总结</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>MEMM</th>
+<th>CRF</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>模型类型</td>
+<td>判别式</td>
+<td>判别式</td>
+</tr>
+<tr>
+<td>归一化</td>
+<td>局部（per-state）</td>
+<td>全局（per-sequence）</td>
+</tr>
+<tr>
+<td>标签偏置</td>
+<td><strong>有</strong></td>
+<td><strong>无</strong></td>
+</tr>
+<tr>
+<td>训练效率</td>
+<td>更快（不需前向-后向）</td>
+<td>更慢（需要前向-后向）</td>
+</tr>
+<tr>
+<td>表达能力</td>
+<td>受限（局部归一化的偏置）</td>
+<td>更强</td>
+</tr>
+<tr>
+<td>历史定位</td>
+<td>CRF 的前身</td>
+<td>MEMM 的改进</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="9-Bi-LSTM-CRF-与现代序列标注"><a href="#9-Bi-LSTM-CRF-与现代序列标注" class="headerlink" title="9. Bi-LSTM-CRF 与现代序列标注"></a>9. Bi-LSTM-CRF 与现代序列标注</h2><h3 id="9-1-从手工特征到自动特征"><a href="#9-1-从手工特征到自动特征" class="headerlink" title="9.1 从手工特征到自动特征"></a>9.1 从手工特征到自动特征</h3><p>传统 CRF 的特征函数 $F_j$ 需要人工设计。这既是优势（可以注入领域知识）也是劣势（需要大量特征工程）。</p>
+<p>Bi-LSTM-CRF（Huang et al., 2015）的核心创新是用 Bi-LSTM 替换手工特征提取：</p>
+<ol>
+<li><strong>Bi-LSTM 层</strong>：对输入序列的每个位置，生成一个上下文相关的向量表示 $h_t$（拼接前向和后向 LSTM 的隐藏状态）</li>
+<li><strong>全连接层</strong>：将 $h_t$ 映射为每个标签的”发射得分” $e_t(y) &#x3D; W \cdot h_t + b$</li>
+<li><strong>CRF 层</strong>：使用可学习的转移矩阵 $T$（$T[y’][y]$ 表示从标签 $y’$ 到 $y$ 的转移得分）</li>
+</ol>
+<p>整个模型的得分函数为：</p>
+<p>$$s(Y|X) = \sum_{t=1}^{T} e_t(Y_t) + \sum_{t=1}^{T-1} T[Y_t][Y_{t+1}]$$</p>
+<p>这与 CRF 的得分函数形式一致（$e_t$ 对应状态特征得分，$T$ 对应转移特征得分），但 $e_t$ 来自神经网络而非手工特征。</p>
+<h3 id="9-2-训练与推理"><a href="#9-2-训练与推理" class="headerlink" title="9.2 训练与推理"></a>9.2 训练与推理</h3><ul>
+<li><strong>训练</strong>：最大化对数似然，使用 SGD&#x2F;Adam 优化整个网络（LSTM + CRF 参数端到端训练）。CRF 层的前向-后向算法用于计算归一化因子 $Z(X)$。</li>
+<li><strong>解码</strong>：Viterbi 算法（与标准 CRF 完全相同）。</li>
+<li><strong>Loss 的意义</strong>：$\text{Loss} &#x3D; -\log P(Y|X) &#x3D; -s(Y|X) + \log Z(X)$。最小化 Loss 等价于让正确路径的得分 $s(Y|X)$ 尽可能大，同时让所有路径的 log-sum-exp $\log Z(X)$ 尽可能小（即正确路径相对于错误路径的得分差尽可能大）。</li>
+</ul>
+<h3 id="9-3-为什么-LSTM-之后还要加-CRF-层？"><a href="#9-3-为什么-LSTM-之后还要加-CRF-层？" class="headerlink" title="9.3 为什么 LSTM 之后还要加 CRF 层？"></a>9.3 为什么 LSTM 之后还要加 CRF 层？</h3><p>单纯使用 Bi-LSTM + Softmax（逐位置独立预测标签）存在两个问题：</p>
+<ol>
+<li><strong>无法建模标签之间的转移约束</strong>：如 I-PER 不能出现在 B-PER 之前、B-ORG 后面不能跟 I-LOC 等。Softmax 不关心这些结构约束。</li>
+<li><strong>无法利用标签转移的全局信息</strong>：LSTM 虽然可以捕获输入侧的长程依赖，但标签侧的依赖需要通过 CRF 的全局归一化来保证。</li>
+</ol>
+<p>CRF 层的作用就是在 LSTM 输出的局部得分之上，学习一个标签转移矩阵，然后通过全局 Viterbi 解码找到最优的完整标注序列。</p>
+<hr>
+<h2 id="10-CRF-工具简介"><a href="#10-CRF-工具简介" class="headerlink" title="10. CRF++ 工具简介"></a>10. CRF++ 工具简介</h2><p>CRF++ 是 Taku Kudo 开发的开源 CRF 工具（C++ 实现），是传统（非深度）CRF 的事实标准。</p>
+<h3 id="10-1-数据格式"><a href="#10-1-数据格式" class="headerlink" title="10.1 数据格式"></a>10.1 数据格式</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">token  feature1  feature2  ...  label</span><br></pre></td></tr></table></figure>
+
+<p>每一行对应一个词的 token。空行分隔句子。</p>
+<p>示例（中文分词，BEMS 标注）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">我   B</span><br><span class="line">爱   S</span><br><span class="line">北京  B</span><br><span class="line">天安门 E</span><br></pre></td></tr></table></figure>
+
+<p>每个 token 可以有多列特征（如词本身、词性、前后词等），CRF++ 自动生成特征模板。</p>
+<h3 id="10-2-特征模板"><a href="#10-2-特征模板" class="headerlink" title="10.2 特征模板"></a>10.2 特征模板</h3><p>CRF++ 的特征模板定义了如何从训练数据中自动生成特征函数。模板文件示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Unigram (状态特征)</span><br><span class="line">U00:%x[-2,0]   # 前两个词的 word</span><br><span class="line">U01:%x[-1,0]   # 前一个词的 word</span><br><span class="line">U02:%x[0,0]    # 当前词的 word</span><br><span class="line">U03:%x[1,0]    # 后一个词的 word</span><br><span class="line">U04:%x[2,0]    # 后两个词的 word</span><br><span class="line">U05:%x[-1,0]/%x[0,0]  # 前一个词和当前词的组合</span><br><span class="line"></span><br><span class="line"># Bigram (转移特征)</span><br><span class="line">B</span><br></pre></td></tr></table></figure>
+
+<p><code>U</code> 开头的模板只生成状态特征（依赖当前标签），<code>B</code> 生成转移特征（依赖当前和前一标签）。</p>
+<p><code>%x[row, col]</code> 的含义：<code>row</code> 表示相对当前 token 的偏移量（负数为前、正数为后），<code>col</code> 表示数据中的第几列。</p>
+<h3 id="10-3-训练与预测"><a href="#10-3-训练与预测" class="headerlink" title="10.3 训练与预测"></a>10.3 训练与预测</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 训练</span></span><br><span class="line">crf_learn -f 3 -c 4.0 template train.txt model</span><br><span class="line"></span><br><span class="line"><span class="comment"># 预测</span></span><br><span class="line">crf_test -m model test.txt &gt; output.txt</span><br></pre></td></tr></table></figure>
+
+<p>参数说明：</p>
+<ul>
+<li><code>-f</code>：特征频次阈值，低于此值的特征被过滤</li>
+<li><code>-c</code>：L2 正则化强度的倒数（$C &#x3D; 1&#x2F;\lambda$）。越大正则化越弱。</li>
+</ul>
+<hr>
+<h2 id="11-数值计算示例：CRF-的完整推导"><a href="#11-数值计算示例：CRF-的完整推导" class="headerlink" title="11. 数值计算示例：CRF 的完整推导"></a>11. 数值计算示例：CRF 的完整推导</h2><h3 id="11-1-问题设定"><a href="#11-1-问题设定" class="headerlink" title="11.1 问题设定"></a>11.1 问题设定</h3><p>我们用一个简化版 NER 标注问题来演示 CRF 的计算。观测序列 $X &#x3D;$ (“John”, “lives”, “in”, “London”)，标签集合 $\mathcal{Y} &#x3D; {\text{B-PER}, \text{O}, \text{B-LOC}}$（简写为 B-P, O, B-L）。</p>
+<p>假设我们已经训练好或预设了以下参数（得分，未归一化）：</p>
+<p>**转移得分矩阵 $T$**（$T[y’][y]$ &#x3D; 从前一标签 $y’$ 转移到当前标签 $y$ 的得分）：</p>
+<table>
+<thead>
+<tr>
+<th>$y’ \setminus y$</th>
+<th>B-P</th>
+<th>O</th>
+<th>B-L</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>START</td>
+<td>0.1</td>
+<td>0.5</td>
+<td>0.1</td>
+</tr>
+<tr>
+<td>B-P</td>
+<td>0.1</td>
+<td>1.0</td>
+<td>0.1</td>
+</tr>
+<tr>
+<td>O</td>
+<td>0.5</td>
+<td>0.3</td>
+<td>0.8</td>
+</tr>
+<tr>
+<td>B-L</td>
+<td>0.1</td>
+<td>1.0</td>
+<td>0.1</td>
+</tr>
+</tbody></table>
+<p>**发射得分 $E_t(y)$**（由 LSTM 或简单词表给出，位置 $t$ 上标签 $y$ 的得分）：</p>
+<table>
+<thead>
+<tr>
+<th>位置</th>
+<th>词</th>
+<th>B-P</th>
+<th>O</th>
+<th>B-L</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>John</td>
+<td>1.5</td>
+<td>0.2</td>
+<td>0.1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>lives</td>
+<td>0.1</td>
+<td>1.2</td>
+<td>0.1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>in</td>
+<td>0.1</td>
+<td>1.0</td>
+<td>0.1</td>
+</tr>
+<tr>
+<td>4</td>
+<td>London</td>
+<td>0.3</td>
+<td>0.2</td>
+<td>1.8</td>
+</tr>
+</tbody></table>
+<p><strong>总得分</strong>：一条标注序列 $Y &#x3D; (y_1, y_2, y_3, y_4)$ 的总得分为：</p>
+<p>$$s(Y) = \sum_{t=1}^{4} [T[y_{t-1}][y_t] + E_t(y_t)]$$</p>
+<p>其中 $y_0 &#x3D; \text{START}$。</p>
+<h3 id="11-2-前向递推"><a href="#11-2-前向递推" class="headerlink" title="11.2 前向递推"></a>11.2 前向递推</h3><p>令 $\alpha_t(y)$ &#x3D; 在位置 $t$ 标签为 $y$ 的所有前缀路径的未归一化总得分。</p>
+<p>**$t&#x3D;1$**：</p>
+<p>$$\alpha_1(\text{B-P}) = \exp(T[\text{START}][\text{B-P}] + E_1(\text{B-P})) = \exp(0.1 + 1.5) = e^{1.6} \approx 4.953$$<br>$$\alpha_1(\text{O}) = \exp(0.5 + 0.2) = e^{0.7} \approx 2.014$$<br>$$\alpha_1(\text{B-L}) = \exp(0.1 + 0.1) = e^{0.2} \approx 1.221$$</p>
+<p>**$t&#x3D;2$**：</p>
+<p>$$\alpha_2(y) = \sum_{y'} \alpha_1(y') \cdot \exp(T[y'][y] + E_2(y))$$</p>
+<p>$$\begin{aligned}
+\alpha_2(\text{B-P}) &= [4.953 \cdot e^{0.1+0.1} + 2.014 \cdot e^{0.5+0.1} + 1.221 \cdot e^{0.1+0.1}] \\
+&= [4.953 \times 1.221 + 2.014 \times 1.822 + 1.221 \times 1.221] \\
+&\approx 6.047 + 3.669 + 1.491 = 11.207
+\end{aligned}$$</p>
+<p>类似地：<br>$$\alpha_2(\text{O}) \approx 14.879$$<br>$$\alpha_2(\text{B-L}) \approx 5.766$$</p>
+<p>**$t&#x3D;3, 4$**：继续递推…</p>
+<p><strong>归一化因子</strong>：</p>
+<p>$$Z = \sum_{y} \alpha_4(y)$$</p>
+<p>（在实际数值示例中由于空间限制省略后续计算，但不影响对算法结构的理解）</p>
+<h3 id="11-3-边际概率计算"><a href="#11-3-边际概率计算" class="headerlink" title="11.3 边际概率计算"></a>11.3 边际概率计算</h3><p>以 $P(Y_2 &#x3D; \text{O} | X)$ 为例，需要：</p>
+<ul>
+<li>$\alpha_2(\text{O})$（前向到位置 2 标签 O 的总得分）</li>
+<li>$\beta_2(\text{O})$（从位置 2 标签 O 到结尾的后向总得分）</li>
+</ul>
+<p>$$P(Y_2 = \text{O} | X) = \frac{\alpha_2(\text{O}) \cdot \beta_2(\text{O})}{Z}$$</p>
+<p>后向概率 $\beta_2(\text{O})$ 的计算：从 $t&#x3D;2$ 标签 O 出发，考虑所有可能的 $y_3, y_4$ 组合，累加 $\exp(T[\text{O}][y_3] + E_3(y_3) + T[y_3][y_4] + E_4(y_4))$。</p>
+<h3 id="11-4-Viterbi-解码"><a href="#11-4-Viterbi-解码" class="headerlink" title="11.4 Viterbi 解码"></a>11.4 Viterbi 解码</h3><p>得分路径搜索（使用 $\max$ 而非 $\sum$）：</p>
+<p>**$t&#x3D;1$**：</p>
+<ul>
+<li>$\delta_1(\text{B-P}) &#x3D; 1.6$, $\delta_1(\text{O}) &#x3D; 0.7$, $\delta_1(\text{B-L}) &#x3D; 0.2$</li>
+</ul>
+<p>**$t&#x3D;2$**：</p>
+<ul>
+<li>$\delta_2(\text{O}) &#x3D; \max[1.6 + 1.0 + 1.2, 0.7 + 0.3 + 1.2, 0.2 + 1.0 + 1.2] &#x3D; \max[3.8, 2.2, 2.4] &#x3D; 3.8$<br>$\psi_2(\text{O}) &#x3D; \text{B-P}$（回溯到 B-P）</li>
+</ul>
+<p>继续递推并回溯，得到最优序列。在这个例子中，由于 “John” 发射得分明显偏好 B-P、”London” 发射得分明显偏好 B-L，且 B-P→O 和 O→B-L 的转移得分都很高，最佳标注序列预计为：</p>
+<p>$$\text{(B-P, O, O, B-L)}$$</p>
+<p>即 “John-PER lives-O in-O London-LOC”——这是完全正确的命名实体识别。</p>
+<hr>
+<h2 id="12-势函数设计与特征工程"><a href="#12-势函数设计与特征工程" class="headerlink" title="12. 势函数设计与特征工程"></a>12. 势函数设计与特征工程</h2><h3 id="12-1-原子特征设计"><a href="#12-1-原子特征设计" class="headerlink" title="12.1 原子特征设计"></a>12.1 原子特征设计</h3><p>CRF 的性能高度依赖于特征函数的设计。以下是一个 NER 任务中典型的特征集：</p>
+<p><strong>字符级特征</strong>（不依赖外部词典资源）：</p>
+<ul>
+<li>当前词</li>
+<li>当前词的前缀&#x2F;后缀（如前 1-4 个字符、后 1-4 个字符）：如 “-ing”, “-tion”, “geo-“</li>
+<li>当前词是否首字母大写</li>
+<li>当前词是否全部大写</li>
+<li>当前词是否包含数字</li>
+<li>当前词是否包含连字符</li>
+<li>当前词的长度</li>
+</ul>
+<p><strong>词性特征</strong>（依赖 POS tagger）：</p>
+<ul>
+<li>当前词的词性</li>
+<li>前一个&#x2F;后一个词的词性</li>
+<li>当前词+词性的组合</li>
+</ul>
+<p><strong>词典特征</strong>（依赖外部知识库）：</p>
+<ul>
+<li>当前词是否在已知人名词典中</li>
+<li>当前词是否在已知地名词典中</li>
+<li>当前词是否在已知组织名词典中</li>
+</ul>
+<p><strong>上下文特征</strong>：</p>
+<ul>
+<li>前一个词 &#x2F; 后一个词</li>
+<li>前两个词 &#x2F; 后两个词</li>
+<li>前一个词+当前词的组合</li>
+<li>窗口内的词袋</li>
+</ul>
+<h3 id="12-2-CRF-特征模板详解"><a href="#12-2-CRF-特征模板详解" class="headerlink" title="12.2 CRF++ 特征模板详解"></a>12.2 CRF++ 特征模板详解</h3><p>CRF++ 的模板语法中，<code>%x[row, col]</code> 定义了特征如何从数据行中自动展开：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 假设每行数据格式为: word pos chunk label</span><br><span class="line"></span><br><span class="line"># Unigram features (U-prefix) - 只依赖当前标签和 X</span><br><span class="line">U00:%x[-1,0]           # 前一个词</span><br><span class="line">U01:%x[0,0]            # 当前词</span><br><span class="line">U02:%x[1,0]            # 下一个词</span><br><span class="line">U03:%x[-1,0]/%x[0,0]   # 前一个词+当前词（组合特征）</span><br><span class="line">U04:%x[0,0]/%x[1,0]    # 当前词+下一个词</span><br><span class="line">U05:%x[-1,1]           # 前一个词的词性</span><br><span class="line">U06:%x[0,1]            # 当前词的词性</span><br><span class="line">U07:%x[1,1]            # 下一个词的词性</span><br><span class="line">U08:%x[-1,1]/%x[0,1]   # 前一个词性+当前词性</span><br><span class="line"></span><br><span class="line"># Bigram features (B-prefix) - 依赖前一标签和当前标签</span><br><span class="line">B</span><br></pre></td></tr></table></figure>
+
+<p>CRF++ 自动展开这些模板：对于每个训练样本的每个位置，检查模板中的模式是否匹配，如匹配则生成一个特征。例如 <code>U02:%x[1,0]</code> 展开为类似”如果下一个词是 ‘London’ 且当前标签是 B-LOC，特征值为 1”。</p>
+<p><strong>模板设计经验</strong>：</p>
+<ol>
+<li>从简单开始：U00-U02（前后各一个词的窗口）通常是最基础的</li>
+<li>逐步添加组合特征（<code>/</code> 连接）：U03-U04。组合特征可以捕获词序列模式，但也会爆炸特征维数</li>
+<li>添加外部特征列（如 POS、chunk）：如果数据包含这些列</li>
+<li>Bigram 特征（B）通常总是加上——它让模型学习标签转移偏好</li>
+<li>使用 <code>-f</code> 参数过滤低频特征：避免模型被极少出现的”记忆性”特征主导</li>
+</ol>
+<hr>
+<h2 id="13-面试高频问答"><a href="#13-面试高频问答" class="headerlink" title="13. 面试高频问答"></a>13. 面试高频问答</h2><p><strong>Q1: CRF 和 HMM 的核心区别是什么？</strong></p>
+<p>A: 四个维度：</p>
+<ol>
+<li><strong>生成式 vs 判别式</strong>：HMM 建模 $P(X,Y)$（生成式），CRF 建模 $P(Y|X)$（判别式）</li>
+<li><strong>归一化</strong>：HMM 局部归一化（转移概率和发射概率各自独立归一化），CRF 全局归一化（对完整序列路径）</li>
+<li><strong>特征灵活性</strong>：HMM 的参数对应固定的概率（转移概率、发射概率），CRF 可以使用任意特征函数，特征之间可以重叠和关联</li>
+<li><strong>观测独立性</strong>：HMM 假设 $X_t$ 仅依赖 $Y_t$，CRF 的特征函数可以依赖整个 $X$ 序列（可使用上下文特征）</li>
+</ol>
+<p><strong>Q2: Hammersley-Clifford 定理说明了什么？为什么对 CRF 重要？</strong></p>
+<p>A: H-C 定理指出：对于正的联合分布 $P(X) &gt; 0$，$P$ 满足无向图上的全部条件独立性，当且仅当 $P$ 可分解为图中所有极大团上的势函数之积。对 CRF 的意义：它保证了我们只需定义团上的势函数（在链 CRF 中就是相邻状态对），由此产生的分布自然满足链式结构的条件独立性——这是 CRF 模型形式正确的理论保证。它也提供了一个构造 MRF 的标准方法：不需要直接处理复杂的条件独立性条件，只需定义团势函数即可。</p>
+<p><strong>Q3: 什么是标签偏置问题（Label Bias Problem）？CRF 如何解决的？</strong></p>
+<p>A: 标签偏置出现在 MEMM 中——由于局部归一化，每个状态出发的转移概率必须和为 1。这导致”出度小”的状态（转移目标少）在每条路径上获得不成比例的大概率。极端情况下，一个状态如果只有一个后继，从它出发转移到该后继的概率恒为 1，无论全局来看该路径有多差。CRF 通过<strong>全局归一化</strong>解决：$Z(X)$ 是对所有可能完整路径求和的单一天下归一化，不同路径之间的比较是公平的——不存在局部概率质量被强制分配的问题。</p>
+<p><strong>Q4: 为什么 MEMM 的训练比 CRF 快，但实践中仍偏好 CRF？</strong></p>
+<p>A: MEMM 的每个位置独立做局部分类（如多类逻辑回归），不需要前向-后向算法来求全局归一化——因此每轮迭代更快。但 MEMM 的标签偏置会导致模型系统性偏好某些标注（出度小的标注），这在序列标注任务中直接损害精度。CRF 每轮需要 $O(T N^2)$ 的前向-后向计算，训练更慢，但标签偏置被消除且表达能力更强——因此当计算资源允许时（特别是对于中等规模的序列标注任务），CRF 是更好的选择。</p>
+<p><strong>Q5: 推导 CRF 对数似然的梯度，并解释其结构。</strong></p>
+<p>A: $\ell(w) &#x3D; \sum_t \sum_j w_j F_j(Y_{t-1}, Y_t, X, t) - \log Z(X)$</p>
+<p>$$\frac{\partial \ell}{\partial w_j} = \sum_t F_j(Y_{t-1}, Y_t, X, t) - \frac{1}{Z(X)} \frac{\partial Z(X)}{\partial w_j}$$</p>
+<p>$$\frac{\partial Z(X)}{\partial w_j} = \sum_{Y'} \exp\left(\sum_t \sum_k w_k F_k\right) \cdot \sum_t F_j(Y'_{t-1}, Y'_t, X, t)$$</p>
+<p>$$\frac{\partial \ell}{\partial w_j} = \underbrace{\sum_t F_j(Y, X, t)}_{\text{经验特征计数}} - \underbrace{E_{P(Y'|X)}\left[\sum_t F_j(Y', X, t)\right]}_{\text{模型期望特征计数}}$$</p>
+<p>结构：梯度 &#x3D; 训练数据中特征被激活的次数 - 当前模型期望下特征被激活的期望次数。当梯度为零时，$\tilde{E}(F_j) &#x3D; E_P(F_j)$——即经验期望等于模型期望，这正是最大熵原理的核心约束。这与逻辑回归的梯度 $\sum_i (\hat{y}_i - y_i)x_i$ 在精神上完全一致（预测期望 - 真实值）。</p>
+<p><strong>Q6: 为什么使用 Bi-LSTM + CRF 而不是直接 Bi-LSTM + Softmax 做序列标注？</strong></p>
+<p>A: Bi-LSTM + Softmax 对每个位置做独立预测，忽略了标签之间的结构约束。例如在 NER 中，I-PER 不应该出现在 B-PER 之前，这种约束无法被 Softmax 捕获。CRF 层引入了一个可学习的标签转移矩阵，并通过全局 Viterbi 解码确保输出序列在标签转移层面是合理的。实验上，增加 CRF 层通常能带来 1-3 个百分点的 F1 提升——这对序列标注任务非常关键。</p>
+<p><strong>Q7: L-BFGS 在 CRF 训练中相比于 SGD 有何优势？</strong></p>
+<p>A: L-BFGS 是拟牛顿法，利用最近 $m$ 步的梯度和参数差来近似 Hessian 的逆。它自动估计”曲率”信息，因此：</p>
+<ol>
+<li>不需要调学习率（使用 line search 或 Wolfe 条件自动确定步长）</li>
+<li>超线性收敛率（远快于 SGD 的次线性收敛率）</li>
+<li>内存消耗 $O(md)$（$m$ 通常为 10，$d$ 为特征数），可接受</li>
+</ol>
+<p>SGD 的优势在于可以处理大规模数据（每次只用 mini-batch 估计梯度），但需要手动调学习率和学习率衰减策略。对于特征数在数千到数万级别的 CRF，L-BFGS 通常是首选。</p>
+<p><strong>Q8: CRF 的全局归一化因子 $Z(X)$ 如何计算？为什么它是 CRF 的瓶颈？</strong></p>
+<p>A: 对于线性链 CRF，$Z(X) &#x3D; \sum_{Y} \exp(s(Y|X))$ 通过前向算法递推计算，复杂度为 $O(T \cdot N^2)$。$Z(X)$ 是 CRF 的计算瓶颈，因为：(1) 每次计算梯度时都需要重新计算 $Z(X)$（涉及整个序列的前向递推）；(2) 虽然前向算法的 $O(T N^2)$ 比指数级的直接求和 $O(N^T)$ 好得多，但当标签集很大（如序列标注中 $N&gt;100$）时，$N^2$ 因子仍然可观。这也是为什么现代神经网络+CRF 的搭配中，标签集通常较小（NER 的 BIOES 共 17 类左右），使得 $N^2$ 保持在可控范围。对于大规模标签的应用（如语言模型的输出层有 50000 个 token），CRF 不可行——此时用 softmax + beam search 替代。</p>
+<p><strong>Q9: 传统 CRF 和 Bi-LSTM-CRF 各有什么优缺点？如何选择？</strong></p>
+<p>A:</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>传统 CRF (CRF++)</th>
+<th>Bi-LSTM-CRF</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>特征</td>
+<td>手工设计（需领域专家）</td>
+<td>自动学习（LSTM 提取）</td>
+</tr>
+<tr>
+<td>训练数据需求</td>
+<td>小（数千条即可）</td>
+<td>较大（通常数万条以上）</td>
+</tr>
+<tr>
+<td>训练时间</td>
+<td>快（L-BFGS 收敛快）</td>
+<td>慢（SGD&#x2F;Adam 需要更多迭代）</td>
+</tr>
+<tr>
+<td>推理时间</td>
+<td>快</td>
+<td>中等（LSTM 前向传播 + Viterbi）</td>
+</tr>
+<tr>
+<td>精度上限</td>
+<td>受限于特征质量</td>
+<td>通常更高（自动学习非线性和长程依赖）</td>
+</tr>
+<tr>
+<td>可解释性</td>
+<td>高（每个特征权重可查）</td>
+<td>低（黑盒 LSTM）</td>
+</tr>
+<tr>
+<td>调参</td>
+<td>少（C, f 参数）</td>
+<td>多（学习率, dropout, layer, hidden size…）</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>小样本 + 有领域知识</td>
+<td>大样本 + 端到端训练</td>
+</tr>
+</tbody></table>
+<p>选择指南：如果标注数据小于 5000 条且有领域专家可以设计特征，用传统 CRF；如果标注数据大于 10000 条且追求最高精度，用 Bi-LSTM-CRF；如果有预训练语言模型（如 BERT），可以直接 finetune BERT + CRF。</p>
+<p><strong>Q10: CRF 可以用于非序列结构化预测任务吗？</strong></p>
+<p>A: 可以。CRF 的”链”只是图结构的一种特例。一般 CRF（General CRF）的图结构可以是任意的无向图，只要你能在该图上高效地进行推断（或者近似推断）。典型应用包括：</p>
+<ol>
+<li><strong>图像分割</strong>：像素或超像素构成网格图（grid graph），每个像素预测其类别标签。相邻像素倾向于共享相同标签（平滑先验）。</li>
+<li><strong>3D 体素标注</strong>：医学图像（CT&#x2F;MRI）的三维网格图 CRF。</li>
+<li><strong>语义分割的 Dense CRF</strong>（Krahenbuhl &amp; Koltun, 2011）：在全连接的 CRF 上使用高效的均值场推断（mean-field inference），大幅加速了像素级的结构化预测。</li>
+<li><strong>Table extraction</strong>：从文档扫描件中提取表格结构（二维网格结构）。</li>
+</ol>
+<p>在一般图结构上，精确推断（计算 $Z(X)$ 和边际概率）需要在连接树（junction tree）上进行，其复杂度随树宽（treewidth）指数增长。对于树宽大的图，只能使用近似推断（如 loopy BP, mean-field, 或采样方法）。</p>
+<hr>
+<h2 id="14-条件随机场的最大熵视角"><a href="#14-条件随机场的最大熵视角" class="headerlink" title="14. 条件随机场的最大熵视角"></a>14. 条件随机场的最大熵视角</h2><h3 id="14-1-CRF-作为条件最大熵模型"><a href="#14-1-CRF-作为条件最大熵模型" class="headerlink" title="14.1 CRF 作为条件最大熵模型"></a>14.1 CRF 作为条件最大熵模型</h3><p>CRF 与最大熵模型有深刻的联系。实际上，线性链 CRF 可以看作是<strong>序列版本的条件最大熵模型</strong>——最大熵模型对单个位置做分类，CRF 对整个序列做联合预测。</p>
+<p>考虑在所有可能的条件概率分布 $P(Y|X)$ 中，我们要求分布满足一组特征约束（模型期望 &#x3D; 经验期望），然后选择熵最大的那个分布：</p>
+<p>$$\max_P H(P) = -\sum_{X,Y} \tilde{P}(X) P(Y|X) \log P(Y|X)$$</p>
+<p>$$\text{s.t.} \quad E_P[F_j] = \tilde{E}[F_j], \quad \forall j$$</p>
+<p>根据 Lagrange 变分法，这个约束优化问题的解恰好是 CRF 的指数族形式：</p>
+<p>$$P(Y|X) = \frac{1}{Z(X)} \exp\left(\sum_j w_j F_j(Y, X)\right)$$</p>
+<p>对偶问题是最小化负对数似然（即 CRF 的 MLE）：</p>
+<p>$$\min_w \quad -\sum_d \log P(Y^{(d)}|X^{(d)})$$</p>
+<p>这与逻辑回归-最大熵的原始-对偶关系完全平行——CRF 的 MLE 训练等价于在满足特征矩约束的条件下最大化条件熵。这一对偶关系是理解 CRF 的理论深度的关键。</p>
+<h3 id="14-2-特征选择与模型复杂度"><a href="#14-2-特征选择与模型复杂度" class="headerlink" title="14.2 特征选择与模型复杂度"></a>14.2 特征选择与模型复杂度</h3><p>CRF 的特征数量 $J$ 决定了模型复杂度。过多的特征导致：</p>
+<ol>
+<li>训练变慢（每秒需要计算 $J$ 个特征的期望）</li>
+<li>容易过拟合（特别是在训练数据有限时）</li>
+</ol>
+<p><strong>特征选择策略</strong>：</p>
+<ol>
+<li><strong>频次过滤</strong>：丢弃在训练数据中出现次数极少的特征（如 CRF++ 的 <code>-f</code> 参数）</li>
+<li><strong>L1 正则化</strong>：自动将许多特征权重置为零（特征选择 + 模型训练一步完成）</li>
+<li><strong>基于信息增益的预筛选</strong>：对每个候选特征，计算其与标签的互信息或信息增益，保留 top-K</li>
+</ol>
+<p>L1 正则化在 CRF 中的挑战在于优化——由于 L1 在零处不可导，不能直接用 L-BFGS。需要用 OWL-QN（Orthant-Wise Limited-memory Quasi-Newton）等特殊优化器。</p>
+<h3 id="14-3-链式-CRF-的限制"><a href="#14-3-链式-CRF-的限制" class="headerlink" title="14.3 链式 CRF 的限制"></a>14.3 链式 CRF 的限制</h3><p>线性链 CRF 假设 $Y_t$ 仅与 $Y_{t-1}$ 和 $Y_{t+1}$ 直接相关（一阶马尔可夫性）。在某些应用中，需要更高阶的依赖：</p>
+<ul>
+<li><strong>跳阶 CRF（Skip-chain CRF）</strong>：允许不相邻的 $Y_i$ 和 $Y_j$ 之间存在边（如指代消解中两个提及共享同一实体的关系）</li>
+<li><strong>层级 CRF（Hierarchical CRF）</strong>：在序列标注上叠加树结构（如句法分析中的依存关系）</li>
+<li><strong>因子图 CRF</strong>：最一般的形式，$Y$ 的空间依赖结构通过因子图显式定义</li>
+</ul>
+<p>这些扩展在表达能力更强大的同时，也使得训练中的前向-后向算法不再适用（因为 $Y$ 不再具有链结构）。常用的解决方案包括 loopy belief propagation（近似推断）或 structured SVM（用 max-margin 代替 MLE）。</p>
+<hr>
+<h2 id="15-面试高频问答（续）"><a href="#15-面试高频问答（续）" class="headerlink" title="15. 面试高频问答（续）"></a>15. 面试高频问答（续）</h2><p>（问答 Q8-Q10 见上方）</p>
+<p><strong>Q11: CRF 的损失函数是凸函数吗？全局最优解是否唯一？</strong></p>
+<p>A: 不含隐藏变量的 CRF（即训练数据提供了完整标注，没有隐状态）的对数似然 $\ell(w) &#x3D; \sum_d [\sum_{t,j} w_j F_j - \log Z(X^{(d)})]$ 是 $w$ 的<strong>严格凹函数</strong>（Hessian 是负半定的）。证明：$\frac{\partial^2 \ell}{\partial w_j \partial w_k} &#x3D; -\text{Cov}_{P(Y|X)}[\sum_t F_j, \sum_t F_k]$。协方差矩阵是半正定的，取其负值即为半负定。因此存在唯一的全局最大值（前提是特征之间不存在线性依赖）。如果有隐状态（如 HCRF, Hidden CRF），损失函数变为非凸（因为 log-sum 嵌套），需要 EM 或梯度方法寻找局部最优。</p>
+<p><strong>Q12: 线性链 CRF 的前向-后向算法与 HMM 的前向-后向算法有什么本质异同？</strong></p>
+<p>A:</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>HMM</th>
+<th>CRF</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>递推目标</td>
+<td>计算概率 $P(O\vert\lambda)$</td>
+<td>计算归一化因子 $Z(X)$</td>
+</tr>
+<tr>
+<td>递推公式</td>
+<td>$\alpha_{t+1}(j) &#x3D; [\sum_i \alpha_t(i) a_{ij}] b_j(o_{t+1})$</td>
+<td>$\alpha_{t+1}(y) &#x3D; \sum_{y’} \alpha_t(y’) \exp(s_{t+1}(y’, y))$</td>
+</tr>
+<tr>
+<td>空间含义</td>
+<td>$\alpha_t(i)$ 是”到达状态 $i$ 的部分序列概率”</td>
+<td>$\alpha_t(y)$ 是”到达标签 $y$ 的未归一化得分”</td>
+</tr>
+<tr>
+<td>数学结构</td>
+<td>同构（矩阵-向量乘法）</td>
+<td>同构</td>
+</tr>
+<tr>
+<td>$\gamma_t$ 含义</td>
+<td>$P(i_t \vert O)$</td>
+<td>$P(y_t \vert X)$</td>
+</tr>
+<tr>
+<td>归一化时机</td>
+<td>转移&#x2F;发射已局部归一化</td>
+<td>全局归一化（前向结束后除 $Z$）</td>
+</tr>
+<tr>
+<td>数值稳定性</td>
+<td>需要 scaling（概率连乘下溢）</td>
+<td>需要 log-space 计算（得分指数爆炸）</td>
+</tr>
+</tbody></table>
+<p>本质相同：两者都是”sum-product”消息传递算法在链式图上的特例。HMM 的因子是概率（已在 $[0,1]$），CRF 的因子是得分（可在 $\mathbb{R}$ 中）。这也是为什么将 HMM 的前向算法中概率 $a_{ij}, b_j$ 替换为 $\exp(\text{score})$ 后，得到的就是 CRF 的前向算法。</p>
+<p><strong>Q13: 实现 CRF 时需要注意哪些数值稳定性问题？</strong></p>
+<p>A:</p>
+<ol>
+<li><strong>指数上溢</strong>：$\exp(s_t)$ 当 $s_t &gt; 700$（float32）时会溢出。解决方案：所有计算在 log-space 中进行，使用 <code>logsumexp</code> 操作。</li>
+<li><strong>logsumexp 的实现</strong>：$\log \sum_i \exp(x_i) &#x3D; x_{\max} + \log \sum_i \exp(x_i - x_{\max})$。减去最大值后再求指数，既避免了上溢，也保持了数值精度。</li>
+<li><strong>Viterbi 的 log-space 版本</strong>：$\delta_{t+1}(y’) &#x3D; \max_y [\delta_t(y) + s_{t+1}(y, y’)]$。求和（前向）对应对数域的 logsumexp，最大化（Viterbi）对应对数域的 max——两者在 log-space 中都是数值稳定的。</li>
+<li><strong>长序列上的得分累积</strong>：当 $T$ 很大时，即使 log-space 中 $\alpha_t$ 的值也会很大（但不会溢出因为我们在对数域）。前向-后向最终归一化需要 $\gamma_t &#x3D; \exp(\alpha_t + \beta_t - \log Z)$，这是稳定的因为 $\alpha_t + \beta_t - \log Z \leq 0$。</li>
+</ol>
+<p><strong>Q14: 比较 CRF 与 Seq2Seq with Attention 在序列标注任务上的优劣。</strong></p>
+<p>A: 在 NLP 的序列标注任务（如 NER, POS tagging, chunking）中：</p>
+<ul>
+<li><p><strong>CRF&#x2F;Bi-LSTM-CRF 的优势</strong>：</p>
+<ol>
+<li>天然适配序列标注——输出标签数与输入词数严格一致（一对一映射）</li>
+<li>CRF 的转移矩阵提供了序列标注所需的结构约束</li>
+<li>收敛快，训练稳定（CRF 损失是凸的，LSTM-CRF 虽然是联合非凸但通常也稳定）</li>
+<li>在标记数据有限时，手工特征 + CRF 优于小样本的端到端 seq2seq</li>
+</ol>
+</li>
+<li><p><strong>Seq2Seq with Attention 的优势</strong>：</p>
+<ol>
+<li>可以灵活处理输入输出长度不对等的情况（如翻译、摘要）</li>
+<li>注意力机制提供了软对齐，可捕获长程依赖</li>
+<li>在大规模数据上可通过预训练语言模型（如 BART, T5）实现更高的精度</li>
+</ol>
+</li>
+<li><p><strong>选型建议</strong>：</p>
+<ul>
+<li>标准序列标注（NER&#x2F;POS&#x2F;Chunking）→ Bi-LSTM-CRF 或 BERT + CRF</li>
+<li>需要生成式输出（如文本纠错、摘要）→ Seq2Seq + Attention</li>
+<li>极低资源（&lt;1000 样本）→ 手工特征 CRF 仍然有竞争力</li>
+<li>极高资源（&gt;100 万样本）+ 追求 SOTA → 预训练 + finetune (BERT, RoBERTa + CRF 或直接 token classification head)</li>
+</ul>
+</li>
+</ul>
+<p><strong>Q15: 在 CRF 的训练过程中，每次梯度更新都需要前向-后向计算吗？为什么这么昂贵？</strong></p>
+<p>A: 是的。每次计算 $\nabla_w \ell$ 时，第二项（模型期望特征计数）需要通过前向-后向计算：先对所有训练序列计算 $\alpha$ 和 $\beta$ 得到 $Z(X)$ 和 $\gamma_t(y), P(Y_t&#x3D;y, Y_{t+1}&#x3D;y’|X)$，然后累加特征在这些边际概率下的期望。这个过程的计算量为 $O(D \cdot T_{\text{avg}} \cdot N^2)$（$D$ 是训练序列数）。当 $D$ 很大时，完整遍历数据集计算一次梯度可能非常耗时。正是这个原因，CRF 的 SGD&#x2F;mini-batch 训练并不像神经网络那样 trivial——每个 mini-batch 仍然需要独立的前向-后向计算。现代实践通常：(1) 限制标签数 $N$ 不太大；(2) 使用 GPU 加速前向-后向的矩阵运算；(3) 使用预训练的 LSTM&#x2F;BERT 做特征提取，使 CRF 层只需极少轮次 finetune。</p>
+<hr>
+<h2 id="16-一般-CRF-的推断与学习"><a href="#16-一般-CRF-的推断与学习" class="headerlink" title="16. 一般 CRF 的推断与学习"></a>16. 一般 CRF 的推断与学习</h2><h3 id="16-1-精确推断的局限性"><a href="#16-1-精确推断的局限性" class="headerlink" title="16.1 精确推断的局限性"></a>16.1 精确推断的局限性</h3><p>线性链 CRF 之所以高效，是因为链结构使得前向-后向算法可以在 $O(T N^2)$ 时间内精确计算归一化因子和边际概率。这依赖于一个核心性质：<strong>树宽（treewidth）为 1</strong>。</p>
+<p>对于一般的图结构（如网格图、全连接图），treewidth 通常远大于 1。精确推断需要构造<strong>连接树（Junction Tree）</strong>并在其上运行信念传播（Belief Propagation, BP），复杂度为 $O(N^{w+1})$，其中 $w$ 是 treewidth。对于图像分割中的 2D 网格图，$w &#x3D; \min(\text{rows}, \text{cols})$——当图像为 $100 \times 100$ 时，$w &#x3D; 100$，精确推断不可行。</p>
+<h3 id="16-2-近似推断方法"><a href="#16-2-近似推断方法" class="headerlink" title="16.2 近似推断方法"></a>16.2 近似推断方法</h3><p><strong>1. Loopy Belief Propagation（LBP, 循环信念传播）</strong></p>
+<p>在一般图上直接运行 BP（即使有循环），将消息传递迭代直到（希望）收敛。这不是精确的，但在许多实际应用中效果令人满意。</p>
+<p>消息更新规则：</p>
+<p>$$m_{i \to j}^{(t+1)}(x_j) = \sum_{x_i} \psi_{ij}(x_i, x_j) \phi_i(x_i) \prod_{k \in \mathcal{N}(i) \setminus \{j\}} m_{k \to i}^{(t)}(x_i)$$</p>
+<p>LBP 不保证收敛；当它确实收敛时，得到的边际概率是 Bethe 近似的结果。</p>
+<p><strong>2. Mean-Field Inference（均值场推断）</strong></p>
+<p>用因子化的分布 $Q(Y) &#x3D; \prod_i Q_i(Y_i)$ 来近似真实后验 $P(Y|X)$：</p>
+<p>$$\log Q_i(Y_i) = E_{Q_{-i}}[\log P(Y_i | Y_{-i}, X)] + \text{const}$$</p>
+<p>均值场在 Dense CRF（全连接图）中特别高效——通过高斯滤波加速消息传递（Krahenbuhl &amp; Koltun, 2011）。在语义分割中的 Dense CRF 后处理步骤能在秒级内完成百万像素级的全连接 CRF 推断。</p>
+<p><strong>3. Sampling（采样）</strong></p>
+<p>MCMC（马尔可夫链蒙特卡洛）方法如 Gibbs sampling 可以用来近似期望。但 MCMC 在 CRF 中通常太慢，不适用于训练循环（训练需要每轮迭代重新估计期望）。</p>
+<h3 id="16-3-结构化-SVM-作为-CRF-的替代"><a href="#16-3-结构化-SVM-作为-CRF-的替代" class="headerlink" title="16.3 结构化 SVM 作为 CRF 的替代"></a>16.3 结构化 SVM 作为 CRF 的替代</h3><p>当 CRF 的似然训练太慢时，可以使用<strong>结构化 SVM（Structural SVM &#x2F; SSVM）</strong>直接优化 max-margin 目标，避免计算 $Z(X)$：</p>
+<p>$$\min_w \frac{1}{2}\|w\|^2 + C \sum_d \xi_d$$</p>
+<p>$$\text{s.t.} \quad s(Y^{(d)}|X^{(d)}) - s(Y|X^{(d)}) \geq \Delta(Y^{(d)}, Y) - \xi_d, \quad \forall Y \neq Y^{(d)}$$</p>
+<p>其中 $\Delta(Y^{(d)}, Y)$ 是结构化 Hamming 损失或其他任务特定的距离度量。</p>
+<p>训练 SSVM 只需要”找到当前模型下得分最高的错误标注”（loss-augmented inference），这通常比计算完整的 $Z(X)$ 便宜得多。SSVM 在图像分割、语义解析等结构预测任务中与 CRF 性能接近，但训练更快。</p>
+<hr>
+<h2 id="17-总结"><a href="#17-总结" class="headerlink" title="17. 总结"></a>17. 总结</h2><p>条件随机场从无向图模型的框架出发，通过 Hammersley-Clifford 定理建立了”图分离条件独立性”与”团因子分解”的等价关系，进而自然地导出线性链 CRF 的参数化形式。CRF 的三个核心算法——前向-后向（概率计算）、Viterbi（推理）、IIS&#x2F;L-BFGS（学习）——在计算结构上与 HMM 高度同构，但语义上从”概率”迁移到了”未归一化得分”（等价于对数概率减去常数）。</p>
+<p><strong>CRF 知识地图</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">概率图模型</span><br><span class="line">├── 有向图（贝叶斯网络）</span><br><span class="line">│   └── HMM</span><br><span class="line">│       └── 生成式：P(X,Y) = P(Y) P(X|Y)</span><br><span class="line">│           └── 局限：观测独立性、局部归一化、不能重叠特征</span><br><span class="line">│</span><br><span class="line">└── 无向图（马尔可夫随机场）</span><br><span class="line">    └── Hammersley-Clifford 定理 → 团分解</span><br><span class="line">        ├── CRF：P(Y|X) = (1/Z) exp(Σ wF)   判别式、全局归一化</span><br><span class="line">        │   ├── 线性链 CRF → 序列标注 SOTA</span><br><span class="line">        │   ├── Bi-LSTM-CRF → 深度学习 + CRF</span><br><span class="line">        │   └── general CRF → 图像分割、3D 体素标注</span><br><span class="line">        └── MEMM（局部归一化）→ 标签偏置问题</span><br></pre></td></tr></table></figure>
+
+<p><strong>实践建议</strong>：</p>
+<ul>
+<li>小规模序列标注、特征可手工设计 → CRF++、sklearn-crfsuite</li>
+<li>中大规模、需要自动特征学习 → Bi-LSTM-CRF (PyTorch&#x2F;TensorFlow)</li>
+<li>超大规模 NLP（BERT 级别预训练） → BERT + CRF 或直接 BERT + Softmax（预训练模型已经捕获了大部分依赖）</li>
+</ul>
+<p>理解 CRF 的最好方式是将它与 HMM 做对应：每个 HMM 的概念在 CRF 中都有一个对应物（前向-后向、Viterbi、$\alpha$&#x2F;$\beta$&#x2F;$\gamma$&#x2F;$\xi$），唯一的变化是从局部归一化的概率空间迁移到了全局归一化的得分空间。一旦建立了这个认知桥梁，CRF 就不再神秘。</p>
+<hr>
+<p><em>本文是【统计学习方法死磕系列】的最后一篇。从 SVM、逻辑回归、决策树、提升算法，到 HMM 和 CRF——这个系列覆盖了统计学习中最核心的几类模型。希望这些死磕式的推导和案例分析能帮助你在面试和实际工作中建立扎实的机器学习理论基础。</em></p>
+<hr>
+<p><strong>扩展阅读推荐</strong>：</p>
+<ul>
+<li>Lafferty, McCallum &amp; Pereira (2001), <em>Conditional Random Fields: Probabilistic Models for Segmenting and Labeling Sequence Data</em> — CRF 的开山论文</li>
+<li>Sutton &amp; McCallum (2012), <em>An Introduction to Conditional Random Fields</em> — CRF 最全面的综述（Foundations and Trends in Machine Learning）</li>
+<li>Sha &amp; Pereira (2003), <em>Shallow Parsing with Conditional Random Fields</em> — CRF 在 NLP 中的经典应用</li>
+<li>Huang, Xu &amp; Yu (2015), <em>Bidirectional LSTM-CRF Models for Sequence Tagging</em> — Bi-LSTM-CRF 开创性工作</li>
+<li>Koller &amp; Friedman (2009), <em>Probabilistic Graphical Models: Principles and Techniques</em> — 概率图模型圣经，第 19-20 章详尽讨论无向图模型和 CRF</li>
+<li>Krahenbuhl &amp; Koltun (2011), <em>Efficient Inference in Fully Connected CRFs with Gaussian Edge Potentials</em> — Dense CRF 的高效推断，语义分割的经典后处理方法</li>
+<li>Murphy (2012), <em>Machine Learning: A Probabilistic Perspective</em>, Chapter 19 — 深入讲解 CRF 的概率图视角</li>
+<li>Wallach (2004), <em>Conditional Random Fields: An Introduction</em> — 比 Sutton &amp; McCallum 更简洁的入门材料</li>
+</ul>
+<hr>
+<p><strong>CRF 关键公式速查</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>公式</th>
+<th>表达式</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>条件概率</td>
+<td>$P(Y\vert X) &#x3D; \frac{1}{Z(X)} \exp(\sum_{t,j} w_j F_j(Y_{t-1},Y_t,X,t))$</td>
+<td>模型定义</td>
+</tr>
+<tr>
+<td>得分函数</td>
+<td>$s_t(y_{t-1},y_t) &#x3D; \sum_j w_j F_j(y_{t-1},y_t,X,t)$</td>
+<td>简化记号</td>
+</tr>
+<tr>
+<td>归一化因子</td>
+<td>$Z(X) &#x3D; \sum_Y \exp(\sum_t s_t(Y_{t-1},Y_t))$</td>
+<td>全局归一化</td>
+</tr>
+<tr>
+<td>前向递推</td>
+<td>$\alpha_{t+1}(y) &#x3D; \sum_{y’} \alpha_t(y’) \exp(s_{t+1}(y’,y))$</td>
+<td>计算 $Z(X)$</td>
+</tr>
+<tr>
+<td>后向递推</td>
+<td>$\beta_t(y) &#x3D; \sum_{y’} \exp(s_{t+1}(y,y’)) \beta_{t+1}(y’)$</td>
+<td>计算边际</td>
+</tr>
+<tr>
+<td>$\gamma_t(y)&#x3D;P(Y_t&#x3D;y\vert X)$</td>
+<td>$\alpha_t(y)\beta_t(y)&#x2F;Z(X)$</td>
+<td>单节点边际</td>
+</tr>
+<tr>
+<td>$\xi_t(y,y’)&#x3D;P(Y_t&#x3D;y,Y_{t+1}&#x3D;y’\vert X)$</td>
+<td>$\alpha_t(y) \exp(s_{t+1}(y,y’)) \beta_{t+1}(y’)&#x2F;Z(X)$</td>
+<td>相邻节点边际</td>
+</tr>
+<tr>
+<td>对数似然梯度</td>
+<td>$\frac{\partial \ell}{\partial w_j} &#x3D; \sum_t F_j - E_P[\sum_t F_j]$</td>
+<td>学习</td>
+</tr>
+<tr>
+<td>Viterbi 递推</td>
+<td>$\delta_{t+1}(y’) &#x3D; \max_y [\delta_t(y) + s_{t+1}(y,y’)]$</td>
+<td>解码</td>
+</tr>
+</tbody></table>
+<hr>
+<p><strong>工具推荐</strong>：</p>
+<ul>
+<li>**CRF++**（C++）：经典工具，特征模板驱动，适合手工特征 + 中小规模数据</li>
+<li><strong>sklearn-crfsuite</strong>（Python）：CRFsuite 的 sklearn 兼容包装，API 友好</li>
+<li><strong>python-crfsuite</strong>（Python）：CRFsuite 的 Python 绑定</li>
+<li><strong>PyTorch</strong> &#x2F; <strong>TensorFlow</strong>：自行实现 Bi-LSTM-CRF（或使用 AllenNLP &#x2F; Flair &#x2F; HuggingFace Transformers 内置的 CRF 层）</li>
+<li><strong>pystruct</strong>（Python）：通用结构化预测库，支持 CRF、SSVM 等多种结构化模型</li>
+</ul>
+<p>如果你已经理解了 HMM 的前向-后向-Viterbi 三件套，CRF 的这三件套在数学上是完全对偶的——只需要把 HMM 中的”概率乘法”换成 CRF 中的”得分加法（再取指数）”，把”局部归一化”换成”全局归一化”，其余 DP 结构完全一致。如果你对 HMM 的三个算法有扎实的理解，掌握 CRF 只需要一个下午。如果你觉得 CRF 很难，回到 HMM 中重新巩固前向-后向-Viterbi——这一步走通后再回来看 CRF，一切都会变得清晰。</p>
+<p>CRF 是整个【统计学习方法死磕系列】的最后一站。从 SVM 的几何直觉到 HMM&#x2F;CRF 的序列概率建模，从逻辑回归的 GLM 框架到 Boosting 的函数空间梯度下降，这个系列试图穿起统计学习中最核心的概念网络。如果读者能将这些模型的推导串起来——看到逻辑回归是最大熵的特例、HMM 是 CRF 的生成式版本、GBDT 在函数空间中的梯度下降等价于 AdaBoost 在指数损失下的前向分步——那么统计学习就不再是一堆孤立的算法，而是一个由优化理论和概率建模编织成的统一体系。这正是”死磕”的意义所在：理解每个模型在整个知识网络中的位置，比记住每个模型的公式重要得多。</p>
+<p>这是【统计学习方法死磕系列】的终章。六篇文章，从 SVM 的最大间隔到 CRF 的全局归一化，从对数几率的 sigmoid 到函数空间的梯度提升，覆盖了统计学习中八个核心模型。每一篇都试图从第一性原理出发，补全教材中省略的推导步骤，打通概念之间的深层联系。希望这份笔记对你的学习和工作有帮助。</p>
+<p><strong>感谢阅读。</strong> 如果你觉得这个系列对你有启发，欢迎分享给同样在死磕统计学习的朋友。</p>
+<blockquote>
+<p>统计学习的深度不在于公式的复杂，而在于在每个推导步骤中问”为什么这是对的”——这正是”死磕”的精神。<br>本系列到此完结。六篇文章、超过 6300 行笔记，献给所有在统计学习路上一起死磕的读者。<br>学无止境，死磕不止。</p>
+</blockquote>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2020/10/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%9D%A1%E4%BB%B6%E9%9A%8F%E6%9C%BA%E5%9C%BA/">http://tufusi.com/2020/10/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%9D%A1%E4%BB%B6%E9%9A%8F%E6%9C%BA%E5%9C%BA/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2020/11/15/%E3%80%90%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB%E5%92%8C%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E3%80%91%E5%88%9D%E7%AA%A5AI%E5%9C%A3%E7%BB%8F/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【模式识别和机器学习】初窥AI圣经</span></div></a></div><div class="next-post pull_right"><a href="/2020/10/01/%E3%80%90sklearn%E7%AC%94%E8%AE%B0%E3%80%91%E7%BA%BF%E6%80%A7%E8%A7%84%E5%88%92/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_python.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【sklearn笔记】线性规划</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

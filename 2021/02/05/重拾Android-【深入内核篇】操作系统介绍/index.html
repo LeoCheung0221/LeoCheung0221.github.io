@@ -1,0 +1,588 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【深入内核篇】操作系统介绍 | ONE·PIECE</title><meta name="description" content="【深入内核篇】操作系统介绍"><meta name="keywords" content="Linux"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【深入内核篇】操作系统介绍"><meta name="twitter:description" content="【深入内核篇】操作系统介绍"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286851.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【深入内核篇】操作系统介绍"><meta property="og:url" content="http://tufusi.com/2021/02/05/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E4%BB%8B%E7%BB%8D/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【深入内核篇】操作系统介绍"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286851.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2021/02/05/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E4%BB%8B%E7%BB%8D/"><link rel="prev" title="【深入内核篇】进程间通信" href="http://tufusi.com/2021/02/10/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/"><link rel="next" title="【深入内核篇】编译系统入门" href="http://tufusi.com/2021/02/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F%E5%85%A5%E9%97%A8/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81Android-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%9B%9B%E5%B1%82%E6%9E%B6%E6%9E%84"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、Android 操作系统的四层架构</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#1-1-%E7%BB%8F%E5%85%B8%E5%88%86%E5%B1%82%E6%A8%A1%E5%9E%8B"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">1.1 经典分层模型</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#1-2-%E5%90%84%E5%B1%82%E8%81%8C%E8%B4%A3%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">1.2 各层职责详解</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%AC%AC%E4%B8%80%E5%B1%82%EF%BC%9ALinux-Kernel%EF%BC%88Linux-%E5%86%85%E6%A0%B8%EF%BC%89"><span class="toc_mobile_items-number">1.2.1.</span> <span class="toc_mobile_items-text">第一层：Linux Kernel（Linux 内核）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%AC%AC%E4%BA%8C%E5%B1%82%EF%BC%9AHAL%EF%BC%88%E7%A1%AC%E4%BB%B6%E6%8A%BD%E8%B1%A1%E5%B1%82%EF%BC%89"><span class="toc_mobile_items-number">1.2.2.</span> <span class="toc_mobile_items-text">第二层：HAL（硬件抽象层）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%AC%AC%E4%B8%89%E5%B1%82%EF%BC%9ANative-Libraries-Android-Runtime"><span class="toc_mobile_items-number">1.2.3.</span> <span class="toc_mobile_items-text">第三层：Native Libraries + Android Runtime</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%AC%AC%E5%9B%9B%E5%B1%82%EF%BC%9AJava-API-Framework%EF%BC%88Java-%E6%A1%86%E6%9E%B6%E5%B1%82%EF%BC%89"><span class="toc_mobile_items-number">1.2.4.</span> <span class="toc_mobile_items-text">第四层：Java API Framework（Java 框架层）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%AC%AC%E4%BA%94%E5%B1%82%EF%BC%9ASystem-Apps%EF%BC%88%E7%B3%BB%E7%BB%9F%E5%BA%94%E7%94%A8%E5%B1%82%EF%BC%89"><span class="toc_mobile_items-number">1.2.5.</span> <span class="toc_mobile_items-text">第五层：System Apps（系统应用层）</span></a></li></ol></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81Linux-%E5%86%85%E6%A0%B8%E4%B8%BA-Android-%E6%89%80%E5%81%9A%E7%9A%84%E5%85%B3%E9%94%AE%E4%BF%AE%E6%94%B9"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、Linux 内核为 Android 所做的关键修改</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-1-Binder-IPC-%E9%A9%B1%E5%8A%A8%E7%A8%8B%E5%BA%8F"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 Binder IPC 驱动程序</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-2-ashmem%EF%BC%88Android-Shared-Memory%EF%BC%89"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 ashmem（Android Shared Memory）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-3-Low-Memory-Killer-LMK-%E2%86%92-lmkd"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 Low Memory Killer (LMK) → lmkd</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-4-Wakelocks-%E5%92%8C%E7%94%B5%E6%BA%90%E7%AE%A1%E7%90%86"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">2.4 Wakelocks 和电源管理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-5-Android-%E5%86%85%E6%A0%B8%E4%B8%8E-Linux-%E4%B8%BB%E7%BA%BF%E7%9A%84%E5%90%88%E5%85%A5"><span class="toc_mobile_items-number">2.5.</span> <span class="toc_mobile_items-text">2.5 Android 内核与 Linux 主线的合入</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81Android-%E7%9A%84-Init-%E7%B3%BB%E7%BB%9F-vs-%E4%BC%A0%E7%BB%9F-Linux-Init"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、Android 的 Init 系统 vs 传统 Linux Init</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-1-Android-init-%E4%B8%8E-systemd-sysvinit-%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 Android init 与 systemd &#x2F; sysvinit 的对比</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-2-%E4%B8%BA%E4%BB%80%E4%B9%88-Android-%E4%B8%8D%E7%9B%B4%E6%8E%A5%E4%BD%BF%E7%94%A8-systemd"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 为什么 Android 不直接使用 systemd</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88-Android-%E9%80%89%E6%8B%A9-Linux-%E5%86%85%E6%A0%B8-Binder-IPC%EF%BC%9F"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、为什么 Android 选择 Linux 内核 + Binder IPC？</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-1-%E9%80%89%E6%8B%A9-Linux-%E7%9A%84%E5%8E%9F%E5%9B%A0"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 选择 Linux 的原因</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-2-%E9%80%89%E6%8B%A9-Binder-%E4%BB%A3%E6%9B%BF-D-Bus-Unix-Socket-%E7%9A%84%E5%8E%9F%E5%9B%A0"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 选择 Binder 代替 D-Bus &#x2F; Unix Socket 的原因</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81Fuchsia%EF%BC%9AAndroid-%E7%9A%84%E9%95%BF%E6%9C%9F%E6%9B%BF%E4%BB%A3%E6%96%B9%E6%A1%88"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、Fuchsia：Android 的长期替代方案</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-1-Zircon-%E4%B8%8E-Linux-%E7%9A%84%E5%85%B3%E9%94%AE%E5%B7%AE%E5%BC%82"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 Zircon 与 Linux 的关键差异</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-2-%E4%B8%BA%E4%BB%80%E4%B9%88-Android-%E7%9F%AD%E6%9C%9F%E5%86%85%E4%B8%8D%E4%BC%9A%E8%BF%81%E7%A7%BB%E5%88%B0-Fuchsia"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 为什么 Android 短期内不会迁移到 Fuchsia</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E6%A0%B8%E5%BF%83%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、核心面试题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81Linux-%E5%86%85%E6%A0%B8%E5%85%B3%E9%94%AE%E5%AD%90%E7%B3%BB%E7%BB%9F%E5%9C%A8-Android-%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">六、Linux 内核关键子系统在 Android 中的应用</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-1-CFS-%E8%B0%83%E5%BA%A6%E5%99%A8%E4%B8%8E-Android-%E7%9A%84%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">6.1 CFS 调度器与 Android 的任务管理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-2-VFS%EF%BC%88Virtual-File-System%EF%BC%89%E4%B8%8E-Android-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">6.2 VFS（Virtual File System）与 Android 文件系统</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-3-Linux-%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE%E6%A0%88%E4%B8%8E-Android-%E7%9A%84%E7%BD%91%E7%BB%9C%E9%99%90%E5%88%B6"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">6.3 Linux 网络协议栈与 Android 的网络限制</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-4-Android-%E7%9A%84-seccomp-bpf-%E4%B8%A5%E6%A0%BC%E5%8C%96"><span class="toc_mobile_items-number">7.4.</span> <span class="toc_mobile_items-text">6.4 Android 的 seccomp-bpf 严格化</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81Android-%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">七、Android 系统启动流程</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#7-1-Boot-ROM-%E2%86%92-Kernel-%E2%86%92-Init-%E7%9A%84%E5%90%AF%E5%8A%A8%E9%93%BE"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">7.1 Boot ROM → Kernel → Init 的启动链</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#7-2-Zygote-%E7%9A%84%E8%BF%9B%E7%A8%8B%E9%A2%84%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">7.2 Zygote 的进程预加载机制</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81Android-%E5%AE%89%E5%85%A8%E6%9E%B6%E6%9E%84%E6%A6%82%E8%A7%88"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">八、Android 安全架构概览</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-1-%E7%BA%B5%E6%B7%B1%E9%98%B2%E5%BE%A1%E6%A8%A1%E5%9E%8B"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">8.1 纵深防御模型</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-2-SELinux-%E5%9C%A8-Android-%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">8.2 SELinux 在 Android 中的应用</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81Android-%E4%B8%8E%E5%B5%8C%E5%85%A5%E5%BC%8F-Linux-%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">九、Android 与嵌入式 Linux 的对比</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-1-Bionic-vs-glibc"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">9.1 Bionic vs glibc</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-2-Android-%E7%9A%84%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B8%83%E5%B1%80"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">9.2 Android 的文件系统布局</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-3-Android-%E7%9A%84%E5%90%AF%E5%8A%A8%E4%B8%8E-A-B-OTA"><span class="toc_mobile_items-number">10.3.</span> <span class="toc_mobile_items-text">9.3 Android 的启动与 A&#x2F;B OTA</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-4-Android-%E4%B8%8D%E6%98%AF%E4%BC%A0%E7%BB%9F-Linux-%E5%8F%91%E8%A1%8C%E7%89%88"><span class="toc_mobile_items-number">10.4.</span> <span class="toc_mobile_items-text">9.4 Android 不是传统 Linux 发行版</span></a></li></ol></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81Android-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%9B%9B%E5%B1%82%E6%9E%B6%E6%9E%84"><span class="toc-number">1.</span> <span class="toc-text">一、Android 操作系统的四层架构</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-%E7%BB%8F%E5%85%B8%E5%88%86%E5%B1%82%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 经典分层模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-%E5%90%84%E5%B1%82%E8%81%8C%E8%B4%A3%E8%AF%A6%E8%A7%A3"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 各层职责详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E5%B1%82%EF%BC%9ALinux-Kernel%EF%BC%88Linux-%E5%86%85%E6%A0%B8%EF%BC%89"><span class="toc-number">1.2.1.</span> <span class="toc-text">第一层：Linux Kernel（Linux 内核）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E5%B1%82%EF%BC%9AHAL%EF%BC%88%E7%A1%AC%E4%BB%B6%E6%8A%BD%E8%B1%A1%E5%B1%82%EF%BC%89"><span class="toc-number">1.2.2.</span> <span class="toc-text">第二层：HAL（硬件抽象层）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E5%B1%82%EF%BC%9ANative-Libraries-Android-Runtime"><span class="toc-number">1.2.3.</span> <span class="toc-text">第三层：Native Libraries + Android Runtime</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E5%9B%9B%E5%B1%82%EF%BC%9AJava-API-Framework%EF%BC%88Java-%E6%A1%86%E6%9E%B6%E5%B1%82%EF%BC%89"><span class="toc-number">1.2.4.</span> <span class="toc-text">第四层：Java API Framework（Java 框架层）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%BA%94%E5%B1%82%EF%BC%9ASystem-Apps%EF%BC%88%E7%B3%BB%E7%BB%9F%E5%BA%94%E7%94%A8%E5%B1%82%EF%BC%89"><span class="toc-number">1.2.5.</span> <span class="toc-text">第五层：System Apps（系统应用层）</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Linux-%E5%86%85%E6%A0%B8%E4%B8%BA-Android-%E6%89%80%E5%81%9A%E7%9A%84%E5%85%B3%E9%94%AE%E4%BF%AE%E6%94%B9"><span class="toc-number">2.</span> <span class="toc-text">二、Linux 内核为 Android 所做的关键修改</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-Binder-IPC-%E9%A9%B1%E5%8A%A8%E7%A8%8B%E5%BA%8F"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 Binder IPC 驱动程序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-ashmem%EF%BC%88Android-Shared-Memory%EF%BC%89"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 ashmem（Android Shared Memory）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-Low-Memory-Killer-LMK-%E2%86%92-lmkd"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 Low Memory Killer (LMK) → lmkd</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-4-Wakelocks-%E5%92%8C%E7%94%B5%E6%BA%90%E7%AE%A1%E7%90%86"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 Wakelocks 和电源管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-5-Android-%E5%86%85%E6%A0%B8%E4%B8%8E-Linux-%E4%B8%BB%E7%BA%BF%E7%9A%84%E5%90%88%E5%85%A5"><span class="toc-number">2.5.</span> <span class="toc-text">2.5 Android 内核与 Linux 主线的合入</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81Android-%E7%9A%84-Init-%E7%B3%BB%E7%BB%9F-vs-%E4%BC%A0%E7%BB%9F-Linux-Init"><span class="toc-number">3.</span> <span class="toc-text">三、Android 的 Init 系统 vs 传统 Linux Init</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-Android-init-%E4%B8%8E-systemd-sysvinit-%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 Android init 与 systemd &#x2F; sysvinit 的对比</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-%E4%B8%BA%E4%BB%80%E4%B9%88-Android-%E4%B8%8D%E7%9B%B4%E6%8E%A5%E4%BD%BF%E7%94%A8-systemd"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 为什么 Android 不直接使用 systemd</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88-Android-%E9%80%89%E6%8B%A9-Linux-%E5%86%85%E6%A0%B8-Binder-IPC%EF%BC%9F"><span class="toc-number">4.</span> <span class="toc-text">四、为什么 Android 选择 Linux 内核 + Binder IPC？</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-%E9%80%89%E6%8B%A9-Linux-%E7%9A%84%E5%8E%9F%E5%9B%A0"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 选择 Linux 的原因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-%E9%80%89%E6%8B%A9-Binder-%E4%BB%A3%E6%9B%BF-D-Bus-Unix-Socket-%E7%9A%84%E5%8E%9F%E5%9B%A0"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 选择 Binder 代替 D-Bus &#x2F; Unix Socket 的原因</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E3%80%81Fuchsia%EF%BC%9AAndroid-%E7%9A%84%E9%95%BF%E6%9C%9F%E6%9B%BF%E4%BB%A3%E6%96%B9%E6%A1%88"><span class="toc-number">5.</span> <span class="toc-text">五、Fuchsia：Android 的长期替代方案</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#5-1-Zircon-%E4%B8%8E-Linux-%E7%9A%84%E5%85%B3%E9%94%AE%E5%B7%AE%E5%BC%82"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 Zircon 与 Linux 的关键差异</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-2-%E4%B8%BA%E4%BB%80%E4%B9%88-Android-%E7%9F%AD%E6%9C%9F%E5%86%85%E4%B8%8D%E4%BC%9A%E8%BF%81%E7%A7%BB%E5%88%B0-Fuchsia"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 为什么 Android 短期内不会迁移到 Fuchsia</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E6%A0%B8%E5%BF%83%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="toc-number">6.</span> <span class="toc-text">六、核心面试题</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AD%E3%80%81Linux-%E5%86%85%E6%A0%B8%E5%85%B3%E9%94%AE%E5%AD%90%E7%B3%BB%E7%BB%9F%E5%9C%A8-Android-%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8"><span class="toc-number">7.</span> <span class="toc-text">六、Linux 内核关键子系统在 Android 中的应用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#6-1-CFS-%E8%B0%83%E5%BA%A6%E5%99%A8%E4%B8%8E-Android-%E7%9A%84%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86"><span class="toc-number">7.1.</span> <span class="toc-text">6.1 CFS 调度器与 Android 的任务管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-2-VFS%EF%BC%88Virtual-File-System%EF%BC%89%E4%B8%8E-Android-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc-number">7.2.</span> <span class="toc-text">6.2 VFS（Virtual File System）与 Android 文件系统</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-3-Linux-%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE%E6%A0%88%E4%B8%8E-Android-%E7%9A%84%E7%BD%91%E7%BB%9C%E9%99%90%E5%88%B6"><span class="toc-number">7.3.</span> <span class="toc-text">6.3 Linux 网络协议栈与 Android 的网络限制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-4-Android-%E7%9A%84-seccomp-bpf-%E4%B8%A5%E6%A0%BC%E5%8C%96"><span class="toc-number">7.4.</span> <span class="toc-text">6.4 Android 的 seccomp-bpf 严格化</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%83%E3%80%81Android-%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B"><span class="toc-number">8.</span> <span class="toc-text">七、Android 系统启动流程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#7-1-Boot-ROM-%E2%86%92-Kernel-%E2%86%92-Init-%E7%9A%84%E5%90%AF%E5%8A%A8%E9%93%BE"><span class="toc-number">8.1.</span> <span class="toc-text">7.1 Boot ROM → Kernel → Init 的启动链</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-2-Zygote-%E7%9A%84%E8%BF%9B%E7%A8%8B%E9%A2%84%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6"><span class="toc-number">8.2.</span> <span class="toc-text">7.2 Zygote 的进程预加载机制</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AB%E3%80%81Android-%E5%AE%89%E5%85%A8%E6%9E%B6%E6%9E%84%E6%A6%82%E8%A7%88"><span class="toc-number">9.</span> <span class="toc-text">八、Android 安全架构概览</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#8-1-%E7%BA%B5%E6%B7%B1%E9%98%B2%E5%BE%A1%E6%A8%A1%E5%9E%8B"><span class="toc-number">9.1.</span> <span class="toc-text">8.1 纵深防御模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-2-SELinux-%E5%9C%A8-Android-%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8"><span class="toc-number">9.2.</span> <span class="toc-text">8.2 SELinux 在 Android 中的应用</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B9%9D%E3%80%81Android-%E4%B8%8E%E5%B5%8C%E5%85%A5%E5%BC%8F-Linux-%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc-number">10.</span> <span class="toc-text">九、Android 与嵌入式 Linux 的对比</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#9-1-Bionic-vs-glibc"><span class="toc-number">10.1.</span> <span class="toc-text">9.1 Bionic vs glibc</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-2-Android-%E7%9A%84%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B8%83%E5%B1%80"><span class="toc-number">10.2.</span> <span class="toc-text">9.2 Android 的文件系统布局</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-3-Android-%E7%9A%84%E5%90%AF%E5%8A%A8%E4%B8%8E-A-B-OTA"><span class="toc-number">10.3.</span> <span class="toc-text">9.3 Android 的启动与 A&#x2F;B OTA</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-4-Android-%E4%B8%8D%E6%98%AF%E4%BC%A0%E7%BB%9F-Linux-%E5%8F%91%E8%A1%8C%E7%89%88"><span class="toc-number">10.4.</span> <span class="toc-text">9.4 Android 不是传统 Linux 发行版</span></a></li></ol></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286851.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【深入内核篇】操作系统介绍</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-02-05<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">5.1k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 19 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>Android 操作系统并不是从零开始构建的，而是建立在 Linux 内核之上的一个高度定制的软件栈。理解 Android 操作系统的整体架构，是深入理解任何一个子系统（Binder、SurfaceFlinger、AMS、Zygote 等）的前提。本文将系统性地介绍 Android 操作系统的四层架构、Linux 内核为 Android 所做的定制修改，以及 Android 选择 Linux + Binder IPC 架构的深层原因。</p>
+<span id="more"></span>
+
+<h1 id="一、Android-操作系统的四层架构"><a href="#一、Android-操作系统的四层架构" class="headerlink" title="一、Android 操作系统的四层架构"></a>一、Android 操作系统的四层架构</h1><h2 id="1-1-经典分层模型"><a href="#1-1-经典分层模型" class="headerlink" title="1.1 经典分层模型"></a>1.1 经典分层模型</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌──────────────────────────────────────────────────────┐</span><br><span class="line">│                  System Apps                          │</span><br><span class="line">│    Dialer | Email | Calendar | Camera | Settings     │</span><br><span class="line">├──────────────────────────────────────────────────────┤</span><br><span class="line">│               Java API Framework                       │</span><br><span class="line">│    ActivityManager | WindowManager | ContentProvider  │</span><br><span class="line">│    View System | PackageManager | TelephonyManager   │</span><br><span class="line">│    ResourceManager | NotificationManager | Location  │</span><br><span class="line">├──────────────────────────────────────────────────────┤</span><br><span class="line">│          Native Libraries            Android Runtime  │</span><br><span class="line">│    ┌──────────────────────┐      ┌────────────────┐  │</span><br><span class="line">│    │ Surface Manager       │      │   ART (AOT+JIT) │  │</span><br><span class="line">│    │ Media Framework       │      │   Core Libraries│  │</span><br><span class="line">│    │ SQLite                │      │   (libcore)     │  │</span><br><span class="line">│    │ OpenGL ES             │      └────────────────┘  │</span><br><span class="line">│    │ libc (Bionic)         │                          │</span><br><span class="line">│    │ WebKit/Chromium       │                          │</span><br><span class="line">│    │ Audio Manager         │                          │</span><br><span class="line">│    │ FreeType | Skia       │                          │</span><br><span class="line">│    └──────────────────────┘                          │</span><br><span class="line">├──────────────────────────────────────────────────────┤</span><br><span class="line">│              Hardware Abstraction Layer (HAL)         │</span><br><span class="line">│    Audio | Camera | Sensors | GPS | Bluetooth | WiFi │</span><br><span class="line">├──────────────────────────────────────────────────────┤</span><br><span class="line">│                  Linux Kernel                         │</span><br><span class="line">│    Binder | ashmem | ION | wakelocks | lowmemorykiller│</span><br><span class="line">│    Display | Camera | Audio | Input | Power Management │</span><br><span class="line">└──────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h2 id="1-2-各层职责详解"><a href="#1-2-各层职责详解" class="headerlink" title="1.2 各层职责详解"></a>1.2 各层职责详解</h2><h3 id="第一层：Linux-Kernel（Linux-内核）"><a href="#第一层：Linux-Kernel（Linux-内核）" class="headerlink" title="第一层：Linux Kernel（Linux 内核）"></a>第一层：Linux Kernel（Linux 内核）</h3><p>Linux 内核是 Android 平台的基石，负责：</p>
+<ul>
+<li><strong>进程管理</strong>：创建、调度、终止进程和线程（CFS 调度器）</li>
+<li><strong>内存管理</strong>：虚拟内存、物理页面分配（buddy system）、进程间内存隔离（页表）、内存回收（kswapd）</li>
+<li><strong>设备驱动</strong>：硬件设备的抽象和访问控制</li>
+<li><strong>文件系统</strong>：ext4 &#x2F; erofs &#x2F; f2fs &#x2F; tmpfs 等文件系统支持</li>
+<li><strong>网络协议栈</strong>：TCP&#x2F;IP、WiFi、蓝牙、NFC</li>
+<li><strong>安全模型</strong>：基于 UID&#x2F;GID 的进程隔离、SELinux、Capabilities、seccomp</li>
+</ul>
+<p>**CFS (Completely Fair Scheduler)**：Linux 内核的默认调度器，基于红黑树维护所有可运行任务，按虚拟运行时间（vruntime）排序。调度器总是选择 vruntime 最小的任务执行——即”获得 CPU 时间最少的任务优先”。</p>
+<p><strong>内存管理核心机制</strong>：</p>
+<ul>
+<li><strong>VMA（Virtual Memory Area）</strong>：每个进程的地址空间被划分为多个 VMA，描述连续虚拟地址区域的属性（代码段、堆、栈、mmap 区域等）</li>
+<li><strong>Page Fault</strong>：当进程访问尚未映射的虚拟地址时，触发缺页异常。内核的 page fault handler 根据 VMA 的属性分配物理页面或从磁盘加载数据</li>
+<li><strong>Buddy System</strong>：物理页面分配器，以 2 的幂次大小为分配单位，通过伙伴合并机制减少内存碎片</li>
+</ul>
+<h3 id="第二层：HAL（硬件抽象层）"><a href="#第二层：HAL（硬件抽象层）" class="headerlink" title="第二层：HAL（硬件抽象层）"></a>第二层：HAL（硬件抽象层）</h3><p>HAL 是 Android 架构中最重要的抽象之一。每个硬件组件都有一个 HAL 模块（通常以 .so 文件形式存在），框架层通过 HAL 接口调用硬件，而不直接与内核驱动交互。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">App → Android Framework → HAL Interface → HAL Implementation → Kernel Driver → Hardware</span><br></pre></td></tr></table></figure>
+
+<p>Android 8+ 引入了 HIDL（HAL Interface Definition Language）将 HAL 服务运行在独立进程中，进一步隔离了框架层和硬件实现层，这是 Treble 架构的核心。</p>
+<p><strong>Binderized HAL vs Passthrough HAL</strong>：</p>
+<ul>
+<li>Binderized HAL：HAL 实现在独立进程中，通过 Binder IPC 通信。接口用 HIDL 或 AIDL 定义。Android 8+ 推荐</li>
+<li>Passthrough HAL：HAL 实现以 .so 形式加载到框架进程（如 mediaserver）的地址空间中。Android 7 及之前的模式</li>
+</ul>
+<h3 id="第三层：Native-Libraries-Android-Runtime"><a href="#第三层：Native-Libraries-Android-Runtime" class="headerlink" title="第三层：Native Libraries + Android Runtime"></a>第三层：Native Libraries + Android Runtime</h3><p><strong>Native C&#x2F;C++ Libraries（原生库）</strong>：</p>
+<ul>
+<li><strong>Bionic</strong>：Android 定制的 C 标准库，替代 glibc。设计目标：更小、更快、BSD 许可</li>
+<li><strong>SurfaceFlinger</strong>：显示合成引擎，将所有可见窗口的 buffer 合成为最终显示帧</li>
+<li><strong>Media Framework</strong>：音视频编解码框架（Stagefright）</li>
+<li><strong>SQLite</strong>：嵌入式关系型数据库</li>
+<li><strong>OpenGL ES &#x2F; Vulkan</strong>：3D 图形渲染 API</li>
+<li><strong>Skia</strong>：2D 图形渲染引擎（同时也是 Flutter 的渲染引擎）</li>
+</ul>
+<p>**Android Runtime (ART)**：</p>
+<ul>
+<li>AOT (Ahead-Of-Time) 编译：安装时把 DEX 字节码编译为 native 指令</li>
+<li>JIT (Just-In-Time) 编译：运行时对热点代码进行即时编译</li>
+<li>GC（垃圾回收）：并发压缩回收、分代回收（Android 10+）</li>
+<li>Profile-guided 优化：基于应用使用模式优化编译</li>
+</ul>
+<h3 id="第四层：Java-API-Framework（Java-框架层）"><a href="#第四层：Java-API-Framework（Java-框架层）" class="headerlink" title="第四层：Java API Framework（Java 框架层）"></a>第四层：Java API Framework（Java 框架层）</h3><p>这是 Android 应用开发的核心 API：</p>
+<ul>
+<li><strong>ActivityManagerService</strong> — 四大组件管理</li>
+<li><strong>WindowManagerService</strong> — 窗口管理</li>
+<li><strong>PackageManagerService</strong> — 包管理</li>
+<li><strong>ContentProvider</strong> — 数据共享</li>
+<li><strong>View System</strong> — UI 组件体系</li>
+</ul>
+<h3 id="第五层：System-Apps（系统应用层）"><a href="#第五层：System-Apps（系统应用层）" class="headerlink" title="第五层：System Apps（系统应用层）"></a>第五层：System Apps（系统应用层）</h3><p>预装的系统级应用，与第三方应用共享同一运行时。</p>
+<h1 id="二、Linux-内核为-Android-所做的关键修改"><a href="#二、Linux-内核为-Android-所做的关键修改" class="headerlink" title="二、Linux 内核为 Android 所做的关键修改"></a>二、Linux 内核为 Android 所做的关键修改</h1><p>Android 并不是简单地拿一个标准 Linux 内核来用。Google 对 Linux 内核做了大量的定制修改，这些修改通过 Android Mainline Project 逐步合入 Linux 主线。</p>
+<h2 id="2-1-Binder-IPC-驱动程序"><a href="#2-1-Binder-IPC-驱动程序" class="headerlink" title="2.1 Binder IPC 驱动程序"></a>2.1 Binder IPC 驱动程序</h2><p>Binder 是 Android 最核心的 IPC（进程间通信）机制，作为内核驱动实现：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// drivers/android/binder.c (Android 内核中的 Binder 驱动)</span></span><br><span class="line"><span class="comment">// Binder 的核心功能：</span></span><br><span class="line"><span class="comment">// 1. 零拷贝数据传输（通过 mmap 在内核空间映射接收缓冲区）</span></span><br><span class="line"><span class="comment">// 2. 引用计数管理（自动管理跨进程对象生命周期）</span></span><br><span class="line"><span class="comment">// 3. 死亡通知（Binder peer 意外退出时通知其他进程）</span></span><br><span class="line"><span class="comment">// 4. 权限校验（基于 UID/PID 的调用者识别）</span></span><br></pre></td></tr></table></figure>
+
+<p>Binder 驱动在 <code>/dev/binder</code> 上为用户空间提供接口。Android 10+ 引入了多 Binder 域：</p>
+<ul>
+<li><code>/dev/binder</code> — 系统服务通信（framework 和 app 之间）</li>
+<li><code>/dev/hwbinder</code> — HIDL HAL 服务通信</li>
+<li><code>/dev/vndbinder</code> — Vendor 域 HAL 服务通信</li>
+</ul>
+<p>每个 Binder 域有独立的 context manager，实现了不同安全等级的 IPC 隔离。</p>
+<h2 id="2-2-ashmem（Android-Shared-Memory）"><a href="#2-2-ashmem（Android-Shared-Memory）" class="headerlink" title="2.2 ashmem（Android Shared Memory）"></a>2.2 ashmem（Android Shared Memory）</h2><p>ashmem 是 Android 特有的共享内存机制，支持通过名称引用和引用计数自动回收：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// drivers/staging/android/ashmem.c</span></span><br><span class="line"><span class="comment">// ashmem 特性：</span></span><br><span class="line"><span class="comment">// 1. 基于名称的内存区域引用，而不是文件描述符</span></span><br><span class="line"><span class="comment">// 2. 引用计数自动管理：所有引用者关闭后内存自动释放</span></span><br><span class="line"><span class="comment">// 3. 支持 pin/unpin 操作（允许 LMK 在内存压力时回收 unpinned 页面）</span></span><br><span class="line"><span class="comment">// 4. 通过 /dev/ashmem 设备文件访问</span></span><br></pre></td></tr></table></figure>
+
+<p>在 Android 10+ 中，ashmem 正逐步被 Linux 标准的 <code>memfd_create()</code> 替代。memfd 提供了类似的功能（基于 fd 的匿名内存），而且支持 sealing（防止共享者修改内容）。</p>
+<h2 id="2-3-Low-Memory-Killer-LMK-→-lmkd"><a href="#2-3-Low-Memory-Killer-LMK-→-lmkd" class="headerlink" title="2.3 Low Memory Killer (LMK) → lmkd"></a>2.3 Low Memory Killer (LMK) → lmkd</h2><p>Android 最初在内核中实现了低内存杀手（LMK）驱动，在内存不足时选择性杀死进程。从 Android 9 开始，这个功能被迁移到用户空间的 <code>lmkd</code> 守护进程：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// system/memory/lmkd/lmkd.cpp</span></span><br><span class="line"><span class="comment">// lmkd 的工作机制：</span></span><br><span class="line"><span class="comment">// 1. 通过 /proc/pressure/memory 或 /proc/vmstat 监测内存压力</span></span><br><span class="line"><span class="comment">// 2. 读取每个进程的 /proc/&lt;pid&gt;/oom_score_adj 决定 kill 优先级</span></span><br><span class="line"><span class="comment">// 3. 使用 cgroup 的 memory.high/memory.max 进行更精细的控制</span></span><br><span class="line"><span class="comment">// 4. 支持 vmpressure 事件通知（内核 → lmkd）</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="2-4-Wakelocks-和电源管理"><a href="#2-4-Wakelocks-和电源管理" class="headerlink" title="2.4 Wakelocks 和电源管理"></a>2.4 Wakelocks 和电源管理</h2><p>Android 的电源管理非常激进——设备默认进入 suspend 状态，由 wakelock 机制决定何时保持唤醒：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// drivers/power/wakelock.c (Android 内核修改)</span></span><br><span class="line"><span class="comment">// wakelock 类型：</span></span><br><span class="line"><span class="comment">// 1. WAKE_LOCK_SUSPEND: 防止系统进入 suspend</span></span><br><span class="line"><span class="comment">// 2. WAKE_LOCK_IDLE: 防止系统进入 idle</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Android 用户空间接口（已废弃，使用 /sys/power/wake_lock 替代）：</span></span><br><span class="line"><span class="comment">// /sys/power/wake_lock      — 获取锁</span></span><br><span class="line"><span class="comment">// /sys/power/wake_unlock    — 释放锁</span></span><br></pre></td></tr></table></figure>
+
+<p>Android 新的电源管理通过 PowerManagerService 和 WakeLock 类实现，底层驱动接口逐步向 Linux 主线的 autosleep 机制靠拢。</p>
+<h2 id="2-5-Android-内核与-Linux-主线的合入"><a href="#2-5-Android-内核与-Linux-主线的合入" class="headerlink" title="2.5 Android 内核与 Linux 主线的合入"></a>2.5 Android 内核与 Linux 主线的合入</h2><p>从 Android 11 开始，Google 通过 Android Generic Kernel Image (GKI) 项目将 Android 内核修改逐步合入 Linux 主线或封装为独立模块。目标是：</p>
+<ul>
+<li>GKI 1.0 (Android 11)：内核版本 5.4，厂商模块与内核解耦</li>
+<li>GKI 2.0 (Android 12+)：内核版本 5.10+，更大的主线上游覆盖率</li>
+</ul>
+<h1 id="三、Android-的-Init-系统-vs-传统-Linux-Init"><a href="#三、Android-的-Init-系统-vs-传统-Linux-Init" class="headerlink" title="三、Android 的 Init 系统 vs 传统 Linux Init"></a>三、Android 的 Init 系统 vs 传统 Linux Init</h1><h2 id="3-1-Android-init-与-systemd-sysvinit-的对比"><a href="#3-1-Android-init-与-systemd-sysvinit-的对比" class="headerlink" title="3.1 Android init 与 systemd &#x2F; sysvinit 的对比"></a>3.1 Android init 与 systemd &#x2F; sysvinit 的对比</h2><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>Android init</th>
+<th>systemd</th>
+<th>sysvinit</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>配置语言</td>
+<td>init.rc（自定义语言）</td>
+<td>unit 文件 (.service, .target 等)</td>
+<td>shell 脚本</td>
+</tr>
+<tr>
+<td>依赖管理</td>
+<td>触发器机制 (on property:)</td>
+<td>显式依赖 (Requires&#x3D;, Wants&#x3D;)</td>
+<td>脚本顺序（无依赖）</td>
+</tr>
+<tr>
+<td>服务监控</td>
+<td>内置（SIGCHLD + epoll）</td>
+<td>内置（cgroups 监控）</td>
+<td>需要额外守护进程</td>
+</tr>
+<tr>
+<td>并行启动</td>
+<td>事件驱动并行</td>
+<td>Socket-based 并行</td>
+<td>串行</td>
+</tr>
+<tr>
+<td>属性存储</td>
+<td>内置 Property Service</td>
+<td>systemd 不支持</td>
+<td>N&#x2F;A</td>
+</tr>
+<tr>
+<td>设备节点管理</td>
+<td>内置 ueventd</td>
+<td>udevd (systemd-udevd)</td>
+<td>udev &#x2F; mdev</td>
+</tr>
+</tbody></table>
+<h2 id="3-2-为什么-Android-不直接使用-systemd"><a href="#3-2-为什么-Android-不直接使用-systemd" class="headerlink" title="3.2 为什么 Android 不直接使用 systemd"></a>3.2 为什么 Android 不直接使用 systemd</h2><ol>
+<li><strong>资源开销</strong>：systemd 设计为功能完备的 init 系统，包含 journald、logind、networkd 等大量组件，这些对嵌入式移动设备是过度设计</li>
+<li><strong>启动性能</strong>：Android 的设备节点管理和服务启动优化极度精简，专注于亚秒级启动</li>
+<li><strong>Android 特化需求</strong>：android init 深度集成了 property service、SELinux 上下文管理、USB gadget 配置等 Android 特有的功能</li>
+</ol>
+<h1 id="四、为什么-Android-选择-Linux-内核-Binder-IPC？"><a href="#四、为什么-Android-选择-Linux-内核-Binder-IPC？" class="headerlink" title="四、为什么 Android 选择 Linux 内核 + Binder IPC？"></a>四、为什么 Android 选择 Linux 内核 + Binder IPC？</h1><h2 id="4-1-选择-Linux-的原因"><a href="#4-1-选择-Linux-的原因" class="headerlink" title="4.1 选择 Linux 的原因"></a>4.1 选择 Linux 的原因</h2><ol>
+<li><strong>成熟的驱动生态</strong>：Linux 已有大量 ARM 处理器和外设的优质驱动</li>
+<li><strong>活跃的开发社区</strong>：持续的 bug 修复、安全补丁、新硬件支持</li>
+<li><strong>经过验证的安全模型</strong>：UID&#x2F;GID 隔离、SELinux、Capabilities</li>
+<li><strong>开源许可兼容</strong>：GPL v2 内核与 Apache 2.0 用户空间的组合在商业和法律上可行</li>
+</ol>
+<h2 id="4-2-选择-Binder-代替-D-Bus-Unix-Socket-的原因"><a href="#4-2-选择-Binder-代替-D-Bus-Unix-Socket-的原因" class="headerlink" title="4.2 选择 Binder 代替 D-Bus &#x2F; Unix Socket 的原因"></a>4.2 选择 Binder 代替 D-Bus &#x2F; Unix Socket 的原因</h2><p>Binder 的设计由前 BeOS 工程师 Dianne Hackborn 主导，针对移动设备进行了深入优化：</p>
+<p><strong>Binder 相比 D-Bus 的优势：</strong></p>
+<ul>
+<li><strong>零拷贝传输</strong>：通过 mmap 在内核空间映射接收缓冲区（1MB - 8MB），传输大块数据时避免用户空间复制</li>
+<li><strong>调用者身份保证</strong>：内核驱动保证 <code>sender_euid</code> &#x2F; <code>sender_pid</code> 不被伪造</li>
+<li><strong>引用计数和死亡通知</strong>：自动管理跨进程对象引用</li>
+<li><strong>线程池管理</strong>：Binder 驱动内建线程池，Binder 调用在服务端自动分配线程</li>
+</ul>
+<h1 id="五、Fuchsia：Android-的长期替代方案"><a href="#五、Fuchsia：Android-的长期替代方案" class="headerlink" title="五、Fuchsia：Android 的长期替代方案"></a>五、Fuchsia：Android 的长期替代方案</h1><h2 id="5-1-Zircon-与-Linux-的关键差异"><a href="#5-1-Zircon-与-Linux-的关键差异" class="headerlink" title="5.1 Zircon 与 Linux 的关键差异"></a>5.1 Zircon 与 Linux 的关键差异</h2><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>Linux（Android 使用）</th>
+<th>Zircon（Fuchsia 使用）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>内核架构</td>
+<td>宏内核（Monolithic）</td>
+<td>微内核（Microkernel）</td>
+</tr>
+<tr>
+<td>驱动模型</td>
+<td>内核空间驱动</td>
+<td>用户空间驱动（部分）</td>
+</tr>
+<tr>
+<td>IPC 机制</td>
+<td>Binder（内核模块）</td>
+<td>Channel（原生内核对象）</td>
+</tr>
+<tr>
+<td>调度模型</td>
+<td>CFS</td>
+<td>基于 deadline 的调度器</td>
+</tr>
+<tr>
+<td>能力模型</td>
+<td>UID&#x2F;GID + SELinux</td>
+<td>基于 capability 的对象句柄</td>
+</tr>
+</tbody></table>
+<h2 id="5-2-为什么-Android-短期内不会迁移到-Fuchsia"><a href="#5-2-为什么-Android-短期内不会迁移到-Fuchsia" class="headerlink" title="5.2 为什么 Android 短期内不会迁移到 Fuchsia"></a>5.2 为什么 Android 短期内不会迁移到 Fuchsia</h2><ol>
+<li><strong>生态惯性</strong>：数十亿设备和数以百万计的 App 依赖 Linux 内核</li>
+<li><strong>硬件驱动</strong>：Linux 的驱动覆盖范围远超 Zircon</li>
+<li><strong>工程成本</strong>：迁移整个运行时时到新内核 API 是天文数字的工程</li>
+</ol>
+<h1 id="六、核心面试题"><a href="#六、核心面试题" class="headerlink" title="六、核心面试题"></a>六、核心面试题</h1><p><strong>Q1：Android 为什么使用 Linux 内核而不是其他内核（如 BSD、L4）？</strong></p>
+<p>答：(1) Linux 在 ARM 平台上有最成熟的硬件驱动生态，而移动设备 SoC 种类繁多；(2) Linux 社区活跃，持续获得安全补丁和性能优化；(3) Linux 的 GPL v2 许可与 Android 用户空间的 Apache 2.0 许可兼容；(4) Linux 的 UID&#x2F;GID 隔离模型天然适合 Android 的每个 App 一个 UID 的设计。</p>
+<p><strong>Q2：Binder 在 Android 中为什么比传统的 Unix Domain Socket 更适合做 IPC？</strong></p>
+<p>答：(1) 零拷贝：Binder 通过 mmap 在内核空间预分配接收缓冲区，避免了一次用户空间拷贝。(2) 身份认证：Binder 驱动在每次事务中携带 sender_euid 和 sender_pid，服务端可以信任这些信息。(3) 死亡通知：Binder 通过 linkToDeath 自动通知服务端客户端进程的退出。(4) 对象引用计数：Binder 驱动自动管理跨进程对象引用。</p>
+<p><strong>Q3：Android 的 HAL 层与标准 Linux 的驱动模型有什么不同？</strong></p>
+<p>答：标准 Linux 驱动模型是：用户空间 → 系统调用 → 内核驱动 → 硬件。Android HAL 在驱动之上增加了一层抽象：用户空间 → HAL 接口 → HAL 实现 → 内核驱动 → 硬件。上层框架使用统一的 HAL 接口，厂商只需实现 HAL 接口而不需要修改框架代码。HIDL（Android 8+）进一步将 HAL 实现放入独立进程。</p>
+<p><strong>Q4：lmkd（用户空间 LMK）和内核 LMK 相比有什么优势？</strong></p>
+<p>答：(1) 策略硬编码在内核中 → 策略在用户空间，更新无需改内核；(2) 内核无法读取进程的 importance 等 framework 层信息 → lmkd 可通过 AMS 获取 OOM ADJ；(3) 内核基于简单内存阈值触发 → lmkd 可通过 <code>/proc/pressure/memory</code> 获取内存压力事件、通过 cgroup 进行精细控制。</p>
+<p><strong>Q5：Fuchsia 的 Zircon 微内核架构相比 Linux 宏内核有什么优势？为什么 Google 在 Android 之外又开发 Fuchsia？</strong></p>
+<p>答：微内核架构优势：(1) 故障隔离——驱动 crash 不会导致整个系统崩溃，内核可重启驱动进程；(2) 更小的 TCB（Trusted Computing Base）；(3) 可更新性——无需重启系统即可更新驱动。Google 开发 Fuchsia 的动机包括：Linux 开发流程和许可证不完全符合 Google 利益、GKI 无法从根本上解决版本碎片化、Google 希望在新一代 OS 的 IPC、调度器、安全架构方面有完整控制权。</p>
+<h1 id="六、Linux-内核关键子系统在-Android-中的应用"><a href="#六、Linux-内核关键子系统在-Android-中的应用" class="headerlink" title="六、Linux 内核关键子系统在 Android 中的应用"></a>六、Linux 内核关键子系统在 Android 中的应用</h1><h2 id="6-1-CFS-调度器与-Android-的任务管理"><a href="#6-1-CFS-调度器与-Android-的任务管理" class="headerlink" title="6.1 CFS 调度器与 Android 的任务管理"></a>6.1 CFS 调度器与 Android 的任务管理</h2><p>CFS（Completely Fair Scheduler）是 Linux 内核的默认调度器，从 Linux 2.6.23 开始使用。Android 进程的调度完全依赖 CFS。</p>
+<p>CFS 的核心数据结构是<strong>红黑树</strong>，按虚拟运行时间（vruntime）组织所有可运行任务。vruntime 的计算公式：<br>vruntime +&#x3D; (actual_runtime) * (NICE_0_LOAD &#x2F; task_weight)</p>
+<p>其中 task_weight 由 nice 值决定——nice 值越低（优先级越高），weight 越大，vruntime 增长越慢，因此获得更多 CPU 时间。</p>
+<p>Android 依赖 Linux 的 cgroup（Control Groups）来对任务进行分组管理和资源限制：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Android 使用 cgroup 隔离不同优先级的任务</span></span><br><span class="line"><span class="comment">// /dev/cpuctl/ 目录下：</span></span><br><span class="line"><span class="comment">//   foreground/  — 前台进程（top-app cgroup）</span></span><br><span class="line"><span class="comment">//   background/  — 后台进程（background cgroup）</span></span><br><span class="line"><span class="comment">//   system-background/ — 系统后台进程</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 通过 cpu.shares 控制 CPU 份额：</span></span><br><span class="line"><span class="comment">//   foreground: 1024 (默认权重)</span></span><br><span class="line"><span class="comment">//   background: 52 (约 5% 的 CPU)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 通过 cpu.cfs_quota_us / cpu.cfs_period_us 限制 CPU 使用率</span></span><br></pre></td></tr></table></figure>
+
+<p>Android 8+ 引入了 <code>cpuset</code> cgroup，将前台应用绑定到”大核”（big cores），后台任务绑定到”小核”（little cores），实现 energy-aware scheduling（EAS）——在性能和功耗间找到平衡点。</p>
+<h2 id="6-2-VFS（Virtual-File-System）与-Android-文件系统"><a href="#6-2-VFS（Virtual-File-System）与-Android-文件系统" class="headerlink" title="6.2 VFS（Virtual File System）与 Android 文件系统"></a>6.2 VFS（Virtual File System）与 Android 文件系统</h2><p>Linux 的 VFS 层为 Android 提供了统一的文件系统接口，使得不同文件系统（ext4、f2fs、erofs、sdcardfs）可以无缝共存：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">用户空间 open/read/write/close</span><br><span class="line">    ↓</span><br><span class="line">VFS（Virtual File System Switch）</span><br><span class="line">    ├── ext4  (data 分区)</span><br><span class="line">    ├── f2fs  (data 分区——Flash Friendly File System)</span><br><span class="line">    ├── erofs (system 分区——Enhanced Read-Only File System)</span><br><span class="line">    ├── tmpfs (/dev, /sys/fs/cgroup)</span><br><span class="line">    └── sdcardfs (模拟外部存储)</span><br></pre></td></tr></table></figure>
+
+<p><strong>f2fs（Flash Friendly File System）</strong>：三星为 NAND flash 设备优化的文件系统。Android 在 Pixel 设备上默认使用 f2fs 作为 data 分区文件系统。相比 ext4，f2fs 在随机写入和小文件操作上有显著性能提升。</p>
+<p><strong>erofs（Enhanced Read-Only File System）</strong>：华为贡献的只读文件系统，Android 10+ 用于 system 分区。相比 ext4，erofs 支持透明压缩并减少了读放大。</p>
+<h2 id="6-3-Linux-网络协议栈与-Android-的网络限制"><a href="#6-3-Linux-网络协议栈与-Android-的网络限制" class="headerlink" title="6.3 Linux 网络协议栈与 Android 的网络限制"></a>6.3 Linux 网络协议栈与 Android 的网络限制</h2><p>Android 对网络栈的定制主要集中在安全控制：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// net/ipv4/af_inet.c — Android 的网络创建限制</span></span><br><span class="line"><span class="comment">// 只有特定 GID (AID_INET = 3003) 的进程可以创建 AF_INET socket</span></span><br><span class="line"><span class="comment">// 这是通过 ANDROID_PARANOID_NETWORK 宏实现的</span></span><br><span class="line"><span class="type">static</span> <span class="keyword">inline</span> <span class="type">int</span> <span class="title function_">current_has_network</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> in_egroup_p(AID_INET) || capable(CAP_NET_RAW);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Android 还通过 <code>iptables/netfilter</code> 实现：</p>
+<ul>
+<li><strong>应用级防火墙</strong>：限制后台应用的网络访问（Android 7+）</li>
+<li><strong>Data Saver</strong>：白名单机制，仅允许前台应用或用户授权的应用使用数据</li>
+<li><strong>私有 DNS</strong>：基于 DNS-over-TLS 的系统级加密 DNS（Android 9+）</li>
+</ul>
+<h2 id="6-4-Android-的-seccomp-bpf-严格化"><a href="#6-4-Android-的-seccomp-bpf-严格化" class="headerlink" title="6.4 Android 的 seccomp-bpf 严格化"></a>6.4 Android 的 seccomp-bpf 严格化</h2><p>Android 8.0 开始对所有应用进程启用 seccomp-bpf：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// bionic/libc/seccomp/seccomp_policy.cpp</span></span><br><span class="line"><span class="comment">// 应用进程的系统调用白名单：</span></span><br><span class="line"><span class="comment">// 允许: read, write, open, close, mmap, ioctl, futex, ...</span></span><br><span class="line"><span class="comment">// 拒绝: ptrace, process_vm_readv, init_module, delete_module, mount, ...</span></span><br></pre></td></tr></table></figure>
+
+<p>seccomp-bpf 过滤在 bionic libc 初始化阶段安装。整个过程是不可逆的——一旦安装，进程就不能再增加系统调用的权限。</p>
+<h1 id="七、Android-系统启动流程"><a href="#七、Android-系统启动流程" class="headerlink" title="七、Android 系统启动流程"></a>七、Android 系统启动流程</h1><h2 id="7-1-Boot-ROM-→-Kernel-→-Init-的启动链"><a href="#7-1-Boot-ROM-→-Kernel-→-Init-的启动链" class="headerlink" title="7.1 Boot ROM → Kernel → Init 的启动链"></a>7.1 Boot ROM → Kernel → Init 的启动链</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Boot ROM (出厂固化)</span><br><span class="line">  → Bootloader (LK / U-Boot / ABL)</span><br><span class="line">    → Linux Kernel (加载 ramdisk/initramfs)</span><br><span class="line">      → init (第一个用户空间进程，PID=1)</span><br><span class="line">        → init.rc 按阶段执行：</span><br><span class="line">          early-init → init → late-init</span><br><span class="line">            → ueventd (设备节点管理)</span><br><span class="line">            → servicemanager (Binder 服务注册中心)</span><br><span class="line">            → vold (卷管理/加密)</span><br><span class="line">            → surfaceflinger (显示合成)</span><br><span class="line">            → system_server (Zygote + System Services)</span><br><span class="line">              → Zygote fork → system_server</span><br><span class="line">                → ActivityManagerService</span><br><span class="line">                → PackageManagerService</span><br><span class="line">                → WindowManagerService</span><br><span class="line">                → ... (100+ 系统服务)</span><br><span class="line">            → launcher (桌面，通过 AMS 启动)</span><br></pre></td></tr></table></figure>
+
+<h2 id="7-2-Zygote-的进程预加载机制"><a href="#7-2-Zygote-的进程预加载机制" class="headerlink" title="7.2 Zygote 的进程预加载机制"></a>7.2 Zygote 的进程预加载机制</h2><p>Zygote 是 Android 特有的进程孵化器。它在启动时预加载所有应用的公共类和资源：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/java/com/android/internal/os/ZygoteInit.java</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">preload</span><span class="params">(TimingsTraceLog bootTimingsTraceLog)</span> &#123;</span><br><span class="line">    preloadClasses();          <span class="comment">// 加载 ~4000 个常用 Java 类</span></span><br><span class="line">    preloadResources();        <span class="comment">// 加载常用资源（主题、文本）</span></span><br><span class="line">    preloadOpenGL();           <span class="comment">// 预加载 OpenGL 驱动</span></span><br><span class="line">    preloadSharedLibraries();  <span class="comment">// 加载常用 .so（libandroid.so, libicuuc.so 等）</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>预加载后，Zygote 的内存页大部分是共享的——所有从 Zygote fork 的应用进程共享这些页的物理内存（COW——Copy On Write）。这大幅减少了每个应用进程的启动时间和内存占用。</p>
+<h1 id="八、Android-安全架构概览"><a href="#八、Android-安全架构概览" class="headerlink" title="八、Android 安全架构概览"></a>八、Android 安全架构概览</h1><h2 id="8-1-纵深防御模型"><a href="#8-1-纵深防御模型" class="headerlink" title="8.1 纵深防御模型"></a>8.1 纵深防御模型</h2><p>Android 的安全架构采用多层纵深防御策略：</p>
+<ol>
+<li><strong>应用层沙箱</strong>：每个 App 在自己的 UID 下运行</li>
+<li><strong>权限系统</strong>：运行时权限 + 安装时权限</li>
+<li><strong>SELinux</strong>：强制访问控制</li>
+<li><strong>seccomp</strong>：系统调用过滤</li>
+<li><strong>应用签名</strong>：签名一致的 App 可共享 UID</li>
+<li><strong>Verified Boot</strong>：从硬件根信任的完整验证链</li>
+</ol>
+<h2 id="8-2-SELinux-在-Android-中的应用"><a href="#8-2-SELinux-在-Android-中的应用" class="headerlink" title="8.2 SELinux 在 Android 中的应用"></a>8.2 SELinux 在 Android 中的应用</h2><p>Android 从 4.3 引入 SELinux，4.4 起强制开启 Enforcing 模式。SELinux 的核心概念：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">进程 (domain) → 操作 (class:permission) → 资源 (type)</span><br><span class="line">如：untrusted_app → file:read → app_data_file</span><br></pre></td></tr></table></figure>
+
+<p>关键 domain 定义：</p>
+<ul>
+<li><code>untrusted_app</code>：第三方应用</li>
+<li><code>system_app</code>：系统签名应用</li>
+<li><code>priv_app</code>：特权应用（比 system_app 有更多权限）</li>
+<li><code>isolated_app</code>：隔离进程（如 WebView renderer）</li>
+</ul>
+<p>Android 8+ 的 Treble 架构要求 system 和 vendor 的 sepolicy 分离。厂商只能修改 <code>vendor/</code> 下的 sepolicy，不能修改 <code>system/</code> 下的平台 sepolicy。这保证了系统升级不破坏厂商的安全策略，反之亦然。</p>
+<p><strong>AOSP 核心路径参考：</strong></p>
+<ul>
+<li><code>drivers/android/binder.c</code> — Binder 驱动</li>
+<li><code>drivers/staging/android/ashmem.c</code> — 匿名共享内存</li>
+<li><code>drivers/power/wakelock.c</code> — 电源管理</li>
+<li><code>system/core/init/</code> — Android init 进程</li>
+<li><code>system/memory/lmkd/</code> — 用户空间低内存杀手</li>
+<li><code>system/sepolicy/</code> — SELinux 策略</li>
+<li><code>hardware/interfaces/</code> — HIDL HAL 接口定义</li>
+<li><code>frameworks/native/cmds/servicemanager/</code> — Binder 服务管理器</li>
+<li><code>frameworks/native/services/surfaceflinger/</code> — 显示合成引擎</li>
+<li><code>frameworks/base/core/java/com/android/internal/os/ZygoteInit.java</code> — Zygote 初始化</li>
+<li><code>bionic/libc/seccomp/seccomp_policy.cpp</code> — seccomp 策略</li>
+</ul>
+<h1 id="九、Android-与嵌入式-Linux-的对比"><a href="#九、Android-与嵌入式-Linux-的对比" class="headerlink" title="九、Android 与嵌入式 Linux 的对比"></a>九、Android 与嵌入式 Linux 的对比</h1><p>许多开发者误以为 Android 就是 “Linux + Java”。实际上 Android 在很多方面与传统 Linux 发行版有根本差异：</p>
+<h2 id="9-1-Bionic-vs-glibc"><a href="#9-1-Bionic-vs-glibc" class="headerlink" title="9.1 Bionic vs glibc"></a>9.1 Bionic vs glibc</h2><p>Bionic 是 Android 自行开发的 C 标准库，替代 Linux 标准的 glibc。关键差异：</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>glibc</th>
+<th>Bionic</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>代码大小</td>
+<td>~2.5MB</td>
+<td>~400KB</td>
+</tr>
+<tr>
+<td>许可证</td>
+<td>LGPL</td>
+<td>BSD</td>
+</tr>
+<tr>
+<td>线程实现</td>
+<td>NPTL</td>
+<td>基于 futex 的简化实现</td>
+</tr>
+<tr>
+<td>POSIX 兼容</td>
+<td>几乎完整</td>
+<td>子集（裁剪了不适用于移动设备的 API）</td>
+</tr>
+<tr>
+<td>内存分配</td>
+<td>ptmalloc3</td>
+<td>jemalloc（Android 10+） &#x2F; dlmalloc（旧版）</td>
+</tr>
+<tr>
+<td>编译优化</td>
+<td>通用</td>
+<td>为 ARM&#x2F;i386 优化</td>
+</tr>
+<tr>
+<td>C++ 异常</td>
+<td>完整支持</td>
+<td>支持但不完整（某些 corner case 可能不同）</td>
+</tr>
+</tbody></table>
+<p>Bionic 的设计哲学：更小、更快、BSD 许可。它的 printf 实现比 glibc 快约 30%，因为它省略了 POSIX locale 和复杂的 internationalization 支持。</p>
+<h2 id="9-2-Android-的文件系统布局"><a href="#9-2-Android-的文件系统布局" class="headerlink" title="9.2 Android 的文件系统布局"></a>9.2 Android 的文件系统布局</h2><p>Android 不使用传统的 FHS（Filesystem Hierarchy Standard）：</p>
+<table>
+<thead>
+<tr>
+<th>目录</th>
+<th>Android</th>
+<th>传统 Linux (FHS)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>系统二进制</td>
+<td>&#x2F;system&#x2F;bin</td>
+<td>&#x2F;usr&#x2F;bin, &#x2F;bin</td>
+</tr>
+<tr>
+<td>系统库</td>
+<td>&#x2F;system&#x2F;lib64</td>
+<td>&#x2F;usr&#x2F;lib64, &#x2F;lib64</td>
+</tr>
+<tr>
+<td>配置文件</td>
+<td>&#x2F;system&#x2F;etc</td>
+<td>&#x2F;etc</td>
+</tr>
+<tr>
+<td>应用数据</td>
+<td>&#x2F;data&#x2F;data&#x2F;<pkg></td>
+<td>&#x2F;home&#x2F;<user></td>
+</tr>
+<tr>
+<td>临时文件</td>
+<td>&#x2F;data&#x2F;local&#x2F;tmp</td>
+<td>&#x2F;tmp</td>
+</tr>
+<tr>
+<td>设备文件</td>
+<td>&#x2F;dev</td>
+<td>&#x2F;dev</td>
+</tr>
+<tr>
+<td>厂商分区</td>
+<td>&#x2F;vendor</td>
+<td>N&#x2F;A（无对应）</td>
+</tr>
+<tr>
+<td>产品分区</td>
+<td>&#x2F;product</td>
+<td>N&#x2F;A</td>
+</tr>
+</tbody></table>
+<p>这种布局的设计考量：</p>
+<ol>
+<li>区分只读分区（&#x2F;system）和读写分区（&#x2F;data），便于系统升级（OTA）</li>
+<li>&#x2F;vendor 独立于 &#x2F;system，实现 Treble 架构的厂商-平台分离</li>
+<li>&#x2F;product 用于 OEM 定制，进一步分离运营商&#x2F;OEM 的修改</li>
+</ol>
+<h2 id="9-3-Android-的启动与-A-B-OTA"><a href="#9-3-Android-的启动与-A-B-OTA" class="headerlink" title="9.3 Android 的启动与 A&#x2F;B OTA"></a>9.3 Android 的启动与 A&#x2F;B OTA</h2><p>Android 支持 A&#x2F;B 分区无缝更新（Seamless Updates）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">正常启动：</span><br><span class="line">boot_a → system_a → vendor_a → userdata</span><br><span class="line"></span><br><span class="line">OTA 更新：</span><br><span class="line">1. 下载更新到 boot_b, system_b, vendor_b</span><br><span class="line">2. 设置启动标记指向 slot b</span><br><span class="line">3. 重启后从 slot b 启动</span><br><span class="line">4. 如果启动失败，自动回退到 slot a</span><br><span class="line"></span><br><span class="line">优势：</span><br><span class="line">- 更新在后台完成，无需进入 recovery 模式等待</span><br><span class="line">- 启动失败自动回退，不影响用户使用</span><br><span class="line">- Google 要求 Android 11+ 设备必须支持 A/B 分区（或 Virtual A/B）</span><br></pre></td></tr></table></figure>
+
+<h2 id="9-4-Android-不是传统-Linux-发行版"><a href="#9-4-Android-不是传统-Linux-发行版" class="headerlink" title="9.4 Android 不是传统 Linux 发行版"></a>9.4 Android 不是传统 Linux 发行版</h2><p>总结差异：</p>
+<table>
+<thead>
+<tr>
+<th>方面</th>
+<th>传统 Linux (Debian&#x2F;Ubuntu)</th>
+<th>Android</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>C 库</td>
+<td>glibc</td>
+<td>Bionic</td>
+</tr>
+<tr>
+<td>init 系统</td>
+<td>systemd &#x2F; sysvinit</td>
+<td>自定义 init（init.rc）</td>
+</tr>
+<tr>
+<td>IPC</td>
+<td>D-Bus &#x2F; Unix Socket</td>
+<td>Binder</td>
+</tr>
+<tr>
+<td>显示服务器</td>
+<td>X11 &#x2F; Wayland</td>
+<td>SurfaceFlinger</td>
+</tr>
+<tr>
+<td>包管理</td>
+<td>apt &#x2F; dpkg &#x2F; rpm</td>
+<td>APK &#x2F; PackageManager</td>
+</tr>
+<tr>
+<td>进程模型</td>
+<td>fork&#x2F;exec</td>
+<td>Zygote 预加载 + fork</td>
+</tr>
+<tr>
+<td>电源管理</td>
+<td>ACPI &#x2F; systemd-logind</td>
+<td>Wakelock &#x2F; PowerManager</td>
+</tr>
+<tr>
+<td>系统升级</td>
+<td>apt upgrade</td>
+<td>A&#x2F;B OTA</td>
+</tr>
+</tbody></table>
+<p>这些差异反映了 Android 团队的刻意设计选择——专为移动设备裁剪和优化。Android 并非”在 Linux 上跑 Java”，而是一个深度修改的操作系统，其基础是 Linux 内核，但用户空间几乎完全是自建的。</p>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Linux/">Linux    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286851.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/02/10/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286826.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【深入内核篇】进程间通信</span></div></a></div><div class="next-post pull_right"><a href="/2021/02/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F%E5%85%A5%E9%97%A8/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286927.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【深入内核篇】编译系统入门</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2022/04/20/高级Android-【C C++理论实战技术】Linux编程实战/" title="【C/C++理论实战技术】Linux编程实战"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/307.jpg"><div class="relatedPosts_title">【C/C++理论实战技术】Linux编程实战</div></a></div><div class="relatedPosts_item"><a href="/2021/01/05/重拾Android-【深入内核篇】Android启动过程/" title="【深入内核篇】Android启动过程"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/283345.jpg"><div class="relatedPosts_title">【深入内核篇】Android启动过程</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286851.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

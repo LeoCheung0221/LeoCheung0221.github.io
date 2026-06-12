@@ -1,0 +1,425 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【数据结构与算法体系】之图算法（三）-单源最短路径 | ONE·PIECE</title><meta name="description" content="【数据结构与算法体系】之图算法（三）-单源最短路径"><meta name="keywords" content="图算法"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【数据结构与算法体系】之图算法（三）-单源最短路径"><meta name="twitter:description" content="【数据结构与算法体系】之图算法（三）-单源最短路径"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286825.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【数据结构与算法体系】之图算法（三）-单源最短路径"><meta property="og:url" content="http://tufusi.com/2019/08/18/%E3%80%90%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%E4%BD%93%E7%B3%BB%E3%80%91%E4%B9%8B%E5%9B%BE%E7%AE%97%E6%B3%95%EF%BC%88%E4%B8%89%EF%BC%89-%E5%8D%95%E6%BA%90%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【数据结构与算法体系】之图算法（三）-单源最短路径"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286825.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2019/08/18/%E3%80%90%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%E4%BD%93%E7%B3%BB%E3%80%91%E4%B9%8B%E5%9B%BE%E7%AE%97%E6%B3%95%EF%BC%88%E4%B8%89%EF%BC%89-%E5%8D%95%E6%BA%90%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84/"><link rel="prev" title="【数据结构与算法体系】之图算法（四）-所有结点对的最短路径问题" href="http://tufusi.com/2019/08/18/%E3%80%90%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%E4%BD%93%E7%B3%BB%E3%80%91%E4%B9%8B%E5%9B%BE%E7%AE%97%E6%B3%95%EF%BC%88%E5%9B%9B%EF%BC%89-%E6%89%80%E6%9C%89%E7%BB%93%E7%82%B9%E5%AF%B9%E7%9A%84%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84%E9%97%AE%E9%A2%98/"><link rel="next" title="【数据结构与算法体系】之图算法（二）-最小生成树" href="http://tufusi.com/2019/08/18/%E3%80%90%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%E4%BD%93%E7%B3%BB%E3%80%91%E4%B9%8B%E5%9B%BE%E7%AE%97%E6%B3%95%EF%BC%88%E4%BA%8C%EF%BC%89-%E6%9C%80%E5%B0%8F%E7%94%9F%E6%88%90%E6%A0%91/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">问题定义</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%89%8D%E7%BD%AE%E6%A6%82%E5%BF%B5%EF%BC%9A%E6%9D%BE%E5%BC%9B%E6%93%8D%E4%BD%9C%EF%BC%88Relaxation%EF%BC%89"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">前置概念：松弛操作（Relaxation）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81Dijkstra-%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">一、Dijkstra 算法</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">1.1 核心思想</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-2-%E7%AE%97%E6%B3%95%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">1.2 算法伪代码</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-3-%E6%97%B6%E9%97%B4%E5%A4%8D%E6%9D%82%E5%BA%A6%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">1.3 时间复杂度分析</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-4-%E5%AE%8C%E6%95%B4%E5%AE%9E%E7%8E%B0%EF%BC%88%E4%BA%8C%E5%8F%89%E5%A0%86%E7%89%88%E6%9C%AC%EF%BC%89"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">1.4 完整实现（二叉堆版本）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-5-Dijkstra-%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc_mobile_items-number">2.5.</span> <span class="toc_mobile_items-text">1.5 Dijkstra 的局限性</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81Bellman-Ford-%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">二、Bellman-Ford 算法</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">2.1 核心思想</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E7%AE%97%E6%B3%95%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">2.2 算法伪代码</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">2.3 实现</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-4-%E6%97%B6%E9%97%B4%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">2.4 时间复杂度</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-5-%E8%B4%9F%E6%9D%83%E7%8E%AF%E6%A3%80%E6%B5%8B"><span class="toc_mobile_items-number">3.5.</span> <span class="toc_mobile_items-text">2.5 负权环检测</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81SPFA-%E7%AE%97%E6%B3%95%EF%BC%88Shortest-Path-Faster-Algorithm%EF%BC%89"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">三、SPFA 算法（Shortest Path Faster Algorithm）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">3.1 核心思想</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E7%AE%97%E6%B3%95%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">3.2 算法伪代码</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">3.3 实现</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-SPFA-%E7%9A%84%E4%BA%89%E8%AE%AE"><span class="toc_mobile_items-number">4.4.</span> <span class="toc_mobile_items-text">3.4 SPFA 的争议</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E4%B8%89%E7%A7%8D%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">四、三种算法对比</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E9%80%89%E6%8B%A9%E5%BB%BA%E8%AE%AE"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">选择建议</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81Dijkstra-%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%80%A7%E8%AF%81%E6%98%8E"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">五、Dijkstra 的正确性证明</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E5%B7%AE%E5%88%86%E7%BA%A6%E6%9D%9F%E7%B3%BB%E7%BB%9F%E4%B8%8E-Bellman-Ford"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">六、差分约束系统与 Bellman-Ford</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E9%97%AE%E9%A2%98%E8%BD%AC%E5%8C%96"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">6.1 问题转化</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">6.2 应用场景</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E5%B8%B8%E8%A7%81%E5%8F%98%E4%BD%93%E4%B8%8E%E6%89%A9%E5%B1%95"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">七、常见变体与扩展</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-%E6%89%80%E6%9C%89%E7%BB%93%E7%82%B9%E5%AF%B9%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">7.1 所有结点对最短路径</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-A-%E6%90%9C%E7%B4%A2-%E2%80%94%E2%80%94-%E5%90%AF%E5%8F%91%E5%BC%8F%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">7.2 A* 搜索 —— 启发式最短路径</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-3-%E5%AE%9E%E9%99%85%E5%BA%94%E7%94%A8%EF%BC%9AGPS-%E5%AF%BC%E8%88%AA%E4%B8%8E-OSM-%E8%B7%AF%E7%BD%91"><span class="toc_mobile_items-number">8.3.</span> <span class="toc_mobile_items-text">7.3 实际应用：GPS 导航与 OSM 路网</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-4-%E7%BD%91%E7%BB%9C%E8%B7%AF%E7%94%B1%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8"><span class="toc_mobile_items-number">8.4.</span> <span class="toc_mobile_items-text">7.4 网络路由中的应用</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-5-%E5%8F%8C%E5%90%91-Dijkstra"><span class="toc_mobile_items-number">8.5.</span> <span class="toc_mobile_items-text">7.5 双向 Dijkstra</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%80%83%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">面试常考问题</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89"><span class="toc-number">1.</span> <span class="toc-text">问题定义</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E7%BD%AE%E6%A6%82%E5%BF%B5%EF%BC%9A%E6%9D%BE%E5%BC%9B%E6%93%8D%E4%BD%9C%EF%BC%88Relaxation%EF%BC%89"><span class="toc-number">1.1.</span> <span class="toc-text">前置概念：松弛操作（Relaxation）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81Dijkstra-%E7%AE%97%E6%B3%95"><span class="toc-number">2.</span> <span class="toc-text">一、Dijkstra 算法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">2.1.</span> <span class="toc-text">1.1 核心思想</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E7%AE%97%E6%B3%95%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc-number">2.2.</span> <span class="toc-text">1.2 算法伪代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E6%97%B6%E9%97%B4%E5%A4%8D%E6%9D%82%E5%BA%A6%E5%88%86%E6%9E%90"><span class="toc-number">2.3.</span> <span class="toc-text">1.3 时间复杂度分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E5%AE%8C%E6%95%B4%E5%AE%9E%E7%8E%B0%EF%BC%88%E4%BA%8C%E5%8F%89%E5%A0%86%E7%89%88%E6%9C%AC%EF%BC%89"><span class="toc-number">2.4.</span> <span class="toc-text">1.4 完整实现（二叉堆版本）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-Dijkstra-%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc-number">2.5.</span> <span class="toc-text">1.5 Dijkstra 的局限性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Bellman-Ford-%E7%AE%97%E6%B3%95"><span class="toc-number">3.</span> <span class="toc-text">二、Bellman-Ford 算法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">3.1.</span> <span class="toc-text">2.1 核心思想</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E7%AE%97%E6%B3%95%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc-number">3.2.</span> <span class="toc-text">2.2 算法伪代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.3.</span> <span class="toc-text">2.3 实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E6%97%B6%E9%97%B4%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="toc-number">3.4.</span> <span class="toc-text">2.4 时间复杂度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E8%B4%9F%E6%9D%83%E7%8E%AF%E6%A3%80%E6%B5%8B"><span class="toc-number">3.5.</span> <span class="toc-text">2.5 负权环检测</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81SPFA-%E7%AE%97%E6%B3%95%EF%BC%88Shortest-Path-Faster-Algorithm%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">三、SPFA 算法（Shortest Path Faster Algorithm）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">4.1.</span> <span class="toc-text">3.1 核心思想</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E7%AE%97%E6%B3%95%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc-number">4.2.</span> <span class="toc-text">3.2 算法伪代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%AE%9E%E7%8E%B0"><span class="toc-number">4.3.</span> <span class="toc-text">3.3 实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-SPFA-%E7%9A%84%E4%BA%89%E8%AE%AE"><span class="toc-number">4.4.</span> <span class="toc-text">3.4 SPFA 的争议</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E4%B8%89%E7%A7%8D%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94"><span class="toc-number">5.</span> <span class="toc-text">四、三种算法对比</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%89%E6%8B%A9%E5%BB%BA%E8%AE%AE"><span class="toc-number">5.1.</span> <span class="toc-text">选择建议</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Dijkstra-%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%80%A7%E8%AF%81%E6%98%8E"><span class="toc-number">6.</span> <span class="toc-text">五、Dijkstra 的正确性证明</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%B7%AE%E5%88%86%E7%BA%A6%E6%9D%9F%E7%B3%BB%E7%BB%9F%E4%B8%8E-Bellman-Ford"><span class="toc-number">7.</span> <span class="toc-text">六、差分约束系统与 Bellman-Ford</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E9%97%AE%E9%A2%98%E8%BD%AC%E5%8C%96"><span class="toc-number">7.1.</span> <span class="toc-text">6.1 问题转化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">7.2.</span> <span class="toc-text">6.2 应用场景</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%B8%B8%E8%A7%81%E5%8F%98%E4%BD%93%E4%B8%8E%E6%89%A9%E5%B1%95"><span class="toc-number">8.</span> <span class="toc-text">七、常见变体与扩展</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E6%89%80%E6%9C%89%E7%BB%93%E7%82%B9%E5%AF%B9%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84"><span class="toc-number">8.1.</span> <span class="toc-text">7.1 所有结点对最短路径</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-A-%E6%90%9C%E7%B4%A2-%E2%80%94%E2%80%94-%E5%90%AF%E5%8F%91%E5%BC%8F%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84"><span class="toc-number">8.2.</span> <span class="toc-text">7.2 A* 搜索 —— 启发式最短路径</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E5%AE%9E%E9%99%85%E5%BA%94%E7%94%A8%EF%BC%9AGPS-%E5%AF%BC%E8%88%AA%E4%B8%8E-OSM-%E8%B7%AF%E7%BD%91"><span class="toc-number">8.3.</span> <span class="toc-text">7.3 实际应用：GPS 导航与 OSM 路网</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-4-%E7%BD%91%E7%BB%9C%E8%B7%AF%E7%94%B1%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8"><span class="toc-number">8.4.</span> <span class="toc-text">7.4 网络路由中的应用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-5-%E5%8F%8C%E5%90%91-Dijkstra"><span class="toc-number">8.5.</span> <span class="toc-text">7.5 双向 Dijkstra</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%80%83%E9%97%AE%E9%A2%98"><span class="toc-number">9.</span> <span class="toc-text">面试常考问题</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286825.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【数据结构与算法体系】之图算法（三）-单源最短路径</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2019-08-18<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-11</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/">数据结构与算法</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">5.4k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 21 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="问题定义"><a href="#问题定义" class="headerlink" title="问题定义"></a>问题定义</h2><p>单源最短路径（Single-Source Shortest Path, SSSP）问题：给定带权有向图 $G &#x3D; (V, E)$ 和源点 $s \in V$，找出从 $s$ 到所有其他顶点 $v \in V$ 的最短路径。</p>
+<p>最短路径的<strong>权值</strong>定义为路径上所有边的权值之和：<br>$$\delta(s, v) = \min\left\{\sum_{(u_i, u_{i+1}) \in P} w(u_i, u_{i+1}) \ \middle|\ P \text{ 是从 } s \text{ 到 } v \text{ 的路径}\right\}$$</p>
+<p>若不存在从 $s$ 到 $v$ 的路径，则 $\delta(s, v) &#x3D; \infty$。</p>
+<h3 id="前置概念：松弛操作（Relaxation）"><a href="#前置概念：松弛操作（Relaxation）" class="headerlink" title="前置概念：松弛操作（Relaxation）"></a>前置概念：松弛操作（Relaxation）</h3><p>几乎所有最短路径算法的核心都是<strong>松弛</strong>。对于边 $(u, v)$，松弛操作检查是否可以通过 $u$ 改善到达 $v$ 的最短路径估计值 $d[v]$：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Relax(u, v, w):</span><br><span class="line">    if d[v] &gt; d[u] + w(u, v):</span><br><span class="line">        d[v] = d[u] + w(u, v)</span><br><span class="line">        π[v] = u          // 记录前驱节点，用于重建路径</span><br></pre></td></tr></table></figure>
+
+<p>其中 $d[v]$ 是从源点 $s$ 到 $v$ 的当前最短路径估计（上界），$π[v]$ 是 $v$ 在最短路径树中的前驱节点。初始时 $d[s] &#x3D; 0$，其余 $d[v] &#x3D; \infty$。</p>
+<p><strong>松弛操作的核心性质</strong>：</p>
+<ul>
+<li><strong>上界性质</strong>：对于所有 $v \in V$，始终有 $d[v] \geq \delta(s, v)$</li>
+<li><strong>收敛性质</strong>：若 $s \leadsto u \to v$ 是某条最短路径且松弛 $(u, v)$ 前 $d[u] &#x3D; \delta(s, u)$，则松弛后 $d[v] &#x3D; \delta(s, v)$</li>
+<li><strong>路径松弛性质</strong>：按最短路径上的边顺序依次松弛，最终 $d[v] &#x3D; \delta(s, v)$</li>
+</ul>
+<hr>
+<h2 id="一、Dijkstra-算法"><a href="#一、Dijkstra-算法" class="headerlink" title="一、Dijkstra 算法"></a>一、Dijkstra 算法</h2><h3 id="1-1-核心思想"><a href="#1-1-核心思想" class="headerlink" title="1.1 核心思想"></a>1.1 核心思想</h3><p>Dijkstra 采用<strong>贪心策略</strong>：每次从尚未确定最短距离的顶点中选择 $d[v]$ 最小的顶点，将其标记为”已确定”，然后松弛其所有出边。</p>
+<p>该贪心策略正确的<strong>前提条件</strong>：所有边的权值<strong>非负</strong>（$w(u, v) \geq 0$）。</p>
+<p><strong>正确性直觉</strong>：在非负权值下，已确定的最短距离不可能再被任何后续顶点改善——因为后续顶点距离更大，加上非负边权只会更大。</p>
+<h3 id="1-2-算法伪代码"><a href="#1-2-算法伪代码" class="headerlink" title="1.2 算法伪代码"></a>1.2 算法伪代码</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Dijkstra(G, w, s):</span><br><span class="line">    1.  Initialize-Single-Source(G, s)</span><br><span class="line">    2.  S = ∅                           // 已确定最短距离的顶点集合</span><br><span class="line">    3.  Q = V                            // 最小优先队列，按 d[v] 排序</span><br><span class="line">    4.  while Q ≠ ∅:</span><br><span class="line">    5.      u = Extract-Min(Q)           // 取出 d 值最小的顶点</span><br><span class="line">    6.      S = S ∪ &#123;u&#125;</span><br><span class="line">    7.      for each vertex v ∈ Adj[u]:</span><br><span class="line">    8.          Relax(u, v, w)           // 若 d[v] &gt; d[u] + w(u,v)，更新 d[v]</span><br><span class="line">    9.          // 若 d[v] 减小，Q 中执行 Decrease-Key</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-3-时间复杂度分析"><a href="#1-3-时间复杂度分析" class="headerlink" title="1.3 时间复杂度分析"></a>1.3 时间复杂度分析</h3><p>Dijkstra 的性能瓶颈在于优先队列操作。每条边最多触发一次松弛（即一次 Decrease-Key），共 $|V|$ 次 Extract-Min。</p>
+<table>
+<thead>
+<tr>
+<th>优先队列实现</th>
+<th>Extract-Min</th>
+<th>Decrease-Key</th>
+<th>总复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>无序数组</td>
+<td>$O(V)$</td>
+<td>$O(1)$</td>
+<td>$O(V^2)$</td>
+</tr>
+<tr>
+<td>二叉堆（Binary Heap）</td>
+<td>$O(\log V)$</td>
+<td>$O(\log V)$</td>
+<td>$O((V+E)\log V)$</td>
+</tr>
+<tr>
+<td>斐波那契堆（Fibonacci Heap）</td>
+<td>$O(\log V)$ 均摊</td>
+<td>$O(1)$ 均摊</td>
+<td>$O(V\log V + E)$</td>
+</tr>
+</tbody></table>
+<ul>
+<li><strong>稠密图</strong>（$E \approx V^2$）：用数组实现，$O(V^2)$ 实际上优于二叉堆的 $O(V^2\log V)$</li>
+<li><strong>稀疏图</strong>（$E \approx V$）：用二叉堆实现，$O(V\log V)$</li>
+<li><strong>理论上最优</strong>：斐波那契堆，但常数因子大，实际中不常用</li>
+</ul>
+<h3 id="1-4-完整实现（二叉堆版本）"><a href="#1-4-完整实现（二叉堆版本）" class="headerlink" title="1.4 完整实现（二叉堆版本）"></a>1.4 完整实现（二叉堆版本）</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Dijkstra</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span>[] shortestPath(List&lt;List&lt;Edge&gt;&gt; graph, <span class="type">int</span> s) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> graph.size();</span><br><span class="line">        <span class="type">int</span>[] dist = <span class="keyword">new</span> <span class="title class_">int</span>[n];</span><br><span class="line">        <span class="type">int</span>[] prev = <span class="keyword">new</span> <span class="title class_">int</span>[n];</span><br><span class="line">        Arrays.fill(dist, Integer.MAX_VALUE);</span><br><span class="line">        Arrays.fill(prev, -<span class="number">1</span>);</span><br><span class="line">        dist[s] = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 最小堆: (顶点, 距离)</span></span><br><span class="line">        PriorityQueue&lt;Node&gt; pq = <span class="keyword">new</span> <span class="title class_">PriorityQueue</span>&lt;&gt;(Comparator.comparingInt(a -&gt; a.dist));</span><br><span class="line">        pq.offer(<span class="keyword">new</span> <span class="title class_">Node</span>(s, <span class="number">0</span>));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (!pq.isEmpty()) &#123;</span><br><span class="line">            <span class="type">Node</span> <span class="variable">node</span> <span class="operator">=</span> pq.poll();</span><br><span class="line">            <span class="type">int</span> <span class="variable">u</span> <span class="operator">=</span> node.vertex;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 惰性删除：跳过已处理的旧条目</span></span><br><span class="line">            <span class="keyword">if</span> (node.dist &gt; dist[u]) <span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span> (Edge e : graph.get(u)) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">v</span> <span class="operator">=</span> e.to;</span><br><span class="line">                <span class="type">int</span> <span class="variable">newDist</span> <span class="operator">=</span> dist[u] + e.weight;</span><br><span class="line">                <span class="keyword">if</span> (newDist &lt; dist[v]) &#123;</span><br><span class="line">                    dist[v] = newDist;</span><br><span class="line">                    prev[v] = u;</span><br><span class="line">                    pq.offer(<span class="keyword">new</span> <span class="title class_">Node</span>(v, newDist));</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dist;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 重建最短路径</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> List&lt;Integer&gt; <span class="title function_">reconstructPath</span><span class="params">(<span class="type">int</span>[] prev, <span class="type">int</span> target)</span> &#123;</span><br><span class="line">        List&lt;Integer&gt; path = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">v</span> <span class="operator">=</span> target; v != -<span class="number">1</span>; v = prev[v]) &#123;</span><br><span class="line">            path.add(v);</span><br><span class="line">        &#125;</span><br><span class="line">        Collections.reverse(path);</span><br><span class="line">        <span class="keyword">return</span> path;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>实现要点</strong>：</p>
+<ul>
+<li>使用<strong>惰性删除</strong>（Lazy Deletion）：不实现 Decrease-Key，而是将新的更小距离直接入堆。当从堆中取出顶点时，若 <code>node.dist &gt; dist[u]</code> 说明该条目已经过期，直接跳过。这在实际中通常比手动 Decrease-Key 更快。</li>
+<li>空间复杂度：优先队列中可能有 $O(E)$ 个条目（每条边一次松弛产生一个新条目）。</li>
+</ul>
+<h3 id="1-5-Dijkstra-的局限性"><a href="#1-5-Dijkstra-的局限性" class="headerlink" title="1.5 Dijkstra 的局限性"></a>1.5 Dijkstra 的局限性</h3><p><strong>不能处理负权边</strong>。考虑以下反例：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">s ── 2 ──▶ u</span><br><span class="line">│          │</span><br><span class="line">│ -3       │ 1</span><br><span class="line">▼          ▼</span><br><span class="line">v ◀── 1 ──┘</span><br></pre></td></tr></table></figure>
+
+<p>Dijkstra 从 $s$ 出发，先确定 $d[v]&#x3D;-3$（走 $s \to v$），然后确定 $d[u]&#x3D;2$（走 $s \to u$）。但实际上存在更短的路径 $s \to u \to v$ 使得 $d[v] &#x3D; 2 + 1 &#x3D; 3$，这比 $-3$ 更大，没问题。</p>
+<p>但若有负权边 $s \to u(w&#x3D;2), s \to v(w&#x3D;4), u \to v(w&#x3D;-3)$：</p>
+<ul>
+<li>Dijkstra 先确定 $d[v]&#x3D;4$（直接路径），然后发现 $d[u]&#x3D;2$</li>
+<li>通过 $u$ 松弛 $v$：$d[v] &#x3D; 2 + (-3) &#x3D; -1$，但这已经晚了——$v$ 已被错误地 “确定” 为距离 4</li>
+</ul>
+<p>核心原因：Dijkstra 的贪心假设了从小到大的距离顺序，负权边打破了这个顺序。</p>
+<hr>
+<h2 id="二、Bellman-Ford-算法"><a href="#二、Bellman-Ford-算法" class="headerlink" title="二、Bellman-Ford 算法"></a>二、Bellman-Ford 算法</h2><h3 id="2-1-核心思想"><a href="#2-1-核心思想" class="headerlink" title="2.1 核心思想"></a>2.1 核心思想</h3><p>Bellman-Ford 基于<strong>动态规划</strong>思想：对图中所有边重复松弛 $|V|-1$ 轮。第 $k$ 轮松弛后，最多经过 $k$ 条边的最短路径被正确计算。</p>
+<p><strong>为什么是 $|V|-1$ 轮？</strong> 一条不包含环的最短路径最多包含 $|V|-1$ 条边。第 $k$ 轮松弛保证找出所有包含不超过 $k$ 条边的最短路径。</p>
+<h3 id="2-2-算法伪代码"><a href="#2-2-算法伪代码" class="headerlink" title="2.2 算法伪代码"></a>2.2 算法伪代码</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Bellman-Ford(G, w, s):</span><br><span class="line">    1.  Initialize-Single-Source(G, s)</span><br><span class="line">    2.  for i = 1 to |V| - 1:</span><br><span class="line">    3.      for each edge (u, v) ∈ E:</span><br><span class="line">    4.          Relax(u, v, w)</span><br><span class="line">    5.  // 检测负权环</span><br><span class="line">    6.  for each edge (u, v) ∈ E:</span><br><span class="line">    7.      if d[v] &gt; d[u] + w(u, v):</span><br><span class="line">    8.          return FALSE           // 存在负权环</span><br><span class="line">    9.  return TRUE</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-实现"><a href="#2-3-实现" class="headerlink" title="2.3 实现"></a>2.3 实现</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BellmanFord</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span>[] shortestPath(<span class="type">int</span> n, List&lt;Edge&gt; edges, <span class="type">int</span> s) &#123;</span><br><span class="line">        <span class="type">int</span>[] dist = <span class="keyword">new</span> <span class="title class_">int</span>[n];</span><br><span class="line">        <span class="type">int</span>[] prev = <span class="keyword">new</span> <span class="title class_">int</span>[n];</span><br><span class="line">        Arrays.fill(dist, Integer.MAX_VALUE);</span><br><span class="line">        Arrays.fill(prev, -<span class="number">1</span>);</span><br><span class="line">        dist[s] = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 松弛 |V|-1 轮</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="type">boolean</span> <span class="variable">updated</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line">            <span class="keyword">for</span> (Edge e : edges) &#123;</span><br><span class="line">                <span class="keyword">if</span> (dist[e.from] != Integer.MAX_VALUE </span><br><span class="line">                    &amp;&amp; dist[e.to] &gt; dist[e.from] + e.weight) &#123;</span><br><span class="line">                    dist[e.to] = dist[e.from] + e.weight;</span><br><span class="line">                    prev[e.to] = e.from;</span><br><span class="line">                    updated = <span class="literal">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (!updated) <span class="keyword">break</span>;  <span class="comment">// 早期退出：本轮无更新则已收敛</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 检测负权环</span></span><br><span class="line">        <span class="keyword">for</span> (Edge e : edges) &#123;</span><br><span class="line">            <span class="keyword">if</span> (dist[e.from] != Integer.MAX_VALUE </span><br><span class="line">                &amp;&amp; dist[e.to] &gt; dist[e.from] + e.weight) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;图中存在负权环&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> dist;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>优化——早期退出</strong>：若某一轮中没有发生任何松弛，则算法已收敛，可以提前终止。在随机图上，这通常能在远少于 $|V|-1$ 轮内完成。</p>
+<h3 id="2-4-时间复杂度"><a href="#2-4-时间复杂度" class="headerlink" title="2.4 时间复杂度"></a>2.4 时间复杂度</h3><ul>
+<li>基本版：$O(VE)$，对稠密图可达 $O(V^3)$</li>
+<li>加上早期退出后，平均情况远优于最坏情况</li>
+<li>稀疏图上通常可行，稠密图考虑 Dijkstra</li>
+</ul>
+<h3 id="2-5-负权环检测"><a href="#2-5-负权环检测" class="headerlink" title="2.5 负权环检测"></a>2.5 负权环检测</h3><p>Bellman-Ford 的核心优势是能<strong>检测负权环</strong>。在第 $|V|$ 轮（或单独一轮）中如果还能松弛任何边，说明存在负权环——因为不包含环的最短路径最多 $|V|-1$ 条边，能继续改善意味着路径中含有环，且环的权值和为负。</p>
+<p><strong>负权环检测的实际意义</strong>：</p>
+<ul>
+<li>套利检测：货币兑换图中，负权环 &#x3D; 无风险套利机会</li>
+<li>差分约束系统：若 Bellman-Ford 检测到负环，说明约束不可满足</li>
+<li>网络路由：BGP 等协议需要检测路由环路</li>
+</ul>
+<hr>
+<h2 id="三、SPFA-算法（Shortest-Path-Faster-Algorithm）"><a href="#三、SPFA-算法（Shortest-Path-Faster-Algorithm）" class="headerlink" title="三、SPFA 算法（Shortest Path Faster Algorithm）"></a>三、SPFA 算法（Shortest Path Faster Algorithm）</h2><h3 id="3-1-核心思想"><a href="#3-1-核心思想" class="headerlink" title="3.1 核心思想"></a>3.1 核心思想</h3><p>SPFA 是 Bellman-Ford 的<strong>队列优化</strong>版本。Bellman-Ford 每轮盲目松弛所有边，但只有上一轮距离被更新的顶点，其出边才需要在本轮松弛。</p>
+<p>SPFA 使用一个队列维护”距离刚被更新、需要用于松弛的顶点”。</p>
+<h3 id="3-2-算法伪代码"><a href="#3-2-算法伪代码" class="headerlink" title="3.2 算法伪代码"></a>3.2 算法伪代码</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SPFA(G, w, s):</span><br><span class="line">    1.  Initialize-Single-Source(G, s)</span><br><span class="line">    2.  Q = Queue()</span><br><span class="line">    3.  Q.enqueue(s)</span><br><span class="line">    4.  inQueue[s] = TRUE</span><br><span class="line">    5.  while Q ≠ ∅:</span><br><span class="line">    6.      u = Q.dequeue()</span><br><span class="line">    7.      inQueue[u] = FALSE</span><br><span class="line">    8.      for each edge (u, v) ∈ Adj[u]:</span><br><span class="line">    9.          if d[v] &gt; d[u] + w(u, v):</span><br><span class="line">   10.              d[v] = d[u] + w(u, v)</span><br><span class="line">   11.              if not inQueue[v]:</span><br><span class="line">   12.                  Q.enqueue(v)</span><br><span class="line">   13.                  inQueue[v] = TRUE</span><br><span class="line">   14.                  enqueueCount[v]++</span><br><span class="line">   15.                  // 若某顶点入队超过 |V| 次，存在负权环</span><br><span class="line">   16.                  if enqueueCount[v] &gt; |V|:</span><br><span class="line">   17.                      return NEGATIVE_CYCLE</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-实现"><a href="#3-3-实现" class="headerlink" title="3.3 实现"></a>3.3 实现</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SPFA</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span>[] shortestPath(List&lt;List&lt;Edge&gt;&gt; graph, <span class="type">int</span> s) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> graph.size();</span><br><span class="line">        <span class="type">int</span>[] dist = <span class="keyword">new</span> <span class="title class_">int</span>[n];</span><br><span class="line">        <span class="type">int</span>[] enqCount = <span class="keyword">new</span> <span class="title class_">int</span>[n];</span><br><span class="line">        <span class="type">boolean</span>[] inQueue = <span class="keyword">new</span> <span class="title class_">boolean</span>[n];</span><br><span class="line">        Arrays.fill(dist, Integer.MAX_VALUE);</span><br><span class="line">        dist[s] = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        Queue&lt;Integer&gt; q = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">        q.offer(s);</span><br><span class="line">        inQueue[s] = <span class="literal">true</span>;</span><br><span class="line">        enqCount[s] = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (!q.isEmpty()) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">u</span> <span class="operator">=</span> q.poll();</span><br><span class="line">            inQueue[u] = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span> (Edge e : graph.get(u)) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">v</span> <span class="operator">=</span> e.to;</span><br><span class="line">                <span class="keyword">if</span> (dist[v] &gt; dist[u] + e.weight) &#123;</span><br><span class="line">                    dist[v] = dist[u] + e.weight;</span><br><span class="line">                    <span class="keyword">if</span> (!inQueue[v]) &#123;</span><br><span class="line">                        q.offer(v);</span><br><span class="line">                        inQueue[v] = <span class="literal">true</span>;</span><br><span class="line">                        enqCount[v]++;</span><br><span class="line">                        <span class="keyword">if</span> (enqCount[v] &gt; n) &#123;</span><br><span class="line">                            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;负权环&quot;</span>);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dist;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-4-SPFA-的争议"><a href="#3-4-SPFA-的争议" class="headerlink" title="3.4 SPFA 的争议"></a>3.4 SPFA 的争议</h3><p>SPFA 在国际信息学奥赛中广泛使用，但学术界对其颇有微词：</p>
+<ul>
+<li><strong>最坏情况</strong>：$O(VE)$，与 Bellman-Ford 相同。特定构造的图可以使 SPFA 退化到最坏情况（网格图 + 特定边权）</li>
+<li><strong>随机图</strong>：表现通常接近 $O(E)$</li>
+<li><strong>实际建议</strong>：正权图用 Dijkstra，负权图用 Bellman-Ford。SPFA 在某些场景（如费用流）中有用，但不建议作为通用最短路径算法</li>
+<li>2018 年，SPFA 被发现在大量竞赛题目中可以被卡到指数级，引发了广泛讨论</li>
+</ul>
+<hr>
+<h2 id="四、三种算法对比"><a href="#四、三种算法对比" class="headerlink" title="四、三种算法对比"></a>四、三种算法对比</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Dijkstra</th>
+<th>Bellman-Ford</th>
+<th>SPFA</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>适用边权</strong></td>
+<td>非负</td>
+<td>任意（可检测负环）</td>
+<td>任意（可检测负环）</td>
+</tr>
+<tr>
+<td><strong>贪心 vs DP</strong></td>
+<td>贪心</td>
+<td>动态规划</td>
+<td>队列优化的 DP</td>
+</tr>
+<tr>
+<td><strong>时间复杂度</strong></td>
+<td>$O((V+E)\log V)$</td>
+<td>$O(VE)$</td>
+<td>平均 $O(E)$，最坏 $O(VE)$</td>
+</tr>
+<tr>
+<td><strong>空间复杂度</strong></td>
+<td>$O(V)$</td>
+<td>$O(V)$</td>
+<td>$O(V)$</td>
+</tr>
+<tr>
+<td><strong>适用图</strong></td>
+<td>正权</td>
+<td>任意</td>
+<td>任意（但可能退化）</td>
+</tr>
+<tr>
+<td><strong>实现难度</strong></td>
+<td>中等</td>
+<td>简单</td>
+<td>简单</td>
+</tr>
+<tr>
+<td><strong>稳定性</strong></td>
+<td>稳定</td>
+<td>稳定（可预测）</td>
+<td>不稳定（可能被卡）</td>
+</tr>
+<tr>
+<td><strong>并行化</strong></td>
+<td>困难（依赖全局最小值）</td>
+<td>容易（每轮独立松弛）</td>
+<td>困难（队列依赖）</td>
+</tr>
+</tbody></table>
+<h3 id="选择建议"><a href="#选择建议" class="headerlink" title="选择建议"></a>选择建议</h3><ul>
+<li><strong>正权图 → Dijkstra</strong>：这是绝大多数实际场景。社交网络、地图导航、网络路由的链路代价都非负</li>
+<li><strong>含负权边 → Bellman-Ford</strong>：金融计算、差分约束系统。当需要严格的最坏情况保证时选择</li>
+<li><strong>算法竞赛 → 视情况</strong>：正权图绝对用 Dijkstra（SPFA 被刻意卡掉的概率很大）</li>
+</ul>
+<hr>
+<h2 id="五、Dijkstra-的正确性证明"><a href="#五、Dijkstra-的正确性证明" class="headerlink" title="五、Dijkstra 的正确性证明"></a>五、Dijkstra 的正确性证明</h2><p><strong>定理</strong>：在非负权值图中，Dijkstra 算法正确计算所有顶点的最短路径距离。</p>
+<p><strong>证明（归纳法）</strong>：</p>
+<p>设 $S$ 为已从优先队列中取出（距离已确定）的顶点集合。</p>
+<p><strong>归纳假设</strong>：对于所有 $u \in S$，$d[u] &#x3D; \delta(s, u)$。</p>
+<p><strong>基础</strong>：$|S| &#x3D; 1$ 时，$S &#x3D; {s}$，$d[s] &#x3D; 0 &#x3D; \delta(s, s)$。</p>
+<p><strong>归纳步骤</strong>：设 $u$ 是下一次 Extract-Min 从 $Q$ 中取出的顶点（$u \notin S$）。我们要证 $d[u] &#x3D; \delta(s, u)$。</p>
+<p>假设存在一条比 $d[u]$ 更短的从 $s$ 到 $u$ 的路径 $P$。路径 $P$ 从 $S$ 中的顶点出发，最终到达 $u$（$u \notin S$）。设 $(x, y)$ 是 $P$ 中第一条离开 $S$ 的边（$x \in S$, $y \notin S$）。</p>
+<p>路径 $P$ 可分解为 $s \leadsto x \to y \leadsto u$。$x \in S$ 已确定最短距离，因此：<br>$$d[y] \leq d[x] + w(x, y) \quad \text{（松弛保证）}$$<br>$$= \delta(s, x) + w(x, y) \quad \text{（归纳假设）}$$<br>$$\leq \delta(s, x) + w(x, y) + \delta(y, u) \quad \text{（非负权值保证 } \delta(y, u) \geq 0 \text{）}$$<br>$$= \delta(s, u) \quad \text{（最短路径的最优子结构）}$$</p>
+<p>因此 $d[y] \leq \delta(s, u) &lt; d[u]$（反证假设 $P$ 比 $d[u]$ 短）。但这与 $u$ 是 Extract-Min 选出的最小元素矛盾（$d[y] &lt; d[u]$，$y$ 应在 $u$ 之前被取出）。</p>
+<p>因此不存在更短的路径，即 $d[u] &#x3D; \delta(s, u)$。</p>
+<blockquote>
+<p>注意：此证明<strong>关键依赖于非负权值</strong>（$\delta(y, u) \geq 0$）。若存在负权边，该不等式不成立，贪心策略失效。</p>
+</blockquote>
+<hr>
+<h2 id="六、差分约束系统与-Bellman-Ford"><a href="#六、差分约束系统与-Bellman-Ford" class="headerlink" title="六、差分约束系统与 Bellman-Ford"></a>六、差分约束系统与 Bellman-Ford</h2><h3 id="6-1-问题转化"><a href="#6-1-问题转化" class="headerlink" title="6.1 问题转化"></a>6.1 问题转化</h3><p>差分约束系统是一组形如 $x_j - x_i \leq c_k$ 的不等式。这类问题可以转化为图论中的最短路径问题：</p>
+<p>将每个变量 $x_i$ 映射为图中的一个顶点。对每个约束 $x_j - x_i \leq c_k$，添加一条从 $i$ 到 $j$ 的边，权值为 $c_k$。</p>
+<p><strong>定理</strong>：差分约束系统有解当且仅当对应的约束图中不存在负权环。且一组可行解为 $x_i &#x3D; \delta(v_0, i)$，其中 $v_0$ 是新增的超级源点（通过权值为 0 的边连接所有顶点）。</p>
+<h3 id="6-2-应用场景"><a href="#6-2-应用场景" class="headerlink" title="6.2 应用场景"></a>6.2 应用场景</h3><ul>
+<li>任务调度中的时间约束</li>
+<li>VLSI 芯片设计中的布局约束</li>
+<li>编译器中指令调度的依赖约束</li>
+</ul>
+<hr>
+<h2 id="七、常见变体与扩展"><a href="#七、常见变体与扩展" class="headerlink" title="七、常见变体与扩展"></a>七、常见变体与扩展</h2><h3 id="7-1-所有结点对最短路径"><a href="#7-1-所有结点对最短路径" class="headerlink" title="7.1 所有结点对最短路径"></a>7.1 所有结点对最短路径</h3><p>当需要所有顶点对之间的最短距离时，可以：</p>
+<ul>
+<li>对每个顶点运行一次 Dijkstra：$O(V \cdot (V+E)\log V)$，适用于稀疏正权图</li>
+<li>Floyd-Warshall：$O(V^3)$，可处理负权边，基于 DP</li>
+<li>Johnson 算法：$O(V^2\log V + VE)$，先用 Bellman-Ford 做一次重赋权消除负权，再跑 $V$ 次 Dijkstra</li>
+</ul>
+<h3 id="7-2-A-搜索-——-启发式最短路径"><a href="#7-2-A-搜索-——-启发式最短路径" class="headerlink" title="7.2 A* 搜索 —— 启发式最短路径"></a>7.2 A* 搜索 —— 启发式最短路径</h3><p>A* 是 Dijkstra 的启发式扩展，使用估价函数 $f(v) &#x3D; g(v) + h(v)$。$g(v)$ 是从源点到 $v$ 的实际代价（同 Dijkstra 的 $d[v]$），$h(v)$ 是从 $v$ 到目标 $t$ 的<strong>启发式估计</strong>（heuristic）。</p>
+<p><strong>核心性质</strong>：若 $h(v)$ 是<strong>可采纳的（admissible）</strong>——即 $h(v)$ 永不高估从 $v$ 到 $t$ 的实际最短距离——则 A* 保证找到最优解。若 $h(v)$ 还满足<strong>一致性（consistent &#x2F; monotone）</strong>——即 $h(u) \leq w(u,v) + h(v)$——则每个顶点的最优距离被首次取出时就已确定（无需惰性删除）。</p>
+<p><strong>常用启发式函数</strong>：</p>
+<ul>
+<li><strong>网格地图（曼哈顿距离）</strong>：$h(v) &#x3D; |x_v - x_t| + |y_v - y_t|$。在四方向移动的网格图中，曼哈顿距离是可采纳的</li>
+<li><strong>路网导航（欧几里得距离）</strong>：$h(v) &#x3D; \sqrt{(x_v - x_t)^2 + (y_v - y_t)^2}$，在可以直线移动时是可采纳的</li>
+<li><strong>拼图问题</strong>：$h(v)$ &#x3D; 当前状态下不在位的方块数量，或所有方块到目标位置的曼哈顿距离之和</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// A* 搜索（网格地图，曼哈顿距离启发式）</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">astar</span><span class="params">(<span class="type">int</span>[][] grid, <span class="type">int</span> sr, <span class="type">int</span> sc, <span class="type">int</span> tr, <span class="type">int</span> tc)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> grid.length, n = grid[<span class="number">0</span>].length;</span><br><span class="line">    <span class="type">int</span>[][] dirs = &#123;&#123;-<span class="number">1</span>,<span class="number">0</span>&#125;,&#123;<span class="number">1</span>,<span class="number">0</span>&#125;,&#123;<span class="number">0</span>,-<span class="number">1</span>&#125;,&#123;<span class="number">0</span>,<span class="number">1</span>&#125;&#125;;</span><br><span class="line">    PriorityQueue&lt;<span class="type">int</span>[]&gt; pq = <span class="keyword">new</span> <span class="title class_">PriorityQueue</span>&lt;&gt;(</span><br><span class="line">        (a,b) -&gt; (a[<span class="number">2</span>]+a[<span class="number">3</span>]) - (b[<span class="number">2</span>]+b[<span class="number">3</span>])  <span class="comment">// 按 f = g + h 排序</span></span><br><span class="line">    );</span><br><span class="line">    <span class="type">int</span>[][] g = <span class="keyword">new</span> <span class="title class_">int</span>[m][n];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span>[] row : g) Arrays.fill(row, Integer.MAX_VALUE);</span><br><span class="line">    g[sr][sc] = <span class="number">0</span>;</span><br><span class="line">    pq.offer(<span class="keyword">new</span> <span class="title class_">int</span>[]&#123;sr, sc, <span class="number">0</span>, Math.abs(sr-tr) + Math.abs(sc-tc)&#125;); <span class="comment">// &#123;r, c, g, h&#125;</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">while</span> (!pq.isEmpty()) &#123;</span><br><span class="line">        <span class="type">int</span>[] cur = pq.poll();</span><br><span class="line">        <span class="type">int</span> <span class="variable">r</span> <span class="operator">=</span> cur[<span class="number">0</span>], c = cur[<span class="number">1</span>], gCost = cur[<span class="number">2</span>];</span><br><span class="line">        <span class="keyword">if</span> (r == tr &amp;&amp; c == tc) <span class="keyword">return</span> gCost;</span><br><span class="line">        <span class="keyword">if</span> (gCost &gt; g[r][c]) <span class="keyword">continue</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span>[] d : dirs) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">nr</span> <span class="operator">=</span> r + d[<span class="number">0</span>], nc = c + d[<span class="number">1</span>];</span><br><span class="line">            <span class="keyword">if</span> (nr &lt; <span class="number">0</span> || nr &gt;= m || nc &lt; <span class="number">0</span> || nc &gt;= n || grid[nr][nc] == <span class="number">1</span>) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="type">int</span> <span class="variable">ng</span> <span class="operator">=</span> gCost + <span class="number">1</span>;</span><br><span class="line">            <span class="keyword">if</span> (ng &lt; g[nr][nc]) &#123;</span><br><span class="line">                g[nr][nc] = ng;</span><br><span class="line">                <span class="type">int</span> <span class="variable">h</span> <span class="operator">=</span> Math.abs(nr-tr) + Math.abs(nc-tc);</span><br><span class="line">                pq.offer(<span class="keyword">new</span> <span class="title class_">int</span>[]&#123;nr, nc, ng, h&#125;);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><em><em>A</em> vs Dijkstra</em>*：</p>
+<ul>
+<li>若 $h(v) &#x3D; 0$ 对所有 $v$，A* 退化为 Dijkstra</li>
+<li>A* 的启发式越好（越接近真实距离），探索的顶点越少，速度越快</li>
+<li>在游戏 AI 路径寻找、机器人导航中，A* 是工业标准</li>
+<li>但 A* 每次只求解一个源点到一个目标的路径（而非全源最短路）</li>
+</ul>
+<h3 id="7-3-实际应用：GPS-导航与-OSM-路网"><a href="#7-3-实际应用：GPS-导航与-OSM-路网" class="headerlink" title="7.3 实际应用：GPS 导航与 OSM 路网"></a>7.3 实际应用：GPS 导航与 OSM 路网</h3><p>现代导航引擎（如 GraphHopper、OSRM、百度地图&#x2F;高德地图）中的最短路径计算通常包含以下优化：</p>
+<p><strong>分层技术（Contraction Hierarchies, CH）</strong>：对路网图进行预处理——按重要性收缩顶点，为每个收缩的顶点添加捷径（shortcut）边以保持最短距离不变。查询时只需在”重要”顶点上做双向 Dijkstra。预处理 O(V log V + E)，查询通常在微秒级别。</p>
+<p><strong>双向 A</strong><em>：从源点和目标同时运行 A</em>，使用对称的启发式函数。当两边的搜索前沿相遇时，通过已探索顶点重建路径。实际中约减少一半的搜索空间。</p>
+<p><strong>路网特点</strong>：路网图通常是稀疏的（顶点度 ≤ 6）、边权非负（距离&#x2F;时间）、存在隐式的层次结构（高速公路 &gt; 国道 &gt; 地方道路）。好的路由算法往往结合这些领域知识。</p>
+<h3 id="7-4-网络路由中的应用"><a href="#7-4-网络路由中的应用" class="headerlink" title="7.4 网络路由中的应用"></a>7.4 网络路由中的应用</h3><ul>
+<li><strong>OSPF（Open Shortest Path First）</strong>：内部网关协议，使用 Dijkstra 计算区域内最短路径树。每条链路的 cost &#x3D; 参考带宽 &#x2F; 链路带宽</li>
+<li><strong>IS-IS</strong>：使用 Dijkstra 的另一种链路状态协议，广泛用于运营商网络</li>
+<li><strong>BGP（Border Gateway Protocol）</strong>：路径矢量协议，在每个 AS 内部使用 Bellman-Ford 类似的方法，但通过 ASPath 防止环路（而非最大跳数）</li>
+</ul>
+<h3 id="7-5-双向-Dijkstra"><a href="#7-5-双向-Dijkstra" class="headerlink" title="7.5 双向 Dijkstra"></a>7.5 双向 Dijkstra</h3><p>从源点和目标同时运行 Dijkstra，当两个搜索前沿相遇时停止。将搜索空间减少约一半（$O(\sqrt{V})$ 级别），广泛用于实际的地图导航系统。</p>
+<hr>
+<h2 id="面试常考问题"><a href="#面试常考问题" class="headerlink" title="面试常考问题"></a>面试常考问题</h2><p><strong>Q1：为什么 Dijkstra 不能处理负权边？给出反例并解释根本原因。</strong></p>
+<p>Dijkstra 的贪心策略基于”一旦顶点从优先队列中取出，其距离就不可能再被改善”。这个前提依赖非负权值。反例：$s \to u(w&#x3D;2), s \to v(w&#x3D;4), u \to v(w&#x3D;-3)$。Dijkstra 先以距离 2 取出 $u$，再以距离 4 取出 $v$ 并标记确定。但随后松弛 $(u, v)$ 发现到 $v$ 更短的路径 $2+(-3)&#x3D;-1$，而此时 $v$ 已被错误确定。根本原因：负权边意味着”绕远路可能更短”，违反了贪心选择的前提。</p>
+<p><strong>Q2：Bellman-Ford 为什么需要恰好 $|V|-1$ 轮？</strong></p>
+<p>不含环的简单路径最多包含 $|V|-1$ 条边。第 $k$ 轮松弛保证所有不超过 $k$ 条边的最短路径被正确计算。如果存在包含 $|V|$ 条边的”更短”路径，该路径必然含有环，且环权和必须为负（否则去掉环不会更长）。第 $|V|$ 轮还能松弛意味着存在负权环。</p>
+<p><strong>Q3：什么场景下应该选 SPFA 而非 Dijkstra 或 Bellman-Ford？</strong></p>
+<p>SPFA 的实际意义非常有限。正权图一定用 Dijkstra（稳定性保证，且现代 CPU 上堆操作很快）。需要检测负环时 Bellman-Ford 的可预测性更好。SPFA 仅在特定场景——如图的边权动态变化需要增量更新（费用流算法的内部循环）、或大量松弛无效时 SPFA 的队列优化优势明显——才有使用价值。面试中明确说”优先 Dijkstra，必要负权选 Bellman-Ford”即可。</p>
+<p><strong>Q4：如何从 dist[] 和 prev[] 数组重建最短路径？</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">List&lt;Integer&gt; path = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> <span class="variable">v</span> <span class="operator">=</span> target; v != -<span class="number">1</span>; v = prev[v]) &#123;</span><br><span class="line">    path.add(v);</span><br><span class="line">&#125;</span><br><span class="line">Collections.reverse(path);</span><br></pre></td></tr></table></figure>
+
+<p>如果 <code>prev[target] == -1</code> 且 <code>target != s</code>，说明不存在从源点到目标的路径。路径的边数 &#x3D; path.size() - 1。</p>
+<p><strong>Q5：Dijkstra 用斐波那契堆理论上更优，为什么实际中几乎不用？</strong></p>
+<p>斐波那契堆的 Decrease-Key 是 $O(1)$ 均摊，但常数因子极大（维护级联剪切、标记位等）。在实际图规模下（$V$ 在 $10^3 \sim 10^6$ 级），二叉堆的 $O(\log V)$ 足够快，且二叉堆的内存局部性好、实现简单。此外，很多 Dijkstra 实现使用惰性删除（不实现 Decrease-Key），此时斐波那契堆的优势完全丧失。工业界（如 OSRM、GraphHopper 等路由引擎）几乎一致使用二叉堆或其变种。</p>
+<p><em><em>Q6：A</em> 算法在什么情况下会退化？启发式函数如何影响性能？</em>*</p>
+<p>A* 的性能完全取决于启发式函数的”准确性”。设 $h^*(v)$ 为从 v 到目标的真实最短距离：</p>
+<ul>
+<li>若 $h(v) &#x3D; 0$：退化回 Dijkstra，搜索空间 &#x3D; 球（以源点为中心）</li>
+<li>若 $h(v) \leq h^*(v)$（可采纳）：保证最优解，$h(v)$ 越接近 $h^*(v)$ 越高效，搜索空间越窄</li>
+<li>若 $h(v) &gt; h^*(v)$（不可采纳）：搜索更快但可能错过最优解</li>
+<li>若 $h(v) &#x3D; h^*(v)$（完美启发式）：只探索最短路径上的顶点——但计算 $h^*(v)$ 本身就是解决问题</li>
+</ul>
+<p>实际工程中，常用预处理（如 Landmarks &#x2F; ALT 算法）来计算更紧的启发式下界。</p>
+<p><strong>Q7：SPFA 算法为什么在国内 OI 圈流行，但在工业界基本被弃用？</strong></p>
+<p>历史原因：(1) SPFA 实现简单、代码短，对随机数据表现好；(2) 早期竞赛题目的测试数据弱，SPFA 轻松通过。但 2018 年起，多个知名竞赛平台（Codeforces、NOI）开始大量构造”卡 SPFA”的数据（网格图 + 特殊边权），使 SPFA 退化到 O(VE)。工业界对稳定性的要求远高于竞赛——任何”可能被特殊输入卡掉”的算法都是风险。因此工业界正权图统一用 Dijkstra，需要负权时用 Bellman-Ford 并设置迭代上限。</p>
+<p><strong>Q8：如何在分布式系统中做单源最短路径？</strong></p>
+<ul>
+<li><strong>距离矢量路由（Distance Vector）</strong>：每个节点只维护到所有目标的最短距离，定期向邻居通告自己的距离表。本质是分布式 Bellman-Ford。BGP 使用此方法（但引入了 ASPath 防止环路）</li>
+<li><strong>链路状态路由（Link State）</strong>：每个节点通过 flooding 获取完整拓扑，然后本地独立运行 Dijkstra。OSPF 和 IS-IS 使用此方法</li>
+<li><strong>当前研究方向</strong>：大规模数据中心网络中的源路由 + 集中式控制器（如 SDN 中的 P4 可编程路由）</li>
+</ul>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%9B%BE%E7%AE%97%E6%B3%95/">图算法    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286825.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2019/08/18/%E3%80%90%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%E4%BD%93%E7%B3%BB%E3%80%91%E4%B9%8B%E5%9B%BE%E7%AE%97%E6%B3%95%EF%BC%88%E5%9B%9B%EF%BC%89-%E6%89%80%E6%9C%89%E7%BB%93%E7%82%B9%E5%AF%B9%E7%9A%84%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84%E9%97%AE%E9%A2%98/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286773.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【数据结构与算法体系】之图算法（四）-所有结点对的最短路径问题</span></div></a></div><div class="next-post pull_right"><a href="/2019/08/18/%E3%80%90%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%E4%BD%93%E7%B3%BB%E3%80%91%E4%B9%8B%E5%9B%BE%E7%AE%97%E6%B3%95%EF%BC%88%E4%BA%8C%EF%BC%89-%E6%9C%80%E5%B0%8F%E7%94%9F%E6%88%90%E6%A0%91/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286826.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【数据结构与算法体系】之图算法（二）-最小生成树</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2019/08/18/【数据结构与算法体系】之图算法（五）-最大流/" title="【数据结构与算法体系】之图算法（五）-最大流"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286820.jpg"><div class="relatedPosts_title">【数据结构与算法体系】之图算法（五）-最大流</div></a></div><div class="relatedPosts_item"><a href="/2019/08/18/【数据结构与算法体系】之图算法（四）-所有结点对的最短路径问题/" title="【数据结构与算法体系】之图算法（四）-所有结点对的最短路径问题"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286773.jpg"><div class="relatedPosts_title">【数据结构与算法体系】之图算法（四）-所有结点对的最短路径问题</div></a></div><div class="relatedPosts_item"><a href="/2019/08/18/【数据结构与算法体系】之图算法（二）-最小生成树/" title="【数据结构与算法体系】之图算法（二）-最小生成树"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286826.jpg"><div class="relatedPosts_title">【数据结构与算法体系】之图算法（二）-最小生成树</div></a></div><div class="relatedPosts_item"><a href="/2019/08/18/【数据结构与算法体系】之图算法（一）-基本篇/" title="【数据结构与算法体系】之图算法（一）-基本篇"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286824.jpg"><div class="relatedPosts_title">【数据结构与算法体系】之图算法（一）-基本篇</div></a></div><div class="relatedPosts_item"><a href="/2019/08/18/【数据结构与算法体系】不相交集数据结构/" title="【数据结构与算法体系】不相交集数据结构"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/276684.jpg"><div class="relatedPosts_title">【数据结构与算法体系】不相交集数据结构</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286825.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

@@ -1,0 +1,423 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>系统设计之分布式计算系统 - Map Reduce的原理与应用 | ONE·PIECE</title><meta name="description" content="系统设计之分布式计算系统 - Map Reduce的原理与应用"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="系统设计之分布式计算系统 - Map Reduce的原理与应用"><meta name="twitter:description" content="系统设计之分布式计算系统 - Map Reduce的原理与应用"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="系统设计之分布式计算系统 - Map Reduce的原理与应用"><meta property="og:url" content="http://tufusi.com/2021/11/25/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%A1%E7%AE%97%E7%B3%BB%E7%BB%9F/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="系统设计之分布式计算系统 - Map Reduce的原理与应用"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2021/11/25/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%A1%E7%AE%97%E7%B3%BB%E7%BB%9F/"><link rel="prev" title="系统设计之基于地理位置信息的系统设计" href="http://tufusi.com/2021/12/01/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%9F%BA%E4%BA%8E%E5%9C%B0%E7%90%86%E4%BD%8D%E7%BD%AE%E4%BF%A1%E6%81%AF%E7%9A%84%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/"><link rel="next" title="系统设计之爬虫系统与搜索建议系统" href="http://tufusi.com/2021/11/20/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E7%88%AC%E8%99%AB%E7%B3%BB%E7%BB%9F%E4%B8%8E%E6%90%9C%E7%B4%A2%E5%BB%BA%E8%AE%AE%E7%B3%BB%E7%BB%9F/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%A1%E7%AE%97"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、为什么需要分布式计算</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%A1%E7%AE%97%E7%9A%84%E6%9C%AC%E8%B4%A8%E7%BA%A6%E6%9D%9F"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">分布式计算的本质约束</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81MapReduce%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、MapReduce编程模型</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#MapReduce%E7%9A%84%E7%89%A9%E7%90%86%E6%89%A7%E8%A1%8C%E7%A4%BA%E6%84%8F%E5%9B%BE"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">MapReduce的物理执行示意图</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Map%E6%95%B0%E9%87%8F%E4%B8%8EReduce%E6%95%B0%E9%87%8F%E7%9A%84%E9%80%89%E6%8B%A9"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">Map数量与Reduce数量的选择</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81Shuffle%E7%9A%84%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、Shuffle的深入解析</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Shuffle%E9%98%B6%E6%AE%B5%E7%BD%91%E7%BB%9C%E5%BC%80%E9%94%80%E7%9A%84%E5%AE%9A%E9%87%8F%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">Shuffle阶段网络开销的定量分析</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Combiner%E7%9A%84%E9%80%82%E7%94%A8%E8%8C%83%E5%9B%B4%E4%B8%8E%E9%99%90%E5%88%B6"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">Combiner的适用范围与限制</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E5%AE%B9%E9%94%99%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、容错机制</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%95%85%E9%9A%9C%E6%A6%82%E7%8E%87%E7%9A%84%E5%AE%9A%E9%87%8F%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">故障概率的定量分析</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%8E%A8%E6%B5%8B%E6%89%A7%E8%A1%8C%E7%9A%84%E9%80%82%E7%94%A8%E6%80%A7%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">推测执行的适用性分析</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81Spark%E5%AF%B9MapReduce%E7%9A%84%E8%B6%85%E8%B6%8A"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、Spark对MapReduce的超越</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#RDD%E5%AE%BD%E7%AA%84%E4%BE%9D%E8%B5%96%E7%9A%84%E6%B7%B1%E5%BA%A6%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">RDD宽窄依赖的深度分析</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Spark-SQL%E4%B8%8ECatalyst%E4%BC%98%E5%8C%96%E5%99%A8"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">Spark SQL与Catalyst优化器</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E5%88%86%E5%B8%83%E5%BC%8F%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、分布式文件系统的设计原则</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%95%B0%E6%8D%AE%E6%9C%AC%E5%9C%B0%E6%80%A7%E7%9A%84%E4%B8%89%E7%BA%A7%E4%BC%98%E5%8C%96"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">数据本地性的三级优化</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E7%8E%B0%E4%BB%A3%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%A1%E7%AE%97%E7%94%9F%E6%80%81"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、现代分布式计算生态</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Flink-vs-Spark-Streaming-vs-Storm-%E7%9A%84%E6%A0%B8%E5%BF%83%E5%B7%AE%E5%BC%82"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">Flink vs Spark Streaming vs Storm 的核心差异</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Lakehouse%E6%9E%B6%E6%9E%84%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">Lakehouse架构的核心思想</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%A1%E7%AE%97%E7%9A%84%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、分布式计算的性能调优</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%95%B0%E6%8D%AE%E5%80%BE%E6%96%9C%E7%9A%84%E5%A4%84%E7%90%86"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">数据倾斜的处理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%B0%8F%E6%96%87%E4%BB%B6%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">小文件问题</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81Flink%E7%9A%84Exactly-Once%E8%AF%AD%E4%B9%89%E4%B8%8E%E6%9C%89%E7%8A%B6%E6%80%81%E6%B5%81%E5%A4%84%E7%90%86"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、Flink的Exactly-Once语义与有状态流处理</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Checkpoint%E4%B8%8E%E5%88%86%E5%B8%83%E5%BC%8F%E5%BF%AB%E7%85%A7"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">Checkpoint与分布式快照</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Watermark%E4%B8%8E%E4%BA%8B%E4%BB%B6%E6%97%B6%E9%97%B4%E5%A4%84%E7%90%86"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">Watermark与事件时间处理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%9C%89%E7%8A%B6%E6%80%81%E7%AE%97%E5%AD%90%E7%9A%84%E6%95%85%E9%9A%9C%E6%81%A2%E5%A4%8D"><span class="toc_mobile_items-number">9.3.</span> <span class="toc_mobile_items-text">有状态算子的故障恢复</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Savepoint%E4%B8%8E%E7%8A%B6%E6%80%81%E6%BC%94%E8%BF%9B"><span class="toc_mobile_items-number">9.4.</span> <span class="toc_mobile_items-text">Savepoint与状态演进</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%A7%81%E8%BF%BD%E9%97%AE"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">十、面试常见追问</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81%E5%88%86%E5%B8%83%E5%BC%8FJoin%E7%AE%97%E6%B3%95%E7%9A%84%E6%B7%B1%E5%BA%A6%E5%89%96%E6%9E%90"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">十、分布式Join算法的深度剖析</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Broadcast-Hash-Join%EF%BC%88%E5%B9%BF%E6%92%AD%E5%93%88%E5%B8%8C%E8%BF%9E%E6%8E%A5%EF%BC%89"><span class="toc_mobile_items-number">11.1.</span> <span class="toc_mobile_items-text">Broadcast Hash Join（广播哈希连接）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Sort-Merge-Join%EF%BC%88%E6%8E%92%E5%BA%8F%E5%90%88%E5%B9%B6%E8%BF%9E%E6%8E%A5%EF%BC%89"><span class="toc_mobile_items-number">11.2.</span> <span class="toc_mobile_items-text">Sort Merge Join（排序合并连接）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Shuffle-Hash-Join%EF%BC%88%E6%B7%B7%E6%B4%97%E5%93%88%E5%B8%8C%E8%BF%9E%E6%8E%A5%EF%BC%89"><span class="toc_mobile_items-number">11.3.</span> <span class="toc_mobile_items-text">Shuffle Hash Join（混洗哈希连接）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%95%B0%E6%8D%AE%E5%80%BE%E6%96%9C%E5%AF%B9Join%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="toc_mobile_items-number">11.4.</span> <span class="toc_mobile_items-text">数据倾斜对Join的影响</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E7%8E%B0%E4%BB%A3%E6%B5%81%E5%A4%84%E7%90%86%EF%BC%9A%E4%BA%8B%E4%BB%B6%E6%97%B6%E9%97%B4%E4%B8%8E%E5%A4%84%E7%90%86%E6%97%B6%E9%97%B4"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">十一、现代流处理：事件时间与处理时间</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E4%BA%8B%E4%BB%B6%E6%97%B6%E9%97%B4"><span class="toc_mobile_items-number">12.1.</span> <span class="toc_mobile_items-text">为什么需要事件时间</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E4%B8%89%E7%A7%8D%E7%AA%97%E5%8F%A3%E7%B1%BB%E5%9E%8B"><span class="toc_mobile_items-number">12.2.</span> <span class="toc_mobile_items-text">三种窗口类型</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%89%A9%E5%B1%95%E9%98%85%E8%AF%BB%EF%BC%9AMapReduce%E8%AE%BA%E6%96%87%E7%9A%84%E6%8C%81%E4%B9%85%E5%BD%B1%E5%93%8D%E4%B8%8E%E5%8F%8D%E6%80%9D"><span class="toc_mobile_items-number">12.3.</span> <span class="toc_mobile_items-text">扩展阅读：MapReduce论文的持久影响与反思</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%A1%E7%AE%97%E9%9D%A2%E8%AF%95%E4%B8%AD%E7%9A%84%E5%85%B3%E9%94%AE%E8%AE%A8%E8%AE%BA%E6%A1%86%E6%9E%B6"><span class="toc_mobile_items-number">12.4.</span> <span class="toc_mobile_items-text">分布式计算面试中的关键讨论框架</span></a></li></ol></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%A1%E7%AE%97"><span class="toc-number">1.</span> <span class="toc-text">一、为什么需要分布式计算</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%A1%E7%AE%97%E7%9A%84%E6%9C%AC%E8%B4%A8%E7%BA%A6%E6%9D%9F"><span class="toc-number">1.1.</span> <span class="toc-text">分布式计算的本质约束</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81MapReduce%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B"><span class="toc-number">2.</span> <span class="toc-text">二、MapReduce编程模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#MapReduce%E7%9A%84%E7%89%A9%E7%90%86%E6%89%A7%E8%A1%8C%E7%A4%BA%E6%84%8F%E5%9B%BE"><span class="toc-number">2.1.</span> <span class="toc-text">MapReduce的物理执行示意图</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Map%E6%95%B0%E9%87%8F%E4%B8%8EReduce%E6%95%B0%E9%87%8F%E7%9A%84%E9%80%89%E6%8B%A9"><span class="toc-number">2.2.</span> <span class="toc-text">Map数量与Reduce数量的选择</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Shuffle%E7%9A%84%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90"><span class="toc-number">3.</span> <span class="toc-text">三、Shuffle的深入解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Shuffle%E9%98%B6%E6%AE%B5%E7%BD%91%E7%BB%9C%E5%BC%80%E9%94%80%E7%9A%84%E5%AE%9A%E9%87%8F%E5%88%86%E6%9E%90"><span class="toc-number">3.1.</span> <span class="toc-text">Shuffle阶段网络开销的定量分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Combiner%E7%9A%84%E9%80%82%E7%94%A8%E8%8C%83%E5%9B%B4%E4%B8%8E%E9%99%90%E5%88%B6"><span class="toc-number">3.2.</span> <span class="toc-text">Combiner的适用范围与限制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%AE%B9%E9%94%99%E6%9C%BA%E5%88%B6"><span class="toc-number">4.</span> <span class="toc-text">四、容错机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%85%E9%9A%9C%E6%A6%82%E7%8E%87%E7%9A%84%E5%AE%9A%E9%87%8F%E5%88%86%E6%9E%90"><span class="toc-number">4.1.</span> <span class="toc-text">故障概率的定量分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A8%E6%B5%8B%E6%89%A7%E8%A1%8C%E7%9A%84%E9%80%82%E7%94%A8%E6%80%A7%E5%88%86%E6%9E%90"><span class="toc-number">4.2.</span> <span class="toc-text">推测执行的适用性分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Spark%E5%AF%B9MapReduce%E7%9A%84%E8%B6%85%E8%B6%8A"><span class="toc-number">5.</span> <span class="toc-text">五、Spark对MapReduce的超越</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RDD%E5%AE%BD%E7%AA%84%E4%BE%9D%E8%B5%96%E7%9A%84%E6%B7%B1%E5%BA%A6%E5%88%86%E6%9E%90"><span class="toc-number">5.1.</span> <span class="toc-text">RDD宽窄依赖的深度分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Spark-SQL%E4%B8%8ECatalyst%E4%BC%98%E5%8C%96%E5%99%A8"><span class="toc-number">5.2.</span> <span class="toc-text">Spark SQL与Catalyst优化器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%88%86%E5%B8%83%E5%BC%8F%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="toc-number">6.</span> <span class="toc-text">六、分布式文件系统的设计原则</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E6%9C%AC%E5%9C%B0%E6%80%A7%E7%9A%84%E4%B8%89%E7%BA%A7%E4%BC%98%E5%8C%96"><span class="toc-number">6.1.</span> <span class="toc-text">数据本地性的三级优化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E7%8E%B0%E4%BB%A3%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%A1%E7%AE%97%E7%94%9F%E6%80%81"><span class="toc-number">7.</span> <span class="toc-text">七、现代分布式计算生态</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Flink-vs-Spark-Streaming-vs-Storm-%E7%9A%84%E6%A0%B8%E5%BF%83%E5%B7%AE%E5%BC%82"><span class="toc-number">7.1.</span> <span class="toc-text">Flink vs Spark Streaming vs Storm 的核心差异</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Lakehouse%E6%9E%B6%E6%9E%84%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">7.2.</span> <span class="toc-text">Lakehouse架构的核心思想</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%A1%E7%AE%97%E7%9A%84%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98"><span class="toc-number">8.</span> <span class="toc-text">八、分布式计算的性能调优</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%80%BE%E6%96%9C%E7%9A%84%E5%A4%84%E7%90%86"><span class="toc-number">8.1.</span> <span class="toc-text">数据倾斜的处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%8F%E6%96%87%E4%BB%B6%E9%97%AE%E9%A2%98"><span class="toc-number">8.2.</span> <span class="toc-text">小文件问题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81Flink%E7%9A%84Exactly-Once%E8%AF%AD%E4%B9%89%E4%B8%8E%E6%9C%89%E7%8A%B6%E6%80%81%E6%B5%81%E5%A4%84%E7%90%86"><span class="toc-number">9.</span> <span class="toc-text">九、Flink的Exactly-Once语义与有状态流处理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Checkpoint%E4%B8%8E%E5%88%86%E5%B8%83%E5%BC%8F%E5%BF%AB%E7%85%A7"><span class="toc-number">9.1.</span> <span class="toc-text">Checkpoint与分布式快照</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Watermark%E4%B8%8E%E4%BA%8B%E4%BB%B6%E6%97%B6%E9%97%B4%E5%A4%84%E7%90%86"><span class="toc-number">9.2.</span> <span class="toc-text">Watermark与事件时间处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%89%E7%8A%B6%E6%80%81%E7%AE%97%E5%AD%90%E7%9A%84%E6%95%85%E9%9A%9C%E6%81%A2%E5%A4%8D"><span class="toc-number">9.3.</span> <span class="toc-text">有状态算子的故障恢复</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Savepoint%E4%B8%8E%E7%8A%B6%E6%80%81%E6%BC%94%E8%BF%9B"><span class="toc-number">9.4.</span> <span class="toc-text">Savepoint与状态演进</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%A7%81%E8%BF%BD%E9%97%AE"><span class="toc-number">10.</span> <span class="toc-text">十、面试常见追问</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E5%88%86%E5%B8%83%E5%BC%8FJoin%E7%AE%97%E6%B3%95%E7%9A%84%E6%B7%B1%E5%BA%A6%E5%89%96%E6%9E%90"><span class="toc-number">11.</span> <span class="toc-text">十、分布式Join算法的深度剖析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Broadcast-Hash-Join%EF%BC%88%E5%B9%BF%E6%92%AD%E5%93%88%E5%B8%8C%E8%BF%9E%E6%8E%A5%EF%BC%89"><span class="toc-number">11.1.</span> <span class="toc-text">Broadcast Hash Join（广播哈希连接）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Sort-Merge-Join%EF%BC%88%E6%8E%92%E5%BA%8F%E5%90%88%E5%B9%B6%E8%BF%9E%E6%8E%A5%EF%BC%89"><span class="toc-number">11.2.</span> <span class="toc-text">Sort Merge Join（排序合并连接）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Shuffle-Hash-Join%EF%BC%88%E6%B7%B7%E6%B4%97%E5%93%88%E5%B8%8C%E8%BF%9E%E6%8E%A5%EF%BC%89"><span class="toc-number">11.3.</span> <span class="toc-text">Shuffle Hash Join（混洗哈希连接）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%80%BE%E6%96%9C%E5%AF%B9Join%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="toc-number">11.4.</span> <span class="toc-text">数据倾斜对Join的影响</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E7%8E%B0%E4%BB%A3%E6%B5%81%E5%A4%84%E7%90%86%EF%BC%9A%E4%BA%8B%E4%BB%B6%E6%97%B6%E9%97%B4%E4%B8%8E%E5%A4%84%E7%90%86%E6%97%B6%E9%97%B4"><span class="toc-number">12.</span> <span class="toc-text">十一、现代流处理：事件时间与处理时间</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E4%BA%8B%E4%BB%B6%E6%97%B6%E9%97%B4"><span class="toc-number">12.1.</span> <span class="toc-text">为什么需要事件时间</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E7%A7%8D%E7%AA%97%E5%8F%A3%E7%B1%BB%E5%9E%8B"><span class="toc-number">12.2.</span> <span class="toc-text">三种窗口类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A9%E5%B1%95%E9%98%85%E8%AF%BB%EF%BC%9AMapReduce%E8%AE%BA%E6%96%87%E7%9A%84%E6%8C%81%E4%B9%85%E5%BD%B1%E5%93%8D%E4%B8%8E%E5%8F%8D%E6%80%9D"><span class="toc-number">12.3.</span> <span class="toc-text">扩展阅读：MapReduce论文的持久影响与反思</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%A1%E7%AE%97%E9%9D%A2%E8%AF%95%E4%B8%AD%E7%9A%84%E5%85%B3%E9%94%AE%E8%AE%A8%E8%AE%BA%E6%A1%86%E6%9E%B6"><span class="toc-number">12.4.</span> <span class="toc-text">分布式计算面试中的关键讨论框架</span></a></li></ol></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">系统设计之分布式计算系统 - Map Reduce的原理与应用</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-11-25<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">系统设计</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">9.8k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 31 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、为什么需要分布式计算"><a href="#一、为什么需要分布式计算" class="headerlink" title="一、为什么需要分布式计算"></a>一、为什么需要分布式计算</h2><p>在单机计算能力达到物理极限后，横向扩展（Scale Out）成为处理海量数据的唯一选择。试想一下，如果要对一PB（1024 TB）的日志数据做一次全文检索或聚合统计，即使使用最快的NVMe SSD（顺序读取速度约3GB&#x2F;s），单机扫描一遍也需要约97个小时。但如果将数据分片到1000台机器上，每台处理1TB，理论上不到2分钟就能完成（忽略调度和通信开销）。这就是分布式计算的核心思想——<strong>分而治之</strong>，将大问题分解为小问题，分发到多个计算节点并行处理，最后归并结果。</p>
+<p>分布式计算模型需要解决几个核心挑战。第一，<strong>并行化</strong>：如何将计算任务自然地拆分为可并行的子任务。第二，<strong>数据分布</strong>：如何将数据均匀地分布到计算节点，使得计算尽可能在数据所在节点进行（数据本地性）。第三，<strong>容错</strong>：在由数千台廉价PC组成的集群中，硬件故障是常态而非例外——硬盘每天都有可能有损坏、网络偶尔会断连、内存偶尔会出错（比特翻转）。分布式计算框架必须优雅地处理这些故障。第四，<strong>负载均衡</strong>：避免某些节点成为”慢节点”（Straggler）从而拖慢整个作业。</p>
+<h3 id="分布式计算的本质约束"><a href="#分布式计算的本质约束" class="headerlink" title="分布式计算的本质约束"></a>分布式计算的本质约束</h3><p>在深入讨论具体框架前，理解分布式计算的几个本质约束至关重要：</p>
+<p><strong>Amdahl定律</strong>：程序的加速比受限于串行部分的比例。如果5%的计算无法并行化，理论最大加速比为20倍（1&#x2F;0.05），无论增加多少台机器。这要求分布式计算尽可能减少集中式的协调和全局Barrier。</p>
+<p><strong>数据局部性</strong>：在数据中心中，跨机架网络带宽通常是机架内带宽的1&#x2F;5到1&#x2F;10，而磁盘I&#x2F;O带宽又是网络带宽的数值。因此，移动计算到数据（而非移动数据到计算）是最核心的优化策略。</p>
+<p><strong>CAP定理的投影</strong>：在分布式计算中，面对的是P（网络分区）必须容忍的环境，C（一致性）和A（可用性）需要权衡。MapReduce选择的是对A的偏向——宁可重试失败任务，也不在运行时维护全局一致性。</p>
+<h2 id="二、MapReduce编程模型"><a href="#二、MapReduce编程模型" class="headerlink" title="二、MapReduce编程模型"></a>二、MapReduce编程模型</h2><p>MapReduce是Google在2004年提出的分布式计算模型，其简洁优雅的设计影响了整整一代大数据处理框架。</p>
+<p>MapReduce将计算过程抽象为两个阶段：<strong>Map阶段</strong>和<strong>Reduce阶段</strong>，中间通过<strong>Shuffle（混洗）</strong>连接。用户只需实现<code>map()</code>和<code>reduce()</code>两个函数，框架负责分布式调度、数据分区、容错等底层细节。</p>
+<p>Map函数的签名是：<code>map(key1, value1) -&gt; list(key2, value2)</code>。对输入的每条记录，生成零个或多个中间键值对。例如，单词计数程序的Map函数接收文档名和文档内容，输出<code>&lt;单词, 1&gt;</code>的中间对。</p>
+<p>Reduce函数的签名是：<code>reduce(key2, list(value2)) -&gt; list(key3, value3)</code>。对Map阶段产出的每个中间键，将其所有关联的值聚合。例如，Reduce函数接收单词和该单词所有计数的列表<code>[1, 1, 1, ...]</code>，求和得到单词的总出现次数。</p>
+<p>以单词计数（Word Count）为例：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Map函数</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">map</span><span class="params">(String docName, String content)</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (String word : content.split(<span class="string">&quot;\\s+&quot;</span>)) &#123;</span><br><span class="line">        emit(word, <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Reduce函数</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">reduce</span><span class="params">(String word, List&lt;Integer&gt; counts)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">sum</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> count : counts) &#123;</span><br><span class="line">        sum += count;</span><br><span class="line">    &#125;</span><br><span class="line">    emit(word, sum);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在MapReduce的物理执行层面，整个过程细分为以下阶段：</p>
+<p><strong>输入分片（Input Split）</strong>：输入数据被切分为固定大小的Split（通常64MB到256MB，与底层文件系统的块大小对齐）。GFS的默认块大小是64MB，每个Split对应一个Map任务。</p>
+<p><strong>Map执行</strong>：Master将Map任务调度到尽可能靠近数据所在ChunkServer的Worker节点上执行（数据本地性优化）。Map任务读取输入Split，调用用户定义的map函数，产生的中间键值对先写入内存缓冲区，缓冲区满后按照Reduce任务数量进行分区（默认使用<code>hash(key) % R</code>进行分区），并写入本地磁盘。</p>
+<p><strong>Shuffle与排序</strong>：当Map任务完成一定比例后，Reduce任务开始通过HTTP从各个Map任务的本地磁盘拉取属于自己分区的中间数据。由于Map任务和Reduce任务可能分布在不同的物理节点上，这个阶段涉及大量的网络传输。Reduce任务接收数据后，对所有中间键进行归并排序（外排序），使得相同键的数据聚集在一起。</p>
+<p><strong>Reduce执行</strong>：Reduce任务对排序后的数据进行迭代，对每个唯一的中间键调用用户定义的reduce函数。Reduce的输出直接写入GFS（通常每个Reduce任务产生一个输出文件）。</p>
+<p><strong>Output</strong>：所有Reduce任务完成后，作业输出为R个文件（R为Reduce任务数量），存储在分布式文件系统中。</p>
+<h3 id="MapReduce的物理执行示意图"><a href="#MapReduce的物理执行示意图" class="headerlink" title="MapReduce的物理执行示意图"></a>MapReduce的物理执行示意图</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">输入文件 (GFS)                    中间数据 (本地磁盘)            输出文件 (GFS)</span><br><span class="line">┌─────────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐</span><br><span class="line">│ Split 0     │───▶│ Map Task │───▶│ Partition│    │          │</span><br><span class="line">│ (64MB)      │    │ (Worker1)│    │ 0, 1, 2  │    │          │</span><br><span class="line">└─────────────┘    └──────────┘    └────┬─────┘    │          │</span><br><span class="line">                                       │ Shuffle   │          │</span><br><span class="line">┌─────────────┐    ┌──────────┐    ┌───┴──────┐   │          │</span><br><span class="line">│ Split 1     │───▶│ Map Task │───▶│ Partition│   │ Reduce   │──▶ output-0</span><br><span class="line">│ (64MB)      │    │ (Worker2)│    │ 0, 1, 2  │   │ Task 0   │</span><br><span class="line">└─────────────┘    └──────────┘    └────┬─────┘   │          │</span><br><span class="line">                                       │          │          │</span><br><span class="line">┌─────────────┐    ┌──────────┐    ┌───┴──────┐   │ Reduce   │──▶ output-1</span><br><span class="line">│ Split 2     │───▶│ Map Task │───▶│ Partition│   │ Task 1   │</span><br><span class="line">│ (64MB)      │    │ (Worker3)│    │ 0, 1, 2  │   │          │</span><br><span class="line">└─────────────┘    └──────────┘    └──────────┘   │ Reduce   │──▶ output-2</span><br><span class="line">                                                   │ Task 2   │</span><br><span class="line">                                                   └──────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="Map数量与Reduce数量的选择"><a href="#Map数量与Reduce数量的选择" class="headerlink" title="Map数量与Reduce数量的选择"></a>Map数量与Reduce数量的选择</h3><p>Map任务数量通常由输入数据大小除以Split大小确定。Split大小过小导致Map任务过多（调度开销大），过大导致并行度不足。Hadoop的默认Split大小等于HDFS块大小（通常128MB到256MB）。</p>
+<p>Reduce任务数量由用户指定。太少：无法充分利用集群并行度；单个Reduce处理的数据量过大，内存压力大。太多：输出文件过多（小文件问题），给后续处理带来负担。经验法则是：Reduce数量设在Map数量的1&#x2F;10到1&#x2F;2之间。对于聚合型作业，Reduce数量 &#x3D; 数据节点数 × 0.95到1.75；对于数据倾斜严重的作业，可能需要更大的Reduce数量并使用Combiner。</p>
+<h2 id="三、Shuffle的深入解析"><a href="#三、Shuffle的深入解析" class="headerlink" title="三、Shuffle的深入解析"></a>三、Shuffle的深入解析</h2><p>Shuffle是MapReduce中最核心也最复杂的阶段，对数以千计的节点的计算性能有决定性影响。</p>
+<p>Map端Shuffle的过程：Map函数产生的输出首先写入一个环形的内存缓冲区（默认100MB，可通过<code>io.sort.mb</code>配置）。当缓冲区达到阈值（默认80%），启动溢写（Spill）线程将数据写入本地磁盘。写入前，溢写线程根据Reduce任务数量R对数据进行分区（Partition），并在每个分区内按键进行排序（Sort）。如果用户定义了Combiner（合并器），排序后对相同键的值进行局部合并。例如，在一个Map任务内，单词”hello”可能出现了50次，Combiner将其合并为<code>&lt;&quot;hello&quot;, 50&gt;</code>而不是发送50个<code>&lt;&quot;hello&quot;, 1&gt;</code>，大幅减少了需要传输的数据量。这种优化在单词计数这种具有可结合（Associative）和可交换（Commutative）性质的聚合中非常有效。</p>
+<p>Reduce端Shuffle的过程：Reduce任务从每个已完成的Map任务处拉取（Copy）属于自己分区的数据。由于Reduce可能从数百甚至上千个Map任务处拉取数据，需要多线程并发拉取（默认5个并发线程）。拉取过来的数据块先放入内存缓冲区，当内存不足时溢写到磁盘。所有数据拉取完成后，进行归并排序（Merge Sort）——将多个已排序的文件和内存中的数据归并为一个全局有序的数据流。这个阶段被称为”Sort”阶段（虽然在早期Copy阶段就已经开始溢写和预排序）。</p>
+<p>当Map任务数量非常大（如10000个）时，Reduce端需要打开大量的HTTP连接并维持大量的归并文件句柄，可能导致文件描述符耗尽。Hadoop中通过设置<code>io.sort.factor</code>参数控制一次归并的最大文件数，分批次归并（多路归并的多轮执行）。</p>
+<p>Shuffle的大量数据在网络上传输，是MapReduce作业中最容易成为瓶颈的阶段。优化的关键手段包括：合理设置Reduce任务数（太少无法充分利用并行度，太多会产生过多小文件）；启用Combiner减少Map输出；使用压缩减少网络传输量（如Snappy或LZ4压缩，解压快但压缩率适中）；调整网络缓冲区大小以适应高吞吐传输。</p>
+<h3 id="Shuffle阶段网络开销的定量分析"><a href="#Shuffle阶段网络开销的定量分析" class="headerlink" title="Shuffle阶段网络开销的定量分析"></a>Shuffle阶段网络开销的定量分析</h3><p>假设一个MapReduce作业有M个Map任务和R个Reduce任务，每个Map输出大小为S。Shuffle阶段的总网络传输量为 M × S（每个Reduce从所有Map拉取数据，总数据量为所有Map输出之和）。但每个Reduce需要从M个Map各拉取约S&#x2F;R的数据，建立M个HTTP连接。当M&#x3D;10000时，每个Reduce需要维持10000个连接（分批进行）。</p>
+<p>一个Reduce的Shuffle延迟可以估算为：拉取时间 &#x3D; (S × M &#x2F; R) &#x2F; 网络带宽。如果M&#x3D;1000, S&#x3D;100MB, R&#x3D;100，每个Reduce拉取1GB数据，在1Gbps网络上约需8秒。加上归并排序的时间，一个Reduce的Shuffle阶段通常在10到60秒。</p>
+<h3 id="Combiner的适用范围与限制"><a href="#Combiner的适用范围与限制" class="headerlink" title="Combiner的适用范围与限制"></a>Combiner的适用范围与限制</h3><p>Combiner只能在可结合、可交换的聚合操作上使用。适用场景：求和（SUM）、计数（COUNT）、最大值（MAX）、最小值（MIN）。不适用场景：平均值（AVG）——Combiner提前求平均会丢失计数信息，但可以用<code>&lt;sum, count&gt;</code>对来变通。非交换操作（如字符串连接）和依赖全局状态的操作也不能使用Combiner。</p>
+<p>Combiner的一个微妙之处是它的调用次数不确定——MapReduce框架不保证Combiner被调用的次数（可能0次、1次或多次）。因此，Combiner的输出必须与Reducer的输出语义兼容。</p>
+<h2 id="四、容错机制"><a href="#四、容错机制" class="headerlink" title="四、容错机制"></a>四、容错机制</h2><p>MapReduce的设计哲学是”将故障视为常态”。集群由数千台廉价PC组成，每台机器的平均无故障时间（MTBF）可能只有数百天。这意味着在一个1000台的集群中，平均每天都可能有一台机器出现故障。</p>
+<p><strong>Worker故障</strong>：Master周期性地向每个Worker发送心跳（Heartbeat），如果一定时间内未收到响应，Master将该Worker标记为失败节点。该Worker上已完成的所有Map任务需要重新执行——因为Map任务的输出存储在Worker的本地磁盘上，Worker故障导致这些中间数据不可访问。注意，已完成的Reduce任务不需要重新执行，因为Reduce的输出存储在GFS中（GFS有副本冗余）。当一个Map任务在Worker A上失败后，Master将其重新调度到Worker B上，所有Reduce任务会感知到需要从新的Worker B拉取数据。</p>
+<p><strong>Master故障</strong>：Master是单点，如果Master故障，整个作业失败。Google的MapReduce实现中，Master定期保存检查点（Checkpoint），记录作业的当前进度。当Master故障恢复后，从最近的检查点恢复执行。但在实际生产环境中，Master的故障率极低（因为只有一台），且Master可以将自身状态复制到备份节点。Hadoop 1.x中JobTracker是单点，YARN将此拆分为ResourceManager（仍为单点但可HA）和ApplicationMaster（每个应用一个，可重试）。</p>
+<p><strong>Straggler（拖后腿者）处理</strong>：在大型集群中，由于硬件问题（如磁盘坏道导致读取慢）、资源竞争（同机器上其他作业占用资源）或网络瓶颈，少数任务的执行速度远慢于平均。这些Straggler会拖慢整个作业，因为Reduce阶段需要等待所有Map任务完成。MapReduce使用<strong>推测执行（Speculative Execution）</strong>来解决这个问题：当作业接近完成时（如95%的Map任务已完成），Master检测到某些任务的进度显著慢于其他任务，则在另一个Worker上启动该任务的备份副本。无论原任务还是备份任务先完成，结果都被采纳，另一个任务被杀死。Hadoop中推测执行默认开启，但在生产环境中常对Reduce阶段关闭（因为Reduce的Output写入GFS，多个任务同时写入会产生冲突）。</p>
+<h3 id="故障概率的定量分析"><a href="#故障概率的定量分析" class="headerlink" title="故障概率的定量分析"></a>故障概率的定量分析</h3><p>假设集群有1000个Worker，每个Worker的MTBF为365天。单个Worker在24小时内发生故障的概率为 1&#x2F;365 ≈ 0.27%。1000个Worker中至少有一个在24小时内故障的概率为 1 - (1-0.0027)^1000 ≈ 93%。这意味着在一个1000节点的集群中，几乎每天都有一台机器故障。这证实了MapReduce”故障是常态”的设计理念。</p>
+<h3 id="推测执行的适用性分析"><a href="#推测执行的适用性分析" class="headerlink" title="推测执行的适用性分析"></a>推测执行的适用性分析</h3><p>推测执行不是万能药。它在以下场景有效：作业的任务数较多（&gt;&#x3D;100）；任务执行时间较均匀但有个别Straggler；集群有富余资源运行备份任务。在以下场景应关闭：Map输出量大（网络成为瓶颈）、任务本身不确定（有副作用，如写入外部数据库）、集群资源紧张（备份任务抢占正常任务的资源）。</p>
+<p>在Hadoop中，推测执行对Map默认开启、对Reduce默认关闭（因为Reduce写入HDFS，多个任务写同一个输出文件会冲突）。在Spark中，推测执行通常关闭（Spark通过RDD的Lineage恢复比推测执行更高效）。</p>
+<h2 id="五、Spark对MapReduce的超越"><a href="#五、Spark对MapReduce的超越" class="headerlink" title="五、Spark对MapReduce的超越"></a>五、Spark对MapReduce的超越</h2><p>MapReduce模型虽然有开创性意义，但其批处理范式的缺陷也很明显。每次MapReduce作业都从磁盘读取输入、将中间结果写磁盘、最终输出写磁盘——大量的磁盘I&#x2F;O使得MapReduce不适合迭代计算（如机器学习中的梯度下降需要多次迭代）。此外，MapReduce的编程模型过于受限——很多算法难以用map和reduce两步直接表达。</p>
+<p>Spark通过<strong>弹性分布式数据集（Resilient Distributed Dataset，RDD）</strong>解决了这些问题。RDD是一个分区化的、不可变的分布式数据集合，存储在内存中（也可溢写到磁盘）。RDD通过<strong>血统（Lineage）</strong>信息实现容错：每个RDD都记录了它是如何从父RDD转换而来的（转换操作的DAG图），当某个分区的数据丢失时，根据Lineage从原始数据重新计算，而不需要像MapReduce那样依赖副本或检查点。</p>
+<p>Spark的DAG执行引擎将一系列转换（map、filter、join、groupByKey等）优化为执行阶段（Stage），最大化流水线执行和内存复用。宽依赖（如groupByKey）会触发Shuffle，将Job拆分为不同的Stage；窄依赖（如map、filter）可以在同一Stage内流水线执行，中间结果保留在内存中，无需写入磁盘。</p>
+<p>以下面这个典型的日志分析任务为例：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">val logs = spark.textFile(&quot;hdfs://logs/&quot;)</span><br><span class="line">val errors = logs.filter(_.contains(&quot;ERROR&quot;))</span><br><span class="line">val counts = errors.map(line =&gt; (parseDate(line), 1))</span><br><span class="line">                  .reduceByKey(_ + _)</span><br><span class="line">counts.saveAsTextFile(&quot;hdfs://output/&quot;)</span><br></pre></td></tr></table></figure>
+
+<p>Spark会将<code>textFile → filter → map</code>合并为一个Stage（窄依赖），<code>reduceByKey</code>作为第二个Stage（Shuffle后聚合），<code>saveAsTextFile</code>作为第三个Stage。MapReduce需要三个Job才能完成这个任务，而Spark在一个Job内完成，中间结果在Stage间通过内存交换，比MapReduce快10到100倍（尤其是在迭代计算中）。</p>
+<h3 id="RDD宽窄依赖的深度分析"><a href="#RDD宽窄依赖的深度分析" class="headerlink" title="RDD宽窄依赖的深度分析"></a>RDD宽窄依赖的深度分析</h3><p>窄依赖（Narrow Dependency）：父RDD的每个分区最多被子RDD的一个分区依赖。操作包括map、filter、union、mapPartitions等。窄依赖可以在同一Stage内流水线执行（Pipeline），不需要Shuffle。</p>
+<p>宽依赖（Wide Dependency）：父RDD的每个分区可能被多个子RDD分区依赖。操作包括groupByKey、reduceByKey、join（非共同分区）、repartition等。宽依赖触发Shuffle，形成Stage边界。</p>
+<p>为什么区分宽窄依赖？第一，Stage划分依据——遇到宽依赖就切开。第二，容错粒度——窄依赖下，子分区丢失只需重新计算对应的单个父分区（高效）；宽依赖下，子分区丢失可能需要重新计算多个或全部父分区（因为一个父分区被多个子分区依赖）。第三，Pipeline执行——窄依赖的操作可以链式在同一个Task中执行，省去中间结果物化的开销。</p>
+<h3 id="Spark-SQL与Catalyst优化器"><a href="#Spark-SQL与Catalyst优化器" class="headerlink" title="Spark SQL与Catalyst优化器"></a>Spark SQL与Catalyst优化器</h3><p>Spark SQL在RDD之上提供了DataFrame&#x2F;Dataset API，并通过Catalyst优化器进行查询优化。Catalyst是一个可扩展的查询优化框架，工作流程：</p>
+<ol>
+<li><strong>解析</strong>：将SQL文本解析为未解析的逻辑计划（Unresolved Logical Plan）</li>
+<li><strong>分析</strong>：通过Catalog解析表名和列名，生成解析后的逻辑计划</li>
+<li><strong>优化</strong>：应用一系列优化规则（谓词下推、列裁剪、常量折叠、Join重排序等）</li>
+<li><strong>物理计划</strong>：将优化后的逻辑计划转换为物理执行计划，选择Join算法（Broadcast Hash Join vs Sort Merge Join）等</li>
+<li><strong>代码生成</strong>：使用Whole-Stage Code Generation将执行计划编译为Java字节码，消除虚函数调用和中间对象的开销</li>
+</ol>
+<p>Catalyst使Spark SQL的执行效率远超手写RDD的等价操作——在TPC-DS基准测试中，Spark SQL比MapReduce快10到100倍。</p>
+<h2 id="六、分布式文件系统的设计原则"><a href="#六、分布式文件系统的设计原则" class="headerlink" title="六、分布式文件系统的设计原则"></a>六、分布式文件系统的设计原则</h2><p>分布式存储是分布式计算的基础。谷歌文件系统GFS和Hadoop的HDFS都遵循以下设计原则：</p>
+<p><strong>大文件优先</strong>：典型的文件大小在数百MB到数GB。块大小（如GFS的64MB、HDFS的128MB）远大于传统文件系统（如Linux EXT4的4KB），减少了元数据的规模和查找开销。</p>
+<p><strong>追加写为主</strong>：文件主要被追加写入（Append-Only），很少被随机修改。这使得一致性模型可以简化，写入流水线可以高效设计。随机写入虽然支持，但性能不佳且不建议。</p>
+<p><strong>顺序读取优化</strong>：大文件的典型访问模式是顺序扫描（如MapReduce的输入读取），因此数据布局和预读策略都针对顺序I&#x2F;O优化，而非随机I&#x2F;O。</p>
+<p><strong>冗余存储</strong>：每块数据默认存储三份副本（HDFS的默认配置），分布在不同的机架（Rack）上，保证在任何单节点甚至整个机架故障时数据仍然可用。</p>
+<p><strong>计算向数据移动</strong>：相比于将数据移动到计算节点，将计算调度到数据所在节点成本更低（因为数据量大、网络带宽相对稀缺）。这是MapReduce进行数据本地性调度的基础。</p>
+<p><strong>单一Master + 多ChunkServer架构</strong>：Master管理所有元数据（文件命名空间、文件到块的映射、块到ChunkServer的映射），ChunkServer存储实际数据块。客户端与Master交互只获取元数据，所有的数据读写直接与ChunkServer交互，避免了Master成为数据吞吐的瓶颈。</p>
+<h3 id="数据本地性的三级优化"><a href="#数据本地性的三级优化" class="headerlink" title="数据本地性的三级优化"></a>数据本地性的三级优化</h3><p>MapReduce将数据本地性分为三个级别，从优到劣依次为：</p>
+<ol>
+<li><strong>Node Local</strong>：Map任务与输入数据在同一节点。数据从本地磁盘读取（0网络开销），这是最理想的情况。</li>
+<li><strong>Rack Local</strong>：Map任务与输入数据在同一机架但不同节点。数据通过机架内网络传输（带宽相对充足，延迟低）。</li>
+<li><strong>Off Rack</strong>：Map任务与输入数据在不同机架。数据需要跨机架交换机传输，带宽和延迟最差。</li>
+</ol>
+<p>HDFS在写入数据时会尽量满足”第一个副本在写入者所在节点（如果写入者是集群内节点）、第二个副本在不同机架、第三个副本在同第二个副本的机架但不同节点”的策略，使得读取时有更高的Node Local概率。</p>
+<h2 id="七、现代分布式计算生态"><a href="#七、现代分布式计算生态" class="headerlink" title="七、现代分布式计算生态"></a>七、现代分布式计算生态</h2><p>从MapReduce出发，大数据计算生态已经进化出丰富的系统：</p>
+<p><strong>批处理</strong>：Apache Spark（基于内存的DAG引擎）、Apache Flink（支持批流一体，批处理视为有界流处理）、Presto&#x2F;Trino（交互式SQL查询引擎，MPP架构，适合秒级的分析查询）。</p>
+<p><strong>流处理</strong>：Apache Flink（事件时间处理，精确一次语义（Exactly-Once），有状态算子）、Kafka Streams（嵌入应用内的轻量级流处理库）、Apache Storm（早期的流处理框架，逐条记录处理）。</p>
+<p><strong>资源管理</strong>：YARN（Hadoop生态的资源管理器）、Kubernetes（云原生时代的资源编排平台，越来越多的计算框架直接运行在K8s上）、Mesos（Apache的通用资源调度平台，已被K8s超越）。</p>
+<p><strong>SQL on Hadoop</strong>：Hive（MapReduce&#x2F;Tez&#x2F;Spark执行引擎上的SQL层，事实上的数据仓库标准）、Spark SQL（DataFrame&#x2F;Dataset API，Catalyst优化器）、ClickHouse（面向OLAP的列式数据库，极高查询性能）。</p>
+<p><strong>统一引擎</strong>：Databricks的Lakehouse架构（基于Delta Lake，在数据湖上实现ACID事务和版本管理）、Apache Iceberg（数据湖表格式标准）、Snowflake（云原生数据仓库）。</p>
+<h3 id="Flink-vs-Spark-Streaming-vs-Storm-的核心差异"><a href="#Flink-vs-Spark-Streaming-vs-Storm-的核心差异" class="headerlink" title="Flink vs Spark Streaming vs Storm 的核心差异"></a>Flink vs Spark Streaming vs Storm 的核心差异</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>Storm</th>
+<th>Spark Streaming</th>
+<th>Flink</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>处理模型</td>
+<td>逐条记录处理</td>
+<td>微批处理 (Micro-batch)</td>
+<td>逐条处理 + 微批</td>
+</tr>
+<tr>
+<td>延迟</td>
+<td>中 (100ms-秒)</td>
+<td>高 (500ms-数秒)</td>
+<td>低 (毫秒级)</td>
+</tr>
+<tr>
+<td>吞吐量</td>
+<td>中</td>
+<td>高</td>
+<td>高</td>
+</tr>
+<tr>
+<td>Exactly-Once</td>
+<td>通过Trident</td>
+<td>内置支持</td>
+<td>内置支持</td>
+</tr>
+<tr>
+<td>事件时间</td>
+<td>不支持</td>
+<td>有限支持</td>
+<td>完整支持</td>
+</tr>
+<tr>
+<td>状态管理</td>
+<td>基本</td>
+<td>基本 (updateStateByKey)</td>
+<td>成熟 (RocksDB Backend)</td>
+</tr>
+<tr>
+<td>窗口</td>
+<td>固定窗口</td>
+<td>滑动&#x2F;会话窗口</td>
+<td>滑动&#x2F;会话&#x2F;累计窗口</td>
+</tr>
+<tr>
+<td>背压</td>
+<td>有</td>
+<td>有 (1.6+)</td>
+<td>有 (天然支持)</td>
+</tr>
+</tbody></table>
+<p>Flink的事件时间处理是其最突出的差异化能力。在Storm或Spark Streaming中，时间总是处理时间（Processing Time，数据被系统处理的时间）。Flink区分事件时间（Event Time，数据产生的时间）和处理时间，即使在乱序到达、延迟到达的情况下，也能基于事件时间正确计算窗口聚合。这对于需要精确时间语义的场景（如金融交易监控、广告计费）至关重要。</p>
+<h3 id="Lakehouse架构的核心思想"><a href="#Lakehouse架构的核心思想" class="headerlink" title="Lakehouse架构的核心思想"></a>Lakehouse架构的核心思想</h3><p>数据湖（Data Lake，如S3&#x2F;HDFS上的原始文件）提供了低成本的海量存储，但缺乏ACID事务、Schema强制和版本管理。数据仓库（Data Warehouse，如Snowflake、Redshift）提供了这些能力，但成本高、不支持非结构化数据。Lakehouse架构在数据湖之上增加事务层、元数据层和性能层，实现”一种存储，多种工作负载”：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌───────────────┬───────────────┬───────────────┐</span><br><span class="line">│   BI / SQL    │  Data Science │  ML Training  │  ◀ 计算层</span><br><span class="line">├───────────────┼───────────────┼───────────────┤</span><br><span class="line">│     Spark / Presto / Flink                   │  ◀ 查询引擎</span><br><span class="line">├──────────────────────────────────────────────┤</span><br><span class="line">│  Delta Lake / Iceberg / Hudi   (Table Format) │  ◀ 表格式</span><br><span class="line">├──────────────────────────────────────────────┤</span><br><span class="line">│      S3 / HDFS / ADLS    (Data Lake)          │  ◀ 存储</span><br><span class="line">└──────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p>Delta Lake提供ACID事务（乐观并发，基于JSON事务日志）、时间旅行（数据版本回滚）、Schema强制和演化、数据变更捕获（CDC）等能力。Iceberg更专注于表格式的开放性标准的制定。</p>
+<h2 id="八、分布式计算的性能调优"><a href="#八、分布式计算的性能调优" class="headerlink" title="八、分布式计算的性能调优"></a>八、分布式计算的性能调优</h2><h3 id="数据倾斜的处理"><a href="#数据倾斜的处理" class="headerlink" title="数据倾斜的处理"></a>数据倾斜的处理</h3><p>数据倾斜是分布式计算中最常见的性能问题。当某些键的数据量远大于其他键时（如按城市聚合，北京上海的数据量是中小城市的数千倍），负责处理这些大键的Reduce任务运行时间远超其他任务。解决方案：</p>
+<ol>
+<li><strong>加盐（Salting）</strong>：为大键添加随机后缀分散到多个分区（<code>key + &quot;_&quot; + random(0,N-1)</code>），在两阶段聚合中，第一阶段加盐预聚合，第二阶段去盐最终聚合</li>
+<li><strong>Map-Side Join</strong>：当一个大表join一个小表（小表可完整放入内存），使用Broadcast Join将小表广播到所有节点，避免Shuffle</li>
+<li><strong>自定义分区器</strong>：针对已知的数据分布模式，编写自定义Partitioner，让数据均匀分布</li>
+<li><strong>过滤大键单独处理</strong>：识别出数据量最大的几个键，单独为它们运行作业，其他键正常处理</li>
+</ol>
+<h3 id="小文件问题"><a href="#小文件问题" class="headerlink" title="小文件问题"></a>小文件问题</h3><p>HDFS和Spark都对小文件敏感。HDFS的NameNode元数据按文件存储，数百万小文件导致数十GB的NameNode内存消耗。Spark中，每个文件至少对应一个分区，小文件导致分区过多，Task调度开销巨大。解决方案：</p>
+<ol>
+<li>合并小文件：在写入前通过coalesce&#x2F;repartition减少分区数</li>
+<li>HDFS合并工具：使用Hadoop Archive (HAR)或SequenceFile将小文件打包</li>
+<li>调整InputFormat：使用CombineFileInputFormat将多个小文件合并为一个Split</li>
+<li>流式处理：使用Spark Streaming或Flink直接消费流数据，写入时控制文件大小</li>
+</ol>
+<h2 id="九、Flink的Exactly-Once语义与有状态流处理"><a href="#九、Flink的Exactly-Once语义与有状态流处理" class="headerlink" title="九、Flink的Exactly-Once语义与有状态流处理"></a>九、Flink的Exactly-Once语义与有状态流处理</h2><p>Apache Flink将流处理提升到了新的高度，其Exactly-Once语义和有状态处理能力是理解现代分布式计算的关键。</p>
+<h3 id="Checkpoint与分布式快照"><a href="#Checkpoint与分布式快照" class="headerlink" title="Checkpoint与分布式快照"></a>Checkpoint与分布式快照</h3><p>Flink通过Chandy-Lamport算法的变体（Asynchronous Barrier Snapshotting）实现分布式快照。其核心机制：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. JobManager定期向Source算子注入Checkpoint Barrier（检查点屏障）</span><br><span class="line">2. Barrier随数据流向下游传播</span><br><span class="line">3. 当算子收到所有输入通道的Barrier后，触发该算子的状态快照</span><br><span class="line">4. 状态快照异步写入持久化存储（HDFS/S3/RocksDB）</span><br><span class="line">5. 所有算子完成快照后，Checkpoint完成</span><br><span class="line"></span><br><span class="line">对齐（Alignment）阶段：</span><br><span class="line">- 算子有多个输入通道，接收到第一个Barrier后开始对齐</span><br><span class="line">- 阻塞已收到Barrier的通道，等待未收到Barrier的通道</span><br><span class="line">- 所有通道都收到Barrier后，触发快照，然后解除阻塞</span><br><span class="line">- 如果启用Unaligned Checkpoint，可以跳过对齐直接快照（包含在途数据）</span><br></pre></td></tr></table></figure>
+
+<p>Checkpoint的间隔是Exactly-Once和延迟之间的权衡。间隔越短（如1秒），故障恢复后需要重放的数据越少，但Checkpoint开销越大。典型设置为1到5分钟。</p>
+<h3 id="Watermark与事件时间处理"><a href="#Watermark与事件时间处理" class="headerlink" title="Watermark与事件时间处理"></a>Watermark与事件时间处理</h3><p>Watermark是Flink处理乱序事件的核心机制：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Watermark(t) 表示：系统认为所有时间戳 &lt; t 的事件都已经到达</span><br><span class="line">下游窗口算子可以在 Watermark 越过窗口结束时间时触发窗口计算</span><br></pre></td></tr></table></figure>
+
+<p>Watermark生成策略：周期性生成（Periodic Watermark，默认200ms生成一次）或事件驱动生成（Punctuated Watermark，每个特殊事件触发）。最大乱序容忍度（MaxOutOfOrderness）定义了Watermark落后于最大事件时间的最大延迟。</p>
+<p>处理延迟事件（Late Events）：</p>
+<ul>
+<li>丢弃：默认行为，窗口已触发后忽略迟到事件</li>
+<li>重定向到Side Output：收集所有迟到事件到Side Output流，由用户决定如何处理</li>
+<li>允许迟到（Allowed Lateness）：在窗口触发后仍保持窗口状态一段时间，迟到事件到来时更新窗口结果</li>
+</ul>
+<h3 id="有状态算子的故障恢复"><a href="#有状态算子的故障恢复" class="headerlink" title="有状态算子的故障恢复"></a>有状态算子的故障恢复</h3><p>Flink的状态后端（State Backend）支持两种模式：</p>
+<ul>
+<li><strong>HashMapStateBackend</strong>：状态存储在JVM堆内存中，Checkpoint时序列化到分布式文件系统。适合小状态和开发调试。</li>
+<li><strong>EmbeddedRocksDBStateBackend</strong>：状态存储在本地RocksDB实例中（磁盘+内存），Checkpoint时增量快照到分布式文件系统。适合大状态（TB级）。</li>
+</ul>
+<p>故障恢复时，Flink从最近的Checkpoint加载状态，从状态中记录的Source Offset重新开始消费。如果使用增量Checkpoint，只加载有变化的状态部分。</p>
+<h3 id="Savepoint与状态演进"><a href="#Savepoint与状态演进" class="headerlink" title="Savepoint与状态演进"></a>Savepoint与状态演进</h3><p>Savepoint是用户触发的、由用户管理生命周期的Checkpoint。用于：</p>
+<ul>
+<li>应用升级：停止应用 → 保存Savepoint → 升级应用代码 → 从Savepoint恢复</li>
+<li>状态Schema演进：在状态类型变化时，通过自定义State Processor API迁移状态</li>
+<li>A&#x2F;B测试：从同一个Savepoint恢复两个不同的应用版本，分流测试</li>
+<li>集群迁移：将Savepoint复制到新集群，从新集群恢复</li>
+</ul>
+<h2 id="十、面试常见追问"><a href="#十、面试常见追问" class="headerlink" title="十、面试常见追问"></a>十、面试常见追问</h2><p><strong>问题一：MapReduce的Combiner和Reducer有什么区别？</strong></p>
+<p>Combiner在Map端（数据刚从内存溢出至磁盘时）运行，做局部聚合；Reducer在Reduce端运行，做全局聚合。Combiner必须满足结合律和交换律（因为中间数据可能在多个Map任务中多次运行Combiner，也可能不运行——Combiner的调用次数是未定义的）。典型适用场景如求和、计数、最大值&#x2F;最小值；不适用场景如求平均值（Combiner合并后丢失了计数信息，虽然可以通过<code>&lt;sum, count&gt;</code>对来变通）。Combiner的签名与Reducer完全相同，实际上通常直接复用Reducer的实现。</p>
+<p><strong>问题二：为什么Spark的迭代计算比MapReduce快很多？</strong></p>
+<p>核心原因是数据在内存中的驻留。MapReduce每次迭代都从HDFS读取输入、将输出写入HDFS，每次迭代都产生大量的磁盘I&#x2F;O和序列化&#x2F;反序列化开销。十次迭代意味着十次全量磁盘读写。Spark将RDD缓存（<code>cache()</code>或<code>persist()</code>）在内存中，十次迭代中只有第一次从HDFS读取，最后一次写入HDFS，中间八次直接在内存中转换。在逻辑回归训练的典型场景中，Spark比MapReduce快两个数量级。此外，Spark的DAG执行引擎通过流水线化窄依赖Stage，进一步减少了中间结果的物化开销。</p>
+<p><strong>问题三：推测执行在什么情况下不应该开启？</strong></p>
+<p>推测执行不适合具有副作用的操作。如果Reduce任务写入外部系统（如将结果写入MySQL或发送邮件），备份任务的执行会导致重复写入。Hadoop中推测执行默认对Map开启但对Reduce关闭（Hadoop 1.x）。另外，在集群资源紧张时，推测执行会消耗额外的计算资源，可能反而延长整体作业时间。对于资源紧张的环境，关闭推测执行、转而优化数据倾斜问题通常是更好的策略。</p>
+<p><strong>问题四：MapReduce为什么要求Map输出的中间数据写入本地磁盘而非HDFS？</strong></p>
+<p>这是MapReduce设计中一个关键但常被忽略的优化。Map输出的中间数据写入本地磁盘而非HDFS，原因有三：第一，中间数据是临时的（Reduce消费后即可删除），不需要HDFS的多副本持久化。第二，如果写入HDFS，每条中间数据都被复制3份（默认），总写入量变为3倍，且需要等待所有副本写入成功（增加延迟）。第三，本地磁盘的写入延迟远低于HDFS的网络写入（本地SSD vs GFS的跨网络写入）。代价是Map节点故障时，该节点上的中间数据丢失，对应的Map任务需要重新执行——但MapReduce的容错模型已经包含了这种重试。</p>
+<p><strong>问题五：如何为MapReduce作业选择合适的分区函数（Partitioner）？</strong></p>
+<p>默认的HashPartitioner（<code>hash(key) % numReducers</code>）在大多数情况下工作良好。自定义Partitioner的场景包括：需要数据按自然分组（如按日期），可以使用<code>date.hashCode() % numReducers</code>；需要特定键落在同一个分区（如全局Top-K计算，将所有数据发往单个Reducer），实现Partitioner将所有键映射到0；需要范围分区（如按数值区间），可以使用TotalOrderPartitioner（Hadoop内置，通过采样确定分区边界）。自定义Partitioner的常见陷阱是数据倾斜——如果对数据分布不了解，自定义分区可能加剧而非缓解倾斜。</p>
+<h2 id="十、分布式Join算法的深度剖析"><a href="#十、分布式Join算法的深度剖析" class="headerlink" title="十、分布式Join算法的深度剖析"></a>十、分布式Join算法的深度剖析</h2><p>Join是分布式计算中最昂贵的操作之一，因为它在不同数据集之间建立了关联，而这种关联通常需要Shuffle。理解不同Join策略的适用场景是性能调优的关键。</p>
+<h3 id="Broadcast-Hash-Join（广播哈希连接）"><a href="#Broadcast-Hash-Join（广播哈希连接）" class="headerlink" title="Broadcast Hash Join（广播哈希连接）"></a>Broadcast Hash Join（广播哈希连接）</h3><p>适用条件：一张表很小（可以完全放入内存，通常&lt;10MB），另一张大。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">步骤:</span><br><span class="line">1. 将小表全量加载到每个Executor的内存中 → 构建Hash Table</span><br><span class="line">2. 大表正常分区读取（无需Shuffle）</span><br><span class="line">3. 每个Executor对大表的每条记录，在本地Hash Table中查找匹配</span><br><span class="line">4. 输出Join结果</span><br><span class="line"></span><br><span class="line">复杂度: 无Shuffle！只读小表一次（广播），大表零Shuffle</span><br><span class="line">限制: 小表必须能放入单个Executor的内存</span><br></pre></td></tr></table></figure>
+
+<p>Spark SQL中当一张表小于<code>spark.sql.autoBroadcastJoinThreshold</code>（默认10MB）时自动选择此策略。</p>
+<h3 id="Sort-Merge-Join（排序合并连接）"><a href="#Sort-Merge-Join（排序合并连接）" class="headerlink" title="Sort Merge Join（排序合并连接）"></a>Sort Merge Join（排序合并连接）</h3><p>适用条件：两张表都很大，无法广播。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">步骤:</span><br><span class="line">1. 两张表按Join Key进行Shuffle（相同Key落到同一分区）</span><br><span class="line">2. 在每个分区内对数据进行排序（按Join Key）</span><br><span class="line">3. 对排序后的两个数据流进行Merge Join（双指针遍历）</span><br><span class="line">4. 输出Join结果</span><br><span class="line"></span><br><span class="line">复杂度: Shuffle数据量 = 两表大小之和</span><br><span class="line">       Join阶段为 O(N+M) （两个已排序序列的双指针遍历）</span><br></pre></td></tr></table></figure>
+
+<p>Sort Merge Join是Spark SQL的默认Join策略（当表超过广播阈值时）。</p>
+<h3 id="Shuffle-Hash-Join（混洗哈希连接）"><a href="#Shuffle-Hash-Join（混洗哈希连接）" class="headerlink" title="Shuffle Hash Join（混洗哈希连接）"></a>Shuffle Hash Join（混洗哈希连接）</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">步骤:</span><br><span class="line">1. 两张表按Join Key进行Shuffle</span><br><span class="line">2. 在每个分区内，将一张表构建为Hash Table，另一张表进行Probe</span><br><span class="line">3. 输出Join结果</span><br><span class="line"></span><br><span class="line">与Sort Merge Join的区别: </span><br><span class="line">  - 不需要排序（省去排序开销）</span><br><span class="line">  - 需要将一张表全量放入内存（Hash Table）</span><br><span class="line">  - 如果Hash Table放不下 → 溢写到磁盘 → 性能严重退化</span><br></pre></td></tr></table></figure>
+
+<p>Shuffle Hash Join在Spark 2.3+中已不是默认选项，因为有内存溢出风险。通常被Sort Merge Join取代。</p>
+<h3 id="数据倾斜对Join的影响"><a href="#数据倾斜对Join的影响" class="headerlink" title="数据倾斜对Join的影响"></a>数据倾斜对Join的影响</h3><p>如果Join Key分布不均匀（如按城市Join，北京的数据量是拉萨的1万倍），负责处理北京的Task成为瓶颈。解决方案：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">方案1: Salting（加盐）</span><br><span class="line">  - 为倾斜的Key添加随机后缀: &quot;Beijing_0&quot;, &quot;Beijing_1&quot;, ..., &quot;Beijing_9&quot;</span><br><span class="line">  - 小表也需要复制10份（每个后缀一份）</span><br><span class="line">  - 10个Task分担倾斜Key的处理</span><br><span class="line">  - Join完成后去掉随机后缀</span><br><span class="line"></span><br><span class="line">方案2: Map-Side Join手动指定</span><br><span class="line">  - 如果知道哪个表小，显式使用 broadcast hint:</span><br><span class="line">    large_df.join(broadcast(small_df), &quot;key&quot;)</span><br><span class="line"></span><br><span class="line">方案3: 倾斜Key单独处理</span><br><span class="line">  - 识别出最倾斜的Key（如Top 10高频率Key）</span><br><span class="line">  - 将这些Key的数据单独提取 → 单独运行一个高并行度的Join作业</span><br><span class="line">  - 其余Key正常运行</span><br><span class="line">  - Union两个结果</span><br></pre></td></tr></table></figure>
+
+<h2 id="十一、现代流处理：事件时间与处理时间"><a href="#十一、现代流处理：事件时间与处理时间" class="headerlink" title="十一、现代流处理：事件时间与处理时间"></a>十一、现代流处理：事件时间与处理时间</h2><h3 id="为什么需要事件时间"><a href="#为什么需要事件时间" class="headerlink" title="为什么需要事件时间"></a>为什么需要事件时间</h3><p>在分布式流处理中，事件到达顺序与事件发生顺序不同：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">事件A (t=10:00:00, 发生在北京) → 经过网络延迟 → 10:00:05到达Flink</span><br><span class="line">事件B (t=10:00:01, 发生在纽约) → 经过较短延迟 → 10:00:03到达Flink</span><br><span class="line"></span><br><span class="line">按处理时间排序: B先到，A后到 → 如果10:00:00-10:00:04是窗口期，A会遗漏！</span><br><span class="line">按事件时间排序: A在前，B在后 → 窗口正确包含A和B</span><br></pre></td></tr></table></figure>
+
+<p>Flink通过Watermark机制处理事件时间乱序：Watermark(t)表示”所有时间戳&lt;t的事件都已到达”。Watermark的生成策略需要权衡延迟和完整性——Watermark越保守（越滞后），窗口越晚触发（延迟高），但遗漏事件越少（完整性高）。</p>
+<h3 id="三种窗口类型"><a href="#三种窗口类型" class="headerlink" title="三种窗口类型"></a>三种窗口类型</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Tumbling Window (滚动窗口):</span><br><span class="line">  |---W1---|---W2---|---W3---|</span><br><span class="line">  不重叠，固定大小</span><br><span class="line"></span><br><span class="line">Sliding Window (滑动窗口):</span><br><span class="line">  |---W1---|</span><br><span class="line">    |---W2---|</span><br><span class="line">      |---W3---|</span><br><span class="line">  重叠，固定大小+固定滑动步长</span><br><span class="line"></span><br><span class="line">Session Window (会话窗口):</span><br><span class="line">  |--W1--|        |----W2----|    |-W3-|</span><br><span class="line">  大小可变，以静默间隔（Gap）分割</span><br></pre></td></tr></table></figure>
+
+<p>Session Window是Flink的差异化特性——它不预设窗口大小，而是根据事件到达的间隔动态确定窗口边界。例如，用户的一次会话（从打开App到关闭）就是一个Session Window。当连续事件之间的间隔超过设定的Gap时，窗口关闭。</p>
+<h3 id="扩展阅读：MapReduce论文的持久影响与反思"><a href="#扩展阅读：MapReduce论文的持久影响与反思" class="headerlink" title="扩展阅读：MapReduce论文的持久影响与反思"></a>扩展阅读：MapReduce论文的持久影响与反思</h3><p>MapReduce论文（2004）是计算机科学史上被引用最多的系统论文之一。其持久影响可以从几个维度理解：</p>
+<p><strong>编程范式的简洁性</strong>：Map和Reduce两个抽象函数，足以表达大多数数据并行计算（排序、聚合、连接、过滤、分组）。这种简洁性使得非分布式系统专家（如数据分析师、机器学习工程师）也能编写分布式程序——这可能是MapReduce最大的遗产。</p>
+<p><strong>容错设计的自动化</strong>：MapReduce将容错逻辑从应用程序中剥离到框架中，开发者完全不需要关心机器故障。这一设计原则被后续几乎所有分布式计算框架继承（从Spark到Flink到Ray）。</p>
+<p><strong>被低估的排序能力</strong>：MapReduce的Shuffle阶段本质上实现了一个分布式外排序。在Google内部，MapReduce经常被用作分布式排序框架而非数据聚合框架——很多MapReduce作业的Map是恒等函数，Reduce也是恒等函数，唯一目的就是让Shuffle完成全局排序。这个观察催生了后续的分布式排序系统（如Terasort基准测试）。</p>
+<p><strong>为什么MapReduce最终被Spark取代</strong>：可以说是”生不逢时”——MapReduce设计时硬盘是主要存储介质，所以它围绕磁盘I&#x2F;O优化。当内存成本下降到可以容纳整个数据集时，Spark的内存优先架构自然胜出。但如果MapReduce在2010年代设计，它可能也会是一个内存优先的系统。</p>
+<p><strong>MapReduce在2024年的角色</strong>：尽管Spark和Flink成为主流，MapReduce的思想（将计算分为Map和Reduce两步，框架负责分发和容错）仍然是分布式计算教学的标准入口。Hadoop MapReduce在Hadoop 3.x中已标记为Deprecated，但Google内部使用MapReduce风格的作业在FlumeJava和Cloud Dataflow中继续存在。</p>
+<p>本篇文章从MapReduce的编程模型开始，深入剖析了Shuffle机制、容错设计，并扩展到Spark、Flink等现代分布式计算系统的比较，最后覆盖了Lakehouse架构和性能调优。分布式计算是一个快速演进的领域，但其底层原理——数据分区、结合性、容错和规格化——是持久的。掌握了这些核心思想，你就能评估和设计适用于不同场景的分布式计算系统。</p>
+<h3 id="分布式计算面试中的关键讨论框架"><a href="#分布式计算面试中的关键讨论框架" class="headerlink" title="分布式计算面试中的关键讨论框架"></a>分布式计算面试中的关键讨论框架</h3><p>在系统设计面试中讨论计算框架时，一个有组织的讨论框架可以展示系统思维：</p>
+<p><strong>1. 计算模型选择</strong>：</p>
+<ul>
+<li>批处理 vs 流处理 vs 批流一体</li>
+<li>纯MapReduce两步 vs DAG通用计算</li>
+<li>延迟敏感 vs 吞吐敏感</li>
+</ul>
+<p><strong>2. 数据Shuffle策略</strong>：</p>
+<ul>
+<li>何时必须Shuffle（宽依赖），何时可以避免（窄依赖）</li>
+<li>Sort-Based Shuffle vs Hash-Based Shuffle</li>
+<li>Shuffle的中间数据存储策略（内存&#x2F;磁盘&#x2F;HDFS）</li>
+</ul>
+<p><strong>3. 状态管理</strong>（流处理）：</p>
+<ul>
+<li>无状态算子 vs 有状态算子</li>
+<li>State Backend选择（内存&#x2F;RocksDB）</li>
+<li>Checkpoint间隔与恢复时间的权衡</li>
+</ul>
+<p><strong>4. 容错策略</strong>：</p>
+<ul>
+<li>Task重试 vs Stage重试 vs 全量恢复</li>
+<li>Lineage重计算 vs Checkpoint恢复</li>
+<li>推测执行的适用条件</li>
+</ul>
+<p><strong>5. Exactly-Once vs At-Least-Once</strong>：</p>
+<ul>
+<li>哪些场景必须Exactly-Once（金融、计费）</li>
+<li>哪些场景At-Least-Once足够（日志分析、监控）</li>
+<li>Exactly-Once的实现代价（Checkpoint开销、输出事务）</li>
+</ul>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2021/11/25/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%A1%E7%AE%97%E7%B3%BB%E7%BB%9F/">http://tufusi.com/2021/11/25/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%A1%E7%AE%97%E7%B3%BB%E7%BB%9F/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/12/01/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%9F%BA%E4%BA%8E%E5%9C%B0%E7%90%86%E4%BD%8D%E7%BD%AE%E4%BF%A1%E6%81%AF%E7%9A%84%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>系统设计之基于地理位置信息的系统设计</span></div></a></div><div class="next-post pull_right"><a href="/2021/11/20/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E7%88%AC%E8%99%AB%E7%B3%BB%E7%BB%9F%E4%B8%8E%E6%90%9C%E7%B4%A2%E5%BB%BA%E8%AE%AE%E7%B3%BB%E7%BB%9F/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>系统设计之爬虫系统与搜索建议系统</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

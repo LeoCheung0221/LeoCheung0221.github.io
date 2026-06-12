@@ -1,0 +1,860 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【sklearn笔记】线性规划 | ONE·PIECE</title><meta name="description" content="【sklearn笔记】线性规划"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【sklearn笔记】线性规划"><meta name="twitter:description" content="【sklearn笔记】线性规划"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_python.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【sklearn笔记】线性规划"><meta property="og:url" content="http://tufusi.com/2020/10/01/%E3%80%90sklearn%E7%AC%94%E8%AE%B0%E3%80%91%E7%BA%BF%E6%80%A7%E8%A7%84%E5%88%92/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【sklearn笔记】线性规划"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_python.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2020/10/01/%E3%80%90sklearn%E7%AC%94%E8%AE%B0%E3%80%91%E7%BA%BF%E6%80%A7%E8%A7%84%E5%88%92/"><link rel="prev" title="【统计学习方法死磕系列】条件随机场" href="http://tufusi.com/2020/10/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%9D%A1%E4%BB%B6%E9%9A%8F%E6%9C%BA%E5%9C%BA/"><link rel="next" title="机器学习框架篇-Tensorflow" href="http://tufusi.com/2020/09/25/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E7%AF%87-Tensorflow/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#1-%E5%BC%95%E8%A8%80%EF%BC%9A%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%BF%E6%80%A7%E8%A7%84%E5%88%92"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">1. 引言：什么是线性规划</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#2-%E7%BA%BF%E6%80%A7%E8%A7%84%E5%88%92%E9%97%AE%E9%A2%98%E7%9A%84%E6%A0%87%E5%87%86%E5%BD%A2%E5%BC%8F"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">2. 线性规划问题的标准形式</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-1-%E6%A0%87%E5%87%86%E5%BD%A2%E5%BC%8F%EF%BC%88Standard-Form%EF%BC%89"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 标准形式（Standard Form）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-2-%E5%B0%86%E4%BB%BB%E6%84%8F-LP-%E8%BD%AC%E5%8C%96%E4%B8%BA%E6%A0%87%E5%87%86%E5%BD%A2%E5%BC%8F"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 将任意 LP 转化为标准形式</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-3-%E8%A7%84%E8%8C%83%E5%BD%A2%E5%BC%8F%EF%BC%88Canonical-Form%EF%BC%89"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 规范形式（Canonical Form）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-4-%E5%87%A0%E4%BD%95%E7%9B%B4%E8%A7%82"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">2.4 几何直观</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#3-%E5%8D%95%E7%BA%AF%E5%BD%A2%E6%B3%95%EF%BC%88Simplex-Method%EF%BC%89"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">3. 单纯形法（Simplex Method）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-1-%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 核心思想</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-2-%E5%9F%BA%E6%9C%AC%E8%A7%A3%E4%B8%8E%E5%9F%BA%E6%9C%AC%E5%8F%AF%E8%A1%8C%E8%A7%A3"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 基本解与基本可行解</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-3-%E5%8D%95%E7%BA%AF%E5%BD%A2%E8%A1%A8%EF%BC%88Simplex-Tableau%EF%BC%89"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 单纯形表（Simplex Tableau）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-4-%E5%8D%95%E7%BA%AF%E5%BD%A2%E6%B3%95%E7%9A%84%E6%AD%A5%E9%AA%A4"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">3.4 单纯形法的步骤</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-5-%E6%89%8B%E5%B7%A5%E8%AE%A1%E7%AE%97%E7%A4%BA%E4%BE%8B"><span class="toc_mobile_items-number">3.5.</span> <span class="toc_mobile_items-text">3.5 手工计算示例</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-6-%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%B3%95%EF%BC%88Two-Phase-Method%EF%BC%89"><span class="toc_mobile_items-number">3.6.</span> <span class="toc_mobile_items-text">3.6 两阶段法（Two-Phase Method）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-7-Bland-%E8%A7%84%E5%88%99%E4%B8%8E%E9%98%B2%E6%AD%A2%E5%BE%AA%E7%8E%AF"><span class="toc_mobile_items-number">3.7.</span> <span class="toc_mobile_items-text">3.7 Bland 规则与防止循环</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#4-%E5%AF%B9%E5%81%B6%E7%90%86%E8%AE%BA%EF%BC%88Duality-Theory%EF%BC%89"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">4. 对偶理论（Duality Theory）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-1-%E5%AF%B9%E5%81%B6%E9%97%AE%E9%A2%98%E7%9A%84%E6%9E%84%E9%80%A0"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 对偶问题的构造</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-2-%E5%BC%B1%E5%AF%B9%E5%81%B6%E5%AE%9A%E7%90%86%EF%BC%88Weak-Duality%EF%BC%89"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 弱对偶定理（Weak Duality）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-3-%E5%BC%BA%E5%AF%B9%E5%81%B6%E5%AE%9A%E7%90%86%EF%BC%88Strong-Duality%EF%BC%89"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 强对偶定理（Strong Duality）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-4-%E4%BA%92%E8%A1%A5%E6%9D%BE%E5%BC%9B%E6%80%A7%EF%BC%88Complementary-Slackness%EF%BC%89"><span class="toc_mobile_items-number">4.4.</span> <span class="toc_mobile_items-text">4.4 互补松弛性（Complementary Slackness）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-5-%E5%AF%B9%E5%81%B6%E5%8D%95%E7%BA%AF%E5%BD%A2%E6%B3%95%EF%BC%88Dual-Simplex%EF%BC%89"><span class="toc_mobile_items-number">4.5.</span> <span class="toc_mobile_items-text">4.5 对偶单纯形法（Dual Simplex）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#5-%E5%86%85%E7%82%B9%E6%B3%95%EF%BC%88Interior-Point-Methods%EF%BC%89"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">5. 内点法（Interior Point Methods）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-1-%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 核心思想</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-2-%E9%9A%9C%E7%A2%8D%E6%B3%95%EF%BC%88Barrier-Method%EF%BC%89"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 障碍法（Barrier Method）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-3-%E4%B8%AD%E5%BF%83%E8%B7%AF%E5%BE%84"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 中心路径</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-4-KKT-%E6%9D%A1%E4%BB%B6%E4%B8%8E-Primal-Dual-%E6%96%B9%E6%B3%95"><span class="toc_mobile_items-number">5.4.</span> <span class="toc_mobile_items-text">5.4 KKT 条件与 Primal-Dual 方法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-5-%E5%8D%95%E7%BA%AF%E5%BD%A2%E6%B3%95-vs-%E5%86%85%E7%82%B9%E6%B3%95"><span class="toc_mobile_items-number">5.5.</span> <span class="toc_mobile_items-text">5.5 单纯形法 vs 内点法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-6-Klee-Minty-%E5%8F%8D%E4%BE%8B%EF%BC%9A%E5%8D%95%E7%BA%AF%E5%BD%A2%E6%B3%95%E7%9A%84%E6%9C%80%E5%9D%8F%E6%83%85%E5%86%B5"><span class="toc_mobile_items-number">5.6.</span> <span class="toc_mobile_items-text">5.6 Klee-Minty 反例：单纯形法的最坏情况</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#6-%E6%95%B4%E6%95%B0%E7%BA%BF%E6%80%A7%E8%A7%84%E5%88%92%EF%BC%88Integer-Linear-Programming-ILP%EF%BC%89"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">6. 整数线性规划（Integer Linear Programming, ILP）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-1-%E5%88%86%E7%B1%BB"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 分类</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-2-LP-%E6%9D%BE%E5%BC%9B%EF%BC%88LP-Relaxation%EF%BC%89"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 LP 松弛（LP Relaxation）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-3-%E5%88%86%E6%94%AF%E5%AE%9A%E7%95%8C%E6%B3%95%EF%BC%88Branch-and-Bound%EF%BC%89"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">6.3 分支定界法（Branch and Bound）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-4-%E5%89%B2%E5%B9%B3%E9%9D%A2%E6%B3%95%EF%BC%88Cutting-Plane%EF%BC%89"><span class="toc_mobile_items-number">6.4.</span> <span class="toc_mobile_items-text">6.4 割平面法（Cutting Plane）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-5-%E6%B1%82%E8%A7%A3-ILP-%E7%9A%84%E5%B8%B8%E7%94%A8%E7%AD%96%E7%95%A5%E6%80%BB%E7%BB%93"><span class="toc_mobile_items-number">6.5.</span> <span class="toc_mobile_items-text">6.5 求解 ILP 的常用策略总结</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#7-%E6%95%8F%E6%84%9F%E5%BA%A6%E5%88%86%E6%9E%90%EF%BC%88Sensitivity-Analysis%EF%BC%89"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">7. 敏感度分析（Sensitivity Analysis）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#7-1-%E7%9B%AE%E6%A0%87%E7%B3%BB%E6%95%B0%E7%9A%84%E5%8F%98%E5%8C%96%E8%8C%83%E5%9B%B4"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">7.1 目标系数的变化范围</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#7-2-%E5%8F%B3%E7%AB%AF%E9%A1%B9%EF%BC%88RHS%EF%BC%89%E7%9A%84%E5%8F%98%E5%8C%96%E4%B8%8E%E5%BD%B1%E5%AD%90%E4%BB%B7%E6%A0%BC"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">7.2 右端项（RHS）的变化与影子价格</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#7-3-100-%E8%A7%84%E5%88%99"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">7.3 100% 规则</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#8-Python-%E5%AE%9E%E7%8E%B0%EF%BC%9ALP-%E6%B1%82%E8%A7%A3%E5%AE%9E%E6%93%8D"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">8. Python 实现：LP 求解实操</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-1-scipy-optimize-linprog"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">8.1 scipy.optimize.linprog</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-2-PuLP%EF%BC%88%E6%95%99%E5%AD%A6%E9%A6%96%E9%80%89%EF%BC%89"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">8.2 PuLP（教学首选）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-3-CVXPY%EF%BC%88%E5%87%B8%E4%BC%98%E5%8C%96%E6%A1%86%E6%9E%B6%EF%BC%89"><span class="toc_mobile_items-number">8.3.</span> <span class="toc_mobile_items-text">8.3 CVXPY（凸优化框架）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-4-Gurobi-CPLEX%EF%BC%88%E5%95%86%E4%B8%9A%E7%BA%A7%E6%B1%82%E8%A7%A3%E5%99%A8%EF%BC%89"><span class="toc_mobile_items-number">8.4.</span> <span class="toc_mobile_items-text">8.4 Gurobi &#x2F; CPLEX（商业级求解器）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-5-%E5%B7%A5%E5%85%B7%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">8.5.</span> <span class="toc_mobile_items-text">8.5 工具对比</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#9-%E7%BB%8F%E5%85%B8%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">9. 经典应用场景</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-1-%E8%B5%84%E6%BA%90%E5%88%86%E9%85%8D%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">9.1 资源分配问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-2-%E8%BF%90%E8%BE%93%E9%97%AE%E9%A2%98%EF%BC%88Transportation-Problem%EF%BC%89"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">9.2 运输问题（Transportation Problem）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-3-%E6%8C%87%E6%B4%BE%E9%97%AE%E9%A2%98%EF%BC%88Assignment-Problem%EF%BC%89"><span class="toc_mobile_items-number">9.3.</span> <span class="toc_mobile_items-text">9.3 指派问题（Assignment Problem）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-4-%E7%BD%91%E7%BB%9C%E6%B5%81%E9%97%AE%E9%A2%98%EF%BC%88Network-Flow%EF%BC%89"><span class="toc_mobile_items-number">9.4.</span> <span class="toc_mobile_items-text">9.4 网络流问题（Network Flow）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-5-%E6%8A%95%E8%B5%84%E7%BB%84%E5%90%88%E4%BC%98%E5%8C%96"><span class="toc_mobile_items-number">9.5.</span> <span class="toc_mobile_items-text">9.5 投资组合优化</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-6-%E7%94%9F%E4%BA%A7%E8%AE%A1%E5%88%92%E4%B8%8E%E5%BA%93%E5%AD%98%E7%AE%A1%E7%90%86"><span class="toc_mobile_items-number">9.6.</span> <span class="toc_mobile_items-text">9.6 生产计划与库存管理</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#10-%E5%A4%9A%E7%9B%AE%E6%A0%87%E7%BA%BF%E6%80%A7%E8%A7%84%E5%88%92%EF%BC%88Multi-Objective-LP%EF%BC%89"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">10. 多目标线性规划（Multi-Objective LP）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#10-1-%E7%9B%AE%E6%A0%87%E8%A7%84%E5%88%92%EF%BC%88Goal-Programming%EF%BC%89"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">10.1 目标规划（Goal Programming）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#10-2-Pareto-%E5%89%8D%E6%B2%BF"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">10.2 Pareto 前沿</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#11-%E7%BA%BF%E6%80%A7%E8%A7%84%E5%88%92%E4%B8%8E%E5%85%B6%E4%BB%96%E4%BC%98%E5%8C%96%E9%97%AE%E9%A2%98%E7%9A%84%E6%AF%94%E8%BE%83"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">11. 线性规划与其他优化问题的比较</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#11-1-LP-vs-QP%EF%BC%88%E4%BA%8C%E6%AC%A1%E8%A7%84%E5%88%92%EF%BC%89"><span class="toc_mobile_items-number">11.1.</span> <span class="toc_mobile_items-text">11.1 LP vs QP（二次规划）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#11-2-LP-vs-SDP%EF%BC%88%E5%8D%8A%E5%AE%9A%E8%A7%84%E5%88%92%EF%BC%89"><span class="toc_mobile_items-number">11.2.</span> <span class="toc_mobile_items-text">11.2 LP vs SDP（半定规划）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#11-3-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99-LP-%E5%A4%9F%E7%94%A8%EF%BC%9F%EF%BC%88%E4%BD%95%E6%97%B6%E4%B8%8D%E9%9C%80%E8%A6%81%E6%9B%B4%E5%A4%8D%E6%9D%82%E7%9A%84%E6%A8%A1%E5%9E%8B%EF%BC%89"><span class="toc_mobile_items-number">11.3.</span> <span class="toc_mobile_items-text">11.3 什么时候 LP 够用？（何时不需要更复杂的模型）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#12-%E8%AE%A1%E7%AE%97%E5%A4%8D%E6%9D%82%E5%BA%A6%E4%B8%8E%E5%AE%9E%E7%94%A8%E6%80%A7%E8%83%BD"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">12. 计算复杂度与实用性能</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#12-1-LP-%E7%9A%84%E7%90%86%E8%AE%BA%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="toc_mobile_items-number">12.1.</span> <span class="toc_mobile_items-text">12.1 LP 的理论复杂度</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#12-2-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8D%95%E7%BA%AF%E5%BD%A2%E6%B3%95%E5%9C%A8%E5%A4%A7%E5%A4%9A%E6%95%B0%E5%AE%9E%E9%99%85%E9%97%AE%E9%A2%98%E4%B8%8A%E8%BF%99%E4%B9%88%E5%BF%AB%EF%BC%9F"><span class="toc_mobile_items-number">12.2.</span> <span class="toc_mobile_items-text">12.2 为什么单纯形法在大多数实际问题上这么快？</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#12-3-%E9%80%89%E6%8B%A9%E6%B1%82%E8%A7%A3%E7%AD%96%E7%95%A5%E7%9A%84%E5%AE%9E%E7%94%A8%E5%86%B3%E7%AD%96%E6%A0%91"><span class="toc_mobile_items-number">12.3.</span> <span class="toc_mobile_items-text">12.3 选择求解策略的实用决策树</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#13-%E6%95%B0%E5%80%BC%E7%A8%B3%E5%AE%9A%E6%80%A7%E4%B8%8E%E9%A2%84%E6%B1%82%E8%A7%A3%EF%BC%88Presolve%EF%BC%89"><span class="toc_mobile_items-number">13.</span> <span class="toc_mobile_items-text">13. 数值稳定性与预求解（Presolve）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#13-1-%E6%95%B0%E5%80%BC%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">13.1.</span> <span class="toc_mobile_items-text">13.1 数值问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#13-2-%E9%A2%84%E6%B1%82%E8%A7%A3%E7%A4%BA%E4%BE%8B"><span class="toc_mobile_items-number">13.2.</span> <span class="toc_mobile_items-text">13.2 预求解示例</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#14-%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E7%AD%94"><span class="toc_mobile_items-number">14.</span> <span class="toc_mobile_items-text">14. 面试高频问答</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-%E5%BC%95%E8%A8%80%EF%BC%9A%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%BF%E6%80%A7%E8%A7%84%E5%88%92"><span class="toc-number">1.</span> <span class="toc-text">1. 引言：什么是线性规划</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-%E7%BA%BF%E6%80%A7%E8%A7%84%E5%88%92%E9%97%AE%E9%A2%98%E7%9A%84%E6%A0%87%E5%87%86%E5%BD%A2%E5%BC%8F"><span class="toc-number">2.</span> <span class="toc-text">2. 线性规划问题的标准形式</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-%E6%A0%87%E5%87%86%E5%BD%A2%E5%BC%8F%EF%BC%88Standard-Form%EF%BC%89"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 标准形式（Standard Form）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-%E5%B0%86%E4%BB%BB%E6%84%8F-LP-%E8%BD%AC%E5%8C%96%E4%B8%BA%E6%A0%87%E5%87%86%E5%BD%A2%E5%BC%8F"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 将任意 LP 转化为标准形式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-%E8%A7%84%E8%8C%83%E5%BD%A2%E5%BC%8F%EF%BC%88Canonical-Form%EF%BC%89"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 规范形式（Canonical Form）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-4-%E5%87%A0%E4%BD%95%E7%9B%B4%E8%A7%82"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 几何直观</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-%E5%8D%95%E7%BA%AF%E5%BD%A2%E6%B3%95%EF%BC%88Simplex-Method%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">3. 单纯形法（Simplex Method）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 核心思想</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-%E5%9F%BA%E6%9C%AC%E8%A7%A3%E4%B8%8E%E5%9F%BA%E6%9C%AC%E5%8F%AF%E8%A1%8C%E8%A7%A3"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 基本解与基本可行解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-%E5%8D%95%E7%BA%AF%E5%BD%A2%E8%A1%A8%EF%BC%88Simplex-Tableau%EF%BC%89"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 单纯形表（Simplex Tableau）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-4-%E5%8D%95%E7%BA%AF%E5%BD%A2%E6%B3%95%E7%9A%84%E6%AD%A5%E9%AA%A4"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 单纯形法的步骤</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-5-%E6%89%8B%E5%B7%A5%E8%AE%A1%E7%AE%97%E7%A4%BA%E4%BE%8B"><span class="toc-number">3.5.</span> <span class="toc-text">3.5 手工计算示例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-6-%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%B3%95%EF%BC%88Two-Phase-Method%EF%BC%89"><span class="toc-number">3.6.</span> <span class="toc-text">3.6 两阶段法（Two-Phase Method）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-7-Bland-%E8%A7%84%E5%88%99%E4%B8%8E%E9%98%B2%E6%AD%A2%E5%BE%AA%E7%8E%AF"><span class="toc-number">3.7.</span> <span class="toc-text">3.7 Bland 规则与防止循环</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-%E5%AF%B9%E5%81%B6%E7%90%86%E8%AE%BA%EF%BC%88Duality-Theory%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">4. 对偶理论（Duality Theory）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-%E5%AF%B9%E5%81%B6%E9%97%AE%E9%A2%98%E7%9A%84%E6%9E%84%E9%80%A0"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 对偶问题的构造</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-%E5%BC%B1%E5%AF%B9%E5%81%B6%E5%AE%9A%E7%90%86%EF%BC%88Weak-Duality%EF%BC%89"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 弱对偶定理（Weak Duality）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-3-%E5%BC%BA%E5%AF%B9%E5%81%B6%E5%AE%9A%E7%90%86%EF%BC%88Strong-Duality%EF%BC%89"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 强对偶定理（Strong Duality）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-4-%E4%BA%92%E8%A1%A5%E6%9D%BE%E5%BC%9B%E6%80%A7%EF%BC%88Complementary-Slackness%EF%BC%89"><span class="toc-number">4.4.</span> <span class="toc-text">4.4 互补松弛性（Complementary Slackness）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-5-%E5%AF%B9%E5%81%B6%E5%8D%95%E7%BA%AF%E5%BD%A2%E6%B3%95%EF%BC%88Dual-Simplex%EF%BC%89"><span class="toc-number">4.5.</span> <span class="toc-text">4.5 对偶单纯形法（Dual Simplex）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#5-%E5%86%85%E7%82%B9%E6%B3%95%EF%BC%88Interior-Point-Methods%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">5. 内点法（Interior Point Methods）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#5-1-%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 核心思想</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-2-%E9%9A%9C%E7%A2%8D%E6%B3%95%EF%BC%88Barrier-Method%EF%BC%89"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 障碍法（Barrier Method）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-3-%E4%B8%AD%E5%BF%83%E8%B7%AF%E5%BE%84"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 中心路径</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-4-KKT-%E6%9D%A1%E4%BB%B6%E4%B8%8E-Primal-Dual-%E6%96%B9%E6%B3%95"><span class="toc-number">5.4.</span> <span class="toc-text">5.4 KKT 条件与 Primal-Dual 方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-5-%E5%8D%95%E7%BA%AF%E5%BD%A2%E6%B3%95-vs-%E5%86%85%E7%82%B9%E6%B3%95"><span class="toc-number">5.5.</span> <span class="toc-text">5.5 单纯形法 vs 内点法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-6-Klee-Minty-%E5%8F%8D%E4%BE%8B%EF%BC%9A%E5%8D%95%E7%BA%AF%E5%BD%A2%E6%B3%95%E7%9A%84%E6%9C%80%E5%9D%8F%E6%83%85%E5%86%B5"><span class="toc-number">5.6.</span> <span class="toc-text">5.6 Klee-Minty 反例：单纯形法的最坏情况</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#6-%E6%95%B4%E6%95%B0%E7%BA%BF%E6%80%A7%E8%A7%84%E5%88%92%EF%BC%88Integer-Linear-Programming-ILP%EF%BC%89"><span class="toc-number">6.</span> <span class="toc-text">6. 整数线性规划（Integer Linear Programming, ILP）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#6-1-%E5%88%86%E7%B1%BB"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 分类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-2-LP-%E6%9D%BE%E5%BC%9B%EF%BC%88LP-Relaxation%EF%BC%89"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 LP 松弛（LP Relaxation）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-3-%E5%88%86%E6%94%AF%E5%AE%9A%E7%95%8C%E6%B3%95%EF%BC%88Branch-and-Bound%EF%BC%89"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 分支定界法（Branch and Bound）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-4-%E5%89%B2%E5%B9%B3%E9%9D%A2%E6%B3%95%EF%BC%88Cutting-Plane%EF%BC%89"><span class="toc-number">6.4.</span> <span class="toc-text">6.4 割平面法（Cutting Plane）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-5-%E6%B1%82%E8%A7%A3-ILP-%E7%9A%84%E5%B8%B8%E7%94%A8%E7%AD%96%E7%95%A5%E6%80%BB%E7%BB%93"><span class="toc-number">6.5.</span> <span class="toc-text">6.5 求解 ILP 的常用策略总结</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#7-%E6%95%8F%E6%84%9F%E5%BA%A6%E5%88%86%E6%9E%90%EF%BC%88Sensitivity-Analysis%EF%BC%89"><span class="toc-number">7.</span> <span class="toc-text">7. 敏感度分析（Sensitivity Analysis）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#7-1-%E7%9B%AE%E6%A0%87%E7%B3%BB%E6%95%B0%E7%9A%84%E5%8F%98%E5%8C%96%E8%8C%83%E5%9B%B4"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 目标系数的变化范围</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-2-%E5%8F%B3%E7%AB%AF%E9%A1%B9%EF%BC%88RHS%EF%BC%89%E7%9A%84%E5%8F%98%E5%8C%96%E4%B8%8E%E5%BD%B1%E5%AD%90%E4%BB%B7%E6%A0%BC"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 右端项（RHS）的变化与影子价格</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-3-100-%E8%A7%84%E5%88%99"><span class="toc-number">7.3.</span> <span class="toc-text">7.3 100% 规则</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#8-Python-%E5%AE%9E%E7%8E%B0%EF%BC%9ALP-%E6%B1%82%E8%A7%A3%E5%AE%9E%E6%93%8D"><span class="toc-number">8.</span> <span class="toc-text">8. Python 实现：LP 求解实操</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#8-1-scipy-optimize-linprog"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 scipy.optimize.linprog</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-2-PuLP%EF%BC%88%E6%95%99%E5%AD%A6%E9%A6%96%E9%80%89%EF%BC%89"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 PuLP（教学首选）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-3-CVXPY%EF%BC%88%E5%87%B8%E4%BC%98%E5%8C%96%E6%A1%86%E6%9E%B6%EF%BC%89"><span class="toc-number">8.3.</span> <span class="toc-text">8.3 CVXPY（凸优化框架）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-4-Gurobi-CPLEX%EF%BC%88%E5%95%86%E4%B8%9A%E7%BA%A7%E6%B1%82%E8%A7%A3%E5%99%A8%EF%BC%89"><span class="toc-number">8.4.</span> <span class="toc-text">8.4 Gurobi &#x2F; CPLEX（商业级求解器）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-5-%E5%B7%A5%E5%85%B7%E5%AF%B9%E6%AF%94"><span class="toc-number">8.5.</span> <span class="toc-text">8.5 工具对比</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#9-%E7%BB%8F%E5%85%B8%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">9.</span> <span class="toc-text">9. 经典应用场景</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#9-1-%E8%B5%84%E6%BA%90%E5%88%86%E9%85%8D%E9%97%AE%E9%A2%98"><span class="toc-number">9.1.</span> <span class="toc-text">9.1 资源分配问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-2-%E8%BF%90%E8%BE%93%E9%97%AE%E9%A2%98%EF%BC%88Transportation-Problem%EF%BC%89"><span class="toc-number">9.2.</span> <span class="toc-text">9.2 运输问题（Transportation Problem）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-3-%E6%8C%87%E6%B4%BE%E9%97%AE%E9%A2%98%EF%BC%88Assignment-Problem%EF%BC%89"><span class="toc-number">9.3.</span> <span class="toc-text">9.3 指派问题（Assignment Problem）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-4-%E7%BD%91%E7%BB%9C%E6%B5%81%E9%97%AE%E9%A2%98%EF%BC%88Network-Flow%EF%BC%89"><span class="toc-number">9.4.</span> <span class="toc-text">9.4 网络流问题（Network Flow）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-5-%E6%8A%95%E8%B5%84%E7%BB%84%E5%90%88%E4%BC%98%E5%8C%96"><span class="toc-number">9.5.</span> <span class="toc-text">9.5 投资组合优化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-6-%E7%94%9F%E4%BA%A7%E8%AE%A1%E5%88%92%E4%B8%8E%E5%BA%93%E5%AD%98%E7%AE%A1%E7%90%86"><span class="toc-number">9.6.</span> <span class="toc-text">9.6 生产计划与库存管理</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#10-%E5%A4%9A%E7%9B%AE%E6%A0%87%E7%BA%BF%E6%80%A7%E8%A7%84%E5%88%92%EF%BC%88Multi-Objective-LP%EF%BC%89"><span class="toc-number">10.</span> <span class="toc-text">10. 多目标线性规划（Multi-Objective LP）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#10-1-%E7%9B%AE%E6%A0%87%E8%A7%84%E5%88%92%EF%BC%88Goal-Programming%EF%BC%89"><span class="toc-number">10.1.</span> <span class="toc-text">10.1 目标规划（Goal Programming）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-2-Pareto-%E5%89%8D%E6%B2%BF"><span class="toc-number">10.2.</span> <span class="toc-text">10.2 Pareto 前沿</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#11-%E7%BA%BF%E6%80%A7%E8%A7%84%E5%88%92%E4%B8%8E%E5%85%B6%E4%BB%96%E4%BC%98%E5%8C%96%E9%97%AE%E9%A2%98%E7%9A%84%E6%AF%94%E8%BE%83"><span class="toc-number">11.</span> <span class="toc-text">11. 线性规划与其他优化问题的比较</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#11-1-LP-vs-QP%EF%BC%88%E4%BA%8C%E6%AC%A1%E8%A7%84%E5%88%92%EF%BC%89"><span class="toc-number">11.1.</span> <span class="toc-text">11.1 LP vs QP（二次规划）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-2-LP-vs-SDP%EF%BC%88%E5%8D%8A%E5%AE%9A%E8%A7%84%E5%88%92%EF%BC%89"><span class="toc-number">11.2.</span> <span class="toc-text">11.2 LP vs SDP（半定规划）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-3-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99-LP-%E5%A4%9F%E7%94%A8%EF%BC%9F%EF%BC%88%E4%BD%95%E6%97%B6%E4%B8%8D%E9%9C%80%E8%A6%81%E6%9B%B4%E5%A4%8D%E6%9D%82%E7%9A%84%E6%A8%A1%E5%9E%8B%EF%BC%89"><span class="toc-number">11.3.</span> <span class="toc-text">11.3 什么时候 LP 够用？（何时不需要更复杂的模型）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#12-%E8%AE%A1%E7%AE%97%E5%A4%8D%E6%9D%82%E5%BA%A6%E4%B8%8E%E5%AE%9E%E7%94%A8%E6%80%A7%E8%83%BD"><span class="toc-number">12.</span> <span class="toc-text">12. 计算复杂度与实用性能</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#12-1-LP-%E7%9A%84%E7%90%86%E8%AE%BA%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="toc-number">12.1.</span> <span class="toc-text">12.1 LP 的理论复杂度</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-2-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8D%95%E7%BA%AF%E5%BD%A2%E6%B3%95%E5%9C%A8%E5%A4%A7%E5%A4%9A%E6%95%B0%E5%AE%9E%E9%99%85%E9%97%AE%E9%A2%98%E4%B8%8A%E8%BF%99%E4%B9%88%E5%BF%AB%EF%BC%9F"><span class="toc-number">12.2.</span> <span class="toc-text">12.2 为什么单纯形法在大多数实际问题上这么快？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-3-%E9%80%89%E6%8B%A9%E6%B1%82%E8%A7%A3%E7%AD%96%E7%95%A5%E7%9A%84%E5%AE%9E%E7%94%A8%E5%86%B3%E7%AD%96%E6%A0%91"><span class="toc-number">12.3.</span> <span class="toc-text">12.3 选择求解策略的实用决策树</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#13-%E6%95%B0%E5%80%BC%E7%A8%B3%E5%AE%9A%E6%80%A7%E4%B8%8E%E9%A2%84%E6%B1%82%E8%A7%A3%EF%BC%88Presolve%EF%BC%89"><span class="toc-number">13.</span> <span class="toc-text">13. 数值稳定性与预求解（Presolve）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#13-1-%E6%95%B0%E5%80%BC%E9%97%AE%E9%A2%98"><span class="toc-number">13.1.</span> <span class="toc-text">13.1 数值问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-2-%E9%A2%84%E6%B1%82%E8%A7%A3%E7%A4%BA%E4%BE%8B"><span class="toc-number">13.2.</span> <span class="toc-text">13.2 预求解示例</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#14-%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E7%AD%94"><span class="toc-number">14.</span> <span class="toc-text">14. 面试高频问答</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_python.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【sklearn笔记】线性规划</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2020-10-01<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">10.6k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 39 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h1 id="1-引言：什么是线性规划"><a href="#1-引言：什么是线性规划" class="headerlink" title="1. 引言：什么是线性规划"></a>1. 引言：什么是线性规划</h1><p>线性规划（Linear Programming，LP）是运筹学中最基础、应用最广泛的优化模型。它的核心特征是：<strong>目标函数和所有约束条件都是决策变量的线性函数</strong>。尽管”线性”看似简单，但 LP 所蕴含的对偶理论、单纯形法、内点法等构成了现代数学规划的基石。</p>
+<p>1975 年，Kantorovich 和 Koopmans 因资源配置理论（线性规划的核心应用）获得诺贝尔经济学奖。1984 年，Karmarkar 提出的内点法在 AT&amp;T 公司的贝尔实验室引起轰动——它证明了 LP 可以在多项式时间内求解，挑战了统治近 40 年的单纯形法。</p>
+<p>LP 的标准应用场景：假设你是一家工厂的生产经理，有多种产品可以使用有限的资源（原料、工时、机器）来生产，每种产品有不同利润，你需要决定各生产多少以最大化总利润。这个问题天然是线性的。</p>
+<h1 id="2-线性规划问题的标准形式"><a href="#2-线性规划问题的标准形式" class="headerlink" title="2. 线性规划问题的标准形式"></a>2. 线性规划问题的标准形式</h1><h2 id="2-1-标准形式（Standard-Form）"><a href="#2-1-标准形式（Standard-Form）" class="headerlink" title="2.1 标准形式（Standard Form）"></a>2.1 标准形式（Standard Form）</h2><p>LP 的标准形式是大多数求解器接受的输入格式：</p>
+<p>$$\begin{aligned}
+\text{minimize} \quad & c^T x \\
+\text{subject to} \quad & Ax = b \\
+& x \geq 0
+\end{aligned}$$</p>
+<p>其中：</p>
+<ul>
+<li><strong>x</strong> ∈ R^n：决策变量（decision variables）</li>
+<li><strong>c</strong> ∈ R^n：成本系数向量（cost vector）</li>
+<li><strong>A</strong> ∈ R^{m×n}：约束矩阵（constraint matrix），通常 m &lt; n</li>
+<li><strong>b</strong> ∈ R^m：右端常数向量（right-hand side）</li>
+</ul>
+<p><strong>重要</strong>：标准形式要求所有变量非负（x ≥ 0），且所有约束都是等式（Ax &#x3D; b）。如果原始问题不满足这些条件，需要进行标准化。</p>
+<h2 id="2-2-将任意-LP-转化为标准形式"><a href="#2-2-将任意-LP-转化为标准形式" class="headerlink" title="2.2 将任意 LP 转化为标准形式"></a>2.2 将任意 LP 转化为标准形式</h2><p><strong>情形1：最大化问题</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">max c^T x  →  min -c^T x</span><br></pre></td></tr></table></figure>
+
+<p><strong>情形2：不等式约束（≤）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">a_i^T x ≤ b_i  →  a_i^T x + s_i = b_i,  s_i ≥ 0</span><br></pre></td></tr></table></figure>
+<p>引入<strong>松弛变量（slack variable）</strong> s_i。</p>
+<p><strong>情形3：不等式约束（≥）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">a_i^T x ≥ b_i  →  a_i^T x - s_i = b_i,  s_i ≥ 0</span><br></pre></td></tr></table></figure>
+<p>引入<strong>剩余变量（surplus variable）</strong> s_i。</p>
+<p><strong>情形4：无约束变量（free variable）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x_j free  →  x_j = x_j^+ - x_j^-,   x_j^+ ≥ 0, x_j^- ≥ 0</span><br></pre></td></tr></table></figure>
+<p>将一个自由变量拆分为两个非负变量之差。</p>
+<p><strong>示例</strong>：将以下 LP 转化为标准形式：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">max   3x_1 - 2x_2</span><br><span class="line">s.t.  x_1 + x_2  ≤ 5</span><br><span class="line">      2x_1 - x_2  ≥ 1</span><br><span class="line">      x_1 ≥ 0, x_2 free</span><br></pre></td></tr></table></figure>
+
+<p>转化过程：</p>
+<ol>
+<li>max → min：min -3x_1 + 2x_2</li>
+<li>x_2 &#x3D; x_2^+ - x_2^- (x_2^+, x_2^- ≥ 0)</li>
+<li>第一个约束加松弛变量 s_1 ≥ 0：x_1 + x_2^+ - x_2^- + s_1 &#x3D; 5</li>
+<li>第二个约束加减剩余变量 s_2 ≥ 0：2x_1 - x_2^+ + x_2^- - s_2 &#x3D; 1</li>
+<li>所有变量 ≥ 0：x_1, x_2^+, x_2^-, s_1, s_2 ≥ 0</li>
+</ol>
+<h2 id="2-3-规范形式（Canonical-Form）"><a href="#2-3-规范形式（Canonical-Form）" class="headerlink" title="2.3 规范形式（Canonical Form）"></a>2.3 规范形式（Canonical Form）</h2><p>LP 还有另一种常见形式——规范形式（Canonical Form）：</p>
+<p>$$\begin{aligned}
+\text{maximize} \quad & c^T x \\
+\text{subject to} \quad & Ax \leq b \\
+& x \geq 0
+\end{aligned}$$</p>
+<p>规范形式中约束全为 ≤ 不等式（针对最大化问题）。这种形式在对称对偶理论中非常方便。</p>
+<h2 id="2-4-几何直观"><a href="#2-4-几何直观" class="headerlink" title="2.4 几何直观"></a>2.4 几何直观</h2><p>每个 LP 的可行域是一个<strong>凸多面体（convex polyhedron）</strong>——由有限个半空间的交集定义。对于二维 LP，可行域是一个凸多边形；三维则是一个凸多面体。</p>
+<p>LP 基本定理：<strong>如果 LP 有最优解，那么至少有一个最优解出现在可行域的顶点（vertex&#x2F;extreme point）上。</strong>这是单纯形法的基础——它只在顶点之间移动。</p>
+<p><strong>示例</strong>：考虑 LP</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">max   2x_1 + 3x_2</span><br><span class="line">s.t.  x_1 + 2x_2 ≤ 8</span><br><span class="line">      4x_1      ≤ 16</span><br><span class="line">           4x_2 ≤ 12</span><br><span class="line">      x_1, x_2  ≥ 0</span><br></pre></td></tr></table></figure>
+
+<p>可行域是由 (0,0), (0,3), (2,3), (4,0) 四个顶点围成的直角梯形。目标函数在顶点 (2,3) 处取得最大值 2×2 + 3×3 &#x3D; 13。</p>
+<h1 id="3-单纯形法（Simplex-Method）"><a href="#3-单纯形法（Simplex-Method）" class="headerlink" title="3. 单纯形法（Simplex Method）"></a>3. 单纯形法（Simplex Method）</h1><p>单纯形法是 Dantzig 于 1947 年提出的算法，即使在今天仍然是最广泛使用的 LP 求解方法之一。</p>
+<h2 id="3-1-核心思想"><a href="#3-1-核心思想" class="headerlink" title="3.1 核心思想"></a>3.1 核心思想</h2><p>单纯形法从可行域的一个顶点出发，沿着多面体的边（edge）移动到相邻的顶点，每次移动都改善（或不恶化）目标函数值，直到达到最优解。</p>
+<p><strong>为什么只在顶点之间移动？</strong>根据 LP 基本定理，如果最优解存在，必在某个顶点取得。因此我们只需要检查顶点。</p>
+<h2 id="3-2-基本解与基本可行解"><a href="#3-2-基本解与基本可行解" class="headerlink" title="3.2 基本解与基本可行解"></a>3.2 基本解与基本可行解</h2><p>考虑标准形式 Ax &#x3D; b, x ≥ 0，其中 A 是 m × n 矩阵，rank(A) &#x3D; m。</p>
+<p>将 A 的列分为两部分：</p>
+<ul>
+<li><strong>基矩阵 B</strong>：m 个线性无关的列组成的 m × m 可逆子矩阵</li>
+<li><strong>非基矩阵 N</strong>：剩下的 n - m 列</li>
+</ul>
+<p>对应地将 x 分为基变量 x_B 和非基变量 x_N：</p>
+<p>$$Ax = [B \quad N] \begin{bmatrix} x_B \\ x_N \end{bmatrix} = Bx_B + Nx_N = b$$</p>
+<p>令非基变量 x_N &#x3D; 0，则 x_B &#x3D; B^{-1}b。这个解 (x_B, 0) 称为<strong>基本解</strong>。</p>
+<p>如果 x_B ≥ 0，则称其为<strong>基本可行解（Basic Feasible Solution, BFS）</strong>。BFS 恰好对应可行域的顶点。</p>
+<h2 id="3-3-单纯形表（Simplex-Tableau）"><a href="#3-3-单纯形表（Simplex-Tableau）" class="headerlink" title="3.3 单纯形表（Simplex Tableau）"></a>3.3 单纯形表（Simplex Tableau）</h2><p>单纯形表是手工计算时的标准工具。以最大化问题为例，初始表如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">         x_1    x_2    ...    x_n    |   RHS</span><br><span class="line">------------------------------------+--------</span><br><span class="line">row_0    -c_1   -c_2   ...   -c_n   |    0     (目标函数行)</span><br><span class="line">row_1    a_11   a_12   ...   a_1n   |   b_1</span><br><span class="line">row_2    a_21   a_22   ...   a_2n   |   b_2</span><br><span class="line">...      ...    ...    ...   ...    |   ...</span><br><span class="line">row_m    a_m1   a_m2   ...   a_mn   |   b_m</span><br></pre></td></tr></table></figure>
+
+<p>row_0 存储的是<strong>检验数（reduced cost）</strong>的相反数。当所有检验数 ≤ 0（最大化）或 ≥ 0（最小化）时，当前解最优。</p>
+<h2 id="3-4-单纯形法的步骤"><a href="#3-4-单纯形法的步骤" class="headerlink" title="3.4 单纯形法的步骤"></a>3.4 单纯形法的步骤</h2><p><strong>步1 - 最优性检验</strong>：计算检验数 σ_j &#x3D; c_j - z_j &#x3D; c_j - c_B^T B^{-1} A_j。</p>
+<ul>
+<li>最大化：若所有 σ_j ≤ 0 → 最优，停止</li>
+<li>最小化：若所有 σ_j ≥ 0 → 最优，停止</li>
+</ul>
+<p><strong>步2 - 选择入基变量（Entering Variable）</strong>：</p>
+<ul>
+<li>最大化：选 σ_j &gt; 0 中最大的（Dantzig 规则）</li>
+<li>也可以使用 Bland 规则（选择下标最小的正检验数）来避免循环</li>
+</ul>
+<p><strong>步3 - 选择出基变量（Leaving Variable）</strong>：用最小比值测试（Minimum Ratio Test）：</p>
+<p>$$\theta = \min_i \left\{ \frac{x_{B_i}}{y_{ij}} : y_{ij} > 0 \right\}$$</p>
+<p>其中 y_{ij} 是入基列中第 i 行的系数。如果不存在 y_{ij} &gt; 0，则问题无界。</p>
+<p><strong>步4 - 转轴操作（Pivot）</strong>：以 y_{ij} 为主元做 Gauss-Jordan 消元，使入基列成为单位向量。</p>
+<p><strong>步5</strong>：返回步1。</p>
+<h2 id="3-5-手工计算示例"><a href="#3-5-手工计算示例" class="headerlink" title="3.5 手工计算示例"></a>3.5 手工计算示例</h2><p>考虑问题：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">max   5x_1 + 4x_2</span><br><span class="line">s.t.  6x_1 + 4x_2 ≤ 24</span><br><span class="line">      x_1 + 2x_2 ≤ 6</span><br><span class="line">      x_1, x_2 ≥ 0</span><br></pre></td></tr></table></figure>
+
+<p>引入松弛变量 s_1, s_2：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">max   5x_1 + 4x_2 + 0s_1 + 0s_2</span><br><span class="line">s.t.  6x_1 + 4x_2 + s_1      = 24</span><br><span class="line">      x_1 + 2x_2       + s_2  = 6</span><br><span class="line">      x_1, x_2, s_1, s_2 ≥ 0</span><br></pre></td></tr></table></figure>
+
+<p><strong>初始单纯形表</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">          x_1   x_2   s_1   s_2  |  RHS</span><br><span class="line">----------------------------------+------</span><br><span class="line">z-row    -5    -4     0     0    |   0</span><br><span class="line">s_1       6     4     1     0    |  24</span><br><span class="line">s_2       1     2     0     1    |   6</span><br></pre></td></tr></table></figure>
+
+<p>当前 BFS：x_1&#x3D;0, x_2&#x3D;0, s_1&#x3D;24, s_2&#x3D;6, z&#x3D;0。</p>
+<p><strong>迭代1</strong>：</p>
+<ul>
+<li>入基：x_1（检验数 -5 最小，即 5 最大）</li>
+<li>比值测试：s_1: 24&#x2F;6&#x3D;4, s_2: 6&#x2F;1&#x3D;6 → s_1 出基</li>
+<li>主元：6（第一行，第一列）</li>
+<li>执行转轴操作后：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">          x_1   x_2        s_1        s_2  |  RHS</span><br><span class="line">--------------------------------------------+------</span><br><span class="line">z-row      0   -2/3       5/6         0    |  20</span><br><span class="line">x_1        1    2/3       1/6         0    |   4</span><br><span class="line">s_2        0    4/3      -1/6         1    |   2</span><br></pre></td></tr></table></figure>
+
+<p>当前 BFS：x_1&#x3D;4, x_2&#x3D;0, s_1&#x3D;0, s_2&#x3D;2, z&#x3D;20。</p>
+<p><strong>迭代2</strong>：</p>
+<ul>
+<li>入基：x_2（检验数 -2&#x2F;3，唯一负值）</li>
+<li>比值测试：x_1: 4&#x2F;(2&#x2F;3)&#x3D;6, s_2: 2&#x2F;(4&#x2F;3)&#x3D;1.5 → s_2 出基</li>
+<li>主元：4&#x2F;3</li>
+<li>执行转轴操作后：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">          x_1   x_2        s_1         s_2  |  RHS</span><br><span class="line">---------------------------------------------+------</span><br><span class="line">z-row      0     0        3/4         1/2  |  21</span><br><span class="line">x_1        1     0        1/4        -1/2  |   3</span><br><span class="line">x_2        0     1       -1/8         3/4  |  1.5</span><br></pre></td></tr></table></figure>
+
+<p>所有检验数 ≥ 0 → 最优。最优解：x_1&#x3D;3, x_2&#x3D;1.5, z&#x3D;21。</p>
+<h2 id="3-6-两阶段法（Two-Phase-Method）"><a href="#3-6-两阶段法（Two-Phase-Method）" class="headerlink" title="3.6 两阶段法（Two-Phase Method）"></a>3.6 两阶段法（Two-Phase Method）</h2><p>当初始 BFS 不容易直接获取时（如约束中有 “≥” 或 “&#x3D;”），需要使用人工变量法。</p>
+<p><strong>阶段 I</strong>：引入人工变量，构造辅助 LP：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">min   Σ a_i  （人工变量之和）</span><br><span class="line">s.t.  Ax + a = b</span><br><span class="line">      x ≥ 0, a ≥ 0</span><br></pre></td></tr></table></figure>
+
+<p>如果最优目标值为 0，说明所有人工变量为 0，原问题有可行解。此时得到原问题的一个 BFS，进入阶段 II。</p>
+<p>如果阶段 I 最优目标值 &gt; 0，则原问题无可行解（infeasible）。</p>
+<p><strong>阶段 II</strong>：使用阶段 I 得出的 BFS 作为初始解，求解原 LP。</p>
+<h2 id="3-7-Bland-规则与防止循环"><a href="#3-7-Bland-规则与防止循环" class="headerlink" title="3.7 Bland 规则与防止循环"></a>3.7 Bland 规则与防止循环</h2><p>在退化（degenerate）情况下，比值测试可能出现多个相同的最小值，导致算法在选择出基变量时循环（cycling）——即无限地在相同一组基中轮换而不前进。</p>
+<p>Bland 规则：</p>
+<ol>
+<li>入基：选择下标最小的正（最大化）检验数对应的变量</li>
+<li>出基：在比值最小的多个候选中，选择下标最小的基变量</li>
+</ol>
+<p>Bland 规则理论上保证了单纯形法的有限终止性。</p>
+<h1 id="4-对偶理论（Duality-Theory）"><a href="#4-对偶理论（Duality-Theory）" class="headerlink" title="4. 对偶理论（Duality Theory）"></a>4. 对偶理论（Duality Theory）</h1><p>对偶理论是 LP 最优美的部分。每一个 LP（原始问题，Primal）都对应一个对偶问题（Dual），两者之间存在深刻的数学关系。</p>
+<h2 id="4-1-对偶问题的构造"><a href="#4-1-对偶问题的构造" class="headerlink" title="4.1 对偶问题的构造"></a>4.1 对偶问题的构造</h2><p><strong>原始问题（规范形式，最大化）</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">max   c^T x</span><br><span class="line">s.t.  Ax ≤ b</span><br><span class="line">      x ≥ 0</span><br></pre></td></tr></table></figure>
+
+<p><strong>对偶问题</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">min   b^T y</span><br><span class="line">s.t.  A^T y ≥ c</span><br><span class="line">      y ≥ 0</span><br></pre></td></tr></table></figure>
+
+<p><strong>重要</strong>：</p>
+<ul>
+<li>原始是最大化 → 对偶是最小化</li>
+<li>原始约束数 m → 对偶变量数 m（y 的维度）</li>
+<li>原始变量数 n → 对偶约束数 n</li>
+<li>约束矩阵转置：A → A^T</li>
+<li>c 和 b 互换角色：原始目标系数 c 变为对偶的右端项，原始右端项 b 变为对偶目标系数</li>
+</ul>
+<p><strong>构造法则总结表</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>原始（max）</th>
+<th>对偶（min）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>目标 c^T x</td>
+<td>目标 b^T y</td>
+</tr>
+<tr>
+<td>约束 i: a_i^T x ≤ b_i</td>
+<td>变量 i: y_i ≥ 0</td>
+</tr>
+<tr>
+<td>约束 i: a_i^T x ≥ b_i</td>
+<td>变量 i: y_i ≤ 0</td>
+</tr>
+<tr>
+<td>约束 i: a_i^T x &#x3D; b_i</td>
+<td>变量 i: y_i free</td>
+</tr>
+<tr>
+<td>变量 j: x_j ≥ 0</td>
+<td>约束 j: A^T_j y ≥ c_j</td>
+</tr>
+<tr>
+<td>变量 j: x_j ≤ 0</td>
+<td>约束 j: A^T_j y ≤ c_j</td>
+</tr>
+<tr>
+<td>变量 j: x_j free</td>
+<td>约束 j: A^T_j y &#x3D; c_j</td>
+</tr>
+</tbody></table>
+<h2 id="4-2-弱对偶定理（Weak-Duality）"><a href="#4-2-弱对偶定理（Weak-Duality）" class="headerlink" title="4.2 弱对偶定理（Weak Duality）"></a>4.2 弱对偶定理（Weak Duality）</h2><p>设 x 是原始问题的可行解，y 是对偶问题的可行解。则：</p>
+<p>$$c^T x \leq b^T y$$</p>
+<p><strong>推论</strong>：</p>
+<ul>
+<li>原始目标函数值的上界由对偶目标值提供</li>
+<li>如果某个原始解的目标值等于某个对偶解的目标值（c^T x &#x3D; b^T y），则两者均是最优解</li>
+</ul>
+<h2 id="4-3-强对偶定理（Strong-Duality）"><a href="#4-3-强对偶定理（Strong-Duality）" class="headerlink" title="4.3 强对偶定理（Strong Duality）"></a>4.3 强对偶定理（Strong Duality）</h2><p>如果原始问题有最优解 x*，则对偶问题也有最优解 y*，且：</p>
+<p>$$c^T x^* = b^T y^*$$</p>
+<p>这意味着在最优状态下，原始和对偶的目标值<strong>完全相等</strong>——对偶间隙（duality gap）为零。</p>
+<h2 id="4-4-互补松弛性（Complementary-Slackness）"><a href="#4-4-互补松弛性（Complementary-Slackness）" class="headerlink" title="4.4 互补松弛性（Complementary Slackness）"></a>4.4 互补松弛性（Complementary Slackness）</h2><p>设 x* 和 y* 分别是原始和对偶的最优解，则：</p>
+<ol>
+<li>对于原始约束 i：y_i* · (b_i - a_i^T x*) &#x3D; 0</li>
+<li>对于原始变量 j：x_j* · (A_j^T y* - c_j) &#x3D; 0</li>
+</ol>
+<p><strong>直观含义</strong>：如果一个原始约束不紧（有松弛，即 a_i^T x* &lt; b_i），则对应的对偶变量必须为零。反之，如果对偶变量 y_i* &gt; 0，则对应的原始约束必为等式（紧约束）。</p>
+<p>互补松弛性在经济学中表示<strong>影子价格</strong>（shadow price）：y_i* 度量了约束 i 的边际价值——增加一单位资源 b_i 带来的目标函数增量。</p>
+<p><strong>示例</strong>：在上面单纯形法求解的最终表中，检验数行对应松弛变量的系数 (3&#x2F;4, 1&#x2F;2) 恰好就是对偶变量的最优值 y* &#x3D; (0.75, 0.5)。这意味着：</p>
+<ul>
+<li>资源1（第一个约束的 RHS）每增加 1 单位，目标函数增加 0.75</li>
+<li>资源2 每增加 1 单位，目标函数增加 0.5</li>
+</ul>
+<h2 id="4-5-对偶单纯形法（Dual-Simplex）"><a href="#4-5-对偶单纯形法（Dual-Simplex）" class="headerlink" title="4.5 对偶单纯形法（Dual Simplex）"></a>4.5 对偶单纯形法（Dual Simplex）</h2><p>对偶单纯形法与原始单纯形法对称：</p>
+<ul>
+<li>原始单纯形：始终保持原始可行性（x_B ≥ 0），逐步满足对偶可行性（检验数 ≥ 0）</li>
+<li>对偶单纯形：始终保持对偶可行性（检验数 ≥ 0），逐步满足原始可行性（x_B ≥ 0）</li>
+</ul>
+<p>应用场景：已有最优解后 RHS b 发生变化（如敏感度分析），或整数规划的分支定界中——此时原始可行性可能被破坏但最优性仍保持，用对偶单纯形法可以更快地重新优化。</p>
+<h1 id="5-内点法（Interior-Point-Methods）"><a href="#5-内点法（Interior-Point-Methods）" class="headerlink" title="5. 内点法（Interior Point Methods）"></a>5. 内点法（Interior Point Methods）</h1><p>1984 年，Karmarkar 提出的内点法在理论上具有多项式时间复杂度，在实践中对大规模稀疏 LP 问题通常比单纯形法更快。</p>
+<h2 id="5-1-核心思想"><a href="#5-1-核心思想" class="headerlink" title="5.1 核心思想"></a>5.1 核心思想</h2><p>与单纯形法在可行域边界顶点移动不同，内点法从可行域<strong>内部</strong>出发，沿着<strong>中心路径（central path）</strong> 朝最优解移动，并在接近边界时通过障碍项减速（被”推回”内部）。</p>
+<h2 id="5-2-障碍法（Barrier-Method）"><a href="#5-2-障碍法（Barrier-Method）" class="headerlink" title="5.2 障碍法（Barrier Method）"></a>5.2 障碍法（Barrier Method）</h2><p>将 LP 的标准形式转化为带障碍项的等价问题：</p>
+<p>$$\text{minimize} \quad c^T x - \mu \sum_{j=1}^{n} \ln(x_j)$$<br>$$\text{subject to} \quad Ax = b$$</p>
+<p>这里 -Σ ln(x_j) 是<strong>对数障碍函数（logarithmic barrier）</strong>，当任何 x_j → 0+ 时，障碍函数 → ∞，从而强制保持 x &gt; 0。</p>
+<p>μ &gt; 0 是障碍参数。当 μ → 0 时，障碍问题的最优解收敛到原始 LP 的最优解。</p>
+<h2 id="5-3-中心路径"><a href="#5-3-中心路径" class="headerlink" title="5.3 中心路径"></a>5.3 中心路径</h2><p>对于每个 μ &gt; 0，障碍问题有唯一最优解 x(μ)，当 μ 从 ∞ 逐渐减小到 0 时，x(μ) 形成的路径就是<strong>中心路径</strong>。</p>
+<p>实际算法不会为每个 μ 精确求解，而是采用<strong>路径跟随（path-following）</strong>策略：用一个递减序列 μ_k → 0，对每个 μ_k 只做一步（或几步）Newton 迭代来更新解。</p>
+<h2 id="5-4-KKT-条件与-Primal-Dual-方法"><a href="#5-4-KKT-条件与-Primal-Dual-方法" class="headerlink" title="5.4 KKT 条件与 Primal-Dual 方法"></a>5.4 KKT 条件与 Primal-Dual 方法</h2><p>对于 LP：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">min   c^T x</span><br><span class="line">s.t.  Ax = b,  x ≥ 0</span><br></pre></td></tr></table></figure>
+
+<p>其 Lagrange 函数为：<br>$$L(x, y, s) = c^T x - y^T(Ax - b) - s^T x$$</p>
+<p>其中 y 对应等式约束的乘子，s ≥ 0 对应 x ≥ 0 约束的乘子。</p>
+<p><strong>KKT 条件</strong>（最优性的必要条件，对 LP 也是充分的）：</p>
+<ol>
+<li><strong>驻点条件</strong>：c - A^T y - s &#x3D; 0</li>
+<li><strong>原始可行性</strong>：Ax &#x3D; b, x ≥ 0</li>
+<li><strong>对偶可行性</strong>：s ≥ 0</li>
+<li><strong>互补松弛</strong>：x_j · s_j &#x3D; 0 (∀j)</li>
+</ol>
+<p>Primal-Dual 内点法同时处理原始变量 x 和对偶变量 (y, s)。互补松弛条件 x_j s_j &#x3D; 0 被松弛为 x_j s_j &#x3D; μ（中心路径条件），然后逐步让 μ ↓ 0。</p>
+<h2 id="5-5-单纯形法-vs-内点法"><a href="#5-5-单纯形法-vs-内点法" class="headerlink" title="5.5 单纯形法 vs 内点法"></a>5.5 单纯形法 vs 内点法</h2><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>单纯形法</th>
+<th>内点法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>复杂度（最坏情况）</td>
+<td>指数级（O(2^n)），Klee-Minty 反例</td>
+<td>多项式级 O(√n log(1&#x2F;ε)) 或 O(n^{3.5})</td>
+</tr>
+<tr>
+<td>实际运行速度</td>
+<td>对小&#x2F;中型问题极快</td>
+<td>对大规模稀疏问题更快</td>
+</tr>
+<tr>
+<td>解的性质</td>
+<td>精确顶点解（BFS）</td>
+<td>近似内部解（需舍入到顶点）</td>
+</tr>
+<tr>
+<td>热启动（warm start）</td>
+<td>容易</td>
+<td>困难</td>
+</tr>
+<tr>
+<td>敏感度分析</td>
+<td>自然支持（有最优基矩阵信息）</td>
+<td>需要额外计算</td>
+</tr>
+<tr>
+<td>整数规划中的应用</td>
+<td>分支定界中大量使用</td>
+<td>较少使用</td>
+</tr>
+</tbody></table>
+<p>实践中，商业求解器（CPLEX、Gurobi）同时实现了两种方法，并在运行时自动选择或切换。</p>
+<h2 id="5-6-Klee-Minty-反例：单纯形法的最坏情况"><a href="#5-6-Klee-Minty-反例：单纯形法的最坏情况" class="headerlink" title="5.6 Klee-Minty 反例：单纯形法的最坏情况"></a>5.6 Klee-Minty 反例：单纯形法的最坏情况</h2><p>Klee 和 Minty 于 1972 年构造了一个 n 维 LP，使用 Dantzig 规则（最大检验数入基）时，单纯形法需要遍历 2^n - 1 个顶点才能到达最优解，证明其最坏情况是指数复杂度。</p>
+<p>2 维的 Klee-Minty 问题：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">max   2x_1 + x_2</span><br><span class="line">s.t.  x_1       ≤ 5</span><br><span class="line">      4x_1 + x_2 ≤ 25</span><br><span class="line">      x_1, x_2   ≥ 0</span><br></pre></td></tr></table></figure>
+
+<p>对于更高维的推广，单纯形法确实需要指数步数。然而，在绝大多数实际问题中，单纯形法的迭代次数通常仅为约束数的 2~3 倍，这被称为”单纯形法的谜题”——理论和实践的显著差异。Spielman 和 Teng 的”平滑分析”（smoothed analysis，2001）为这一现象提供了理论解释：在轻微随机扰动下，单纯形法的期望复杂度是多项式级的。</p>
+<h1 id="6-整数线性规划（Integer-Linear-Programming-ILP）"><a href="#6-整数线性规划（Integer-Linear-Programming-ILP）" class="headerlink" title="6. 整数线性规划（Integer Linear Programming, ILP）"></a>6. 整数线性规划（Integer Linear Programming, ILP）</h1><p>当部分或全部决策变量必须取整数值时，LP 升级为整数规划。ILP 通常是 NP-hard 的（相比之下，LP 是 P 问题）。</p>
+<h2 id="6-1-分类"><a href="#6-1-分类" class="headerlink" title="6.1 分类"></a>6.1 分类</h2><ul>
+<li><strong>纯整数规划（Pure ILP）</strong>：所有变量都是整数</li>
+<li><strong>混合整数规划（Mixed ILP, MILP）</strong>：部分变量连续，部分整数</li>
+<li><strong>0-1 整数规划（Binary ILP）</strong>：变量只能取 0 或 1</li>
+</ul>
+<p>0-1 规划的强大之处在于可以刻画”是&#x2F;否”决策：</p>
+<ul>
+<li>项目 j 是否投资：x_j ∈ {0, 1}</li>
+<li>任务 i 是否分配给机器 j：x_{ij} ∈ {0, 1}</li>
+<li>设施 j 是否建设：x_j ∈ {0, 1}</li>
+</ul>
+<h2 id="6-2-LP-松弛（LP-Relaxation）"><a href="#6-2-LP-松弛（LP-Relaxation）" class="headerlink" title="6.2 LP 松弛（LP Relaxation）"></a>6.2 LP 松弛（LP Relaxation）</h2><p>求解 ILP 最基本的方法是先<strong>忽略整数约束</strong>，求解对应的 LP（称为 LP 松弛）。LP 松弛的最优目标值提供 ILP 最优值的界：</p>
+<ul>
+<li>最大化 ILP：LP 松弛值 ≥ ILP 最优值（上界）</li>
+<li>最小化 ILP：LP 松弛值 ≤ ILP 最优值（下界）</li>
+</ul>
+<p><strong>示例</strong>：整数背包问题</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">max   16x_1 + 19x_2 + 23x_3</span><br><span class="line">s.t.  2x_1 + 3x_2 + 4x_3 ≤ 8</span><br><span class="line">      x_1, x_2, x_3 ∈ &#123;0, 1&#125;</span><br></pre></td></tr></table></figure>
+
+<p>LP 松弛（0 ≤ x_j ≤ 1）的最优解可能是 x &#x3D; (1, 1, 0.75)，目标值 52.25。但真实的整数最优解是 x &#x3D; (0, 0, 1) 或 (1, 0, 1) 等等——需要进一步探索。</p>
+<h2 id="6-3-分支定界法（Branch-and-Bound）"><a href="#6-3-分支定界法（Branch-and-Bound）" class="headerlink" title="6.3 分支定界法（Branch and Bound）"></a>6.3 分支定界法（Branch and Bound）</h2><p>分支定界是求解 ILP 最基础的精确算法：</p>
+<p><strong>定界（Bound）</strong>：求解当前子问题的 LP 松弛。如果 LP 松弛的最优值已经比当前已知的最好整数解差（劣于已找到的解），则剪枝（prune）——该分支不可能含有更好的整数解。</p>
+<p><strong>分支（Branch）</strong>：在 LP 松弛解中选择一个取值不是整数的变量 x_j，生成两个子问题：</p>
+<ol>
+<li>加入约束 x_j ≤ ⌊x_j⌋</li>
+<li>加入约束 x_j ≥ ⌈x_j⌉</li>
+</ol>
+<p>然后在子问题上递归地求解。</p>
+<p><strong>搜索策略</strong>：</p>
+<ul>
+<li>深度优先（DFS）：快速找到一个可行整数解</li>
+<li>最佳界优先（Best-First）：优先探索最优 LP 松弛值的节点（通常更快找到最优解）</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 分支定界伪代码</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">branch_and_bound</span>(<span class="params">problem, best_obj=<span class="built_in">float</span>(<span class="params"><span class="string">&#x27;-inf&#x27;</span></span>), best_sol=<span class="literal">None</span></span>):</span><br><span class="line">    <span class="comment"># 求解 LP 松弛</span></span><br><span class="line">    lp_sol, lp_obj = solve_lp(problem)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 不可行 → 剪枝</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> lp_sol:</span><br><span class="line">        <span class="keyword">return</span> best_sol, best_obj</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># LP 目标值 ≤ 当前最好解 → 剪枝（最大化问题）</span></span><br><span class="line">    <span class="keyword">if</span> lp_obj &lt;= best_obj:</span><br><span class="line">        <span class="keyword">return</span> best_sol, best_obj</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 检查是否全整数</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">all</span>(is_integer(x_j) <span class="keyword">for</span> x_j <span class="keyword">in</span> lp_sol):</span><br><span class="line">        <span class="keyword">if</span> lp_obj &gt; best_obj:</span><br><span class="line">            <span class="keyword">return</span> lp_sol, lp_obj</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">return</span> best_sol, best_obj</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 分支：选择一个非整数变量</span></span><br><span class="line">    j = choose_branching_var(lp_sol)</span><br><span class="line">    floor_val = <span class="built_in">int</span>(np.floor(lp_sol[j]))</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 左分支：x_j ≤ floor_val</span></span><br><span class="line">    left_sol, left_obj = branch_and_bound(</span><br><span class="line">        problem + constraint(x_j &lt;= floor_val),</span><br><span class="line">        best_obj, best_sol</span><br><span class="line">    )</span><br><span class="line">    <span class="keyword">if</span> left_obj &gt; best_obj:</span><br><span class="line">        best_obj, best_sol = left_obj, left_sol</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 右分支：x_j ≥ floor_val + 1</span></span><br><span class="line">    right_sol, right_obj = branch_and_bound(</span><br><span class="line">        problem + constraint(x_j &gt;= floor_val + <span class="number">1</span>),</span><br><span class="line">        best_obj, best_sol</span><br><span class="line">    )</span><br><span class="line">    <span class="keyword">if</span> right_obj &gt; best_obj:</span><br><span class="line">        best_obj, best_sol = right_obj, right_sol</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> best_sol, best_obj</span><br></pre></td></tr></table></figure>
+
+<h2 id="6-4-割平面法（Cutting-Plane）"><a href="#6-4-割平面法（Cutting-Plane）" class="headerlink" title="6.4 割平面法（Cutting Plane）"></a>6.4 割平面法（Cutting Plane）</h2><p>割平面法的思想是：求解 LP 松弛，如果解不是整数，则添加一个线性约束（割平面）来割掉当前的非整数 LP 解，但不割掉任何可行的整数解。反复进行直到得到整数解。</p>
+<p><strong>Gomory 割</strong>：经典方法，从单纯形表的一行生成：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">若 x_&#123;B_i&#125; + Σ f_&#123;ij&#125; x_&#123;N_j&#125; = f_&#123;i0&#125;</span><br><span class="line">其中 f_&#123;i0&#125; 不是整数，则添加约束：</span><br><span class="line">x_&#123;B_i&#125; + Σ ⌊f_&#123;ij&#125;⌋ x_&#123;N_j&#125; ≤ ⌊f_&#123;i0&#125;⌋</span><br></pre></td></tr></table></figure>
+
+<p>Gomory 证明了这种割的有限收敛性。实践中，割平面通常与分支定界结合——称为<strong>分支-切割法（Branch and Cut）</strong>。</p>
+<h2 id="6-5-求解-ILP-的常用策略总结"><a href="#6-5-求解-ILP-的常用策略总结" class="headerlink" title="6.5 求解 ILP 的常用策略总结"></a>6.5 求解 ILP 的常用策略总结</h2><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>精确&#x2F;近似</th>
+<th>适用规模</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>穷举</td>
+<td>精确</td>
+<td>n &lt; 20</td>
+<td>仅限极小问题</td>
+</tr>
+<tr>
+<td>分支定界 (B&amp;B)</td>
+<td>精确</td>
+<td>n &lt; 200</td>
+<td>通用框架，效率依赖 LP 松弛质量</td>
+</tr>
+<tr>
+<td>割平面</td>
+<td>精确</td>
+<td>n &lt; 200</td>
+<td>通常与 B&amp;B 结合</td>
+</tr>
+<tr>
+<td>分支-切割 (B&amp;C)</td>
+<td>精确</td>
+<td>n &lt; 500</td>
+<td>现代 MILP 求解器标准方法</td>
+</tr>
+<tr>
+<td>LP 松弛 + 舍入</td>
+<td>近似</td>
+<td>n &gt; 1000</td>
+<td>快速但可能较差</td>
+</tr>
+<tr>
+<td>启发式&#x2F;元启发式</td>
+<td>近似</td>
+<td>n &gt; 1000</td>
+<td>遗传算法、禁忌搜索等</td>
+</tr>
+</tbody></table>
+<h1 id="7-敏感度分析（Sensitivity-Analysis）"><a href="#7-敏感度分析（Sensitivity-Analysis）" class="headerlink" title="7. 敏感度分析（Sensitivity Analysis）"></a>7. 敏感度分析（Sensitivity Analysis）</h1><p>敏感度分析回答的问题是：当模型参数发生变化时，最优解如何改变？这在现实中至关重要——数据往往是不精确的，我们需要知道最优决策对参数变化的稳健性。</p>
+<h2 id="7-1-目标系数的变化范围"><a href="#7-1-目标系数的变化范围" class="headerlink" title="7.1 目标系数的变化范围"></a>7.1 目标系数的变化范围</h2><p>对于基变量 x_{B_j} 的目标系数 c_{B_j}，其允许的变化范围是：</p>
+<p>$$\max \left\{ \frac{-\sigma_k}{\bar{a}_{jk}} : \bar{a}_{jk} > 0 \right\} \leq \Delta c_{B_j} \leq \min \left\{ \frac{-\sigma_k}{\bar{a}_{jk}} : \bar{a}_{jk} < 0 \right\}$$</p>
+<p>其中 σ_k 是当前表中非基变量的检验数，\bar{a}_{jk} 是转轴后的约束矩阵元素。</p>
+<p>如果 Δc 在此范围内，最优基不变（检验数符号不变）；但如果 Δc 超出这个范围，需要使用对偶单纯形法重新优化。</p>
+<h2 id="7-2-右端项（RHS）的变化与影子价格"><a href="#7-2-右端项（RHS）的变化与影子价格" class="headerlink" title="7.2 右端项（RHS）的变化与影子价格"></a>7.2 右端项（RHS）的变化与影子价格</h2><p>对于约束 i 的 RHS b_i 的变化：</p>
+<p>$$\max \left\{ \frac{-\bar{b}_r}{\bar{B}^{-1}_{ri}} : \bar{B}^{-1}_{ri} > 0 \right\} \leq \Delta b_i \leq \min \left\{ \frac{-\bar{b}_r}{\bar{B}^{-1}_{ri}} : \bar{B}^{-1}_{ri} < 0 \right\}$$</p>
+<p>在此范围内，最优基不变。b_i 每增加 1 单位，目标函数增加 y_i*（影子价格）。</p>
+<p><strong>影子价格的经济解释</strong>：如果约束 i 代表”原材料 A 的可用量不超过 b_i 吨”，那么 y_i*（影子价格）就是额外 1 吨原材料的边际价值——你愿意为它支付多少。如果市场价格低于影子价格，你应该购买更多；反之则不应。</p>
+<h2 id="7-3-100-规则"><a href="#7-3-100-规则" class="headerlink" title="7.3 100% 规则"></a>7.3 100% 规则</h2><p>当多个系数同时变化时，可以使用 100% 规则做近似检查：</p>
+<ul>
+<li>对每个变化计算 ratio &#x3D; (实际变化量) &#x2F; (允许的最大变化量)</li>
+<li>如果 Σ ratio ≤ 1，最优基不变</li>
+<li>如果 Σ ratio &gt; 1，无法确定，需要实际重新求解</li>
+</ul>
+<h1 id="8-Python-实现：LP-求解实操"><a href="#8-Python-实现：LP-求解实操" class="headerlink" title="8. Python 实现：LP 求解实操"></a>8. Python 实现：LP 求解实操</h1><h2 id="8-1-scipy-optimize-linprog"><a href="#8-1-scipy-optimize-linprog" class="headerlink" title="8.1 scipy.optimize.linprog"></a>8.1 scipy.optimize.linprog</h2><p>SciPy 提供了 <code>linprog</code> 函数，支持多种求解算法：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> scipy.optimize <span class="keyword">import</span> linprog</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="comment"># 问题：min c^T x  s.t. A_ub x ≤ b_ub, A_eq x = b_eq, bounds</span></span><br><span class="line"><span class="comment"># 示例：min -2x1 - 3x2  s.t. x1 + 2x2 ≤ 8, 4x1 ≤ 16, x1,x2 ≥ 0</span></span><br><span class="line"></span><br><span class="line">c = [-<span class="number">2</span>, -<span class="number">3</span>]  <span class="comment"># 注意是 -2, -3 因为我们最小化（等价于 max 2x1+3x2）</span></span><br><span class="line"></span><br><span class="line">A_ub = [[<span class="number">1</span>, <span class="number">2</span>],</span><br><span class="line">        [<span class="number">4</span>, <span class="number">0</span>],</span><br><span class="line">        [<span class="number">0</span>, <span class="number">4</span>]]</span><br><span class="line">b_ub = [<span class="number">8</span>, <span class="number">16</span>, <span class="number">12</span>]</span><br><span class="line"></span><br><span class="line">bounds = [(<span class="number">0</span>, <span class="literal">None</span>), (<span class="number">0</span>, <span class="literal">None</span>)]  <span class="comment"># x1 ≥ 0, x2 ≥ 0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用 HiGHS 求解器（SciPy 1.6+）</span></span><br><span class="line">result = linprog(c, A_ub=A_ub, b_ub=b_ub, bounds=bounds, method=<span class="string">&#x27;highs&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;状态: <span class="subst">&#123;result.message&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;最优值: <span class="subst">&#123;-result.fun:<span class="number">.2</span>f&#125;</span>&quot;</span>)  <span class="comment"># 注意符号翻转</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;最优解: x1 = <span class="subst">&#123;result.x[<span class="number">0</span>]:<span class="number">.2</span>f&#125;</span>, x2 = <span class="subst">&#123;result.x[<span class="number">1</span>]:<span class="number">.2</span>f&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;迭代次数: <span class="subst">&#123;result.nit&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>SciPy 支持的方法：</p>
+<ul>
+<li><code>method=&#39;highs&#39;</code>（推荐）：HiGHS 实现，性能优秀</li>
+<li><code>method=&#39;simplex&#39;</code>（已弃用）：经典两阶段单纯形法</li>
+<li><code>method=&#39;interior-point&#39;</code>（已弃用）：Primal-Dual 内点法</li>
+</ul>
+<h2 id="8-2-PuLP（教学首选）"><a href="#8-2-PuLP（教学首选）" class="headerlink" title="8.2 PuLP（教学首选）"></a>8.2 PuLP（教学首选）</h2><p>PuLP 提供优雅的建模语法，适合教学和中小规模问题：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pulp <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建问题</span></span><br><span class="line">prob = LpProblem(<span class="string">&quot;Production_Planning&quot;</span>, LpMaximize)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 变量</span></span><br><span class="line">x1 = LpVariable(<span class="string">&quot;x1&quot;</span>, lowBound=<span class="number">0</span>)   <span class="comment"># 产品1产量</span></span><br><span class="line">x2 = LpVariable(<span class="string">&quot;x2&quot;</span>, lowBound=<span class="number">0</span>)   <span class="comment"># 产品2产量</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 目标函数</span></span><br><span class="line">prob += <span class="number">2</span>*x1 + <span class="number">3</span>*x2</span><br><span class="line"></span><br><span class="line"><span class="comment"># 约束</span></span><br><span class="line">prob += x1 + <span class="number">2</span>*x2 &lt;= <span class="number">8</span></span><br><span class="line">prob += <span class="number">4</span>*x1 &lt;= <span class="number">16</span></span><br><span class="line">prob += <span class="number">4</span>*x2 &lt;= <span class="number">12</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 求解</span></span><br><span class="line">prob.solve()</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;状态: <span class="subst">&#123;LpStatus[prob.status]&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;最优值: <span class="subst">&#123;value(prob.objective)&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;x1 = <span class="subst">&#123;value(x1)&#125;</span>, x2 = <span class="subst">&#123;value(x2)&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 影子价格（对偶变量）</span></span><br><span class="line"><span class="keyword">for</span> name, constraint <span class="keyword">in</span> prob.constraints.items():</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;<span class="subst">&#123;name&#125;</span>: 影子价格 = <span class="subst">&#123;constraint.pi&#125;</span>, 松弛 = <span class="subst">&#123;constraint.slack&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="8-3-CVXPY（凸优化框架）"><a href="#8-3-CVXPY（凸优化框架）" class="headerlink" title="8.3 CVXPY（凸优化框架）"></a>8.3 CVXPY（凸优化框架）</h2><p>CVXPY 定位为领域特定语言（DSL），可求解 LP、QP、SDP 等多种凸优化问题：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> cvxpy <span class="keyword">as</span> cp</span><br><span class="line"></span><br><span class="line"><span class="comment"># 变量</span></span><br><span class="line">x = cp.Variable(<span class="number">2</span>, nonneg=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 目标</span></span><br><span class="line">objective = cp.Maximize(<span class="number">2</span>*x[<span class="number">0</span>] + <span class="number">3</span>*x[<span class="number">1</span>])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 约束</span></span><br><span class="line">constraints = [</span><br><span class="line">    x[<span class="number">0</span>] + <span class="number">2</span>*x[<span class="number">1</span>] &lt;= <span class="number">8</span>,</span><br><span class="line">    <span class="number">4</span>*x[<span class="number">0</span>] &lt;= <span class="number">16</span>,</span><br><span class="line">    <span class="number">4</span>*x[<span class="number">1</span>] &lt;= <span class="number">12</span></span><br><span class="line">]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 求解</span></span><br><span class="line">prob = cp.Problem(objective, constraints)</span><br><span class="line">prob.solve()</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;最优值: <span class="subst">&#123;prob.value:<span class="number">.2</span>f&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;最优解: <span class="subst">&#123;x.value&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>CVXPY 的优势：如果问题是凸的（包括 LP），CVXPY 可以自动验证凸性并使用最合适的求解器。代码几乎就是数学公式的直接翻译。</p>
+<h2 id="8-4-Gurobi-CPLEX（商业级求解器）"><a href="#8-4-Gurobi-CPLEX（商业级求解器）" class="headerlink" title="8.4 Gurobi &#x2F; CPLEX（商业级求解器）"></a>8.4 Gurobi &#x2F; CPLEX（商业级求解器）</h2><p>对于工业级 MILP 问题，Gurobi 和 CPLEX 是行业标准：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Gurobi 示例</span></span><br><span class="line"><span class="keyword">import</span> gurobipy <span class="keyword">as</span> gp</span><br><span class="line"><span class="keyword">from</span> gurobipy <span class="keyword">import</span> GRB</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建模型</span></span><br><span class="line">m = gp.Model(<span class="string">&quot;production&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 变量</span></span><br><span class="line">x1 = m.addVar(name=<span class="string">&quot;x1&quot;</span>)</span><br><span class="line">x2 = m.addVar(name=<span class="string">&quot;x2&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 目标</span></span><br><span class="line">m.setObjective(<span class="number">2</span>*x1 + <span class="number">3</span>*x2, GRB.MAXIMIZE)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 约束</span></span><br><span class="line">m.addConstr(x1 + <span class="number">2</span>*x2 &lt;= <span class="number">8</span>)</span><br><span class="line">m.addConstr(<span class="number">4</span>*x1 &lt;= <span class="number">16</span>)</span><br><span class="line">m.addConstr(<span class="number">4</span>*x2 &lt;= <span class="number">12</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 求解</span></span><br><span class="line">m.optimize()</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;最优值: <span class="subst">&#123;m.objVal&#125;</span>&quot;</span>)</span><br><span class="line"><span class="keyword">for</span> v <span class="keyword">in</span> m.getVars():</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;<span class="subst">&#123;v.varName&#125;</span> = <span class="subst">&#123;v.x&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>Gurobi&#x2F;CPLEX 的优势：</p>
+<ul>
+<li>对 MILP 的启发式算法极强（预求解、割生成、强分支策略）</li>
+<li>支持并行计算</li>
+<li>学术&#x2F;免费许可可用</li>
+</ul>
+<h2 id="8-5-工具对比"><a href="#8-5-工具对比" class="headerlink" title="8.5 工具对比"></a>8.5 工具对比</h2><table>
+<thead>
+<tr>
+<th>工具</th>
+<th>许可证</th>
+<th>适用规模</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>scipy.optimize.linprog</td>
+<td>BSD</td>
+<td>中小型 LP</td>
+<td>轻量，NumPy 生态，HiGHS 后端</td>
+</tr>
+<tr>
+<td>PuLP</td>
+<td>MIT</td>
+<td>中小型 LP&#x2F;MILP</td>
+<td>语法友好，可调用多种求解器</td>
+</tr>
+<tr>
+<td>CVXPY</td>
+<td>Apache 2.0</td>
+<td>中小型 LP&#x2F;QP&#x2F;SDP</td>
+<td>DSL 风格，自动凸性验证</td>
+</tr>
+<tr>
+<td>OR-Tools (Google)</td>
+<td>Apache 2.0</td>
+<td>中大型 MILP</td>
+<td>Google 出品，约束编程强</td>
+</tr>
+<tr>
+<td>HiGHS</td>
+<td>MIT</td>
+<td>大型 LP</td>
+<td>目前最快的开源 LP 求解器</td>
+</tr>
+<tr>
+<td>GLPK</td>
+<td>GPL</td>
+<td>中型 LP&#x2F;MILP</td>
+<td>GNU 项目，教学使用</td>
+</tr>
+<tr>
+<td>Gurobi</td>
+<td>商业&#x2F;Academic</td>
+<td>工业级</td>
+<td>顶级 MILP 性能</td>
+</tr>
+<tr>
+<td>CPLEX (IBM)</td>
+<td>商业&#x2F;Academic</td>
+<td>工业级</td>
+<td>与 Gurobi 齐名</td>
+</tr>
+</tbody></table>
+<p><strong>推荐选择</strong>：</p>
+<ul>
+<li>学习&#x2F;教学：PuLP + GLPK</li>
+<li>纯 LP 研究&#x2F;原型：scipy.linprog (HiGHS)</li>
+<li>生产环境 MILP：Gurobi 或 CPLEX</li>
+<li>凸优化研究：CVXPY</li>
+</ul>
+<h1 id="9-经典应用场景"><a href="#9-经典应用场景" class="headerlink" title="9. 经典应用场景"></a>9. 经典应用场景</h1><h2 id="9-1-资源分配问题"><a href="#9-1-资源分配问题" class="headerlink" title="9.1 资源分配问题"></a>9.1 资源分配问题</h2><p><strong>场景</strong>：工厂生产 n 种产品，有 m 种资源约束（原料、工时、机器容量）。每种产品 j 需要 a_{ij} 单位资源 i，利润为 c_j。求最大利润的生产方案。</p>
+<p><strong>LP 模型</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">max   Σ c_j x_j</span><br><span class="line">s.t.  Σ a_&#123;ij&#125; x_j ≤ b_i  (∀i)</span><br><span class="line">      x_j ≥ 0</span><br></pre></td></tr></table></figure>
+
+<h2 id="9-2-运输问题（Transportation-Problem）"><a href="#9-2-运输问题（Transportation-Problem）" class="headerlink" title="9.2 运输问题（Transportation Problem）"></a>9.2 运输问题（Transportation Problem）</h2><p><strong>场景</strong>：有 p 个供应地（工厂），q 个需求地（零售店）。工厂 i 产能为 s_i，零售店 j 需求为 d_j，从 i 到 j 的单位运输成本为 c_{ij}。如何安排运输使总成本最小？</p>
+<p><strong>LP 模型</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">min   Σ_i Σ_j c_&#123;ij&#125; x_&#123;ij&#125;</span><br><span class="line">s.t.  Σ_j x_&#123;ij&#125; = s_i   (∀i)   — 每个工厂运出量等于产能</span><br><span class="line">      Σ_i x_&#123;ij&#125; = d_j   (∀j)   — 每个零售店收到量等于需求</span><br><span class="line">      x_&#123;ij&#125; ≥ 0</span><br></pre></td></tr></table></figure>
+
+<p>运输问题是一个高度结构化的问题：约束矩阵是全幺模（totally unimodular）的，因此 LP 松弛自动给出整数解（当 s_i 和 d_j 为整数时）。这意味着运输问题可以在多项式时间内精确求解。</p>
+<h2 id="9-3-指派问题（Assignment-Problem）"><a href="#9-3-指派问题（Assignment-Problem）" class="headerlink" title="9.3 指派问题（Assignment Problem）"></a>9.3 指派问题（Assignment Problem）</h2><p><strong>场景</strong>：n 个工人，n 个任务。工人 i 完成任务 j 的成本为 c_{ij}。每人分配恰好一个任务，每个任务恰好分配一人。</p>
+<p><strong>LP 模型</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">min   Σ_i Σ_j c_&#123;ij&#125; x_&#123;ij&#125;</span><br><span class="line">s.t.  Σ_j x_&#123;ij&#125; = 1   (∀i)   — 每人一个任务</span><br><span class="line">      Σ_i x_&#123;ij&#125; = 1   (∀j)   — 每个任务一人</span><br><span class="line">      x_&#123;ij&#125; ≥ 0  （或 x_&#123;ij&#125; ∈ &#123;0,1&#125;）</span><br></pre></td></tr></table></figure>
+
+<p>由于约束矩阵的全幺模性，LP 松弛自动产生 0-1 解。<strong>匈牙利算法</strong>可以在 O(n^3) 时间内求解，比单纯形法更高效。</p>
+<h2 id="9-4-网络流问题（Network-Flow）"><a href="#9-4-网络流问题（Network-Flow）" class="headerlink" title="9.4 网络流问题（Network Flow）"></a>9.4 网络流问题（Network Flow）</h2><p>最大流问题：有向图 G&#x3D;(V,E)，源点 s，汇点 t，每条边 (u,v) 有容量 c_{uv}。求从 s 到 t 的最大流量。</p>
+<p><strong>LP 模型</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">max   Σ_v f_&#123;sv&#125;   (源点总流出)</span><br><span class="line">s.t.  0 ≤ f_&#123;uv&#125; ≤ c_&#123;uv&#125;        (∀(u,v)∈E)  — 容量约束</span><br><span class="line">      Σ_&#123;v:(u,v)∈E&#125; f_&#123;uv&#125; - Σ_&#123;v:(v,u)∈E&#125; f_&#123;vu&#125; = 0  (∀u∈V\&#123;s,t&#125;)  — 流量守恒</span><br></pre></td></tr></table></figure>
+
+<p>虽然可以写成 LP，但实际中从不这么求解——Ford-Fulkerson 算法（O(E·max_flow)）或 Dinic 算法（O(V^2·E)）高效得多。这说明了解问题结构的重要性：LP 是通用工具，但专用算法几乎总是更快。</p>
+<h2 id="9-5-投资组合优化"><a href="#9-5-投资组合优化" class="headerlink" title="9.5 投资组合优化"></a>9.5 投资组合优化</h2><p><strong>场景（简化版）</strong>：n 个投资标的，每个有预期收益率 r_j。总预算为 B。需要在给定风险约束下最大化预期收益。</p>
+<p><strong>LP 模型</strong>（线性版本，使用绝对偏差代替方差）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">max   Σ r_j x_j</span><br><span class="line">s.t.  Σ x_j = B             — 预算约束</span><br><span class="line">      Σ |r_j - r̄| x_j ≤ R  — 风险约束（线性化 MAD）</span><br><span class="line">      x_j ≥ 0</span><br></pre></td></tr></table></figure>
+
+<p>更精确的模型是二次规划（QP）——Markowitz 均值-方差模型。</p>
+<h2 id="9-6-生产计划与库存管理"><a href="#9-6-生产计划与库存管理" class="headerlink" title="9.6 生产计划与库存管理"></a>9.6 生产计划与库存管理</h2><p><strong>场景</strong>：T 个时间周期，每个周期 t 有需求 d_t、生产成本 c_t、库存持有成本 h_t。决策变量：产量 p_t 和库存量 inv_t。</p>
+<p><strong>LP 模型</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">min   Σ_t (c_t · p_t + h_t · inv_t)</span><br><span class="line">s.t.  inv_&#123;t-1&#125; + p_t = d_t + inv_t   (∀t)  — 库存平衡</span><br><span class="line">      p_t ≥ 0, inv_t ≥ 0</span><br></pre></td></tr></table></figure>
+
+<h1 id="10-多目标线性规划（Multi-Objective-LP）"><a href="#10-多目标线性规划（Multi-Objective-LP）" class="headerlink" title="10. 多目标线性规划（Multi-Objective LP）"></a>10. 多目标线性规划（Multi-Objective LP）</h1><p>现实中的决策问题往往涉及多个相互冲突的目标。例如”利润最大化”与”污染最小化”通常不可兼得。</p>
+<h2 id="10-1-目标规划（Goal-Programming）"><a href="#10-1-目标规划（Goal-Programming）" class="headerlink" title="10.1 目标规划（Goal Programming）"></a>10.1 目标规划（Goal Programming）</h2><p>目标规划将每个目标设定一个期望值（目标水平），然后最小化与目标的偏差：</p>
+<p><strong>形式</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">min   Σ w_k (d_k^+ + d_k^-)</span><br><span class="line">s.t.  c_k^T x - d_k^+ + d_k^- = g_k   (∀k)  — 目标约束</span><br><span class="line">      Ax ≤ b                              — 硬约束</span><br><span class="line">      d_k^+, d_k^- ≥ 0</span><br></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<ul>
+<li>g_k 是目标 k 的期望水平</li>
+<li>d_k^+ 是超出的偏差（≥ 0）</li>
+<li>d_k^- 是不足的偏差（≥ 0）</li>
+<li>w_k 是该目标的权重</li>
+</ul>
+<p><strong>扩展</strong>：</p>
+<ul>
+<li><strong>优先级（Preemptive）目标规划</strong>：目标有严格优先级 P_1 &gt;&gt; P_2 &gt;&gt; …，必须先满足高优先级的再考虑低优先级的</li>
+<li><strong>加权目标规划</strong>：所有目标同时考虑，通过权重 w 反映相对重要性</li>
+</ul>
+<h2 id="10-2-Pareto-前沿"><a href="#10-2-Pareto-前沿" class="headerlink" title="10.2 Pareto 前沿"></a>10.2 Pareto 前沿</h2><p>在多目标优化中，一个解称为<strong>Pareto 最优</strong>，如果不存在另一个解在所有目标上都不差于此解且至少在一个目标上严格优于它。</p>
+<p>获取 Pareto 前沿的常用方法之一是<strong>ε-约束法</strong>：将 k-1 个目标转化为约束，优化剩余一个目标，通过改变约束阈值遍历 Pareto 前沿。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">min   f_1(x)</span><br><span class="line">s.t.  f_2(x) ≤ ε_2</span><br><span class="line">      f_3(x) ≤ ε_3</span><br><span class="line">      ...</span><br><span class="line">      x ∈ X</span><br></pre></td></tr></table></figure>
+
+<p>变化 ε_2, ε_3, … 即可获得 Pareto 前沿的不同点。</p>
+<h1 id="11-线性规划与其他优化问题的比较"><a href="#11-线性规划与其他优化问题的比较" class="headerlink" title="11. 线性规划与其他优化问题的比较"></a>11. 线性规划与其他优化问题的比较</h1><h2 id="11-1-LP-vs-QP（二次规划）"><a href="#11-1-LP-vs-QP（二次规划）" class="headerlink" title="11.1 LP vs QP（二次规划）"></a>11.1 LP vs QP（二次规划）</h2><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>LP</th>
+<th>QP</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>目标函数</td>
+<td>线性：c^T x</td>
+<td>二次：1&#x2F;2 x^T Q x + c^T x</td>
+</tr>
+<tr>
+<td>约束</td>
+<td>线性</td>
+<td>线性</td>
+</tr>
+<tr>
+<td>凸性</td>
+<td>自动凸（线性即凸）</td>
+<td>需要 Q 半正定才凸</td>
+</tr>
+<tr>
+<td>最优解位置</td>
+<td>总是在顶点</td>
+<td>可能在约束的内部或边界上</td>
+</tr>
+<tr>
+<td>复杂度</td>
+<td>P 问题</td>
+<td>凸时 P 问题</td>
+</tr>
+<tr>
+<td>经典应用</td>
+<td>资源分配、运输</td>
+<td>投资组合、SVM、MPC</td>
+</tr>
+</tbody></table>
+<h2 id="11-2-LP-vs-SDP（半定规划）"><a href="#11-2-LP-vs-SDP（半定规划）" class="headerlink" title="11.2 LP vs SDP（半定规划）"></a>11.2 LP vs SDP（半定规划）</h2><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>LP</th>
+<th>SDP</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>决策变量</td>
+<td>向量 x ∈ R^n</td>
+<td>对称矩阵 X ∈ S^n</td>
+</tr>
+<tr>
+<td>非负约束</td>
+<td>x ≥ 0</td>
+<td>X ≽ 0（半正定性）</td>
+</tr>
+<tr>
+<td>应用</td>
+<td>运筹优化</td>
+<td>组合优化松弛、控制系统、量子信息</td>
+</tr>
+<tr>
+<td>复杂度</td>
+<td>P 问题</td>
+<td>P 问题（但更”昂贵”，≈ O(n^6)）</td>
+</tr>
+</tbody></table>
+<p>SDP 可以视为 LP 的推广——将”元素非负”推广为”矩阵半正定”。许多 NP-hard 组合优化问题（如 MAX-CUT）有高质量的 SDP 松弛。</p>
+<h2 id="11-3-什么时候-LP-够用？（何时不需要更复杂的模型）"><a href="#11-3-什么时候-LP-够用？（何时不需要更复杂的模型）" class="headerlink" title="11.3 什么时候 LP 够用？（何时不需要更复杂的模型）"></a>11.3 什么时候 LP 够用？（何时不需要更复杂的模型）</h2><ul>
+<li>LP 适用：问题天然具有比例性（线性）+ 可加性</li>
+<li>需要 IP：存在”是&#x2F;否”决策、数量必须为整数</li>
+<li>需要 QP：目标函数存在二次项（如风险最小化、力最小化）</li>
+<li>需要 NLP：存在非线性物理&#x2F;化学规律（如化学平衡、电力潮流）</li>
+<li>需要 SDP：需要矩阵变量或组合优化的紧松弛</li>
+</ul>
+<h1 id="12-计算复杂度与实用性能"><a href="#12-计算复杂度与实用性能" class="headerlink" title="12. 计算复杂度与实用性能"></a>12. 计算复杂度与实用性能</h1><h2 id="12-1-LP-的理论复杂度"><a href="#12-1-LP-的理论复杂度" class="headerlink" title="12.1 LP 的理论复杂度"></a>12.1 LP 的理论复杂度</h2><ul>
+<li><strong>椭球法</strong>（Khachiyan，1979）：首次证明 LP ∈ P，复杂度 O(n^6 L^2)。理论上重要，但实践上极慢。</li>
+<li><strong>内点法</strong>（Karmarkar，1984）：O(n^{3.5} L) 级，既有理论保证又有实用性能。</li>
+<li><strong>单纯形法</strong>：最坏情况指数级，但平均&#x2F;实用时为 O(m log n) 到 O(n) 次迭代。</li>
+</ul>
+<h2 id="12-2-为什么单纯形法在大多数实际问题上这么快？"><a href="#12-2-为什么单纯形法在大多数实际问题上这么快？" class="headerlink" title="12.2 为什么单纯形法在大多数实际问题上这么快？"></a>12.2 为什么单纯形法在大多数实际问题上这么快？</h2><p>这个问题困扰了优化社区数十年。Spielman 和 Teng（2001）的平滑分析给出了部分答案：通过对输入系数施加小的随机扰动，单纯形法的期望运行时间是多项式级的。这意味着”病态”的 Klee-Minty 型问题在实际数据中极为罕见——实际数据本身就有天然的”噪声”。</p>
+<p>直观地说，单纯形法的每次迭代大约需要 O(mn) 的工作量（对单纯形表做 Gauss-Jordan 消元），而迭代次数通常在 O(m) 到 O(2m) 之间。因此总复杂度约为 O(m^2 n)，在 m &lt;&lt; n 时非常高效。</p>
+<h2 id="12-3-选择求解策略的实用决策树"><a href="#12-3-选择求解策略的实用决策树" class="headerlink" title="12.3 选择求解策略的实用决策树"></a>12.3 选择求解策略的实用决策树</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">问题规模？</span><br><span class="line">├── n &lt; 1000, m &lt; 1000 → 单纯形法（简单、有顶点解）</span><br><span class="line">│   └── 需要敏感度分析 → 单纯形法（有基矩阵信息）</span><br><span class="line">├── n &gt; 10000, m &gt; 10000 → 内点法或 HiGHS</span><br><span class="line">│   └── 稀疏约束矩阵 → 内点法（利用稀疏线性代数）</span><br><span class="line">└── 含整数变量？</span><br><span class="line">    ├── n &lt; 200 → B&amp;B / Branch-and-Cut</span><br><span class="line">    ├── n &gt; 500 → 考虑启发式（时间有限的场景）</span><br><span class="line">    └── n &gt; 1000 → LP 松弛 + 舍入，或使用商业 MILP 求解器</span><br></pre></td></tr></table></figure>
+
+<h1 id="13-数值稳定性与预求解（Presolve）"><a href="#13-数值稳定性与预求解（Presolve）" class="headerlink" title="13. 数值稳定性与预求解（Presolve）"></a>13. 数值稳定性与预求解（Presolve）</h1><h2 id="13-1-数值问题"><a href="#13-1-数值问题" class="headerlink" title="13.1 数值问题"></a>13.1 数值问题</h2><p>LP 求解中常见的数值问题：</p>
+<ul>
+<li><strong>缩放不佳</strong>：约束系数量级差异巨大（如 10^{-6} 和 10^6 同时出现），导致舍入误差</li>
+<li><strong>退化</strong>：多个约束交汇于同一点，导致基矩阵接近奇异</li>
+<li><strong>接近不可行</strong>：约束几乎矛盾</li>
+</ul>
+<p><strong>解决</strong>：商业求解器自动进行<strong>预求解（Presolve）</strong>，包括缩放（scaling）、冗余约束移除、变量固定（固定能推出的变量值）等。</p>
+<h2 id="13-2-预求解示例"><a href="#13-2-预求解示例" class="headerlink" title="13.2 预求解示例"></a>13.2 预求解示例</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 原始问题</span></span><br><span class="line"><span class="built_in">min</span>   x1 + 2x2</span><br><span class="line">s.t.  x1 + x2 ≥ <span class="number">100</span></span><br><span class="line">      x1 + x2 ≤ <span class="number">100</span></span><br><span class="line">      1000x1 + 1000x2 = <span class="number">100000</span>  <span class="comment"># 冗余！</span></span><br><span class="line">      x2 ≥ <span class="number">50</span></span><br><span class="line">      x1 ≥ <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 预求解后：</span></span><br><span class="line"><span class="comment"># 约束1 + 约束2 → x1 + x2 = 100（等式化）</span></span><br><span class="line"><span class="comment"># 约束3 除以 1000 → x1 + x2 = 100（与上面相同，删除）</span></span><br><span class="line"><span class="comment"># x1 + x2 = 100, x2 ≥ 50 → x1 ≤ 50</span></span><br><span class="line"><span class="comment"># 消元 x1 = 100 - x2</span></span><br><span class="line"><span class="comment"># 问题简化为：min (100 - x2) + 2x2 = 100 + x2, s.t. 50 ≤ x2 ≤ 100</span></span><br><span class="line"><span class="comment"># → x2 = 50 最优</span></span><br></pre></td></tr></table></figure>
+
+<p>现代求解器的预求解步骤可能将问题规模缩减 50% 以上，某些极端情况甚至直接求解出最优解。</p>
+<h1 id="14-面试高频问答"><a href="#14-面试高频问答" class="headerlink" title="14. 面试高频问答"></a>14. 面试高频问答</h1><p><strong>Q1: 请解释单纯形法为什么总是在顶点之间移动，而不是在可行域内部搜索？内点法与单纯形法有什么根本区别？</strong></p>
+<p>A: 单纯形法依赖 LP 的几何性质——LP 的可行域是凸多面体，目标函数是线性的。线性函数在凸多面体上的极值一定在所有顶点上取得（如果最优解存在）。用反证法：如果一个内部点 x 是最优解，那么存在一个可移动的方向使目标函数值不变（否则就不是最优点），顺着该方向走到可行域边界，不断重复最终到达顶点，目标值不会变差。因此只需检查顶点即可找到最优解。</p>
+<p>单纯形法沿着边界从顶点走到相邻顶点，本质是一种组合搜索。内点法则从内部沿”中心路径”逼近最优解——它使用 Newton 步在约束定义的流形上移动。两者的根本区别：</p>
+<ul>
+<li>单纯形法：沿可行域<strong>边界</strong>的离散跳跃，每次迭代走一条边</li>
+<li>内点法：在可行域<strong>内部</strong>的连续路径上移动，避开边界直到最后一刻</li>
+</ul>
+<p>从复杂度看，单纯形法最坏情况是指数级（Klee-Minty），但通常只要 O(m) 次迭代；内点法理论上是多项式级，但每次迭代求解 Newton 系统的代价更高。实践中，单纯形法对中小规模或需要热启动的场景更好，内点法对大规模稀疏问题更优。</p>
+<hr>
+<p><strong>Q2: 什么是影子价格？如何从单纯形法的最终表中获取影子价格？它在管理决策中如何使用？</strong></p>
+<p>A: 影子价格（shadow price）是约束的对偶变量最优值 y_i*，表示约束 i 右端项 b_i 增加一单位时目标函数最优值的变化率。</p>
+<p>在单纯形法的最终表中，影子价格就是目标函数行（检验数行）中初始基变量（如松弛变量）对应的系数。以上面的手工计算例子：最终表中松弛变量 s_1 的检验数为 3&#x2F;4，s_2 为 1&#x2F;2，说明：</p>
+<ul>
+<li>资源 1 每增加 1 单位，最优利润增加 0.75</li>
+<li>资源 2 每增加 1 单位，最优利润增加 0.5</li>
+</ul>
+<p>在管理决策中：</p>
+<ul>
+<li>如果某种资源的市场价格 &lt; 影子价格 → 购买更多是有利可图的</li>
+<li>如果某种资源的市场价格 &gt; 影子价格 → 甚至可以卖出部分资源获利</li>
+<li>影子价格为 0 的约束 → 该资源有剩余（非紧约束），增加它不会改善目标（但也不会恶化）</li>
+</ul>
+<p>需要注意的是，影子价格只在 b_i 的变化范围内有效。超过这个范围，最优基改变，影子价格也会改变。这体现了敏感度分析的重要性——不能无限外推影子价格的适用性。</p>
+<hr>
+<p><strong>Q3: 请解释整数规划为什么比线性规划难得多？为什么不能简单地求解 LP 松弛然后四舍五入？</strong></p>
+<p>A: LP 是 P 问题（多项式时间可解），而 ILP 是 NP-hard 问题。根本原因在于整数约束破坏了凸性——可行域从凸多面体变成一组孤立的整数点。</p>
+<p>简单地四舍五入有多个严重问题：</p>
+<ol>
+<li><p><strong>可能违反约束</strong>：LP 松弛解 x_1&#x3D;2.3, x_2&#x3D;1.7 舍入为 (2, 2)，但在给定约束下 (2, 2) 可能不可行。</p>
+</li>
+<li><p><strong>可能远离最优</strong>：以下面的一维例子说明：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">max  x</span><br><span class="line">s.t. x ≤ 100.4</span><br><span class="line">     x ≥ 0, x 整数</span><br></pre></td></tr></table></figure>
+<p>LP 松弛给出 x&#x3D;100.4。四舍五入得 x&#x3D;100 是好的。但考虑：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">max  10x</span><br><span class="line">s.t. x ≤ 0.49</span><br><span class="line">     x ≥ 0, x 整数</span><br></pre></td></tr></table></figure>
+<p>LP 松弛得 x&#x3D;0.49，四舍五入为 0。但真正的整数最优解就是 0。虽然这个例子刚好正确，但换个系数：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">max  c · x</span><br><span class="line">s.t. a · x ≤ b, x ∈ &#123;0, 1&#125;</span><br></pre></td></tr></table></figure>
+<p>令 c&#x2F;a 很大时，LP 解可能是 x&#x3D;1，但实际约束可能在整数点下精确阻止了 x&#x3D;1。</p>
+</li>
+<li><p><strong>整数约束改变了可行域的形状</strong>：整数可行域不是凸的，LP 松弛的最优解和 ILP 的最优解可能相距甚远，无论你怎么舍入都无法到达。</p>
+</li>
+</ol>
+<p>更具体的例子（0-1 背包）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">max  15x_1 + 12x_2 + 10x_3</span><br><span class="line">s.t. 8x_1 + 6x_2 + 5x_3 ≤ 10</span><br><span class="line">     x_j ∈ &#123;0, 1&#125;</span><br></pre></td></tr></table></figure>
+<p>LP 松弛（0 ≤ x_j ≤ 1）：x &#x3D; (1, 1&#x2F;3, 0), 目标 &#x3D; 15 + 4 &#x3D; 19。四舍五入得 (1, 0, 0) 目标 &#x3D; 15。但真正的整数最优解是 (0, 0, 1) 目标 &#x3D; 10？不对… 让我重新算。x_1&#x3D;1 占 8 单位重量，剩余 2 单位，放不下 x_2 (6) 或 x_3 (5)。所以只有 x_1&#x3D;1，目标 15。LP 松弛的 (1, 0.33, 0) 四舍五入为 (1, 0, 0)，恰好是这个例子中最优的 15。不过设计一个使舍入失败的例子也很容易，此处不赘述。关键是：ILP 必须使用分支定界、割平面等专用方法，而非简单舍入。</p>
+<hr>
+<p><strong>Q4: 如何判断一个 LP 是否有可行解？如果不可行，怎么找到”最接近”可行的解？</strong></p>
+<p>A: 判断 可行性有两种方法：</p>
+<p><strong>方法一：两阶段法中的阶段 I</strong>。引入人工变量 a_i ≥ 0，求解：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">min  Σ a_i</span><br><span class="line">s.t. Ax + a = b</span><br><span class="line">     x ≥ 0, a ≥ 0</span><br></pre></td></tr></table></figure>
+<p>如果此问题的最优值为 0，则存在可行解（a_i &#x3D; 0, ∀i）。如果 &gt; 0，则原 LP 不可行。</p>
+<p><strong>方法二：不可行性证明（Farkas 引理）</strong>。Farkas 引理指出，LP 不可行当且仅当存在向量 y 使得：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">A^T y ≥ 0,  b^T y &lt; 0</span><br></pre></td></tr></table></figure>
+<p>找到了这样的 y 即提供了一个不可行性证明（certificate of infeasibility）。商业求解器在报告不可行时通常会提供这样的证明。</p>
+<p><strong>找到”最接近”可行的解</strong>：如果问题不可行，可以通过以下方式松弛：</p>
+<ol>
+<li>引入人工变量到每个约束，允许约束被”弹性化”（elastic programming）</li>
+<li>求解 min Σ（违反量），得到最小违反的解</li>
+<li>或者使用<strong>目标规划</strong>将硬约束转化为带惩罚项的软约束：<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">min  c^T x + M · Σ s_i</span><br><span class="line">s.t. Ax - s ≤ b  （或类似形式）</span><br><span class="line">     s_i ≥ 0  （s_i 为约束违反量）</span><br></pre></td></tr></table></figure>
+其中 M 是一个大的惩罚系数。这种方法给出了”在约束几乎满足的情况下，最优决策是什么”的答案。</li>
+</ol>
+<p>实际工程中，当模型报告不可行时，通常需要回到问题本身，检查是否有矛盾的业务约束——如”预算 ≤ 100 万”和”最低支出 ≥ 200 万”同时存在。这是建模错误，而非求解问题。</p>
+<hr>
+<p><strong>Q5: 内点法中的 barrier method 是什么？为什么参数 μ 要从大逐步减小？这和模拟退火中的温度参数有何相似之处？</strong></p>
+<p>A: Barrier method 的基本思想是将带不等式约束 x ≥ 0 的 LP 转化为只含等式约束但目标函数带障碍项的问题：</p>
+<p>$$\min \quad c^T x - \mu \sum \ln(x_j) \quad \text{s.t.} \quad Ax = b$$</p>
+<p>对数障碍函数 -ln(x_j) 在 x_j → 0^+ 时 → ∞，这确保了解始终保持在内部（x_j &gt; 0），不会”碰到”边界。</p>
+<p><strong>μ 的角色</strong>：μ 控制障碍项的强度。</p>
+<ul>
+<li>μ 很大 → 障碍项主导，解被强力推向可行域中心（远离边界），此时优化的是障碍函数，而非原始目标 c^T x</li>
+<li>μ → 0 → 障碍项影响减弱，解逐渐接近原始 LP 的最优解（通常在边界上）</li>
+</ul>
+<p><strong>为什么逐步减小</strong>：如果一开始就用非常小的 μ，障碍函数曲面会非常”陡峭”——在边界附近急剧变化，使 Newton 迭代很难收敛。从大的 μ 开始，曲面平缓，容易找到解；然后逐步减小 μ，每次用上一步的解作为热启动，继续追踪中心路径，直到逼近真实最优解。</p>
+<p><strong>与模拟退火的类比</strong>：</p>
+<ul>
+<li>退火中的温度 T：高温允许在能量面上大幅跳跃（探索），低温则精确逼近局部极小</li>
+<li>内点法中的 μ：大 μ 使解保持在内部”安全区”（探索），小 μ 则精确逼近边界上的最优解</li>
+</ul>
+<p>但有一个关键区别：退火通常用于非凸优化，需要在探索（exploration）和利用（exploitation）之间权衡；而 LP 是凸的，中心路径是唯一的，只要遵循中心路径就会必然收敛到全局最优。因此内点法的 μ 减小策略不像退火的降温策略那样需要精心设计——简单的几何递减 μ_{k+1} &#x3D; σμ_k（σ ∈ [0.01, 0.5]）通常就足够好了。</p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2020/10/01/%E3%80%90sklearn%E7%AC%94%E8%AE%B0%E3%80%91%E7%BA%BF%E6%80%A7%E8%A7%84%E5%88%92/">http://tufusi.com/2020/10/01/%E3%80%90sklearn%E7%AC%94%E8%AE%B0%E3%80%91%E7%BA%BF%E6%80%A7%E8%A7%84%E5%88%92/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_python.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2020/10/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%9D%A1%E4%BB%B6%E9%9A%8F%E6%9C%BA%E5%9C%BA/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【统计学习方法死磕系列】条件随机场</span></div></a></div><div class="next-post pull_right"><a href="/2020/09/25/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E7%AF%87-Tensorflow/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>机器学习框架篇-Tensorflow</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_python.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

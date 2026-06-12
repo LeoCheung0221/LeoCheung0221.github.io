@@ -1,0 +1,622 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【统计学习方法死磕系列】EM算法 | ONE·PIECE</title><meta name="description" content="【统计学习方法死磕系列】EM算法"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【统计学习方法死磕系列】EM算法"><meta name="twitter:description" content="【统计学习方法死磕系列】EM算法"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【统计学习方法死磕系列】EM算法"><meta property="og:url" content="http://tufusi.com/2020/08/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91EM%E7%AE%97%E6%B3%95/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【统计学习方法死磕系列】EM算法"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2020/08/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91EM%E7%AE%97%E6%B3%95/"><link rel="prev" title="【GNN原理解析】图信号处理与图卷积神经网络" href="http://tufusi.com/2020/08/15/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E5%9B%BE%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86%E4%B8%8E%E5%9B%BE%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/"><link rel="next" title="【GNN原理解析】卷积神经网络" href="http://tufusi.com/2020/08/10/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E5%BC%95%E8%A8%80%EF%BC%9A%E5%BD%93%E6%95%B0%E6%8D%AE%E4%B8%8D%E5%AE%8C%E6%95%B4%E6%97%B6"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、引言：当数据不完整时</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81%E9%97%AE%E9%A2%98%E5%BD%A2%E5%BC%8F%E5%8C%96"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、问题形式化</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E8%A7%82%E6%B5%8B%E5%8F%98%E9%87%8F%E4%B8%8E%E9%9A%90%E5%8F%98%E9%87%8F"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 观测变量与隐变量</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E7%9B%B4%E6%8E%A5%E5%81%9A%E6%A2%AF%E5%BA%A6%E4%B8%8A%E5%8D%87"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 为什么不直接做梯度上升</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81EM-%E7%AE%97%E6%B3%95%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、EM 算法的核心思想</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-Jensen-%E4%B8%8D%E7%AD%89%E5%BC%8F%EF%BC%9AEM-%E7%9A%84%E6%95%B0%E5%AD%A6%E5%9F%BA%E7%9F%B3"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 Jensen 不等式：EM 的数学基石</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E6%9E%84%E9%80%A0%E8%AF%81%E6%8D%AE%E4%B8%8B%E7%95%8C%EF%BC%88ELBO%EF%BC%89"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 构造证据下界（ELBO）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-E-%E6%AD%A5%E4%B8%8E-M-%E6%AD%A5"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 E 步与 M 步</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81Q-%E5%87%BD%E6%95%B0%E5%BD%A2%E5%BC%8F"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、Q 函数形式</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81%E6%94%B6%E6%95%9B%E6%80%A7%E8%AF%81%E6%98%8E"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、收敛性证明</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E5%AF%B9%E6%95%B0%E4%BC%BC%E7%84%B6%E5%8D%95%E8%B0%83%E4%B8%8D%E5%87%8F"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 对数似然单调不减</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-%E6%94%B6%E6%95%9B%E5%88%B0%E5%B1%80%E9%83%A8%E6%9E%81%E5%80%BC"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 收敛到局部极值</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E9%AB%98%E6%96%AF%E6%B7%B7%E5%90%88%E6%A8%A1%E5%9E%8B%EF%BC%88GMM%EF%BC%89%E5%AE%9E%E4%BE%8B"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、高斯混合模型（GMM）实例</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E6%A8%A1%E5%9E%8B%E5%AE%9A%E4%B9%89"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 模型定义</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-%E5%AE%8C%E5%85%A8%E6%95%B0%E6%8D%AE%E4%BC%BC%E7%84%B6"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 完全数据似然</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-E-%E6%AD%A5"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">6.3 E 步</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-4-M-%E6%AD%A5"><span class="toc_mobile_items-number">6.4.</span> <span class="toc_mobile_items-text">6.4 M 步</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-5-GMM-EM-%E7%AE%97%E6%B3%95%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc_mobile_items-number">6.5.</span> <span class="toc_mobile_items-text">6.5 GMM EM 算法伪代码</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E6%8A%9B%E7%A1%AC%E5%B8%81%E6%95%B0%E5%80%BC%E4%BE%8B%E5%AD%90"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、抛硬币数值例子</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-%E6%95%B0%E6%8D%AE%E7%94%9F%E6%88%90"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">7.1 数据生成</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-%E8%BF%AD%E4%BB%A3%E8%BF%87%E7%A8%8B"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">7.2 迭代过程</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-3-%E6%95%B0%E5%80%BC%E7%A8%B3%E5%AE%9A%E6%80%A7%EF%BC%9ALog-Sum-Exp-%E6%8A%80%E5%B7%A7"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">7.3 数值稳定性：Log-Sum-Exp 技巧</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81EM-%E7%AE%97%E6%B3%95%E7%9A%84%E5%8F%98%E4%BD%93%E4%B8%8E%E6%89%A9%E5%B1%95"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、EM 算法的变体与扩展</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-%E5%B9%BF%E4%B9%89-EM-%E7%AE%97%E6%B3%95%EF%BC%88GEM%EF%BC%89"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">8.1 广义 EM 算法（GEM）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-%E9%9A%8F%E6%9C%BA-EM%EF%BC%88Stochastic-EM%EF%BC%89"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">8.2 随机 EM（Stochastic EM）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-3-%E5%8F%98%E5%88%86-EM%EF%BC%88Variational-EM%EF%BC%89"><span class="toc_mobile_items-number">8.3.</span> <span class="toc_mobile_items-text">8.3 变分 EM（Variational EM）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-4-%E5%9C%A8%E7%BA%BF-EM%EF%BC%88Online-EM%EF%BC%89"><span class="toc_mobile_items-number">8.4.</span> <span class="toc_mobile_items-text">8.4 在线 EM（Online EM）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-5-EM-%E4%B8%8E-k-means-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc_mobile_items-number">8.5.</span> <span class="toc_mobile_items-text">8.5 EM 与 k-means 的关系</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81EM-%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7%E4%B8%8E%E5%AE%9E%E8%B7%B5%E5%BB%BA%E8%AE%AE"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、EM 的局限性与实践建议</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-1-%E4%B8%BB%E8%A6%81%E5%B1%80%E9%99%90"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">9.1 主要局限</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-2-%E5%AE%9E%E8%B7%B5%E5%BB%BA%E8%AE%AE"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">9.2 实践建议</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">十、其他应用场景</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">十一、面试高频问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">十二、总结</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%BC%95%E8%A8%80%EF%BC%9A%E5%BD%93%E6%95%B0%E6%8D%AE%E4%B8%8D%E5%AE%8C%E6%95%B4%E6%97%B6"><span class="toc-number">1.</span> <span class="toc-text">一、引言：当数据不完整时</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E9%97%AE%E9%A2%98%E5%BD%A2%E5%BC%8F%E5%8C%96"><span class="toc-number">2.</span> <span class="toc-text">二、问题形式化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E8%A7%82%E6%B5%8B%E5%8F%98%E9%87%8F%E4%B8%8E%E9%9A%90%E5%8F%98%E9%87%8F"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 观测变量与隐变量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E7%9B%B4%E6%8E%A5%E5%81%9A%E6%A2%AF%E5%BA%A6%E4%B8%8A%E5%8D%87"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 为什么不直接做梯度上升</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81EM-%E7%AE%97%E6%B3%95%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">3.</span> <span class="toc-text">三、EM 算法的核心思想</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Jensen-%E4%B8%8D%E7%AD%89%E5%BC%8F%EF%BC%9AEM-%E7%9A%84%E6%95%B0%E5%AD%A6%E5%9F%BA%E7%9F%B3"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 Jensen 不等式：EM 的数学基石</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%9E%84%E9%80%A0%E8%AF%81%E6%8D%AE%E4%B8%8B%E7%95%8C%EF%BC%88ELBO%EF%BC%89"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 构造证据下界（ELBO）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-E-%E6%AD%A5%E4%B8%8E-M-%E6%AD%A5"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 E 步与 M 步</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Q-%E5%87%BD%E6%95%B0%E5%BD%A2%E5%BC%8F"><span class="toc-number">4.</span> <span class="toc-text">四、Q 函数形式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%94%B6%E6%95%9B%E6%80%A7%E8%AF%81%E6%98%8E"><span class="toc-number">5.</span> <span class="toc-text">五、收敛性证明</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E5%AF%B9%E6%95%B0%E4%BC%BC%E7%84%B6%E5%8D%95%E8%B0%83%E4%B8%8D%E5%87%8F"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 对数似然单调不减</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E6%94%B6%E6%95%9B%E5%88%B0%E5%B1%80%E9%83%A8%E6%9E%81%E5%80%BC"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 收敛到局部极值</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E9%AB%98%E6%96%AF%E6%B7%B7%E5%90%88%E6%A8%A1%E5%9E%8B%EF%BC%88GMM%EF%BC%89%E5%AE%9E%E4%BE%8B"><span class="toc-number">6.</span> <span class="toc-text">六、高斯混合模型（GMM）实例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E6%A8%A1%E5%9E%8B%E5%AE%9A%E4%B9%89"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 模型定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%AE%8C%E5%85%A8%E6%95%B0%E6%8D%AE%E4%BC%BC%E7%84%B6"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 完全数据似然</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-E-%E6%AD%A5"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 E 步</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-M-%E6%AD%A5"><span class="toc-number">6.4.</span> <span class="toc-text">6.4 M 步</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-5-GMM-EM-%E7%AE%97%E6%B3%95%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="toc-number">6.5.</span> <span class="toc-text">6.5 GMM EM 算法伪代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E6%8A%9B%E7%A1%AC%E5%B8%81%E6%95%B0%E5%80%BC%E4%BE%8B%E5%AD%90"><span class="toc-number">7.</span> <span class="toc-text">七、抛硬币数值例子</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E6%95%B0%E6%8D%AE%E7%94%9F%E6%88%90"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 数据生成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E8%BF%AD%E4%BB%A3%E8%BF%87%E7%A8%8B"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 迭代过程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E6%95%B0%E5%80%BC%E7%A8%B3%E5%AE%9A%E6%80%A7%EF%BC%9ALog-Sum-Exp-%E6%8A%80%E5%B7%A7"><span class="toc-number">7.3.</span> <span class="toc-text">7.3 数值稳定性：Log-Sum-Exp 技巧</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81EM-%E7%AE%97%E6%B3%95%E7%9A%84%E5%8F%98%E4%BD%93%E4%B8%8E%E6%89%A9%E5%B1%95"><span class="toc-number">8.</span> <span class="toc-text">八、EM 算法的变体与扩展</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E5%B9%BF%E4%B9%89-EM-%E7%AE%97%E6%B3%95%EF%BC%88GEM%EF%BC%89"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 广义 EM 算法（GEM）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E9%9A%8F%E6%9C%BA-EM%EF%BC%88Stochastic-EM%EF%BC%89"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 随机 EM（Stochastic EM）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-%E5%8F%98%E5%88%86-EM%EF%BC%88Variational-EM%EF%BC%89"><span class="toc-number">8.3.</span> <span class="toc-text">8.3 变分 EM（Variational EM）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-4-%E5%9C%A8%E7%BA%BF-EM%EF%BC%88Online-EM%EF%BC%89"><span class="toc-number">8.4.</span> <span class="toc-text">8.4 在线 EM（Online EM）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-5-EM-%E4%B8%8E-k-means-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">8.5.</span> <span class="toc-text">8.5 EM 与 k-means 的关系</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81EM-%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7%E4%B8%8E%E5%AE%9E%E8%B7%B5%E5%BB%BA%E8%AE%AE"><span class="toc-number">9.</span> <span class="toc-text">九、EM 的局限性与实践建议</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E4%B8%BB%E8%A6%81%E5%B1%80%E9%99%90"><span class="toc-number">9.1.</span> <span class="toc-text">9.1 主要局限</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E5%AE%9E%E8%B7%B5%E5%BB%BA%E8%AE%AE"><span class="toc-number">9.2.</span> <span class="toc-text">9.2 实践建议</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">10.</span> <span class="toc-text">十、其他应用场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E9%A2%98"><span class="toc-number">11.</span> <span class="toc-text">十一、面试高频问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-number">12.</span> <span class="toc-text">十二、总结</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【统计学习方法死磕系列】EM算法</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2020-08-15<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0/">统计学习</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">5k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 20 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、引言：当数据不完整时"><a href="#一、引言：当数据不完整时" class="headerlink" title="一、引言：当数据不完整时"></a>一、引言：当数据不完整时</h2><p>在许多机器学习问题中，我们面对的并非完整的观测数据。想象一下：你有一个包含男性和女性身高的数据集，但性别这一列是缺失的。你知道身高服从两个不同的高斯分布，但你不知道每个样本来自哪个分布。这类含有<strong>隐变量</strong>（latent variable）或<strong>缺失数据</strong>的问题，正是 EM 算法（Expectation-Maximization Algorithm）大显身手的舞台。</p>
+<p>EM 算法并非单一算法，而是一类算法的统称。它是一种通过迭代寻找含有隐变量的概率模型参数极大似然估计（MLE）或极大后验概率估计（MAP）的通用框架。自 1977 年 Dempster、Laird 和 Rubin 将其形式化以来，EM 算法已成为统计学习中最重要、应用最广泛的算法之一。</p>
+<p>本文将系统地推导 EM 算法的原理、证明其收敛性，并通过高斯混合模型和抛硬币等具体例子带读者深入理解这一经典算法。</p>
+<h2 id="二、问题形式化"><a href="#二、问题形式化" class="headerlink" title="二、问题形式化"></a>二、问题形式化</h2><h3 id="2-1-观测变量与隐变量"><a href="#2-1-观测变量与隐变量" class="headerlink" title="2.1 观测变量与隐变量"></a>2.1 观测变量与隐变量</h3><p>设我们有一个概率模型，其中：</p>
+<ul>
+<li><strong>观测变量</strong>（observed variable）$X$：我们能直接观测到的数据</li>
+<li><strong>隐变量</strong>（latent variable）$Z$：我们无法直接观测，但影响观测数据的变量</li>
+<li><strong>参数</strong> $\theta$：模型需要估计的参数</li>
+</ul>
+<p>我们的目标是：给定观测数据 $X &#x3D; {x_1, x_2, \dots, x_N}$，找到参数 $\theta$ 使得观测数据的对数似然最大：</p>
+<p>$$
+\theta^* = \arg\max_\theta \log P(X|\theta) = \arg\max_\theta \log \sum_Z P(X, Z|\theta)
+$$</p>
+<p>这里的关键难点在于：似然函数中包含了对隐变量 $Z$ 的求和（或积分）操作，再取对数，通常无法直接解析求解。</p>
+<h3 id="2-2-为什么不直接做梯度上升"><a href="#2-2-为什么不直接做梯度上升" class="headerlink" title="2.2 为什么不直接做梯度上升"></a>2.2 为什么不直接做梯度上升</h3><p>你可能会问：为什么不对 $\theta$ 直接做梯度上升来优化 $\log P(X|\theta)$ ？理论上可行，但在实践中：</p>
+<ol>
+<li><strong>求和在对数内部</strong>使得梯度计算复杂：$\nabla_\theta \log \sum_Z P(X,Z|\theta) &#x3D; \frac{\sum_Z \nabla_\theta P(X,Z|\theta)}{\sum_Z P(X,Z|\theta)}$</li>
+<li>许多模型（如 GMM）的对数似然是非凸的，直接优化容易陷入局部最优</li>
+<li>当 $Z$ 是离散变量且可能取值很多时，$\sum_Z$ 的计算量极大</li>
+</ol>
+<p>EM 算法巧妙地绕开这些困难，通过引入一个辅助函数（Q 函数）来迭代优化。</p>
+<h2 id="三、EM-算法的核心思想"><a href="#三、EM-算法的核心思想" class="headerlink" title="三、EM 算法的核心思想"></a>三、EM 算法的核心思想</h2><h3 id="3-1-Jensen-不等式：EM-的数学基石"><a href="#3-1-Jensen-不等式：EM-的数学基石" class="headerlink" title="3.1 Jensen 不等式：EM 的数学基石"></a>3.1 Jensen 不等式：EM 的数学基石</h3><p>EM 算法的推导依赖于一个关键的数学工具——<strong>Jensen 不等式</strong>。</p>
+<p><strong>定理</strong>（Jensen 不等式）：对于凸函数 $f$，有：</p>
+<p>$$
+f(\mathbb{E}[Y]) \leq \mathbb{E}[f(Y)]
+$$</p>
+<p>特别地，由于 $\log$ 是凹函数（concave），对于任意分布 $Q(Z)$，有：</p>
+<p>$$
+\log \mathbb{E}_{Q}[g(Z)] \geq \mathbb{E}_{Q}[\log g(Z)]
+$$</p>
+<p>这个不等式告诉我们：先求期望再取对数，大于等于先取对数再求期望。这正是 EM 算法构造下界的关键。</p>
+<h3 id="3-2-构造证据下界（ELBO）"><a href="#3-2-构造证据下界（ELBO）" class="headerlink" title="3.2 构造证据下界（ELBO）"></a>3.2 构造证据下界（ELBO）</h3><p>对于任意关于隐变量 $Z$ 的分布 $Q(Z)$（满足 $\sum_Z Q(Z) &#x3D; 1, Q(Z) \geq 0$），我们可以将对数似然重写：</p>
+<p>$$
+\begin{aligned}
+\log P(X|\theta) &= \log \sum_Z P(X, Z|\theta) \\
+&= \log \sum_Z Q(Z) \frac{P(X, Z|\theta)}{Q(Z)} \\
+&= \log \mathbb{E}_{Q(Z)}\left[\frac{P(X, Z|\theta)}{Q(Z)}\right] \\
+&\geq \mathbb{E}_{Q(Z)}\left[\log \frac{P(X, Z|\theta)}{Q(Z)}\right] \quad \text{(Jensen不等式)}
+\end{aligned}
+$$</p>
+<p>这个下界被称为<strong>证据下界</strong>（Evidence Lower BOund, ELBO），记为 $\mathcal{L}(Q, \theta)$：</p>
+<p>$$
+\mathcal{L}(Q, \theta) = \sum_Z Q(Z) \log \frac{P(X, Z|\theta)}{Q(Z)}
+$$</p>
+<h3 id="3-3-E-步与-M-步"><a href="#3-3-E-步与-M-步" class="headerlink" title="3.3 E 步与 M 步"></a>3.3 E 步与 M 步</h3><p>EM 算法的精妙之处在于：它交替进行两步操作，每一步都使目标函数不降：</p>
+<p><strong>E 步（Expectation Step）</strong>：固定当前参数 $\theta^{(t)}$，选择分布 $Q(Z)$ 使下界 $\mathcal{L}(Q, \theta^{(t)})$ 尽可能大。可以证明，当 $Q(Z) &#x3D; P(Z|X, \theta^{(t)})$ 时，下界紧贴，即：</p>
+<p>$$
+\mathcal{L}(P(Z|X, \theta^{(t)}), \theta^{(t)}) = \log P(X|\theta^{(t)})
+$$</p>
+<p><strong>M 步（Maximization Step）</strong>：固定 $Q(Z) &#x3D; P(Z|X, \theta^{(t)})$，优化 $\theta$ 使下界最大化：</p>
+<p>$$
+\theta^{(t+1)} = \arg\max_\theta \mathcal{L}(P(Z|X, \theta^{(t)}), \theta)
+$$</p>
+<p>由于下界在 $\theta^{(t)}$ 处紧贴，提升下界必然提升真正的对数似然。这一巧妙设计保证了每次迭代对数似然单调不减。</p>
+<h2 id="四、Q-函数形式"><a href="#四、Q-函数形式" class="headerlink" title="四、Q 函数形式"></a>四、Q 函数形式</h2><p>在实际计算中，我们通常使用 <strong>Q 函数</strong> 来表达 M 步。Q 函数定义为完全数据对数似然在隐变量后验分布下的期望：</p>
+<p>$$
+Q(\theta | \theta^{(t)}) = \mathbb{E}_{Z|X,\theta^{(t)}}[\log P(X, Z|\theta)]
+$$</p>
+<p>展开为：</p>
+<p>$$
+Q(\theta | \theta^{(t)}) = \sum_{i=1}^{N} \mathbb{E}_{z_i|x_i,\theta^{(t)}}[\log P(x_i, z_i|\theta)]
+$$</p>
+<p>M 步等价于最大化 Q 函数：</p>
+<p>$$
+\theta^{(t+1)} = \arg\max_\theta Q(\theta | \theta^{(t)})
+$$</p>
+<p>为什么 ELBO 最大化等价于 Q 函数最大化？因为：</p>
+<p>$$
+\mathcal{L}(Q, \theta) = \sum_Z P(Z|X,\theta^{(t)}) \log P(X,Z|\theta) - \sum_Z P(Z|X,\theta^{(t)}) \log P(Z|X,\theta^{(t)})
+$$</p>
+<p>第二项（熵项）在 M 步中与 $\theta$ 无关，因此最大化 ELBO 等价于最大化 Q 函数。</p>
+<h2 id="五、收敛性证明"><a href="#五、收敛性证明" class="headerlink" title="五、收敛性证明"></a>五、收敛性证明</h2><h3 id="5-1-对数似然单调不减"><a href="#5-1-对数似然单调不减" class="headerlink" title="5.1 对数似然单调不减"></a>5.1 对数似然单调不减</h3><p>EM 算法最重要的性质是：每次迭代后，观测数据的对数似然不会下降。我们来证明这一点。</p>
+<p><strong>定理</strong>：对于 EM 算法生成的参数序列 ${\theta^{(t)}}$，有：</p>
+<p>$$
+\log P(X|\theta^{(t+1)}) \geq \log P(X|\theta^{(t)})
+$$</p>
+<p><strong>证明</strong>：</p>
+<p>首先，将边缘似然分解：</p>
+<p>$$
+\log P(X|\theta) = \mathcal{L}(Q, \theta) + \text{KL}(Q(Z) \| P(Z|X,\theta))
+$$</p>
+<p>其中：</p>
+<p>$$
+\mathcal{L}(Q, \theta) = \sum_Z Q(Z) \log \frac{P(X,Z|\theta)}{Q(Z)}
+$$</p>
+<p>$$
+\text{KL}(Q(Z) \| P(Z|X,\theta)) = -\sum_Z Q(Z) \log \frac{P(Z|X,\theta)}{Q(Z)} \geq 0
+$$</p>
+<p>这一分解可以验证：</p>
+<p>$$
+\begin{aligned}
+\mathcal{L}(Q, \theta) + \text{KL}(Q \| P) &= \sum_Z Q(Z) \log \frac{P(X,Z|\theta)}{Q(Z)} - \sum_Z Q(Z) \log \frac{P(Z|X,\theta)}{Q(Z)} \\
+&= \sum_Z Q(Z) \log P(X,Z|\theta) - \sum_Z Q(Z) \log P(Z|X,\theta) \\
+&= \sum_Z Q(Z) \log P(X|\theta) = \log P(X|\theta)
+\end{aligned}
+$$</p>
+<p>因为 $P(X,Z|\theta) &#x3D; P(Z|X,\theta) P(X|\theta)$。</p>
+<p>现在，考虑第 $t$ 次迭代：</p>
+<ul>
+<li><p>E 步设 $Q(Z) &#x3D; P(Z|X, \theta^{(t)})$，则 $\text{KL}(Q | P) &#x3D; 0$，所以：<br>$$
+  \log P(X|\theta^{(t)}) = \mathcal{L}(P(Z|X, \theta^{(t)}), \theta^{(t)})
+  $$</p>
+</li>
+<li><p>M 步最大化 $\mathcal{L}$，所以：<br>$$
+  \mathcal{L}(P(Z|X, \theta^{(t)}), \theta^{(t+1)}) \geq \mathcal{L}(P(Z|X, \theta^{(t)}), \theta^{(t)})
+  $$</p>
+</li>
+<li><p>一般地，对任意 $Q$ 和 $\theta$：<br>$$
+  \log P(X|\theta) \geq \mathcal{L}(Q, \theta)
+  $$</p>
+</li>
+</ul>
+<p>于是：</p>
+<p>$$
+\log P(X|\theta^{(t+1)}) \geq \mathcal{L}(P(Z|X, \theta^{(t)}), \theta^{(t+1)}) \geq \mathcal{L}(P(Z|X, \theta^{(t)}), \theta^{(t)}) = \log P(X|\theta^{(t)})
+$$</p>
+<p>证毕。</p>
+<h3 id="5-2-收敛到局部极值"><a href="#5-2-收敛到局部极值" class="headerlink" title="5.2 收敛到局部极值"></a>5.2 收敛到局部极值</h3><p>虽然 EM 保证似然单调不减，但一般只保证收敛到<strong>局部极大值</strong>或<strong>鞍点</strong>，而不一定是全局最大值。收敛速度和最终结果高度依赖于初始值的选择。实践中通常采用：</p>
+<ul>
+<li>多次随机初始化，选择似然最高的结果</li>
+<li>使用 k-means 等方法提供较好的初始值</li>
+</ul>
+<h2 id="六、高斯混合模型（GMM）实例"><a href="#六、高斯混合模型（GMM）实例" class="headerlink" title="六、高斯混合模型（GMM）实例"></a>六、高斯混合模型（GMM）实例</h2><p>高斯混合模型是 EM 算法的经典应用。让我们完整推导 GMM 的 EM 算法。</p>
+<h3 id="6-1-模型定义"><a href="#6-1-模型定义" class="headerlink" title="6.1 模型定义"></a>6.1 模型定义</h3><p>GMM 假设数据由 $K$ 个高斯分布的混合生成：</p>
+<p>$$
+P(x|\theta) = \sum_{k=1}^{K} \pi_k \mathcal{N}(x | \mu_k, \Sigma_k)
+$$</p>
+<p>其中：</p>
+<ul>
+<li>$\pi_k$ 是第 $k$ 个组分的混合系数，满足 $\pi_k \geq 0, \sum_k \pi_k &#x3D; 1$</li>
+<li>$\mu_k$ 和 $\Sigma_k$ 是第 $k$ 个高斯分布的均值和协方差矩阵</li>
+<li>隐变量 $z_i \in {1, 2, \dots, K}$ 表示样本 $i$ 来自哪个组分</li>
+</ul>
+<p>完整模型参数：$\theta &#x3D; {\pi_k, \mu_k, \Sigma_k}_{k&#x3D;1}^{K}$</p>
+<h3 id="6-2-完全数据似然"><a href="#6-2-完全数据似然" class="headerlink" title="6.2 完全数据似然"></a>6.2 完全数据似然</h3><p>观测数据 $x_i$ 和隐变量 $z_i$ 的联合分布为：</p>
+<p>$$
+P(x_i, z_i = k|\theta) = \pi_k \mathcal{N}(x_i | \mu_k, \Sigma_k)
+$$</p>
+<p>完全数据对数似然为：</p>
+<p>$$
+\log P(X, Z|\theta) = \sum_{i=1}^{N} \sum_{k=1}^{K} \mathbb{I}(z_i = k) [\log \pi_k + \log \mathcal{N}(x_i | \mu_k, \Sigma_k)]
+$$</p>
+<h3 id="6-3-E-步"><a href="#6-3-E-步" class="headerlink" title="6.3 E 步"></a>6.3 E 步</h3><p>计算每个样本属于各组分的后验概率（称为 responsibility）：</p>
+<p>$$
+\begin{aligned}
+\gamma_{ik} &= P(z_i = k | x_i, \theta^{(t)}) \\
+&= \frac{P(x_i | z_i = k, \theta^{(t)}) P(z_i = k | \theta^{(t)})}{\sum_{j=1}^{K} P(x_i | z_i = j, \theta^{(t)}) P(z_i = j | \theta^{(t)})} \\
+&= \frac{\pi_k^{(t)} \mathcal{N}(x_i | \mu_k^{(t)}, \Sigma_k^{(t)})}{\sum_{j=1}^{K} \pi_j^{(t)} \mathcal{N}(x_i | \mu_j^{(t)}, \Sigma_j^{(t)})}
+\end{aligned}
+$$</p>
+<p>$\gamma_{ik}$ 可以理解为样本 $i$ 属于组分 $k$ 的”软分配”概率。</p>
+<h3 id="6-4-M-步"><a href="#6-4-M-步" class="headerlink" title="6.4 M 步"></a>6.4 M 步</h3><p>最大化 Q 函数得到参数更新公式：</p>
+<p><strong>混合系数</strong>：</p>
+<p>$$
+\pi_k^{(t+1)} = \frac{1}{N} \sum_{i=1}^{N} \gamma_{ik}
+$$</p>
+<p>即组分 $k$ 的平均 responsibility。</p>
+<p><strong>均值</strong>：</p>
+<p>$$
+\mu_k^{(t+1)} = \frac{\sum_{i=1}^{N} \gamma_{ik} x_i}{\sum_{i=1}^{N} \gamma_{ik}}
+$$</p>
+<p>即所有样本的加权平均，权重为 responsbility。</p>
+<p><strong>协方差</strong>：</p>
+<p>$$
+\Sigma_k^{(t+1)} = \frac{\sum_{i=1}^{N} \gamma_{ik} (x_i - \mu_k^{(t+1)})(x_i - \mu_k^{(t+1)})^T}{\sum_{i=1}^{N} \gamma_{ik}}
+$$</p>
+<h3 id="6-5-GMM-EM-算法伪代码"><a href="#6-5-GMM-EM-算法伪代码" class="headerlink" title="6.5 GMM EM 算法伪代码"></a>6.5 GMM EM 算法伪代码</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Algorithm: EM for Gaussian Mixture Model</span><br><span class="line">------------------------------------------------------</span><br><span class="line">Input: data X = &#123;x_1, ..., x_N&#125;, number of components K</span><br><span class="line">Output: parameters &#123;π_k, μ_k, Σ_k&#125; for k = 1..K</span><br><span class="line"></span><br><span class="line">1. Initialize π_k, μ_k, Σ_k (e.g., use k-means result)</span><br><span class="line"></span><br><span class="line">2. Repeat until convergence:</span><br><span class="line">   // E-step: compute responsibilities</span><br><span class="line">   For each i = 1..N, k = 1..K:</span><br><span class="line">       γ_ik = π_k * N(x_i | μ_k, Σ_k) / Σ_j π_j * N(x_i | μ_j, Σ_j)</span><br><span class="line">       // use log-sum-exp trick for numerical stability</span><br><span class="line">   </span><br><span class="line">   // M-step: update parameters</span><br><span class="line">   For each k = 1..K:</span><br><span class="line">       N_k = Σ_i γ_ik</span><br><span class="line">       π_k = N_k / N</span><br><span class="line">       μ_k = (1/N_k) * Σ_i γ_ik * x_i</span><br><span class="line">       Σ_k = (1/N_k) * Σ_i γ_ik * (x_i - μ_k)(x_i - μ_k)^T</span><br><span class="line"></span><br><span class="line">3. Check convergence: |log L(t+1) - log L(t)| &lt; ε</span><br></pre></td></tr></table></figure>
+
+<h2 id="七、抛硬币数值例子"><a href="#七、抛硬币数值例子" class="headerlink" title="七、抛硬币数值例子"></a>七、抛硬币数值例子</h2><p>一个更直观的例子：假设两种硬币 A 和 B，各自正面概率为 $\theta_A$ 和 $\theta_B$。每次实验先随机选一枚硬币（等概率），然后抛 10 次。但我们只记录每次实验的结果（正反面序列），不记录用了哪枚硬币。</p>
+<h3 id="7-1-数据生成"><a href="#7-1-数据生成" class="headerlink" title="7.1 数据生成"></a>7.1 数据生成</h3><p>假设真实参数 $\theta_A &#x3D; 0.6, \theta_B &#x3D; 0.5$，进行了 5 次实验。观测数据为正面次数：</p>
+<table>
+<thead>
+<tr>
+<th>实验</th>
+<th>正面次数</th>
+<th>总次数</th>
+<th>实际硬币</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>5</td>
+<td>10</td>
+<td>B</td>
+</tr>
+<tr>
+<td>2</td>
+<td>9</td>
+<td>10</td>
+<td>A</td>
+</tr>
+<tr>
+<td>3</td>
+<td>8</td>
+<td>10</td>
+<td>A</td>
+</tr>
+<tr>
+<td>4</td>
+<td>4</td>
+<td>10</td>
+<td>B</td>
+</tr>
+<tr>
+<td>5</td>
+<td>7</td>
+<td>10</td>
+<td>A</td>
+</tr>
+</tbody></table>
+<p>EM 算法不知道实际硬币，仅凭正面次数来推断 $\theta_A$ 和 $\theta_B$。</p>
+<h3 id="7-2-迭代过程"><a href="#7-2-迭代过程" class="headerlink" title="7.2 迭代过程"></a>7.2 迭代过程</h3><p><strong>初始化</strong>：设 $\theta_A^{(0)} &#x3D; 0.6, \theta_B^{(0)} &#x3D; 0.5$</p>
+<p><strong>第 1 轮 E 步</strong>：计算每组数据来自 A 或 B 的概率（给定当前参数估计）</p>
+<p>对于实验 1（5 次正面）：<br>$$
+\begin{aligned}
+P(5H,5T|A) &= \binom{10}{5} (0.6)^5 (0.4)^5 \propto (0.6)^5(0.4)^5 = 7.96 \times 10^{-4} \\
+P(5H,5T|B) &= \binom{10}{5} (0.5)^5 (0.5)^5 \propto (0.5)^5(0.5)^5 = 9.76 \times 10^{-4}
+\end{aligned}
+$$</p>
+<p>$$
+P(A|5H) \propto 7.96 \times 10^{-4} \times 0.5 = 3.98 \times 10^{-4}
+$$<br>$$
+P(B|5H) \propto 9.76 \times 10^{-4} \times 0.5 = 4.88 \times 10^{-4}
+$$</p>
+<p>归一化后：<br>$$
+P(A|5H) = \frac{3.98}{3.98 + 4.88} = 0.45
+$$<br>$$
+P(B|5H) = \frac{4.88}{3.98 + 4.88} = 0.55
+$$</p>
+<p>对于实验 2（9 次正面）：<br>$$
+\begin{aligned}
+P(9H,1T|A) &\propto (0.6)^9(0.4)^1 = 1.03 \times 10^{-3} \\
+P(9H,1T|B) &\propto (0.5)^9(0.5)^1 = 9.76 \times 10^{-4}
+\end{aligned}
+$$</p>
+<p>$$
+P(A|9H) = \frac{1.03 \times 0.5}{1.03 \times 0.5 + 0.976 \times 0.5} = 0.51
+$$<br>$$
+P(B|9H) = 0.49
+$$</p>
+<p>类似地计算所有实验的后验概率，得到完整的 responsibility。</p>
+<p><strong>第 1 轮 M 步</strong>：用加权平均更新参数</p>
+<p>设计算得到的 $\gamma_{iA}$ 和 $\gamma_{iB}$ 为：</p>
+<table>
+<thead>
+<tr>
+<th>实验</th>
+<th>正面</th>
+<th>$\gamma_{iA}$</th>
+<th>$\gamma_{iB}$</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>5</td>
+<td>0.45</td>
+<td>0.55</td>
+</tr>
+<tr>
+<td>2</td>
+<td>9</td>
+<td>0.51</td>
+<td>0.49</td>
+</tr>
+<tr>
+<td>3</td>
+<td>8</td>
+<td>0.52</td>
+<td>0.48</td>
+</tr>
+<tr>
+<td>4</td>
+<td>4</td>
+<td>0.46</td>
+<td>0.54</td>
+</tr>
+<tr>
+<td>5</td>
+<td>7</td>
+<td>0.50</td>
+<td>0.50</td>
+</tr>
+</tbody></table>
+<p>更新 A：<br>$$
+\theta_A^{(1)} = \frac{0.45 \times 5 + 0.51 \times 9 + 0.52 \times 8 + 0.46 \times 4 + 0.50 \times 7}{0.45 \times 10 + 0.51 \times 10 + 0.52 \times 10 + 0.46 \times 10 + 0.50 \times 10}
+$$<br>$$
+= \frac{16.5}{24.4} \approx 0.68
+$$</p>
+<p>更新 B：<br>$$
+\theta_B^{(1)} = \frac{0.55 \times 5 + 0.49 \times 9 + 0.48 \times 8 + 0.54 \times 4 + 0.50 \times 7}{0.55 \times 10 + 0.49 \times 10 + 0.48 \times 10 + 0.54 \times 10 + 0.50 \times 10}
+$$<br>$$
+= \frac{16.1}{25.6} \approx 0.63
+$$</p>
+<p><strong>后续迭代</strong>：</p>
+<p>重复 E 步和 M 步。通常 5-10 轮后收敛到接近真实值 $\theta_A \approx 0.8, \theta_B \approx 0.45$。</p>
+<p>（注意：由于样本量小，EM 估计可能稍偏离真实值。）</p>
+<h3 id="7-3-数值稳定性：Log-Sum-Exp-技巧"><a href="#7-3-数值稳定性：Log-Sum-Exp-技巧" class="headerlink" title="7.3 数值稳定性：Log-Sum-Exp 技巧"></a>7.3 数值稳定性：Log-Sum-Exp 技巧</h3><p>在实际计算中，如上例的 $P(X|A)$ 使用 $(0.6)^5(0.4)^5$，当正面次数很大时，连乘会产生极小的浮点数导致下溢。因此实际实现中必须使用对数域计算：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 计算 log responsibility</span><br><span class="line">log_gamma_ik = log(π_k) + sum_d [x_id * log(p_kd) + (1-x_id) * log(1-p_kd)]</span><br><span class="line"></span><br><span class="line"># log-sum-exp 归一化</span><br><span class="line">log_sum = logsumexp(log_gamma_i1, log_gamma_i2, ..., log_gamma_iK)</span><br><span class="line">log_gamma_ik = log_gamma_ik - log_sum</span><br><span class="line"></span><br><span class="line"># 转回原始域</span><br><span class="line">gamma_ik = exp(log_gamma_ik)</span><br></pre></td></tr></table></figure>
+
+<p>其中 <code>logsumexp(a_1, ..., a_K) = a_max + log(Σ_k exp(a_k - a_max))</code> 是数值稳定的实现。</p>
+<h2 id="八、EM-算法的变体与扩展"><a href="#八、EM-算法的变体与扩展" class="headerlink" title="八、EM 算法的变体与扩展"></a>八、EM 算法的变体与扩展</h2><h3 id="8-1-广义-EM-算法（GEM）"><a href="#8-1-广义-EM-算法（GEM）" class="headerlink" title="8.1 广义 EM 算法（GEM）"></a>8.1 广义 EM 算法（GEM）</h3><p>在某些模型中，M 步的精确最大化难以实现。<strong>广义 EM</strong>（Generalized EM）放宽要求：M 步只需要增加 Q 函数而不是最大化它：</p>
+<p>$$
+Q(\theta^{(t+1)} | \theta^{(t)}) \geq Q(\theta^{(t)} | \theta^{(t)})
+$$</p>
+<p>GEM 仍能保证似然单调不减，但收敛速度可能较慢。</p>
+<h3 id="8-2-随机-EM（Stochastic-EM）"><a href="#8-2-随机-EM（Stochastic-EM）" class="headerlink" title="8.2 随机 EM（Stochastic EM）"></a>8.2 随机 EM（Stochastic EM）</h3><p>当隐变量后验分布比较复杂时，精确计算期望可能困难。随机 EM 在 E 步使用 Monte Carlo 采样来近似期望：</p>
+<ol>
+<li>从 $P(Z|X, \theta^{(t)})$ 中采样 $Z^{(s)}$</li>
+<li>用样本均值近似期望：$\hat{Q}(\theta|\theta^{(t)}) &#x3D; \frac{1}{S} \sum_s \log P(X, Z^{(s)} | \theta)$</li>
+</ol>
+<p>Monte Carlo EM（MCEM）是这类方法的总称。</p>
+<h3 id="8-3-变分-EM（Variational-EM）"><a href="#8-3-变分-EM（Variational-EM）" class="headerlink" title="8.3 变分 EM（Variational EM）"></a>8.3 变分 EM（Variational EM）</h3><p>当 $P(Z|X, \theta)$ 难以精确计算时，使用一个参数化的变分分布 $Q(Z|\phi)$ 来近似。E 步变为优化 $\phi$ 使 KL 散度最小：</p>
+<p>$$
+\phi^{(t+1)} = \arg\min_\phi \text{KL}(Q(Z|\phi) \| P(Z|X, \theta^{(t)}))
+$$</p>
+<p>这在 LDA（潜在狄利克雷分配）等复杂模型中被广泛使用。</p>
+<h3 id="8-4-在线-EM（Online-EM）"><a href="#8-4-在线-EM（Online-EM）" class="headerlink" title="8.4 在线 EM（Online EM）"></a>8.4 在线 EM（Online EM）</h3><p>在大规模数据中，每次遍历全部数据成本太高。在线 EM 每看到一个（或一小批）样本就更新参数：</p>
+<ul>
+<li><strong>步进式 EM</strong>（Incremental EM）：对新增样本计算 responsibility，逐步更新参数</li>
+<li><strong>随机梯度 EM</strong>：对参数做随机梯度上升</li>
+</ul>
+<h3 id="8-5-EM-与-k-means-的关系"><a href="#8-5-EM-与-k-means-的关系" class="headerlink" title="8.5 EM 与 k-means 的关系"></a>8.5 EM 与 k-means 的关系</h3><p>k-means 聚类可以看作 GMM EM 算法的一个特例（极限情况）。当 GMM 中各组分协方差趋近于 $\sigma^2 I$ 且 $\sigma^2 \to 0$ 时：</p>
+<ul>
+<li>E 步的软分配 $\gamma_{ik}$ 退化为硬分配（每个样本只属于最近的簇中心）</li>
+<li>M 步的加权平均退化为簇内样本的算术平均</li>
+</ul>
+<p>因此 k-means 等价于协方差极小的 GMM 的硬 EM（hard EM）。</p>
+<h2 id="九、EM-的局限性与实践建议"><a href="#九、EM-的局限性与实践建议" class="headerlink" title="九、EM 的局限性与实践建议"></a>九、EM 的局限性与实践建议</h2><h3 id="9-1-主要局限"><a href="#9-1-主要局限" class="headerlink" title="9.1 主要局限"></a>9.1 主要局限</h3><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>局部最优</td>
+<td>EM 只保证收敛到局部极值，结果依赖初始化</td>
+</tr>
+<tr>
+<td>收敛速度</td>
+<td>在高维或接近收敛时可能很慢（线性收敛）</td>
+</tr>
+<tr>
+<td>模型选择</td>
+<td>需要预先指定组分数量 K，不能自动确定</td>
+</tr>
+<tr>
+<td>奇异解</td>
+<td>GMM 中，当某组分只有一个样本时，协方差矩阵可能奇异</td>
+</tr>
+<tr>
+<td>隐变量推断</td>
+<td>对复杂模型，精确的 E 步计算可能不可行</td>
+</tr>
+</tbody></table>
+<h3 id="9-2-实践建议"><a href="#9-2-实践建议" class="headerlink" title="9.2 实践建议"></a>9.2 实践建议</h3><ol>
+<li><strong>多次初始化</strong>：运行多次，从不同起点出发，选择似然最高的解</li>
+<li><strong>正则化</strong>：对协方差矩阵添加小的对角项 $\epsilon I$ 防止奇异</li>
+<li><strong>模型选择</strong>：使用 BIC（Bayesian Information Criterion）或 AIC 选择 K：<ul>
+<li>$\text{BIC} &#x3D; -2\log L + d \log N$</li>
+<li>$\text{AIC} &#x3D; -2\log L + 2d$<br>其中 $d$ 是参数个数，$N$ 是样本数</li>
+</ul>
+</li>
+<li><strong>收敛判据</strong>：监控对数似然的相对变化：$|\log L_{t+1} - \log L_t| &#x2F; |\log L_t| &lt; 10^{-6}$</li>
+<li><strong>k-means 初始化</strong>：用 k-means 结果作为 GMM 的初始均值和组分分配</li>
+</ol>
+<h2 id="十、其他应用场景"><a href="#十、其他应用场景" class="headerlink" title="十、其他应用场景"></a>十、其他应用场景</h2><p>EM 算法的应用极其广泛，包括但不限于：</p>
+<table>
+<thead>
+<tr>
+<th>应用领域</th>
+<th>具体示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>聚类分析</td>
+<td>GMM 聚类</td>
+</tr>
+<tr>
+<td>主题模型</td>
+<td>LDA、pLSA</td>
+</tr>
+<tr>
+<td>隐马尔可夫模型</td>
+<td>HMM 参数学习（Baum-Welch算法）</td>
+</tr>
+<tr>
+<td>缺失值填补</td>
+<td>多重插补</td>
+</tr>
+<tr>
+<td>因子分析</td>
+<td>FA 和概率 PCA 的参数估计</td>
+</tr>
+<tr>
+<td>图像分割</td>
+<td>基于 GMM 的前景&#x2F;背景分割</td>
+</tr>
+<tr>
+<td>遗传学</td>
+<td>基因型推断（haplotype phasing）</td>
+</tr>
+<tr>
+<td>推荐系统</td>
+<td>矩阵分解中的缺失值处理</td>
+</tr>
+<tr>
+<td>医学影像</td>
+<td>PET&#x2F;CT 图像重建</td>
+</tr>
+<tr>
+<td>信号处理</td>
+<td>噪声环境下的信号参数估计</td>
+</tr>
+</tbody></table>
+<h2 id="十一、面试高频问题"><a href="#十一、面试高频问题" class="headerlink" title="十一、面试高频问题"></a>十一、面试高频问题</h2><p><strong>Q1：EM 算法和梯度上升有什么区别？什么时候该用 EM？</strong></p>
+<p>EM 利用问题的概率结构（隐变量）来构造一个每次都易优化的 Q 函数，而不是直接对复杂的边缘似然做优化。当存在隐变量且完全数据似然易于最大化时，EM 通常比梯度方法更稳定且无需调学习率。但当模型参数多且完全数据似然不易最大化（如深度生成模型），VAE 等基于梯度的方法更合适。</p>
+<p><strong>Q2：E 步和 M 步的直观理解是什么？</strong></p>
+<p>E 步是”猜测”隐变量——在给定当前参数估计下，推断每个隐变量取各个值的概率。可以理解为”在有噪声的数据中猜测哪些数据点属于哪个组分”。</p>
+<p>M 步是”更新参数”——假设 E 步的”猜测”是正确的，用这些加权数据（软标签）去最大化似然来更新参数。可以理解为”根据猜测重新拟合各组分的参数”。</p>
+<p>两者交替：E 步用参数去猜隐变量，M 步用猜出的隐变量去更新参数，如此循环直到收敛。</p>
+<p><strong>Q3：EM 算法一定收敛到全局最优吗？</strong></p>
+<p>不。EM 算法只能保证收敛到局部极值或鞍点。对于非凸目标函数（如 GMM），EM 的结果高度依赖于初始化。实践中通过多次随机初始化和选择最佳似然来缓解。此外，EM 的收敛速度在接近极值时是线性的（即 $|\theta^{(t+1)} - \theta^<em>| \approx \rho |\theta^{(t)} - \theta^</em>|$），可能比牛顿法等二阶方法慢。</p>
+<p><strong>Q4：如果 GMM 中某组分退化为单个样本（协方差矩阵奇异），怎么办？</strong></p>
+<p>这种情况称为”退化解”或”collapsing”。解决方案包括：</p>
+<ol>
+<li><strong>正则化</strong>：约束协方差矩阵，如 $\Sigma_k \succeq \epsilon I$，或对特征值设下限</li>
+<li><strong>先验</strong>：使用共轭先验（Normal-Inverse-Wishart）进行 MAP 估计而非 MLE</li>
+<li><strong>重新初始化</strong>：检测到奇异时，将该组分重新随机初始化</li>
+<li><strong>增大样本量</strong>：确保组分样本数不会太小</li>
+</ol>
+<p><strong>Q5：请推导 EM 算法收敛性的关键不等式。</strong></p>
+<p>核心是使用 KL 散度和 Jensen 不等式。考虑分解：</p>
+<p>$$
+\log P(X|\theta) = \underbrace{\mathbb{E}_Q[\log P(X,Z|\theta)] + H(Q)}_{\mathcal{L}(Q,\theta)} + \underbrace{\text{KL}(Q \| P(Z|X,\theta))}_{\geq 0}
+$$</p>
+<p>E 步设置 $Q &#x3D; P(Z|X,\theta^{(t)})$ 使 KL 项为零，M 步最大化 $\mathcal{L}$。由于 $\mathcal{L}$ 是 $\log P(X|\theta)$ 的下界（在 $\theta^{(t)}$ 处紧贴），所以提升下界必然提升似然。</p>
+<p>或者使用链式不等式：</p>
+<p>$$
+\log P(X|\theta^{(t+1)}) \geq Q(\theta^{(t+1)}|\theta^{(t)}) + H(\theta^{(t)}) \geq Q(\theta^{(t)}|\theta^{(t)}) + H(\theta^{(t)}) = \log P(X|\theta^{(t)})
+$$</p>
+<p>其中第二步是因为 M 步保证了 $Q(\theta^{(t+1)}|\theta^{(t)}) \geq Q(\theta^{(t)}|\theta^{(t)})$。</p>
+<h2 id="十二、总结"><a href="#十二、总结" class="headerlink" title="十二、总结"></a>十二、总结</h2><p>EM 算法是统计学习中最优美的算法之一。它将一个包含隐变量的难以直接优化的问题，分解为两个更简单的子问题交替求解。其核心数学工具是 Jensen 不等式和 KL 散度，保证了似然函数的单调收敛。</p>
+<p>EM 算法已经被广泛应用于聚类（GMM）、主题模型（LDA）、隐马尔可夫模型（Baum-Welch）、缺失数据填补等多个领域。深入理解 EM 算法不仅是掌握统计学习的关键一步，也是后续学习变分推断、MCMC 等高级方法的基础。</p>
+<p>从算法设计的角度看，EM 教给我们的不仅是数学推导，更是一种哲学：面对一个困难的问题，不要硬攻，而是构建一个更简单的辅助问题，通过迭代地解决辅助问题来逼近原问题的解。这也许是 EM 算法留给我们的最深刻的启示。</p>
+<p><strong>参考文献</strong>：</p>
+<ol>
+<li>Dempster, A. P., Laird, N. M., &amp; Rubin, D. B. (1977). Maximum likelihood from incomplete data via the EM algorithm. <em>Journal of the Royal Statistical Society: Series B</em>, 39(1), 1-38.</li>
+<li>Bishop, C. M. (2006). <em>Pattern Recognition and Machine Learning</em>. Chapter 9.</li>
+<li>李航. (2019). 《统计学习方法》（第2版）. 第9章.</li>
+<li>Murphy, K. P. (2012). <em>Machine Learning: A Probabilistic Perspective</em>. Chapter 11.</li>
+</ol>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2020/08/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91EM%E7%AE%97%E6%B3%95/">http://tufusi.com/2020/08/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91EM%E7%AE%97%E6%B3%95/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2020/08/15/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E5%9B%BE%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86%E4%B8%8E%E5%9B%BE%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【GNN原理解析】图信号处理与图卷积神经网络</span></div></a></div><div class="next-post pull_right"><a href="/2020/08/10/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【GNN原理解析】卷积神经网络</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

@@ -1,0 +1,521 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>Java进阶之序列化 | ONE·PIECE</title><meta name="description" content="Java进阶之序列化"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Java进阶之序列化"><meta name="twitter:description" content="Java进阶之序列化"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/sean-lim-NPlv2pkYoUA-unsplash.jpg"><meta property="og:type" content="article"><meta property="og:title" content="Java进阶之序列化"><meta property="og:url" content="http://tufusi.com/2019/05/30/%E9%87%8D%E6%8B%BEAndroid-Java%E8%BF%9B%E9%98%B6%E4%B9%8B%E5%BA%8F%E5%88%97%E5%8C%96/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="Java进阶之序列化"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/sean-lim-NPlv2pkYoUA-unsplash.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2019/05/30/%E9%87%8D%E6%8B%BEAndroid-Java%E8%BF%9B%E9%98%B6%E4%B9%8B%E5%BA%8F%E5%88%97%E5%8C%96/"><link rel="prev" title="Java进阶之深入理解IO" href="http://tufusi.com/2019/05/31/%E9%87%8D%E6%8B%BEAndroid-Java%E8%BF%9B%E9%98%B6%E4%B9%8B%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3IO/"><link rel="next" title="Java进阶之深入理解ClassLoader类加载" href="http://tufusi.com/2019/05/29/%E9%87%8D%E6%8B%BEAndroid-Java%E8%BF%9B%E9%98%B6%E4%B9%8B%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3ClassLoader%E7%B1%BB%E5%8A%A0%E8%BD%BD/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、什么是序列化</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81Java-Serializable"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、Java Serializable</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 基本使用</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-serialVersionUID-%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 serialVersionUID 详解</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-transient-%E5%85%B3%E9%94%AE%E5%AD%97"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 transient 关键字</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-4-%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BA%8F%E5%88%97%E5%8C%96%EF%BC%9AwriteObject-readObject"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">2.4 自定义序列化：writeObject&#x2F;readObject</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-5-Externalizable-%E6%8E%A5%E5%8F%A3"><span class="toc_mobile_items-number">2.5.</span> <span class="toc_mobile_items-text">2.5 Externalizable 接口</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-6-%E5%BA%8F%E5%88%97%E5%8C%96%E6%A0%BC%E5%BC%8F%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">2.6.</span> <span class="toc_mobile_items-text">2.6 序列化格式分析</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-7-%E5%BA%8F%E5%88%97%E5%8C%96%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">2.7.</span> <span class="toc_mobile_items-text">2.7 序列化安全问题</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81Android-Parcelable"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、Android Parcelable</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-Parcelable"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 为什么需要 Parcelable</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-Parcelable-%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 Parcelable 实现</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-Parcelable-%E7%9A%84%E6%80%A7%E8%83%BD%E4%BC%98%E5%8A%BF"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 Parcelable 的性能优势</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-%E4%BD%BF%E7%94%A8-Kotlin-%E7%9A%84-Parcelize"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">3.4 使用 Kotlin 的 @Parcelize</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81JSON-%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、JSON 序列化</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-Gson-%E5%8E%9F%E7%90%86"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 Gson 原理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-Moshi-vs-Gson-vs-kotlinx-serialization"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 Moshi vs Gson vs kotlinx.serialization</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-FastJson-%E7%9A%84%E5%AE%89%E5%85%A8%E6%80%A7%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 FastJson 的安全性问题</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81Protobuf%EF%BC%88Protocol-Buffers%EF%BC%89"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、Protobuf（Protocol Buffers）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E5%AE%9A%E4%B9%89%E6%B6%88%E6%81%AF%E6%A0%BC%E5%BC%8F"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 定义消息格式</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-%E7%BC%96%E7%A0%81%E6%A0%BC%E5%BC%8F"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 编码格式</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-Protobuf-vs-JSON-%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 Protobuf vs JSON 对比</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E5%90%84%E5%BA%8F%E5%88%97%E5%8C%96%E6%96%B9%E6%A1%88%E7%9A%84%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、各序列化方案的适用场景</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E6%BA%90%E7%A0%81%E8%B7%AF%E5%BE%84"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、源码路径</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81%E5%B8%B8%E8%A7%81%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、常见面试题</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc-number">1.</span> <span class="toc-text">一、什么是序列化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Java-Serializable"><span class="toc-number">2.</span> <span class="toc-text">二、Java Serializable</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 基本使用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-serialVersionUID-%E8%AF%A6%E8%A7%A3"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 serialVersionUID 详解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-transient-%E5%85%B3%E9%94%AE%E5%AD%97"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 transient 关键字</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BA%8F%E5%88%97%E5%8C%96%EF%BC%9AwriteObject-readObject"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 自定义序列化：writeObject&#x2F;readObject</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-Externalizable-%E6%8E%A5%E5%8F%A3"><span class="toc-number">2.5.</span> <span class="toc-text">2.5 Externalizable 接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-%E5%BA%8F%E5%88%97%E5%8C%96%E6%A0%BC%E5%BC%8F%E5%88%86%E6%9E%90"><span class="toc-number">2.6.</span> <span class="toc-text">2.6 序列化格式分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-7-%E5%BA%8F%E5%88%97%E5%8C%96%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98"><span class="toc-number">2.7.</span> <span class="toc-text">2.7 序列化安全问题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Android-Parcelable"><span class="toc-number">3.</span> <span class="toc-text">三、Android Parcelable</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-Parcelable"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 为什么需要 Parcelable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Parcelable-%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 Parcelable 实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Parcelable-%E7%9A%84%E6%80%A7%E8%83%BD%E4%BC%98%E5%8A%BF"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 Parcelable 的性能优势</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E4%BD%BF%E7%94%A8-Kotlin-%E7%9A%84-Parcelize"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 使用 Kotlin 的 @Parcelize</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81JSON-%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc-number">4.</span> <span class="toc-text">四、JSON 序列化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Gson-%E5%8E%9F%E7%90%86"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 Gson 原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Moshi-vs-Gson-vs-kotlinx-serialization"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 Moshi vs Gson vs kotlinx.serialization</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-FastJson-%E7%9A%84%E5%AE%89%E5%85%A8%E6%80%A7%E9%97%AE%E9%A2%98"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 FastJson 的安全性问题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Protobuf%EF%BC%88Protocol-Buffers%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">五、Protobuf（Protocol Buffers）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E5%AE%9A%E4%B9%89%E6%B6%88%E6%81%AF%E6%A0%BC%E5%BC%8F"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 定义消息格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E7%BC%96%E7%A0%81%E6%A0%BC%E5%BC%8F"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 编码格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-Protobuf-vs-JSON-%E5%AF%B9%E6%AF%94"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 Protobuf vs JSON 对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%90%84%E5%BA%8F%E5%88%97%E5%8C%96%E6%96%B9%E6%A1%88%E7%9A%84%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">6.</span> <span class="toc-text">六、各序列化方案的适用场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E6%BA%90%E7%A0%81%E8%B7%AF%E5%BE%84"><span class="toc-number">7.</span> <span class="toc-text">七、源码路径</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%B8%B8%E8%A7%81%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="toc-number">8.</span> <span class="toc-text">八、常见面试题</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/sean-lim-NPlv2pkYoUA-unsplash.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">Java进阶之序列化</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2019-05-30<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-11</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">4.4k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 16 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、什么是序列化"><a href="#一、什么是序列化" class="headerlink" title="一、什么是序列化"></a>一、什么是序列化</h2><p>序列化（Serialization）是将对象的状态信息转换为可存储或传输的形式的过程。反序列化（Deserialization）是其逆过程——将字节序列恢复为对象。</p>
+<p>在 Java 生态中，序列化主要应用于以下场景：</p>
+<ul>
+<li><strong>进程间通信（IPC）</strong>：Android 的 Intent 通过 Binder 传递数据，Binder 使用 Parcelable 将对象序列化后跨进程传输。</li>
+<li><strong>持久化存储</strong>：将对象保存到文件（如 SharedPreferences、SQLite、文件缓存）。</li>
+<li><strong>网络传输</strong>：将对象转换为 JSON&#x2F;XML&#x2F;Protobuf 等格式发送到服务端。</li>
+<li><strong>深拷贝</strong>：通过序列化-反序列化实现对象的完整克隆。</li>
+</ul>
+<h2 id="二、Java-Serializable"><a href="#二、Java-Serializable" class="headerlink" title="二、Java Serializable"></a>二、Java Serializable</h2><h3 id="2-1-基本使用"><a href="#2-1-基本使用" class="headerlink" title="2.1 基本使用"></a>2.1 基本使用</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.Serializable;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> <span class="keyword">implements</span> <span class="title class_">Serializable</span> &#123;</span><br><span class="line">    <span class="comment">// 序列化版本号——反序列化时用于验证版本一致性</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">1L</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> age;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">transient</span> String password; <span class="comment">// transient 字段不会被序列化</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 构造方法（反序列化时不会调用！）</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">User</span><span class="params">(String name, <span class="type">int</span> age)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.name = name;</span><br><span class="line">        <span class="built_in">this</span>.age = age;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 序列化</span></span><br><span class="line"><span class="type">User</span> <span class="variable">user</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">User</span>(<span class="string">&quot;张三&quot;</span>, <span class="number">25</span>);</span><br><span class="line"><span class="keyword">try</span> (<span class="type">ObjectOutputStream</span> <span class="variable">oos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;user.ser&quot;</span>))) &#123;</span><br><span class="line">    oos.writeObject(user);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 反序列化</span></span><br><span class="line"><span class="keyword">try</span> (<span class="type">ObjectInputStream</span> <span class="variable">ois</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;user.ser&quot;</span>))) &#123;</span><br><span class="line">    <span class="type">User</span> <span class="variable">restored</span> <span class="operator">=</span> (User) ois.readObject();</span><br><span class="line">    <span class="comment">// 注意：反序列化时构造方法不会被调用！</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-serialVersionUID-详解"><a href="#2-2-serialVersionUID-详解" class="headerlink" title="2.2 serialVersionUID 详解"></a>2.2 serialVersionUID 详解</h3><p><code>serialVersionUID</code> 是序列化版本控制的关键。它的作用是：</p>
+<ol>
+<li>序列化时，对象的 <code>serialVersionUID</code> 被写入序列化流</li>
+<li>反序列化时，JVM 将流中的 <code>serialVersionUID</code> 与当前类的 <code>serialVersionUID</code> 比较</li>
+<li>如果两者不一致，抛出 <code>InvalidClassException</code></li>
+</ol>
+<p><strong>如果未显式声明 serialVersionUID？</strong><br>JVM 会根据类的结构（类名、接口、字段、方法签名等）自动计算一个哈希值作为默认的 <code>serialVersionUID</code>。问题是这个哈希值对类结构的变化极其敏感——哪怕增加一个空格或注释（虽然在字节码层面注释不影响），增加或删除一个字段都会导致新哈希值不同，从而无法反序列化旧版本的序列化数据。</p>
+<p><strong>最佳实践</strong>：始终显式声明 <code>serialVersionUID</code>，并在类结构调整时手动更新：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">20200101L</span>;  <span class="comment">// 使用日期作为版本号</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-transient-关键字"><a href="#2-3-transient-关键字" class="headerlink" title="2.3 transient 关键字"></a>2.3 transient 关键字</h3><p>被 <code>transient</code> 修饰的字段不会被默认序列化机制写入流中。典型使用场景：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserSession</span> <span class="keyword">implements</span> <span class="title class_">Serializable</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">1L</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> String username;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">transient</span> String password;  <span class="comment">// 密码不序列化（安全考虑）</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">transient</span> <span class="type">long</span> lastLoginTime; <span class="comment">// 登录时间不需要持久化</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">transient</span> ThreadLocal&lt;String&gt; context; <span class="comment">// ThreadLocal 无法序列化</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于 <code>transient</code> 字段，反序列化后其值为类型的默认值（引用类型为 null，int 为 0）。</p>
+<h3 id="2-4-自定义序列化：writeObject-readObject"><a href="#2-4-自定义序列化：writeObject-readObject" class="headerlink" title="2.4 自定义序列化：writeObject&#x2F;readObject"></a>2.4 自定义序列化：writeObject&#x2F;readObject</h3><p>通过定义私有的 <code>writeObject</code> 和 <code>readObject</code> 方法，可以自定义序列化行为：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SecureUser</span> <span class="keyword">implements</span> <span class="title class_">Serializable</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">1L</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> String username;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">transient</span> String encryptedPassword;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 自定义序列化</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">writeObject</span><span class="params">(ObjectOutputStream oos)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        oos.defaultWriteObject();  <span class="comment">// 先执行默认序列化</span></span><br><span class="line">        <span class="comment">// 对密码字段做额外加密</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">extraEncrypted</span> <span class="operator">=</span> Base64.getEncoder()</span><br><span class="line">            .encodeToString(encryptedPassword.getBytes());</span><br><span class="line">        oos.writeObject(extraEncrypted);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 自定义反序列化</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">readObject</span><span class="params">(ObjectInputStream ois)</span> </span><br><span class="line">            <span class="keyword">throws</span> IOException, ClassNotFoundException &#123;</span><br><span class="line">        ois.defaultReadObject();  <span class="comment">// 先执行默认反序列化</span></span><br><span class="line">        <span class="comment">// 解密密码字段</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">encrypted</span> <span class="operator">=</span> (String) ois.readObject();</span><br><span class="line">        <span class="built_in">this</span>.encryptedPassword = <span class="keyword">new</span> <span class="title class_">String</span>(</span><br><span class="line">            Base64.getDecoder().decode(encrypted));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>调用时机</strong>：</p>
+<ul>
+<li><code>writeObject</code> 在 <code>ObjectOutputStream.writeObject()</code> 内部通过反射调用</li>
+<li><code>readObject</code> 在 <code>ObjectInputStream.readObject()</code> 内部通过反射调用</li>
+</ul>
+<h3 id="2-5-Externalizable-接口"><a href="#2-5-Externalizable-接口" class="headerlink" title="2.5 Externalizable 接口"></a>2.5 Externalizable 接口</h3><p><code>Externalizable</code> 继承自 <code>Serializable</code>，它要求开发者完全手动控制序列化逻辑：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Product</span> <span class="keyword">implements</span> <span class="title class_">Externalizable</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">1L</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">double</span> price;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 必须有一个 public 无参构造函数（Serializable 不需要）</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Product</span><span class="params">()</span> &#123;&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Product</span><span class="params">(String name, <span class="type">double</span> price)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.name = name;</span><br><span class="line">        <span class="built_in">this</span>.price = price;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">writeExternal</span><span class="params">(ObjectOutput out)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        out.writeUTF(name);</span><br><span class="line">        out.writeDouble(price);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">readExternal</span><span class="params">(ObjectInput in)</span> </span><br><span class="line">            <span class="keyword">throws</span> IOException, ClassNotFoundException &#123;</span><br><span class="line">        name = in.readUTF();</span><br><span class="line">        price = in.readDouble();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>Externalizable vs Serializable</strong>：</p>
+<table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">Serializable</th>
+<th align="left">Externalizable</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">实现方式</td>
+<td align="left">JVM 自动处理</td>
+<td align="left">完全手动</td>
+</tr>
+<tr>
+<td align="left">性能</td>
+<td align="left">使用反射，较慢</td>
+<td align="left">无反射，快</td>
+</tr>
+<tr>
+<td align="left">控制粒度</td>
+<td align="left">通过 transient 排除字段</td>
+<td align="left">精确控制每个字段</td>
+</tr>
+<tr>
+<td align="left">构造方法</td>
+<td align="left">不调用构造方法</td>
+<td align="left">必须有无参 public 构造方法</td>
+</tr>
+<tr>
+<td align="left">序列化数据量</td>
+<td align="left">包含类的元信息，较大</td>
+<td align="left">只包含你写的数据，更小</td>
+</tr>
+</tbody></table>
+<h3 id="2-6-序列化格式分析"><a href="#2-6-序列化格式分析" class="headerlink" title="2.6 序列化格式分析"></a>2.6 序列化格式分析</h3><p>Java 序列化产生的二进制格式遵循特定规范。以序列化一个简单的 User 对象为例：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">偏移量  Hex                          说明</span><br><span class="line">------  ---                          ----</span><br><span class="line">0x0000  AC ED                        STREAM_MAGIC (魔术数字)</span><br><span class="line">0x0002  00 05                        STREAM_VERSION (版本号 5)</span><br><span class="line">0x0004  73                            TC_OBJECT (对象标记)</span><br><span class="line">0x0005  72 00 04 55 73 65 72          TC_CLASSDESC + 类名 &quot;User&quot;</span><br><span class="line">0x000C  00 00 00 00                   serialVersionUID (0L)</span><br><span class="line">0x0010  02                            标志位 (SC_SERIALIZABLE)</span><br><span class="line">0x0011  00 02                         字段数量 = 2</span><br><span class="line">0x0013  49 00 03 61 67 65             字段1: I(int) + &quot;age&quot;</span><br><span class="line">0x0019  4C 00 04 6E 61 6D 65          字段2: L(reference) + &quot;name&quot;</span><br><span class="line">0x0020  00 12 4C 6A 61 76 61 2F ...   类型: &quot;Ljava/lang/String;&quot;</span><br><span class="line">0x0036  78                            TC_ENDBLOCKDATA</span><br><span class="line">...     (对象数据部分)</span><br></pre></td></tr></table></figure>
+
+<p>格式分析可以从 <code>ObjectInputStream</code> 源码中找到完整的解析逻辑。HotSpot 中相关的 native 方法在 <code>src/java.base/share/native/libjava/ObjectInputStream.c</code> 中。</p>
+<h3 id="2-7-序列化安全问题"><a href="#2-7-序列化安全问题" class="headerlink" title="2.7 序列化安全问题"></a>2.7 序列化安全问题</h3><p>Java 序列化有严重的安全隐患，是许多远程代码执行（RCE）漏洞的根源：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 反序列化漏洞示例</span></span><br><span class="line"><span class="comment">// 攻击者构造特殊的序列化数据，触发链式调用，最终执行恶意代码</span></span><br><span class="line"><span class="type">ObjectInputStream</span> <span class="variable">ois</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(untrustedInput);</span><br><span class="line"><span class="type">Object</span> <span class="variable">obj</span> <span class="operator">=</span> ois.readObject();  <span class="comment">// 危险！可能执行恶意代码</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>防护措施</strong>：</p>
+<ol>
+<li>使用 <code>ObjectInputFilter</code>（JDK 9+）限制可反序列化的类</li>
+<li>避免使用 Java 原生序列化传输不可信数据</li>
+<li>优先使用 JSON、Protobuf 等安全的序列化格式</li>
+<li>在 Android 中，跨进程通信使用 Parcelable（类型安全，不会导致任意代码执行）</li>
+</ol>
+<h2 id="三、Android-Parcelable"><a href="#三、Android-Parcelable" class="headerlink" title="三、Android Parcelable"></a>三、Android Parcelable</h2><h3 id="3-1-为什么需要-Parcelable"><a href="#3-1-为什么需要-Parcelable" class="headerlink" title="3.1 为什么需要 Parcelable"></a>3.1 为什么需要 Parcelable</h3><p>在 Android 中，跨进程传输数据主要通过 Binder 机制。Binder 的事务缓冲区只有 <strong>1MB</strong>（并且是所有 Binder 调用共享的），因此需要一种内存高效、速度快的序列化方式。<code>Serializable</code> 使用反射 + 大量元数据，序列化后的数据体积大、速度慢，不适合 Binder 传输。</p>
+<p><code>Parcelable</code> 专为 Android IPC 设计：</p>
+<ul>
+<li><strong>零反射</strong>：所有序列化逻辑由开发者显式编写（或通过 APT 生成）</li>
+<li><strong>紧凑格式</strong>：不存储类名、字段名等元信息，只存数据</li>
+<li><strong>与 Binder 深度集成</strong>：Parcel 是 Binder 通信的直接载体</li>
+</ul>
+<h3 id="3-2-Parcelable-实现"><a href="#3-2-Parcelable-实现" class="headerlink" title="3.2 Parcelable 实现"></a>3.2 Parcelable 实现</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> <span class="keyword">implements</span> <span class="title class_">Parcelable</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> age;</span><br><span class="line">    <span class="keyword">private</span> List&lt;String&gt; hobbies;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 构造方法</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">User</span><span class="params">(String name, <span class="type">int</span> age)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.name = name;</span><br><span class="line">        <span class="built_in">this</span>.age = age;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 从 Parcel 中反序列化</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="title function_">User</span><span class="params">(Parcel in)</span> &#123;</span><br><span class="line">        name = in.readString();</span><br><span class="line">        age = in.readInt();</span><br><span class="line">        hobbies = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        in.readStringList(hobbies);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 序列化到 Parcel</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">writeToParcel</span><span class="params">(Parcel dest, <span class="type">int</span> flags)</span> &#123;</span><br><span class="line">        dest.writeString(name);</span><br><span class="line">        dest.writeInt(age);</span><br><span class="line">        dest.writeStringList(hobbies);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 描述内容（通常返回 0，有文件描述符时返回 CONTENTS_FILE_DESCRIPTOR）</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">describeContents</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// CREATOR 是反序列化的工厂</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Creator&lt;User&gt; CREATOR = <span class="keyword">new</span> <span class="title class_">Creator</span>&lt;User&gt;() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> User <span class="title function_">createFromParcel</span><span class="params">(Parcel in)</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">User</span>(in);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> User[] newArray(<span class="type">int</span> size) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">User</span>[size];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意</strong>：<code>writeToParcel</code> 和 CREATOR 的 <code>createFromParcel</code> 中的读写顺序必须严格一致——这是手动序列化最大的坑。</p>
+<h3 id="3-3-Parcelable-的性能优势"><a href="#3-3-Parcelable-的性能优势" class="headerlink" title="3.3 Parcelable 的性能优势"></a>3.3 Parcelable 的性能优势</h3><p>关于 “Parcelable 比 Serializable 快 10 倍” 的说法：</p>
+<table>
+<thead>
+<tr>
+<th align="left">指标</th>
+<th align="left">Serializable</th>
+<th align="left">Parcelable</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">序列化方式</td>
+<td align="left">反射（慢）</td>
+<td align="left">手写代码（快）</td>
+</tr>
+<tr>
+<td align="left">数据体积</td>
+<td align="left">类名、字段名等元信息</td>
+<td align="left">仅数据值</td>
+</tr>
+<tr>
+<td align="left">对象创建</td>
+<td align="left">不经过构造方法</td>
+<td align="left">经过构造方法</td>
+</tr>
+<tr>
+<td align="left">跨平台兼容</td>
+<td align="left">JVM 通用</td>
+<td align="left">Android 专有</td>
+</tr>
+<tr>
+<td align="left">版本兼容</td>
+<td align="left">serialVersionUID 机制</td>
+<td align="left">需自己处理</td>
+</tr>
+</tbody></table>
+<p><strong>实际测试数据</strong>（简单对象，10000 次序列化）：</p>
+<ul>
+<li>Serializable: ~300ms</li>
+<li>Parcelable: ~20ms</li>
+<li>性能差距约 <strong>10-15 倍</strong></li>
+</ul>
+<h3 id="3-4-使用-Kotlin-的-Parcelize"><a href="#3-4-使用-Kotlin-的-Parcelize" class="headerlink" title="3.4 使用 Kotlin 的 @Parcelize"></a>3.4 使用 Kotlin 的 @Parcelize</h3><p>Kotlin 提供了 <code>@Parcelize</code> 注解，通过编译器插件自动生成 Parcelable 实现，无需手写繁琐的 writeToParcel：</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> kotlinx.parcelize.Parcelize</span><br><span class="line"></span><br><span class="line"><span class="meta">@Parcelize</span></span><br><span class="line"><span class="keyword">data</span> <span class="keyword">class</span> <span class="title class_">User</span>(</span><br><span class="line">    <span class="keyword">val</span> name: String,</span><br><span class="line">    <span class="keyword">val</span> age: <span class="built_in">Int</span>,</span><br><span class="line">    <span class="keyword">val</span> hobbies: List&lt;String&gt; = emptyList()</span><br><span class="line">) : Parcelable</span><br></pre></td></tr></table></figure>
+
+<p>Kotlin 编译器会在 class 文件中自动生成 <code>writeToParcel</code> 和 <code>CREATOR</code> 的实现。这是 Android 上最推荐的 Parcelable 实现方式。</p>
+<h2 id="四、JSON-序列化"><a href="#四、JSON-序列化" class="headerlink" title="四、JSON 序列化"></a>四、JSON 序列化</h2><h3 id="4-1-Gson-原理"><a href="#4-1-Gson-原理" class="headerlink" title="4.1 Gson 原理"></a>4.1 Gson 原理</h3><p>Gson 是 Google 开发的 Java JSON 序列化库。其核心原理是通过反射读取对象的字段，然后递归序列化：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 序列化</span></span><br><span class="line"><span class="type">User</span> <span class="variable">user</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">User</span>(<span class="string">&quot;张三&quot;</span>, <span class="number">25</span>);</span><br><span class="line"><span class="type">Gson</span> <span class="variable">gson</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Gson</span>();</span><br><span class="line"><span class="type">String</span> <span class="variable">json</span> <span class="operator">=</span> gson.toJson(user);  </span><br><span class="line"><span class="comment">// &#123;&quot;name&quot;:&quot;张三&quot;,&quot;age&quot;:25&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 反序列化</span></span><br><span class="line"><span class="type">User</span> <span class="variable">restored</span> <span class="operator">=</span> gson.fromJson(json, User.class);</span><br></pre></td></tr></table></figure>
+
+<p><strong>Gson 的内部机制</strong>：</p>
+<ol>
+<li><code>toJson()</code> → 获取对象的 <code>TypeToken</code> → 创建 <code>TypeAdapter</code></li>
+<li>TypeAdapter 通过反射（<code>Field.get()</code>）读取每个字段的值</li>
+<li>对于复杂字段（嵌套对象、集合），递归创建子 TypeAdapter</li>
+<li>最终通过 <code>JsonWriter</code> 输出 JSON 字符串</li>
+</ol>
+<p><strong>Gson 的类型擦除问题</strong>：</p>
+<p>由于 Java 泛型擦除，以下代码会有问题：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 错误！反序列化后得到的是 LinkedTreeMap 而非 User</span></span><br><span class="line">List&lt;User&gt; users = gson.fromJson(json, List.class);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 正确：使用 TypeToken 保留泛型信息</span></span><br><span class="line"><span class="type">Type</span> <span class="variable">listType</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TypeToken</span>&lt;List&lt;User&gt;&gt;()&#123;&#125;.getType();</span><br><span class="line">List&lt;User&gt; users = gson.fromJson(json, listType);</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-Moshi-vs-Gson-vs-kotlinx-serialization"><a href="#4-2-Moshi-vs-Gson-vs-kotlinx-serialization" class="headerlink" title="4.2 Moshi vs Gson vs kotlinx.serialization"></a>4.2 Moshi vs Gson vs kotlinx.serialization</h3><table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">Gson</th>
+<th align="left">Moshi</th>
+<th align="left">kotlinx.serialization</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">反射</td>
+<td align="left">使用反射</td>
+<td align="left">使用反射 + CodeGen</td>
+<td align="left">编译期代码生成（无反射）</td>
+</tr>
+<tr>
+<td align="left">Kotlin 支持</td>
+<td align="left">一般 (需额外处理 null safety)</td>
+<td align="left">好 (Kotlin 感知)</td>
+<td align="left">原生 Kotlin</td>
+</tr>
+<tr>
+<td align="left">性能</td>
+<td align="left">中</td>
+<td align="left">中 (CodeGen 快)</td>
+<td align="left">快（无反射）</td>
+</tr>
+<tr>
+<td align="left">Android 推荐</td>
+<td align="left">传统项目</td>
+<td align="left">OkHttp 系列项目</td>
+<td align="left">现代 Kotlin 项目</td>
+</tr>
+</tbody></table>
+<p><strong>为什么 kotlinx.serialization 最快？</strong></p>
+<p>它完全在编译期生成序列化代码，运行时零反射：</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Serializable</span></span><br><span class="line"><span class="keyword">data</span> <span class="keyword">class</span> <span class="title class_">User</span>(</span><br><span class="line">    <span class="keyword">val</span> name: String,</span><br><span class="line">    <span class="keyword">val</span> age: <span class="built_in">Int</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 编译后自动生成序列化器 User$$serializer</span></span><br><span class="line"><span class="comment">// 序列化时直接调用生成的代码，无反射开销</span></span><br><span class="line"><span class="keyword">val</span> json = Json.encodeToString(User.serializer(), user)</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-FastJson-的安全性问题"><a href="#4-3-FastJson-的安全性问题" class="headerlink" title="4.3 FastJson 的安全性问题"></a>4.3 FastJson 的安全性问题</h3><p>FastJson 是阿里巴巴开源的 JSON 库，在早期因其高性能被广泛使用。但它存在严重的安全漏洞（反序列化 RCE）：</p>
+<ul>
+<li>通过 <code>@type</code> 字段指定类名，FastJson 会尝试实例化任意类</li>
+<li>结合特定类的 setter&#x2F;getter 方法链，可以触发任意代码执行</li>
+<li>修复方案：升级到最新版本、开启 <code>SafeMode</code>、使用 <code>autoType</code> 白名单</li>
+</ul>
+<p><strong>Android 开发建议</strong>：优先使用 Gson（稳定）、Moshi（Kotlin）、kotlinx.serialization（现代 Kotlin）。</p>
+<h2 id="五、Protobuf（Protocol-Buffers）"><a href="#五、Protobuf（Protocol-Buffers）" class="headerlink" title="五、Protobuf（Protocol Buffers）"></a>五、Protobuf（Protocol Buffers）</h2><p>Protobuf 是 Google 开发的语言中立、平台中立的可扩展序列化格式。相比 JSON，它有几个显著优势：</p>
+<h3 id="5-1-定义消息格式"><a href="#5-1-定义消息格式" class="headerlink" title="5.1 定义消息格式"></a>5.1 定义消息格式</h3><figure class="highlight protobuf"><table><tr><td class="code"><pre><span class="line"><span class="comment">// user.proto</span></span><br><span class="line">syntax = <span class="string">&quot;proto3&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">message </span><span class="title class_">User</span> &#123;</span><br><span class="line">    <span class="type">string</span> name = <span class="number">1</span>;</span><br><span class="line">    <span class="type">int32</span> age = <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">repeated</span> <span class="type">string</span> hobbies = <span class="number">3</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">enum </span><span class="title class_">Gender</span> &#123;</span><br><span class="line">        UNKNOWN = <span class="number">0</span>;</span><br><span class="line">        MALE = <span class="number">1</span>;</span><br><span class="line">        FEMALE = <span class="number">2</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    Gender gender = <span class="number">4</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-编码格式"><a href="#5-2-编码格式" class="headerlink" title="5.2 编码格式"></a>5.2 编码格式</h3><p>Protobuf 使用 Tag-Length-Value (TLV) 编码：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">字段编码 = (field_number &lt;&lt; 3) | wire_type</span><br><span class="line"></span><br><span class="line">Wire Types:</span><br><span class="line">  0 = Varint (int32, int64, uint32, uint64, sint32, sint64, bool, enum)</span><br><span class="line">  1 = 64-bit (fixed64, sfixed64, double)</span><br><span class="line">  2 = Length-delimited (string, bytes, embedded messages, packed repeated fields)</span><br><span class="line">  3 = Start group (deprecated)</span><br><span class="line">  4 = End group (deprecated)</span><br><span class="line">  5 = 32-bit (fixed32, sfixed32, float)</span><br></pre></td></tr></table></figure>
+
+<p><strong>Varint 编码</strong>：一种变长整数编码，小数字使用更少的字节：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">数字 300 的 Varint 编码:</span><br><span class="line">  300 = 0b100101100</span><br><span class="line">  → 按 7 位分组: 0000010 | 0101100</span><br><span class="line">  → 小端序，高位组加 continuation bit (1):  10101100 00000010</span><br><span class="line">  → 两个字节: 0xAC 0x02</span><br><span class="line"></span><br><span class="line">对比:</span><br><span class="line">  fixed32: 0x2C 0x01 0x00 0x00  (4 字节)</span><br><span class="line">  Varint:  0xAC 0x02            (2 字节)</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-3-Protobuf-vs-JSON-对比"><a href="#5-3-Protobuf-vs-JSON-对比" class="headerlink" title="5.3 Protobuf vs JSON 对比"></a>5.3 Protobuf vs JSON 对比</h3><table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">JSON</th>
+<th align="left">Protobuf</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">可读性</td>
+<td align="left">人可读</td>
+<td align="left">二进制，不可读</td>
+</tr>
+<tr>
+<td align="left">体积</td>
+<td align="left">较大（字段名重复）</td>
+<td align="left">小（字段序号代替字段名）</td>
+</tr>
+<tr>
+<td align="left">解析速度</td>
+<td align="left">慢（文本解析）</td>
+<td align="left">快（二进制解析）</td>
+</tr>
+<tr>
+<td align="left">Schema</td>
+<td align="left">无（弱类型）</td>
+<td align="left">有（强类型，通过 .proto 定义）</td>
+</tr>
+<tr>
+<td align="left">版本兼容</td>
+<td align="left">手动处理</td>
+<td align="left">内置向前&#x2F;向后兼容</td>
+</tr>
+<tr>
+<td align="left">Android 支持</td>
+<td align="left">全平台</td>
+<td align="left">需要 proto 编译器和运行时</td>
+</tr>
+<tr>
+<td align="left">适用场景</td>
+<td align="left">REST API、配置文件</td>
+<td align="left">RPC（gRPC）、高性能存储</td>
+</tr>
+</tbody></table>
+<h2 id="六、各序列化方案的适用场景"><a href="#六、各序列化方案的适用场景" class="headerlink" title="六、各序列化方案的适用场景"></a>六、各序列化方案的适用场景</h2><table>
+<thead>
+<tr>
+<th align="left">场景</th>
+<th align="left">推荐方案</th>
+<th align="left">原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">Intent&#x2F;Bundle 传递数据</td>
+<td align="left">Parcelable</td>
+<td align="left">与 Binder 集成，速度快</td>
+</tr>
+<tr>
+<td align="left">网络 API 通信</td>
+<td align="left">JSON (Moshi&#x2F;Gson)</td>
+<td align="left">人可读，跨语言</td>
+</tr>
+<tr>
+<td align="left">微服务 RPC 通信</td>
+<td align="left">Protobuf + gRPC</td>
+<td align="left">高性能，强类型</td>
+</tr>
+<tr>
+<td align="left">本地持久化（简单）</td>
+<td align="left">JSON &#x2F; SharedPreferences</td>
+<td align="left">实现简单</td>
+</tr>
+<tr>
+<td align="left">本地持久化（大量）</td>
+<td align="left">Protobuf &#x2F; Room (SQLite)</td>
+<td align="left">读写入性能好</td>
+</tr>
+<tr>
+<td align="left">缓存数据</td>
+<td align="left">Serialization (LruCache 应用类)</td>
+<td align="left">深度拷贝方便</td>
+</tr>
+<tr>
+<td align="left">对象深拷贝</td>
+<td align="left">Serialization</td>
+<td align="left">一行代码完成</td>
+</tr>
+<tr>
+<td align="left">跨进程大数据</td>
+<td align="left">Parcelable + ContentProvider</td>
+<td align="left">Binder 限制 1MB</td>
+</tr>
+</tbody></table>
+<h2 id="七、源码路径"><a href="#七、源码路径" class="headerlink" title="七、源码路径"></a>七、源码路径</h2><table>
+<thead>
+<tr>
+<th align="left">组件</th>
+<th align="left">路径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">Java Serializable (JDK)</td>
+<td align="left"><code>jdk/src/java.base/share/classes/java/io/ObjectOutputStream.java</code></td>
+</tr>
+<tr>
+<td align="left">Parcelable</td>
+<td align="left"><code>frameworks/base/core/java/android/os/Parcelable.java</code></td>
+</tr>
+<tr>
+<td align="left">Parcel (native)</td>
+<td align="left"><code>frameworks/native/libs/binder/Parcel.cpp</code></td>
+</tr>
+<tr>
+<td align="left">Parcel (Java)</td>
+<td align="left"><code>frameworks/base/core/java/android/os/Parcel.java</code></td>
+</tr>
+<tr>
+<td align="left">Gson</td>
+<td align="left"><code>gson/gson/src/main/java/com/google/gson/</code></td>
+</tr>
+<tr>
+<td align="left">kotlinx.serialization</td>
+<td align="left"><code>kotlin/kotlinx.serialization/</code></td>
+</tr>
+</tbody></table>
+<h2 id="八、常见面试题"><a href="#八、常见面试题" class="headerlink" title="八、常见面试题"></a>八、常见面试题</h2><p><strong>Q1: Parcelable 和 Serializable 有什么区别？为什么 Android 推荐使用 Parcelable？</strong></p>
+<p>A: 核心区别：Serializable 是 Java 标准序列化机制，使用反射自动序列化对象的所有字段，序列化后的数据包含类名、字段名等元信息，体积大且速度慢。Parcelable 是 Android 专有的序列化接口，要求开发者显式编写序列化代码，序列化后的数据只包含字段值，不含元信息，因此体积更小、速度更快（通常快 10-15 倍）。Android 推荐 Parcelable 的原因是：(1) Binder 的事务缓冲区只有 1MB，Parcelable 的紧凑格式更适合；(2) Parcelable 不经过反射，性能更好；(3) 跨进程通信是 Android 应用的核心场景（Activity 跳转、Service 绑定等），Parcelable 与 Binder 深度集成。缺点是 Parcelable 需要手写大量样板代码（Kotlin 的 <code>@Parcelize</code> 解决了这个问题）。</p>
+<p><strong>Q2: serialVersionUID 的作用是什么？不设置会怎样？</strong></p>
+<p>A: serialVersionUID 是序列化版本控制的标识符。序列化时，它会随对象数据一同写入流中。反序列化时，JVM 会比较流中的 serialVersionUID 与本地类的 serialVersionUID，如果不一致则抛出 InvalidClassException。如果不设置，JVM 会根据类的结构（类名、字段、方法签名等）通过 SHA 算法自动生成一个。问题在于自动生成的值对类结构非常敏感——增加一个字段、改变一个方法签名都会导致生成的 serialVersionUID 不同，从而导致旧版本序列化的数据无法反序列化。因此最佳实践是显式声明一个 serialVersionUID 并在类演化时保持兼容性。</p>
+<p><strong>Q3: 什么是 transient 关键字？反序列化后 transient 字段的值是什么？</strong></p>
+<p>A: transient 是 Java 的关键字，用于标记不需要序列化的字段。被标记的字段在序列化时会被忽略，反序列化后其值为该类型的默认值：引用类型为 null，int&#x2F;short&#x2F;byte&#x2F;long&#x2F;float&#x2F;double 为 0，boolean 为 false，char 为 ‘ ’。典型使用场景：(1) 安全敏感数据（密码、Token）；(2) 运行时状态（ThreadLocal、当前登录状态）；(3) 可重新计算的派生字段（缓存值、聚合结果）；(4) 不可序列化的字段（如 Context、View 等 Android 组件）。如果需要给 transient 字段赋予合理的反序列化值，可以在 readObject() 方法中手动处理。</p>
+<p><strong>Q4: Binder 的事务缓冲区为什么只有 1MB？传输大数据时怎么办？</strong></p>
+<p>A: Binder 的 1MB 限制是 Android 系统设计的一个安全阈值（定义在 <code>frameworks/native/libs/binder/ProcessState.cpp</code> 中的 <code>BINDER_VM_SIZE</code>），目的是防止单个 Binder 调用占用过多内核内存影响系统稳定性。当需要传输大数据时：(1) 对于图片&#x2F;文件，使用 <code>ContentProvider</code> + 文件描述符（通过 Parcel 发送 <code>ParcelFileDescriptor</code>）；(2) 对于大量结构化数据，使用 <code>ContentProvider</code> + Cursor；(3) 使用 <code>MemoryFile</code>（匿名共享内存，ashmem）共享大块数据，通过 Binder 只传递文件描述符；(4) 使用 <code>Messenger</code> + <code>Bundle</code>（Binder 限制的微妙差异，Bundle 的 <code>putBinder</code> 没有 1MB 限制但也不推荐大数据）。注意：1MB 是所有并发 Binder 调用共享的，实际可用空间可能小于 1MB，如果同时有多个 Binder 调用在进行，你的可用缓冲区会更小。</p>
+<p><strong>Q5: Gson 如何处理泛型？为什么 TypeToken 能保留泛型信息而直接传 Class 不能？</strong></p>
+<p>A: Java 的泛型在编译期会被擦除（Type Erasure），<code>List&lt;User&gt;.class</code> 在运行时不存在，它只是 <code>List.class</code>。因此在 <code>gson.fromJson(json, List.class)</code> 中，Gson 只能知道这是一个 List，但不知道 List 的元素类型，只能默认为 <code>LinkedTreeMap</code>（Map 类型）。TypeToken 使用了匿名内部类的技巧：<code>new TypeToken&lt;List&lt;User&gt;&gt;()&#123;&#125;</code> 创建了一个匿名子类，JVM 保留了其父类的泛型签名在 class 文件的 Signature 属性中（虽然字节码层面泛型被擦除，但 Signature 属性保留了完整的泛型信息）。Gson 通过 <code>getGenericSuperclass()</code> 读取这个 Signature 属性，获取到完整的 <code>List&lt;User&gt;</code> 类型信息。这就是 TypeToken 能够保留泛型信息的原理。</p>
+<p><strong>Q6: 反序列化漏洞（RCE）的原理是什么？Android 中是否存在类似的风险？</strong></p>
+<p>A: Java 反序列化 RCE 的典型攻击链：攻击者构造一个特殊的序列化字节流，其中包含一个精心设计的对象图。当 <code>readObject()</code> 被调用时，JVM 按照字节流中的指令逐步创建对象并调用它们的 <code>readObject</code>、<code>readResolve</code> 等方法。如果某个类的这些方法中存在危险的逻辑（如执行系统命令、加载远程类、调用 Runtime.exec()），就会形成攻击链。著名的利用链包括 Commons Collections、Spring Beans、JDK 内置的 AnnotationInvocationHandler 等。在 Android 中，原生序列化（Serializable）的风险较小，因为：(1) Android 不包含 Java EE 的那些危险类（如 Commons Collections）；(2) Binder 的 Parcelable 是类型安全的——deserialize 时明确指定了类（通过 CREATOR），不会像 Java 原生序列化那样从流中动态加载任意类；(3) Android 9+ 对 <code>ObjectInputStream</code> 增加了额外的安全检查。但不意味着绝对安全——如果你的应用使用了存在漏洞的第三方库，仍可能受到影响。</p>
+<hr>
+<p><strong>参考文档：</strong></p>
+<ul>
+<li>Java Object Serialization Specification: <a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/8/docs/platform/serialization/spec/serialTOC.html">https://docs.oracle.com/javase/8/docs/platform/serialization/spec/serialTOC.html</a></li>
+<li>Android Parcelable: <a target="_blank" rel="noopener" href="https://developer.android.com/reference/android/os/Parcelable">https://developer.android.com/reference/android/os/Parcelable</a></li>
+<li>Protocol Buffers: <a target="_blank" rel="noopener" href="https://developers.google.com/protocol-buffers">https://developers.google.com/protocol-buffers</a></li>
+</ul>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/sean-lim-NPlv2pkYoUA-unsplash.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2019/05/31/%E9%87%8D%E6%8B%BEAndroid-Java%E8%BF%9B%E9%98%B6%E4%B9%8B%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3IO/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/benjamin-elliott-LYdXESrw4dY-unsplash.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>Java进阶之深入理解IO</span></div></a></div><div class="next-post pull_right"><a href="/2019/05/29/%E9%87%8D%E6%8B%BEAndroid-Java%E8%BF%9B%E9%98%B6%E4%B9%8B%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3ClassLoader%E7%B1%BB%E5%8A%A0%E8%BD%BD/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/uploadbeta2.com.jpeg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>Java进阶之深入理解ClassLoader类加载</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/sean-lim-NPlv2pkYoUA-unsplash.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

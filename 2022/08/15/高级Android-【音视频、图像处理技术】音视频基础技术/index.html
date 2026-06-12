@@ -1,0 +1,1054 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【音视频、图像处理技术】音视频基础技术 | ONE·PIECE</title><meta name="description" content="【音视频、图像处理技术】音视频基础技术"><meta name="keywords" content="C/C++技术"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【音视频、图像处理技术】音视频基础技术"><meta name="twitter:description" content="【音视频、图像处理技术】音视频基础技术"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/316.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【音视频、图像处理技术】音视频基础技术"><meta property="og:url" content="http://tufusi.com/2022/08/15/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%9F%B3%E8%A7%86%E9%A2%91%E3%80%81%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86%E6%8A%80%E6%9C%AF%E3%80%91%E9%9F%B3%E8%A7%86%E9%A2%91%E5%9F%BA%E7%A1%80%E6%8A%80%E6%9C%AF/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【音视频、图像处理技术】音视频基础技术"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/316.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2022/08/15/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%9F%B3%E8%A7%86%E9%A2%91%E3%80%81%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86%E6%8A%80%E6%9C%AF%E3%80%91%E9%9F%B3%E8%A7%86%E9%A2%91%E5%9F%BA%E7%A1%80%E6%8A%80%E6%9C%AF/"><link rel="prev" title="【实战系列】IO之AES加密加固" href="http://tufusi.com/2022/09/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E5%AE%9E%E6%88%98%E7%B3%BB%E5%88%97%E3%80%91IO%E4%B9%8BAES%E5%8A%A0%E5%AF%86%E5%8A%A0%E5%9B%BA/"><link rel="next" title="【音视频、图像处理技术】相机开发进阶技术" href="http://tufusi.com/2022/08/10/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%9F%B3%E8%A7%86%E9%A2%91%E3%80%81%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86%E6%8A%80%E6%9C%AF%E3%80%91%E7%9B%B8%E6%9C%BA%E5%BC%80%E5%8F%91%E8%BF%9B%E9%98%B6%E6%8A%80%E6%9C%AF/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E5%BC%95%E8%A8%80%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9F%B3%E8%A7%86%E9%A2%91%E6%8A%80%E6%9C%AF%E5%A6%82%E6%AD%A4%E9%87%8D%E8%A6%81"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、引言：为什么音视频技术如此重要</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81PCM-%E9%9F%B3%E9%A2%91%EF%BC%9A%E6%95%B0%E5%AD%97%E5%A3%B0%E9%9F%B3%E7%9A%84%E6%A0%B9%E5%9F%BA"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、PCM 音频：数字声音的根基</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E5%A3%B0%E9%9F%B3%E6%98%AF%E5%A6%82%E4%BD%95%E5%8F%98%E6%88%90%E6%95%B0%E5%AD%97%E7%9A%84"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 声音是如何变成数字的</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E9%87%87%E6%A0%B7%E7%8E%87%EF%BC%9A44-1kHz-vs-48kHz"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 采样率：44.1kHz vs 48kHz</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-%E4%BD%8D%E6%B7%B1%E5%BA%A6%EF%BC%9A16-bit-vs-24-bit-vs-32-bit"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 位深度：16-bit vs 24-bit vs 32-bit</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-4-%E5%A3%B0%E9%81%93%E5%B8%83%E5%B1%80"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">2.4 声道布局</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-5-WAV-%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="toc_mobile_items-number">2.5.</span> <span class="toc_mobile_items-text">2.5 WAV 文件格式</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81YUV-%E8%89%B2%E5%BD%A9%E7%A9%BA%E9%97%B4%EF%BC%9A%E8%A7%86%E9%A2%91%E7%9A%84%E5%9B%BE%E5%83%8F%E8%A1%A8%E7%A4%BA"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、YUV 色彩空间：视频的图像表示</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A7%86%E9%A2%91%E4%BD%BF%E7%94%A8-YUV-%E8%80%8C%E4%B8%8D%E6%98%AF-RGB"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 为什么视频使用 YUV 而不是 RGB</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-YUV-%E7%9A%84%E5%B9%B3%E9%9D%A2%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F%E4%B8%8E%E5%8D%8A%E5%B9%B3%E9%9D%A2%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 YUV 的平面存储格式与半平面存储格式</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-YUV-%E2%86%94-RGB-%E8%BD%AC%E6%8D%A2"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 YUV ↔ RGB 转换</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81H-264-%E7%BC%96%E7%A0%81%E7%AE%A1%E7%BA%BF%EF%BC%9A%E9%80%90%E6%AD%A5%E9%AA%A4%E6%B7%B1%E5%85%A5"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、H.264 编码管线：逐步骤深入</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-H-264-%E7%BC%96%E7%A0%81%E5%99%A8%E6%80%BB%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 H.264 编码器总体架构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E7%AC%AC%E4%B8%80%E6%AD%A5%EF%BC%9A%E5%B8%A7%E5%88%86%E5%89%B2-%E2%80%94%E2%80%94-%E4%BB%8E%E5%B8%A7%E5%88%B0%E5%AE%8F%E5%9D%97"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 第一步：帧分割 —— 从帧到宏块</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-%E7%AC%AC%E4%BA%8C%E6%AD%A5%EF%BC%9A%E9%A2%84%E6%B5%8B%EF%BC%88Prediction%EF%BC%89"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 第二步：预测（Prediction）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#4-3-1-%E5%B8%A7%E5%86%85%E9%A2%84%E6%B5%8B%EF%BC%88Intra-Prediction%EF%BC%89%E2%80%94%E2%80%94-%E6%B6%88%E9%99%A4%E7%A9%BA%E9%97%B4%E5%86%97%E4%BD%99"><span class="toc_mobile_items-number">4.3.1.</span> <span class="toc_mobile_items-text">4.3.1 帧内预测（Intra Prediction）—— 消除空间冗余</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#4-3-2-%E5%B8%A7%E9%97%B4%E9%A2%84%E6%B5%8B%EF%BC%88Inter-Prediction%EF%BC%89%E2%80%94%E2%80%94-%E6%B6%88%E9%99%A4%E6%97%B6%E9%97%B4%E5%86%97%E4%BD%99"><span class="toc_mobile_items-number">4.3.2.</span> <span class="toc_mobile_items-text">4.3.2 帧间预测（Inter Prediction）—— 消除时间冗余</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#4-3-3-%E9%A2%84%E6%B5%8B%E6%A8%A1%E5%BC%8F%E5%86%B3%E7%AD%96"><span class="toc_mobile_items-number">4.3.3.</span> <span class="toc_mobile_items-text">4.3.3 预测模式决策</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-4-%E7%AC%AC%E4%B8%89%E6%AD%A5%EF%BC%9A%E5%8F%98%E6%8D%A2%E4%B8%8E%E9%87%8F%E5%8C%96"><span class="toc_mobile_items-number">4.4.</span> <span class="toc_mobile_items-text">4.4 第三步：变换与量化</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#4-4-1-DCT-%E5%8F%98%E6%8D%A2%EF%BC%88%E6%95%B4%E6%95%B0-DCT%EF%BC%89"><span class="toc_mobile_items-number">4.4.1.</span> <span class="toc_mobile_items-text">4.4.1 DCT 变换（整数 DCT）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#4-4-2-%E9%87%8F%E5%8C%96%EF%BC%88Quantization%EF%BC%89%E2%80%94%E2%80%94-%E6%9C%89%E6%8D%9F%E5%8E%8B%E7%BC%A9%E7%9A%84%E6%A0%B8%E5%BF%83"><span class="toc_mobile_items-number">4.4.2.</span> <span class="toc_mobile_items-text">4.4.2 量化（Quantization）—— 有损压缩的核心</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-5-%E7%AC%AC%E5%9B%9B%E6%AD%A5%EF%BC%9A%E7%86%B5%E7%BC%96%E7%A0%81"><span class="toc_mobile_items-number">4.5.</span> <span class="toc_mobile_items-text">4.5 第四步：熵编码</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#CAVLC%EF%BC%88Context-Adaptive-Variable-Length-Coding%EF%BC%89"><span class="toc_mobile_items-number">4.5.1.</span> <span class="toc_mobile_items-text">CAVLC（Context-Adaptive Variable Length Coding）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#CABAC%EF%BC%88Context-Adaptive-Binary-Arithmetic-Coding%EF%BC%89"><span class="toc_mobile_items-number">4.5.2.</span> <span class="toc_mobile_items-text">CABAC（Context-Adaptive Binary Arithmetic Coding）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-6-%E7%AC%AC%E4%BA%94%E6%AD%A5%EF%BC%9A%E5%8E%BB%E5%9D%97%E6%BB%A4%E6%B3%A2%EF%BC%88Deblocking-Filter%EF%BC%89"><span class="toc_mobile_items-number">4.6.</span> <span class="toc_mobile_items-text">4.6 第五步：去块滤波（Deblocking Filter）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81I-P-B-%E5%B8%A7%E4%B8%8E-GOP-%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、I&#x2F;P&#x2F;B 帧与 GOP 结构</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E4%B8%89%E7%A7%8D%E5%B8%A7%E7%B1%BB%E5%9E%8B"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 三种帧类型</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-GOP%EF%BC%88Group-of-Pictures%EF%BC%89"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 GOP（Group of Pictures）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E5%AE%B9%E5%99%A8%E6%A0%BC%E5%BC%8F"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、容器格式</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-MP4-%E2%80%94%E2%80%94-%E6%9C%80%E9%80%9A%E7%94%A8%E7%9A%84%E8%A7%86%E9%A2%91%E5%AE%B9%E5%99%A8"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 MP4 —— 最通用的视频容器</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-MKV-WebM-%E2%80%94%E2%80%94-%E5%BC%80%E6%94%BE%E6%A0%87%E5%87%86%E7%9A%84%E5%AE%B9%E5%99%A8"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 MKV &#x2F; WebM —— 开放标准的容器</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-FLV-%E2%80%94%E2%80%94-%E7%9B%B4%E6%92%AD%E6%97%B6%E4%BB%A3%E7%9A%84%E9%81%97%E4%BA%A7"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">6.3 FLV —— 直播时代的遗产</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E6%B5%81%E5%AA%92%E4%BD%93%E5%8D%8F%E8%AE%AE"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、流媒体协议</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-RTMP-%E2%80%94%E2%80%94-%E5%AE%9E%E6%97%B6%E6%B6%88%E6%81%AF%E4%BC%A0%E8%BE%93%E5%8D%8F%E8%AE%AE"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">7.1 RTMP —— 实时消息传输协议</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-HLS-%E2%80%94%E2%80%94-HTTP-Live-Streaming"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">7.2 HLS —— HTTP Live Streaming</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-3-DASH-%E2%80%94%E2%80%94-Dynamic-Adaptive-Streaming-over-HTTP"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">7.3 DASH —— Dynamic Adaptive Streaming over HTTP</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-4-WebRTC-%E2%80%94%E2%80%94-%E5%AE%9E%E6%97%B6%E9%80%9A%E4%BF%A1%E7%9A%84%E9%9D%A9%E5%91%BD"><span class="toc_mobile_items-number">7.4.</span> <span class="toc_mobile_items-text">7.4 WebRTC —— 实时通信的革命</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81Android-MediaCodec-%E5%AE%9E%E6%88%98"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、Android MediaCodec 实战</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-MediaCodec-%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">8.1 MediaCodec 的生命周期</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-%E5%90%8C%E6%AD%A5%E6%A8%A1%E5%BC%8F%EF%BC%88Synchronous-Mode%EF%BC%89"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">8.2 同步模式（Synchronous Mode）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-3-%E5%BC%82%E6%AD%A5%E6%A8%A1%E5%BC%8F%EF%BC%88Asynchronous-Mode%EF%BC%89"><span class="toc_mobile_items-number">8.3.</span> <span class="toc_mobile_items-text">8.3 异步模式（Asynchronous Mode）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-4-Surface-%E8%BE%93%E5%85%A5-%E2%80%94%E2%80%94-%E9%9B%B6%E6%8B%B7%E8%B4%9D%E7%BC%96%E7%A0%81"><span class="toc_mobile_items-number">8.4.</span> <span class="toc_mobile_items-text">8.4 Surface 输入 —— 零拷贝编码</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-5-%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8%E9%80%89%E6%8B%A9"><span class="toc_mobile_items-number">8.5.</span> <span class="toc_mobile_items-text">8.5 编解码器选择</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-6-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E4%B8%8E%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc_mobile_items-number">8.6.</span> <span class="toc_mobile_items-text">8.6 常见问题与最佳实践</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E6%80%BB%E7%BB%93%E4%B8%8E%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、总结与学习路径</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%BC%95%E8%A8%80%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9F%B3%E8%A7%86%E9%A2%91%E6%8A%80%E6%9C%AF%E5%A6%82%E6%AD%A4%E9%87%8D%E8%A6%81"><span class="toc-number">1.</span> <span class="toc-text">一、引言：为什么音视频技术如此重要</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81PCM-%E9%9F%B3%E9%A2%91%EF%BC%9A%E6%95%B0%E5%AD%97%E5%A3%B0%E9%9F%B3%E7%9A%84%E6%A0%B9%E5%9F%BA"><span class="toc-number">2.</span> <span class="toc-text">二、PCM 音频：数字声音的根基</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%A3%B0%E9%9F%B3%E6%98%AF%E5%A6%82%E4%BD%95%E5%8F%98%E6%88%90%E6%95%B0%E5%AD%97%E7%9A%84"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 声音是如何变成数字的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E9%87%87%E6%A0%B7%E7%8E%87%EF%BC%9A44-1kHz-vs-48kHz"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 采样率：44.1kHz vs 48kHz</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E4%BD%8D%E6%B7%B1%E5%BA%A6%EF%BC%9A16-bit-vs-24-bit-vs-32-bit"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 位深度：16-bit vs 24-bit vs 32-bit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%A3%B0%E9%81%93%E5%B8%83%E5%B1%80"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 声道布局</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-WAV-%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="toc-number">2.5.</span> <span class="toc-text">2.5 WAV 文件格式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81YUV-%E8%89%B2%E5%BD%A9%E7%A9%BA%E9%97%B4%EF%BC%9A%E8%A7%86%E9%A2%91%E7%9A%84%E5%9B%BE%E5%83%8F%E8%A1%A8%E7%A4%BA"><span class="toc-number">3.</span> <span class="toc-text">三、YUV 色彩空间：视频的图像表示</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A7%86%E9%A2%91%E4%BD%BF%E7%94%A8-YUV-%E8%80%8C%E4%B8%8D%E6%98%AF-RGB"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 为什么视频使用 YUV 而不是 RGB</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-YUV-%E7%9A%84%E5%B9%B3%E9%9D%A2%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F%E4%B8%8E%E5%8D%8A%E5%B9%B3%E9%9D%A2%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 YUV 的平面存储格式与半平面存储格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-YUV-%E2%86%94-RGB-%E8%BD%AC%E6%8D%A2"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 YUV ↔ RGB 转换</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81H-264-%E7%BC%96%E7%A0%81%E7%AE%A1%E7%BA%BF%EF%BC%9A%E9%80%90%E6%AD%A5%E9%AA%A4%E6%B7%B1%E5%85%A5"><span class="toc-number">4.</span> <span class="toc-text">四、H.264 编码管线：逐步骤深入</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-H-264-%E7%BC%96%E7%A0%81%E5%99%A8%E6%80%BB%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 H.264 编码器总体架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E7%AC%AC%E4%B8%80%E6%AD%A5%EF%BC%9A%E5%B8%A7%E5%88%86%E5%89%B2-%E2%80%94%E2%80%94-%E4%BB%8E%E5%B8%A7%E5%88%B0%E5%AE%8F%E5%9D%97"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 第一步：帧分割 —— 从帧到宏块</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E7%AC%AC%E4%BA%8C%E6%AD%A5%EF%BC%9A%E9%A2%84%E6%B5%8B%EF%BC%88Prediction%EF%BC%89"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 第二步：预测（Prediction）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-1-%E5%B8%A7%E5%86%85%E9%A2%84%E6%B5%8B%EF%BC%88Intra-Prediction%EF%BC%89%E2%80%94%E2%80%94-%E6%B6%88%E9%99%A4%E7%A9%BA%E9%97%B4%E5%86%97%E4%BD%99"><span class="toc-number">4.3.1.</span> <span class="toc-text">4.3.1 帧内预测（Intra Prediction）—— 消除空间冗余</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-2-%E5%B8%A7%E9%97%B4%E9%A2%84%E6%B5%8B%EF%BC%88Inter-Prediction%EF%BC%89%E2%80%94%E2%80%94-%E6%B6%88%E9%99%A4%E6%97%B6%E9%97%B4%E5%86%97%E4%BD%99"><span class="toc-number">4.3.2.</span> <span class="toc-text">4.3.2 帧间预测（Inter Prediction）—— 消除时间冗余</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-3-%E9%A2%84%E6%B5%8B%E6%A8%A1%E5%BC%8F%E5%86%B3%E7%AD%96"><span class="toc-number">4.3.3.</span> <span class="toc-text">4.3.3 预测模式决策</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E7%AC%AC%E4%B8%89%E6%AD%A5%EF%BC%9A%E5%8F%98%E6%8D%A2%E4%B8%8E%E9%87%8F%E5%8C%96"><span class="toc-number">4.4.</span> <span class="toc-text">4.4 第三步：变换与量化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-4-1-DCT-%E5%8F%98%E6%8D%A2%EF%BC%88%E6%95%B4%E6%95%B0-DCT%EF%BC%89"><span class="toc-number">4.4.1.</span> <span class="toc-text">4.4.1 DCT 变换（整数 DCT）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-4-2-%E9%87%8F%E5%8C%96%EF%BC%88Quantization%EF%BC%89%E2%80%94%E2%80%94-%E6%9C%89%E6%8D%9F%E5%8E%8B%E7%BC%A9%E7%9A%84%E6%A0%B8%E5%BF%83"><span class="toc-number">4.4.2.</span> <span class="toc-text">4.4.2 量化（Quantization）—— 有损压缩的核心</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-%E7%AC%AC%E5%9B%9B%E6%AD%A5%EF%BC%9A%E7%86%B5%E7%BC%96%E7%A0%81"><span class="toc-number">4.5.</span> <span class="toc-text">4.5 第四步：熵编码</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#CAVLC%EF%BC%88Context-Adaptive-Variable-Length-Coding%EF%BC%89"><span class="toc-number">4.5.1.</span> <span class="toc-text">CAVLC（Context-Adaptive Variable Length Coding）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CABAC%EF%BC%88Context-Adaptive-Binary-Arithmetic-Coding%EF%BC%89"><span class="toc-number">4.5.2.</span> <span class="toc-text">CABAC（Context-Adaptive Binary Arithmetic Coding）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-%E7%AC%AC%E4%BA%94%E6%AD%A5%EF%BC%9A%E5%8E%BB%E5%9D%97%E6%BB%A4%E6%B3%A2%EF%BC%88Deblocking-Filter%EF%BC%89"><span class="toc-number">4.6.</span> <span class="toc-text">4.6 第五步：去块滤波（Deblocking Filter）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81I-P-B-%E5%B8%A7%E4%B8%8E-GOP-%E7%BB%93%E6%9E%84"><span class="toc-number">5.</span> <span class="toc-text">五、I&#x2F;P&#x2F;B 帧与 GOP 结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E4%B8%89%E7%A7%8D%E5%B8%A7%E7%B1%BB%E5%9E%8B"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 三种帧类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-GOP%EF%BC%88Group-of-Pictures%EF%BC%89"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 GOP（Group of Pictures）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%AE%B9%E5%99%A8%E6%A0%BC%E5%BC%8F"><span class="toc-number">6.</span> <span class="toc-text">六、容器格式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-MP4-%E2%80%94%E2%80%94-%E6%9C%80%E9%80%9A%E7%94%A8%E7%9A%84%E8%A7%86%E9%A2%91%E5%AE%B9%E5%99%A8"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 MP4 —— 最通用的视频容器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-MKV-WebM-%E2%80%94%E2%80%94-%E5%BC%80%E6%94%BE%E6%A0%87%E5%87%86%E7%9A%84%E5%AE%B9%E5%99%A8"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 MKV &#x2F; WebM —— 开放标准的容器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-FLV-%E2%80%94%E2%80%94-%E7%9B%B4%E6%92%AD%E6%97%B6%E4%BB%A3%E7%9A%84%E9%81%97%E4%BA%A7"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 FLV —— 直播时代的遗产</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E6%B5%81%E5%AA%92%E4%BD%93%E5%8D%8F%E8%AE%AE"><span class="toc-number">7.</span> <span class="toc-text">七、流媒体协议</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-RTMP-%E2%80%94%E2%80%94-%E5%AE%9E%E6%97%B6%E6%B6%88%E6%81%AF%E4%BC%A0%E8%BE%93%E5%8D%8F%E8%AE%AE"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 RTMP —— 实时消息传输协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-HLS-%E2%80%94%E2%80%94-HTTP-Live-Streaming"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 HLS —— HTTP Live Streaming</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-DASH-%E2%80%94%E2%80%94-Dynamic-Adaptive-Streaming-over-HTTP"><span class="toc-number">7.3.</span> <span class="toc-text">7.3 DASH —— Dynamic Adaptive Streaming over HTTP</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-4-WebRTC-%E2%80%94%E2%80%94-%E5%AE%9E%E6%97%B6%E9%80%9A%E4%BF%A1%E7%9A%84%E9%9D%A9%E5%91%BD"><span class="toc-number">7.4.</span> <span class="toc-text">7.4 WebRTC —— 实时通信的革命</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81Android-MediaCodec-%E5%AE%9E%E6%88%98"><span class="toc-number">8.</span> <span class="toc-text">八、Android MediaCodec 实战</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-MediaCodec-%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 MediaCodec 的生命周期</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E5%90%8C%E6%AD%A5%E6%A8%A1%E5%BC%8F%EF%BC%88Synchronous-Mode%EF%BC%89"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 同步模式（Synchronous Mode）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-%E5%BC%82%E6%AD%A5%E6%A8%A1%E5%BC%8F%EF%BC%88Asynchronous-Mode%EF%BC%89"><span class="toc-number">8.3.</span> <span class="toc-text">8.3 异步模式（Asynchronous Mode）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-4-Surface-%E8%BE%93%E5%85%A5-%E2%80%94%E2%80%94-%E9%9B%B6%E6%8B%B7%E8%B4%9D%E7%BC%96%E7%A0%81"><span class="toc-number">8.4.</span> <span class="toc-text">8.4 Surface 输入 —— 零拷贝编码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-5-%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8%E9%80%89%E6%8B%A9"><span class="toc-number">8.5.</span> <span class="toc-text">8.5 编解码器选择</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-6-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E4%B8%8E%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc-number">8.6.</span> <span class="toc-text">8.6 常见问题与最佳实践</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E6%80%BB%E7%BB%93%E4%B8%8E%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84"><span class="toc-number">9.</span> <span class="toc-text">九、总结与学习路径</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/316.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【音视频、图像处理技术】音视频基础技术</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2022-08-15<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">16.6k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 64 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、引言：为什么音视频技术如此重要"><a href="#一、引言：为什么音视频技术如此重要" class="headerlink" title="一、引言：为什么音视频技术如此重要"></a>一、引言：为什么音视频技术如此重要</h2><p>如果说 HTTP 和 TCP&#x2F;IP 是互联网的骨架，那么音视频技术就是互联网的血肉。2025 年，视频流占互联网总流量的 82% 以上。从抖音短视频到 Zoom 视频会议，从 Netflix 4K 流媒体到微信视频通话，音视频技术无处不在。</p>
+<p>对于 Android 开发者而言，音视频技术更是绕不开的领域。无论是实现一个自定义相机预览，还是开发一套直播推流 SDK，或者优化视频播放的起播速度，都绕不开对底层音视频原理的深入理解。MediaCodec、MediaMuxer、OpenGL ES、FFmpeg 这些 API 和工具都只是表面——真正的内力来自于对 PCM、YUV、H.264、容器格式、流媒体协议的透彻理解。</p>
+<p>本文将从最基础的音频采样和色彩空间讲起，深入到 H.264 编码管线，再到容器格式和流媒体协议，最后落地到 Android MediaCodec 的实战用法。这是一条从底层原理到工程实践的学习路径。</p>
+<hr>
+<h2 id="二、PCM-音频：数字声音的根基"><a href="#二、PCM-音频：数字声音的根基" class="headerlink" title="二、PCM 音频：数字声音的根基"></a>二、PCM 音频：数字声音的根基</h2><h3 id="2-1-声音是如何变成数字的"><a href="#2-1-声音是如何变成数字的" class="headerlink" title="2.1 声音是如何变成数字的"></a>2.1 声音是如何变成数字的</h3><p>声音的本质是空气中传播的机械振动——声波。声波是连续的模拟信号，要让计算机处理它，必须经过<strong>脉冲编码调制（PCM, Pulse Code Modulation）</strong>过程，将模拟信号转换为数字信号。</p>
+<p><strong>PCM 的三步转换：</strong></p>
+<p><strong>第 1 步：采样（Sampling）</strong><br>以固定的时间间隔测量模拟信号的幅度。采样率（Sample Rate）决定了每秒采样的次数。根据<strong>奈奎斯特-香农采样定理</strong>，要无损地表示频率为 f 的信号，采样率必须至少为 2f。人耳能听到的最高频率约 20kHz，因此 CD 音质的采样率设定为 44.1kHz（略高于 2 × 20kHz）。</p>
+<p><strong>第 2 步：量化（Quantization）</strong><br>将每个采样的连续幅度值映射到离散的数值等级。量化精度由<strong>位深度（Bit Depth）</strong>决定，位深度越高，量化噪声越低，动态范围越大。CD 使用 16 位量化。</p>
+<p><strong>第 3 步：编码（Encoding）</strong><br>将量化后的数值表示为二进制数据。PCM 是最简单的编码方式，直接将量化值按顺序排列。有损压缩编码（如 MP3、AAC、Opus）则在此基础上进行心理声学建模和数据压缩。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">模拟声波 (连续的电压信号)</span><br><span class="line">    │</span><br><span class="line">    ▼  [采样器，每 1/44100 秒测量一次]</span><br><span class="line">    │</span><br><span class="line">离散采样值: 0.12, 0.35, 0.67, 0.89, 0.95, 0.82, ...</span><br><span class="line">    │</span><br><span class="line">    ▼  [量化器，映射到 16 位整数范围 -32768 ~ 32767]</span><br><span class="line">    │</span><br><span class="line">量化值: 3932, 11469, 21955, 29164, 31130, 26870, ...</span><br><span class="line">    │</span><br><span class="line">    ▼  [编码为二进制 PCM 流]</span><br><span class="line">    │</span><br><span class="line">PCM 数据: 0x0F5C, 0x2CCD, 0x55C3, 0x71EC, 0x799A, 0x68F6, ...</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-采样率：44-1kHz-vs-48kHz"><a href="#2-2-采样率：44-1kHz-vs-48kHz" class="headerlink" title="2.2 采样率：44.1kHz vs 48kHz"></a>2.2 采样率：44.1kHz vs 48kHz</h3><p><strong>44.1kHz —— 音频 CD 标准：</strong></p>
+<ul>
+<li>由 Sony 和 Philips 在 1979 年联合制定（红皮书标准）</li>
+<li>选择 44.1kHz 的历史原因：早期数字音频使用录像带存储，44.1kHz 可以同时兼容 PAL（588 行&#x2F;帧）和 NTSC（490 行&#x2F;帧）制式的录像带</li>
+<li>今天仍是音乐制作和消费音频的主流采样率（MP3、AAC、流媒体音乐）</li>
+</ul>
+<p><strong>48kHz —— 专业视频制作标准：</strong></p>
+<ul>
+<li>由电影和电视工业推动</li>
+<li>与视频帧率（24&#x2F;25&#x2F;30fps）的整数倍关系更好，便于音视频同步</li>
+<li>48kHz × 1024 采样&#x2F;帧 ÷ 48000 &#x3D; 与 24fps 视频每帧 2000 个采样，整数对齐</li>
+<li>广泛用于 DVD、蓝光、数字电视、YouTube</li>
+</ul>
+<p><strong>其他常见采样率：</strong></p>
+<ul>
+<li><strong>8kHz：</strong> 电话语音（VoIP、PSTN），足够覆盖 300-3400Hz 的语音频段</li>
+<li><strong>16kHz：</strong> 宽带语音（VoLTE、WebRTC 默认），覆盖到 8kHz</li>
+<li><strong>22.05kHz：</strong> 44.1kHz 的一半，低质量音乐</li>
+<li><strong>32kHz：</strong> 专业广播和某些 VoIP 编解码器</li>
+<li><strong>96kHz &#x2F; 192kHz：</strong> 高解析度音频（Hi-Res Audio），主要用于录音棚制作和发烧友市场</li>
+</ul>
+<p><strong>Android 平台支持的采样率：</strong><br>大多数 Android 设备的原生采样率是 48kHz。使用 <code>AudioTrack</code> 或 <code>AAudio</code> 时，如果输入数据采样率与硬件不匹配，Android 的 <code>AudioFlinger</code> 会进行<strong>重采样（Resampling）</strong>，这会引入额外的延迟和 CPU 开销。因此最优实践是始终使用 <code>AudioManager.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)</code> 获取设备原生采样率。</p>
+<h3 id="2-3-位深度：16-bit-vs-24-bit-vs-32-bit"><a href="#2-3-位深度：16-bit-vs-24-bit-vs-32-bit" class="headerlink" title="2.3 位深度：16-bit vs 24-bit vs 32-bit"></a>2.3 位深度：16-bit vs 24-bit vs 32-bit</h3><p>位深度决定了每个采样值用多少比特表示，直接影响音频的动态范围和量化噪声。</p>
+<p><strong>16-bit（CD 标准）：</strong></p>
+<ul>
+<li>数值范围：-32768 ~ 32767（2^16 &#x3D; 65536 个级别）</li>
+<li>理论动态范围：20 × log10(65536) ≈ 96.3 dB</li>
+<li>量化噪声的理论信噪比（SNR）：约 96 dB</li>
+<li>适用场景：消费级音频播放、流媒体、游戏音效</li>
+</ul>
+<p><strong>24-bit（录音棚标准）：</strong></p>
+<ul>
+<li>数值范围：-8388608 ~ 8388607（2^24 &#x3D; 16777216 个级别）</li>
+<li>理论动态范围：20 × log10(16777216) ≈ 144.5 dB</li>
+<li>远超人类听觉的动态范围（约 120 dB 从听阈到痛阈）</li>
+<li>适用场景：专业录音、混音、母带制作</li>
+</ul>
+<p><strong>32-bit（浮点）：</strong></p>
+<ul>
+<li>IEEE 754 单精度浮点数：1 位符号 + 8 位指数 + 23 位尾数</li>
+<li>动态范围：约 1528 dB（因为浮点格式的动态范围不取决于位宽，而是指数量级范围）</li>
+<li>永远不会”数字削波”——超过 0 dBFS 的值仍能精确表示（值 &gt; 1.0 或 &lt; -1.0）</li>
+<li>适用场景：DAW（数字音频工作站）内部处理、音频插件链、FFmpeg 内部处理（<code>flt</code> 采样格式）</li>
+</ul>
+<p><strong>位深度的实际影响：</strong></p>
+<ul>
+<li>更高的位深度**不意味着更好的”音质”**——一旦超过视频播放环境的噪声底噪（通常 40-60 dB SPL），额外的动态范围对听感没有贡献</li>
+<li>但更高的位深度<strong>对后期处理至关重要</strong>：在混音中多次调整增益、EQ、混响等操作会在每个步骤累积量化误差。使用 24-bit 或 32-bit 浮点作为工作格式，可以保持后期处理中的精度</li>
+<li>交付格式（MP3、AAC、Opus）不需要高位深：有损编解码器在编码过程中已经引入了远大于量化噪声的压缩失真</li>
+</ul>
+<h3 id="2-4-声道布局"><a href="#2-4-声道布局" class="headerlink" title="2.4 声道布局"></a>2.4 声道布局</h3><p><strong>单声道（Mono）：</strong> 1 个声道。所有声音来自同一位置（或中心）。PCM 数据布局：[L]</p>
+<p><strong>立体声（Stereo）：</strong> 2 个声道。最常见的消费音频格式，通过左右声道差异营造声场。PCM 数据布局（交错存储）：[L0, R0, L1, R1, L2, R2, …]</p>
+<p><strong>5.1 环绕声：</strong> 6 个声道：</p>
+<ul>
+<li>前置左（FL）、前置右（FR）</li>
+<li>中置（FC）——主要用于对话</li>
+<li>低频效果（LFE &#x2F; Subwoofer）——“.1” 表示只处理低频</li>
+<li>后置左（BL &#x2F; SL）、后置右（BR &#x2F; SR）</li>
+</ul>
+<p><strong>7.1 环绕声：</strong> 8 个声道：在 5.1 基础上增加侧环绕左（SL）和侧环绕右（SR）</p>
+<p><strong>Android 的声道掩码（Channel Mask）：</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// AudioFormat 中的声道常量</span></span><br><span class="line">AudioFormat.CHANNEL_OUT_MONO          <span class="comment">// 单声道</span></span><br><span class="line">AudioFormat.CHANNEL_OUT_STEREO        <span class="comment">// 立体声 (FL, FR)</span></span><br><span class="line">AudioFormat.CHANNEL_OUT_5POINT1       <span class="comment">// 5.1 (FL, FR, FC, LFE, BL, BR)</span></span><br><span class="line">AudioFormat.CHANNEL_OUT_7POINT1       <span class="comment">// 7.1 (FL, FR, FC, LFE, BL, BR, SL, SR)</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>声道布局 vs 声道数量：</strong><br>声道数量（channel count）只是一个整数，声道布局（channel mask）描述了每个声道的空间位置。在 Android 的 <code>AudioTrack</code> 初始化时，如果只传声道数量而不传声道掩码，系统会用默认的布局映射。</p>
+<h3 id="2-5-WAV-文件格式"><a href="#2-5-WAV-文件格式" class="headerlink" title="2.5 WAV 文件格式"></a>2.5 WAV 文件格式</h3><p>WAV（Waveform Audio File Format）是最简单的 PCM 音频容器。它基于 RIFF（Resource Interchange File Format）结构，由一个个”块”（chunk）级联而成。</p>
+<p><strong>WAV 文件的二进制结构：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌─────────────────────────────────────────────────────────────────────┐</span><br><span class="line">│ RIFF Chunk Descriptor                                               │</span><br><span class="line">├──────────────────────┬──────────────────────────────────────────────┤</span><br><span class="line">│ ChunkID     (4 bytes)│ &quot;RIFF&quot;                                       │</span><br><span class="line">│ ChunkSize   (4 bytes)│ 36 + Subchunk2Size (文件总字节数 - 8)         │</span><br><span class="line">│ Format      (4 bytes)│ &quot;WAVE&quot;                                       │</span><br><span class="line">├──────────────────────┴──────────────────────────────────────────────┤</span><br><span class="line">│ Subchunk1: &quot;fmt &quot; (格式信息)                                         │</span><br><span class="line">├──────────────────────┬──────────────────────────────────────────────┤</span><br><span class="line">│ Subchunk1ID (4 bytes)│ &quot;fmt &quot; (注意尾部空格)                         │</span><br><span class="line">│ Subchunk1Size (4B)   │ 16 (PCM)                                     │</span><br><span class="line">│ AudioFormat (2B)     │ 1 = PCM (线性量化)                            │</span><br><span class="line">│ NumChannels (2B)     │ 1 = 单声道, 2 = 立体声                        │</span><br><span class="line">│ SampleRate  (4B)     │ 44100, 48000, ...                            │</span><br><span class="line">│ ByteRate    (4B)     │ SampleRate × NumChannels × BitsPerSample/8   │</span><br><span class="line">│ BlockAlign  (2B)     │ NumChannels × BitsPerSample/8                │</span><br><span class="line">│ BitsPerSample (2B)   │ 8, 16, 24, 32                                │</span><br><span class="line">├──────────────────────┴──────────────────────────────────────────────┤</span><br><span class="line">│ Subchunk2: &quot;data&quot; (PCM 数据)                                         │</span><br><span class="line">├──────────────────────┬──────────────────────────────────────────────┤</span><br><span class="line">│ Subchunk2ID (4 bytes)│ &quot;data&quot;                                       │</span><br><span class="line">│ Subchunk2Size (4B)   │ NumSamples × NumChannels × BitsPerSample/8   │</span><br><span class="line">│ Data       (可变)     │ PCM 采样数据，按声道交错排列                   │</span><br><span class="line">└──────────────────────┴──────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p><strong>一个具体的 44.1kHz&#x2F;16-bit&#x2F;立体声 WAV 文件（前 44 字节头部）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">偏移    内容                说明</span><br><span class="line">0x00    52 49 46 46        &quot;RIFF&quot;</span><br><span class="line">0x04    xx xx xx xx        ChunkSize（文件大小 - 8）</span><br><span class="line">0x08    57 41 56 45        &quot;WAVE&quot;</span><br><span class="line">0x0C    66 6D 74 20        &quot;fmt &quot;（含尾部空格）</span><br><span class="line">0x10    10 00 00 00        Subchunk1Size = 16</span><br><span class="line">0x14    01 00              AudioFormat = 1 (PCM)</span><br><span class="line">0x16    02 00              NumChannels = 2（立体声）</span><br><span class="line">0x18    44 AC 00 00        SampleRate = 44100</span><br><span class="line">0x1C    10 B1 02 00        ByteRate = 44100 × 2 × 2 = 176400</span><br><span class="line">0x20    04 00              BlockAlign = 2 × 2 = 4</span><br><span class="line">0x22    10 00              BitsPerSample = 16</span><br><span class="line">0x24    64 61 74 61        &quot;data&quot;</span><br><span class="line">0x28    xx xx xx xx        Subchunk2Size（PCM 数据总字节数）</span><br><span class="line">0x2C    ...                PCM 采样数据开始</span><br></pre></td></tr></table></figure>
+
+<p><strong>WAV 的局限性：</strong></p>
+<ul>
+<li>文件最大约 4GB（RIFF 的 ChunkSize 是 32 位无符号整数）</li>
+<li>不支持流式传输（必须在文件头部已知总数据大小）</li>
+<li>元数据支持非常有限（没有内建的标题、艺术家、专辑等字段）</li>
+<li>扩展格式 RF64 解决了 4GB 限制，但兼容性差</li>
+</ul>
+<hr>
+<h2 id="三、YUV-色彩空间：视频的图像表示"><a href="#三、YUV-色彩空间：视频的图像表示" class="headerlink" title="三、YUV 色彩空间：视频的图像表示"></a>三、YUV 色彩空间：视频的图像表示</h2><h3 id="3-1-为什么视频使用-YUV-而不是-RGB"><a href="#3-1-为什么视频使用-YUV-而不是-RGB" class="headerlink" title="3.1 为什么视频使用 YUV 而不是 RGB"></a>3.1 为什么视频使用 YUV 而不是 RGB</h3><p>人眼对亮度（明暗）变化的敏感度远高于对颜色（色度）变化的敏感度。这一生物学事实是视频压缩的生理学基础。</p>
+<p><strong>YUV 的三个分量：</strong></p>
+<ul>
+<li><strong>Y（Luma，亮度）：</strong> 表示像素的明暗程度。黑白电视只显示这一分量</li>
+<li><strong>U（Cb，蓝色色度分量）：</strong> 蓝色与亮度的差值</li>
+<li><strong>V（Cr，红色色度分量）：</strong> 红色与亮度的差值</li>
+</ul>
+<p><strong>色度子采样（Chroma Subsampling）：</strong><br>利用人眼对色度不敏感的特性，视频编码使用色度子采样来减少数据量——保持每个像素的 Y 分量不变，但对 U 和 V 分量进行降采样。</p>
+<p><strong>常见的 YUV 格式标识（以 4:x:y 格式描述）：</strong></p>
+<ul>
+<li><p><strong>4:4:4：</strong> 无子采样。每个像素有独立的 Y、U、V 值。质量最高，数据量最大（每 4 像素 12 个采样值）。用于专业后期制作和数字中间片。</p>
+</li>
+<li><p><strong>4:2:2：</strong> 水平方向每 2 个像素共用一对 UV。每 4 像素 8 个采样值。用于广播级制作（如广电录像机）和部分专业视频接口（SDI）。</p>
+</li>
+<li><p><strong>4:2:0：</strong> 水平方向和垂直方向都 2:1 子采样。每 2×2 的 4 个像素块共用一对 UV。数据量仅为 4:4:4 的 50%。这是<strong>消费级视频的绝对主流格式</strong>，H.264&#x2F;H.265&#x2F;VP9&#x2F;AV1 几乎都使用 4:2:0。</p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">4:2:0 色度子采样的像素布局 (每 2×2 = 4 个像素块):</span><br><span class="line"></span><br><span class="line">Y 采样 (每个像素一个):      U 采样 (4 个像素共用):     V 采样 (4 个像素共用):</span><br><span class="line">┌─────┬─────┐              ┌─────────────────┐       ┌─────────────────┐</span><br><span class="line">│ Y00 │ Y01 │              │                 │       │                 │</span><br><span class="line">├─────┼─────┤              │       U00       │       │       V00       │</span><br><span class="line">│ Y10 │ Y11 │              │                 │       │                 │</span><br><span class="line">└─────┴─────┘              └─────────────────┘       └─────────────────┘</span><br><span class="line"></span><br><span class="line">4 个 Y 采样 + 1 个 U 采样 + 1 个 V 采样 = 6 个采样 (vs 4:4:4 需要 12 个采样)</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-YUV-的平面存储格式与半平面存储格式"><a href="#3-2-YUV-的平面存储格式与半平面存储格式" class="headerlink" title="3.2 YUV 的平面存储格式与半平面存储格式"></a>3.2 YUV 的平面存储格式与半平面存储格式</h3><p>YUV 数据在内存中的排列方式分为两大类：<strong>平面格式（Planar）</strong>和<strong>半平面格式（Semi-Planar &#x2F; Interleaved）</strong>。</p>
+<p><strong>平面格式 —— I420（YUV420P）：</strong><br>三个分量分别存储为独立的平面（plane）。先存储所有像素的 Y，再存储所有像素的 U，最后存储所有像素的 V。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">I420 内存布局 (4×4 像素为例):</span><br><span class="line">Y plane:  [Y00 Y01 Y02 Y03 Y10 Y11 Y12 Y13 Y20 Y21 Y22 Y23 Y30 Y31 Y32 Y33]</span><br><span class="line">U plane:  [U00 U01 U10 U11]   ← 2×2 块，4:2:0 下采样</span><br><span class="line">V plane:  [V00 V01 V10 V11]   ← 2×2 块，4:2:0 下采样</span><br><span class="line"></span><br><span class="line">总字节数: 16 + 4 + 4 = 24 (每像素平均 1.5 字节，即 12 bit/pixel)</span><br></pre></td></tr></table></figure>
+
+<p>I420 是最常用的标准 YUV 格式，也是 Android <code>MediaCodec</code> 输出 <code>COLOR_FormatYUV420Planar</code> 的默认格式之一。</p>
+<p><strong>半平面格式 —— NV12：</strong><br>Y 分量独占一个平面，U 和 V 分量<strong>交错存储</strong>在第二个平面中（UV 交错，即 UVUVUV…）。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">NV12 内存布局 (4×4 像素为例):</span><br><span class="line">Y plane:   [Y00 Y01 Y02 Y03 Y10 Y11 Y12 Y13 Y20 Y21 Y22 Y23 Y30 Y31 Y32 Y33]</span><br><span class="line">UV plane:  [U00 V00 U01 V01 U10 V10 U11 V11]   ← UV 交错</span><br><span class="line"></span><br><span class="line">总字节数: 16 + 8 = 24 (每像素平均 1.5 字节)</span><br></pre></td></tr></table></figure>
+
+<p>NV12 是 Android 平台最广泛使用的 YUV 格式。Android Camera2 API 的 <code>ImageFormat.NV21</code>（见下文）和 MediaCodec 的 <code>COLOR_FormatYUV420SemiPlanar</code> 都使用类似的半平面布局。</p>
+<p><strong>半平面格式 —— NV21：</strong><br>与 NV12 类似，但 U 和 V 的次序相反：V 在前，U 在后（即 VUVUVU…）。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">NV21 内存布局 (4×4 像素为例):</span><br><span class="line">Y plane:   [Y00 Y01 Y02 Y03 Y10 Y11 Y12 Y13 Y20 Y21 Y22 Y23 Y30 Y31 Y32 Y33]</span><br><span class="line">VU plane:  [V00 U00 V01 U01 V10 U10 V11 U11]   ← VU 交错 (注意次序与 NV12 不同)</span><br><span class="line"></span><br><span class="line">总字节数: 16 + 8 = 24</span><br></pre></td></tr></table></figure>
+
+<p>NV21 是 Android 的<strong>默认相机预览格式</strong>。<code>Camera1</code> API 的 <code>onPreviewFrame()</code> 回调默认返回 NV21 数据。如果你需要将 Camera 帧送入 MediaCodec 编码器，通常需要在 NV21（相机输出）和 NV12（编码器输入）之间做转换——或者更简单地，使用 Surface 输入模式避免这个转换。</p>
+<p><strong>三大 YUV 格式对比：</strong></p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>I420 (YUV420P)</th>
+<th>NV12</th>
+<th>NV21</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>存储方式</td>
+<td>三平面</td>
+<td>双平面 (UV交错)</td>
+<td>双平面 (VU交错)</td>
+</tr>
+<tr>
+<td>Y 平面大小</td>
+<td>W × H</td>
+<td>W × H</td>
+<td>W × H</td>
+</tr>
+<tr>
+<td>UV 平面大小</td>
+<td>W&#x2F;2 × H&#x2F;2 × 2</td>
+<td>W × H&#x2F;2</td>
+<td>W × H&#x2F;2</td>
+</tr>
+<tr>
+<td>UV 序</td>
+<td>U plane + V plane</td>
+<td>U+V 交错</td>
+<td>V+U 交错</td>
+</tr>
+<tr>
+<td>主流用途</td>
+<td>编解码通用格式</td>
+<td>Android MediaCodec 编码</td>
+<td>Android Camera 预览</td>
+</tr>
+</tbody></table>
+<h3 id="3-3-YUV-↔-RGB-转换"><a href="#3-3-YUV-↔-RGB-转换" class="headerlink" title="3.3 YUV ↔ RGB 转换"></a>3.3 YUV ↔ RGB 转换</h3><p>颜色空间转换是视频处理中最频繁的操作之一。以下是 BT.601 标准（SD 视频）的转换公式，也是 Android 平台最通用的转换。</p>
+<p><strong>RGB → YUV（BT.601，用于编码前的颜色空间转换）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Y  =  0.299 × R  + 0.587 × G  + 0.114 × B</span><br><span class="line">Cb = -0.169 × R  - 0.331 × G  + 0.500 × B + 128</span><br><span class="line">Cr =  0.500 × R  - 0.419 × G -  0.081 × B  + 128</span><br></pre></td></tr></table></figure>
+
+<p>注意 Y 的权重分配（0.299 &#x2F; 0.587 &#x2F; 0.114）反映了人眼对绿色最敏感、对红色次之、对蓝色最不敏感的特性。这就是为什么绿色通道携带了最多的亮度信息。</p>
+<p><strong>YUV → RGB（BT.601，用于显示时的转换）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">R = Y + 1.402   × (Cr - 128)</span><br><span class="line">G = Y - 0.34414 × (Cb - 128) - 0.71414 × (Cr - 128)</span><br><span class="line">B = Y + 1.772   × (Cb - 128)</span><br></pre></td></tr></table></figure>
+
+<p><strong>整型优化（避免浮点运算）：</strong><br>在移动设备和嵌入式平台上，浮点运算代价高昂。实际实现通常使用<strong>定点运算 + 移位</strong>来加速。例如，通过将系数乘以 2^n 并四舍五入为整数，转换后右移 n 位：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 快速 YUV420 (NV21) → RGB888 转换 (定点优化)</span></span><br><span class="line"><span class="comment">// YUV 取值范围: Y ∈ [16, 235], UV ∈ [16, 240] (TV range / limited range)</span></span><br><span class="line"><span class="comment">// 对于 full range (JPEG range, YUV ∈ [0, 255])，需使用不同的公式</span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">nv21_to_rgb888</span><span class="params">(<span class="type">uint8_t</span> *y_plane, <span class="type">uint8_t</span> *vu_plane,</span></span><br><span class="line"><span class="params">                    <span class="type">int</span> width, <span class="type">int</span> height, <span class="type">uint8_t</span> *rgb_out)</span> &#123;</span><br><span class="line">    <span class="type">int</span> frame_size = width * height;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>, yp = <span class="number">0</span>; j &lt; height; j++) &#123;</span><br><span class="line">        <span class="type">int</span> uvp = frame_size + (j &gt;&gt; <span class="number">1</span>) * width;</span><br><span class="line">        <span class="type">int</span> u = <span class="number">0</span>, v = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; width; i++, yp++) &#123;</span><br><span class="line">            <span class="type">int</span> y = (<span class="number">0xff</span> &amp; ((<span class="type">int</span>) y_plane[yp])) - <span class="number">16</span>;</span><br><span class="line">            <span class="keyword">if</span> (y &lt; <span class="number">0</span>) y = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">if</span> ((i &amp; <span class="number">1</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">                v = (<span class="number">0xff</span> &amp; vu_plane[uvp++]) - <span class="number">128</span>;   <span class="comment">// NV21: V first</span></span><br><span class="line">                u = (<span class="number">0xff</span> &amp; vu_plane[uvp++]) - <span class="number">128</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 定点乘法: 系数 × 2^10 (1024)</span></span><br><span class="line">            <span class="type">int</span> r = (<span class="number">1192</span> * y + <span class="number">1634</span> * v) &gt;&gt; <span class="number">10</span>;</span><br><span class="line">            <span class="type">int</span> g = (<span class="number">1192</span> * y - <span class="number">833</span> * v - <span class="number">400</span> * u) &gt;&gt; <span class="number">10</span>;</span><br><span class="line">            <span class="type">int</span> b = (<span class="number">1192</span> * y + <span class="number">2066</span> * u) &gt;&gt; <span class="number">10</span>;</span><br><span class="line">            <span class="comment">// 饱和截断到 [0, 255]</span></span><br><span class="line">            rgb_out[yp * <span class="number">3</span>]     = r &lt; <span class="number">0</span> ? <span class="number">0</span> : (r &gt; <span class="number">255</span> ? <span class="number">255</span> : r);</span><br><span class="line">            rgb_out[yp * <span class="number">3</span> + <span class="number">1</span>] = g &lt; <span class="number">0</span> ? <span class="number">0</span> : (g &gt; <span class="number">255</span> ? <span class="number">255</span> : g);</span><br><span class="line">            rgb_out[yp * <span class="number">3</span> + <span class="number">2</span>] = b &lt; <span class="number">0</span> ? <span class="number">0</span> : (b &gt; <span class="number">255</span> ? <span class="number">255</span> : b);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>YUV 范围：TV Range vs Full Range（JPEG Range）：</strong></p>
+<ul>
+<li><strong>TV Range（Limited Range &#x2F; BT.601&#x2F;BT.709 标准）：</strong> Y ∈ [16, 235], UV ∈ [16, 240]。这是广播电视的传统范围，为超调和下冲留了余量。</li>
+<li><strong>Full Range（JPEG Range）：</strong> YUV ∈ [0, 255]。不需要映射偏移，数据更简单。</li>
+</ul>
+<p>Android MediaCodec 默认使用 TV Range（除非编码器配置了特定 profile），解码后如果需要送入 OpenGL 纹理（期望 0-255 范围），需要注意范围映射。</p>
+<hr>
+<h2 id="四、H-264-编码管线：逐步骤深入"><a href="#四、H-264-编码管线：逐步骤深入" class="headerlink" title="四、H.264 编码管线：逐步骤深入"></a>四、H.264 编码管线：逐步骤深入</h2><p>H.264（MPEG-4 AVC, Advanced Video Coding）至今仍是世界上最广泛使用的视频编解码标准。从 YouTube 视频到蓝光光盘，从安防监控到视频会议，H.264 无处不在。</p>
+<p>H.264 编码器的工作不是”压缩像素”，而是<strong>消除冗余</strong>。视频中存在三类冗余：</p>
+<ul>
+<li><strong>空间冗余（Spatial Redundancy）：</strong> 同一帧内相邻像素通常相似 → 帧内预测</li>
+<li><strong>时间冗余（Temporal Redundancy）：</strong> 相邻帧之间通常变化很小 → 帧间预测</li>
+<li><strong>统计冗余（Statistical Redundancy）：</strong> 数据中的统计模式 → 熵编码</li>
+</ul>
+<h3 id="4-1-H-264-编码器总体架构"><a href="#4-1-H-264-编码器总体架构" class="headerlink" title="4.1 H.264 编码器总体架构"></a>4.1 H.264 编码器总体架构</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">输入视频帧 (YUV)</span><br><span class="line">    │</span><br><span class="line">    ▼</span><br><span class="line">┌──────────────────────┐</span><br><span class="line">│  1. 帧分割           │  将一帧分割为宏块 (Macroblock, 16×16 像素)</span><br><span class="line">│     成宏块           │</span><br><span class="line">└──────┬───────────────┘</span><br><span class="line">       │</span><br><span class="line">       ▼</span><br><span class="line">┌──────────────────────┐</span><br><span class="line">│  2. 预测 (Prediction)│  帧内预测 (空间) 或 帧间预测 (时间)</span><br><span class="line">│     生成预测帧       │  输出: 预测块 + 残差</span><br><span class="line">└──────┬───────────────┘</span><br><span class="line">       │</span><br><span class="line">       ▼</span><br><span class="line">┌──────────────────────┐</span><br><span class="line">│  3. 变换与量化        │  DCT 变换 → 量化</span><br><span class="line">│     残差 → 系数       │  这一步是&quot;有损&quot;的核心所在</span><br><span class="line">└──────┬───────────────┘</span><br><span class="line">       │</span><br><span class="line">       ▼</span><br><span class="line">┌──────────────────────┐</span><br><span class="line">│  4. 熵编码            │  CAVLC / CABAC</span><br><span class="line">│     系数 → 比特流      │  无损压缩</span><br><span class="line">└──────┬───────────────┘</span><br><span class="line">       │</span><br><span class="line">       ▼</span><br><span class="line">┌──────────────────────┐</span><br><span class="line">│  5. 重建 (Decoder     │  逆量化 → 逆 DCT → 加回预测 → 去块滤波</span><br><span class="line">│      Loop)            │  编码器内部维护一个解码器，确保一致</span><br><span class="line">└──────────────────────┘</span><br><span class="line">       │</span><br><span class="line">       ▼</span><br><span class="line">输出 NAL 单元 (Network Abstraction Layer units)</span><br></pre></td></tr></table></figure>
+
+<p><strong>重建回路（Decoder Loop）为什么重要？</strong><br>编码器的预测需要<strong>解码后的参考帧</strong>，而不是原始帧。如果编码器拿原始帧做预测而解码器拿重建帧做预测，误差会累积，最终导致<strong>漂移（Drift）</strong>——画质越来越差。因此每个 H.264 编码器内部都包含一个完整的解码器，确保预测基础一致。</p>
+<h3 id="4-2-第一步：帧分割-——-从帧到宏块"><a href="#4-2-第一步：帧分割-——-从帧到宏块" class="headerlink" title="4.2 第一步：帧分割 —— 从帧到宏块"></a>4.2 第一步：帧分割 —— 从帧到宏块</h3><p>H.264 将一帧图像分割为<strong>宏块（Macroblock, MB）</strong>作为基本处理单元：</p>
+<ul>
+<li>每个宏块包含一个 16×16 的亮度（Y）区域</li>
+<li>对应的两个 8×8 的色度区域（U 和 V，4:2:0 格式下）</li>
+</ul>
+<p>对于 1080p（1920×1080）视频：</p>
+<ul>
+<li>Y 层宏块数量：1920&#x2F;16 × 1080&#x2F;16 &#x3D; 120 × 67.5 &#x3D; 120 × 68 &#x3D; 8160 个宏块</li>
+<li>每行最后一个宏块需要填充（padding）到 16 的整数倍</li>
+</ul>
+<p>在 H.264 中，每个 16×16 宏块还可以进一步分割为更小的<strong>子宏块（Sub-macroblock Partition）</strong>用于运动补偿：</p>
+<ul>
+<li>16×16, 16×8, 8×16, 8×8</li>
+<li>8×8 还可以再分割为 8×4, 4×8, 4×4</li>
+</ul>
+<p>更小的分割能更精确地匹配物体运动，但需要更多的运动矢量编码开销。</p>
+<h3 id="4-3-第二步：预测（Prediction）"><a href="#4-3-第二步：预测（Prediction）" class="headerlink" title="4.3 第二步：预测（Prediction）"></a>4.3 第二步：预测（Prediction）</h3><p>预测是视频压缩的核心。H.264 提供了两大类预测模式：</p>
+<h4 id="4-3-1-帧内预测（Intra-Prediction）——-消除空间冗余"><a href="#4-3-1-帧内预测（Intra-Prediction）——-消除空间冗余" class="headerlink" title="4.3.1 帧内预测（Intra Prediction）—— 消除空间冗余"></a>4.3.1 帧内预测（Intra Prediction）—— 消除空间冗余</h4><p>帧内预测利用<strong>同一帧内已编码的相邻像素</strong>来预测当前块，只传输预测模式编号和残差。</p>
+<p><strong>H.264 定义了 3 种亮度帧内预测类型（基于块大小）：</strong></p>
+<ul>
+<li><strong>Intra 4×4：</strong> 9 种预测模式。适合纹理细节丰富的区域</li>
+<li><strong>Intra 8×8：</strong> 9 种预测模式（High Profile 新增）。适合较平滑的渐变区域</li>
+<li><strong>Intra 16×16：</strong> 4 种预测模式。适合平坦区域</li>
+</ul>
+<p><strong>Intra 4×4 的 9 种预测模式：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">当前 4×4 块依赖的参考像素 (已编码的相邻块):</span><br><span class="line">  Q  A  B  C  D  E  F  G  H</span><br><span class="line">  I  [a  b  c  d]           ← 当前块 (待预测)</span><br><span class="line">  J  [e  f  g  h]</span><br><span class="line">  K  [i  j  k  l]</span><br><span class="line">  L  [m  n  o  p]</span><br><span class="line"></span><br><span class="line">模式 0: Vertical (垂直)</span><br><span class="line">  a = e = i = m = A</span><br><span class="line">  b = f = j = n = B</span><br><span class="line">  c = g = k = o = C</span><br><span class="line">  d = h = l = p = D</span><br><span class="line"></span><br><span class="line">模式 1: Horizontal (水平)</span><br><span class="line">  a = b = c = d = I</span><br><span class="line">  e = f = g = h = J</span><br><span class="line">  i = j = k = l = K</span><br><span class="line">  m = n = o = p = L</span><br><span class="line"></span><br><span class="line">模式 2: DC (平均值)</span><br><span class="line">  all pixels = mean(A+B+C+D+I+J+K+L) / 8</span><br><span class="line"></span><br><span class="line">模式 3: Diagonal Down-Left (对角线左下)</span><br><span class="line">  沿 45° 方向插值: a = (A + 2B + C + 2)/4</span><br><span class="line"></span><br><span class="line">模式 4: Diagonal Down-Right (对角线右下)</span><br><span class="line">  沿 135° 方向插值</span><br><span class="line"></span><br><span class="line">模式 5: Vertical-Right (垂直偏右)</span><br><span class="line">模式 6: Horizontal-Down (水平偏下)</span><br><span class="line">模式 7: Vertical-Left (垂直偏左)</span><br><span class="line">模式 8: Horizontal-Up (水平偏上)</span><br></pre></td></tr></table></figure>
+
+<p>编码器会对所有 9 种模式计算<strong>率失真代价（Rate-Distortion Cost）</strong>：<code>RDcost = Distortion + λ × Rate</code>，选择代价最小的模式。Distortion 是该模式预测产生的残差能量（SSD&#x2F;SAD），Rate 是编码该模式所需的总比特数，λ 是拉格朗日乘子（取决于 QP）。</p>
+<p><strong>Intra 16×16 的 4 种预测模式：</strong></p>
+<ul>
+<li>Mode 0: Vertical</li>
+<li>Mode 1: Horizontal</li>
+<li>Mode 2: DC</li>
+<li>Mode 3: Plane（平面）：使用线性模型对平滑亮度渐变建模，适合天空、渐变背景等区域</li>
+</ul>
+<p><strong>色度帧内预测：</strong><br>色度块（8×8，针对 4:2:0）也有自己的 4 种预测模式，类似于 Intra 16×16 的模式。</p>
+<h4 id="4-3-2-帧间预测（Inter-Prediction）——-消除时间冗余"><a href="#4-3-2-帧间预测（Inter-Prediction）——-消除时间冗余" class="headerlink" title="4.3.2 帧间预测（Inter Prediction）—— 消除时间冗余"></a>4.3.2 帧间预测（Inter Prediction）—— 消除时间冗余</h4><p>帧间预测利用<strong>已编码的参考帧</strong>来预测当前块，只需传输<strong>运动矢量</strong>（指示参考块的位置）和<strong>残差</strong>。</p>
+<p><strong>运动估计（Motion Estimation, ME）：</strong><br>编码器在参考帧的搜索窗口中寻找与当前块最匹配的区域。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">当前帧 (时间 t)                      参考帧 (时间 t-1)</span><br><span class="line">┌──────────────────────┐         ┌──────────────────────┐</span><br><span class="line">│                      │         │                      │</span><br><span class="line">│     ┌────┐           │         │           ┌────┐     │</span><br><span class="line">│     │当前│           │   ──►   │           │匹配│     │</span><br><span class="line">│     │块  │           │  运动   │           │块  │     │</span><br><span class="line">│     └────┘           │  矢量   │           └────┘     │</span><br><span class="line">│                      │         │                      │</span><br><span class="line">└──────────────────────┘         └──────────────────────┘</span><br><span class="line"></span><br><span class="line">运动矢量 MV = (dx, dy) = 匹配块的位置 - 当前块的位置</span><br><span class="line">残差 = 当前块 - 匹配块</span><br></pre></td></tr></table></figure>
+
+<p><strong>运动估计算法：</strong></p>
+<ol>
+<li><strong>全搜索（Full Search）：</strong> 搜索窗口内每个可能的位置，绝对最优但计算量巨大</li>
+<li><strong>菱形搜索（Diamond Search）：</strong> 从中心开始，按菱形模式向外搜索</li>
+<li><strong>六边形搜索（Hexagon Search）：</strong> 类似菱形搜索但用六边形模式，收敛更快</li>
+<li><strong>UMH（Uneven Multi-Hexagon）：</strong> x264 的默认搜索算法，结合了多种搜索模式</li>
+<li><strong>TESA（Transformed Exhaustive Search）：</strong> x264 最慢但质量最高的算法</li>
+</ol>
+<p><strong>运动估计的匹配准则：</strong></p>
+<ul>
+<li><strong>SAD（Sum of Absolute Differences）：</strong> <code>Σ|当前像素 - 参考像素|</code>，硬件实现简单</li>
+<li><strong>SATD（Sum of Absolute Transformed Differences）：</strong> 对残差先做 Hadamard 变换再求绝对和，码率估计更准确（x264 默认）</li>
+<li><strong>SSD（Sum of Squared Differences）：</strong> 均方误差</li>
+</ul>
+<p><strong>子像素运动估计（Sub-pixel ME）：</strong><br>H.264 支持 1&#x2F;4 像素精度（亮度）的运动估计。在搜索整像素最佳匹配后，编码器通过<strong>6 抽头 Wiener 滤波器</strong>插值出 1&#x2F;2 像素位置，再通过<strong>双线性插值</strong>得到 1&#x2F;4 像素位置，在这些子像素位置进一步搜索。这显著提高了运动补偿精度——特别是在缓慢运动的场景中，整像素精度可能导致”抖动”。</p>
+<p><strong>运动补偿（Motion Compensation, MC）：</strong><br>一旦确定运动矢量，编码器从参考帧中取出对应块，与当前块做差，得到残差。残差经过 DCT、量化和熵编码发送给解码器。解码器只做”运动补偿”（不需要”运动估计”，因为运动矢量已经在码流中）。</p>
+<h4 id="4-3-3-预测模式决策"><a href="#4-3-3-预测模式决策" class="headerlink" title="4.3.3 预测模式决策"></a>4.3.3 预测模式决策</h4><p>编码器对每个宏块都要做复杂的模式决策：</p>
+<ul>
+<li><strong>SKIP 模式：</strong> 无残差，无运动矢量（直接沿用预测的运动矢量）。码率最小，用于静止帧或全局平移场景</li>
+<li><strong>Intra 模式：</strong> 帧内预测。用于场景切换、新出现的物体，或 I 帧中的宏块</li>
+<li><strong>Inter P 模式：</strong> 单个参考帧的帧间预测（前向预测）</li>
+<li><strong>Inter B 模式：</strong> 最多两个参考帧的帧间预测（前向+后向或双前向）</li>
+</ul>
+<p>模式决策的遍历顺序（x264 的实现，从低复杂度到高复杂度）：</p>
+<ol>
+<li>首先检查 SKIP 模式（如代价足够低，直接选择）</li>
+<li>测试 P 模式的各个分割</li>
+<li>测试 Intra 模式（通常只在场景切换附近才会胜出）</li>
+<li>对于 B 帧，还需要测试双向预测</li>
+</ol>
+<h3 id="4-4-第三步：变换与量化"><a href="#4-4-第三步：变换与量化" class="headerlink" title="4.4 第三步：变换与量化"></a>4.4 第三步：变换与量化</h3><h4 id="4-4-1-DCT-变换（整数-DCT）"><a href="#4-4-1-DCT-变换（整数-DCT）" class="headerlink" title="4.4.1 DCT 变换（整数 DCT）"></a>4.4.1 DCT 变换（整数 DCT）</h4><p>H.264 使用<strong>整数 DCT（Discrete Cosine Transform）</strong>代替传统的浮点 DCT。整数 DCT 的好处：</p>
+<ul>
+<li>无浮点运算，编解码结果在所有平台上 100% 一致（没有浮点舍入差异）</li>
+<li>硬件实现简单（只需加减和移位）</li>
+<li>与真正的 DCT 的近似误差极低，不影响压缩效率</li>
+</ul>
+<p><strong>4×4 整数 DCT 变换矩阵（H.264 标准定义）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">正向变换:</span><br><span class="line">        ┌              ┐ ┌               ┐ ┌              ┐T</span><br><span class="line">        │ 1  1  1  1  │ │ r00 r01 r02 r03│ │ 1  2  1  1  │</span><br><span class="line">Y = C × R × C^T       │ 2  1 -1 -2  │ │ r10 r11 r12 r13│ │ 1  1 -1 -2  │</span><br><span class="line">  C = ──              │ 1 -1 -1  1  │ │ r20 r21 r22 r23│ × │ 1 -1 -1  2  │</span><br><span class="line">        └              ┘ └               ┘ └              ┘</span><br><span class="line">        │ 1 -2  2 -1  │ │ r30 r31 r32 r33│ │ 1 -2  2 -1  │</span><br><span class="line">        └              ┘ └               ┘ └              ┘</span><br><span class="line"></span><br><span class="line">其中矩阵元素已经过缩放处理，实际的尺度因子被吸收到量化步长中</span><br></pre></td></tr></table></figure>
+
+<p>DCT 变换的核心效果：将残差数据的能量<strong>集中到左上角（低频系数）</strong>。对于大多数自然视频的残差，变换后大部分高频系数接近零，只需编码少数非零系数。</p>
+<p><strong>DCT 系数的空间分布：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">4×4 DCT 系数矩阵:</span><br><span class="line">┌──────────┬──────────┬───────────┬───────────┐</span><br><span class="line">│ DC (0,0) │ AC (0,1) │ AC (0,2)  │ AC (0,3)  │  ← 能量集中区</span><br><span class="line">│  大值    │  中值    │  小值     │  接近零    │</span><br><span class="line">├──────────┼──────────┼───────────┼───────────┤</span><br><span class="line">│ AC (1,0) │ AC (1,1) │ AC (1,2)  │ AC (1,3)  │</span><br><span class="line">│  中值    │  小值    │  接近零   │  零       │</span><br><span class="line">├──────────┼──────────┼───────────┼───────────┤</span><br><span class="line">│ AC (2,0) │ AC (2,1) │ AC (2,2)  │ AC (2,3)  │</span><br><span class="line">│  小值    │  接近零  │  零       │  零       │</span><br><span class="line">├──────────┼──────────┼───────────┼───────────┤</span><br><span class="line">│ AC (3,0) │ AC (3,1) │ AC (3,2)  │ AC (3,3)  │  ← 高频分量接近零</span><br><span class="line">│  接近零  │  零      │  零       │  零       │</span><br><span class="line">└──────────┴──────────┴───────────┴───────────┘</span><br></pre></td></tr></table></figure>
+
+<p><strong>H.264 中还有额外的 Hadamard 变换：</strong><br>对于 Intra 16×16 模式，亮度块的 16 个 DC 系数（每个 4×4 块的 DC 系数）先被组合成一个 4×4 DC 矩阵，再进行一次 Hadamard 变换。色度块的 DC 系数也是类似处理。这种<strong>分层变换</strong>进一步增强了能量集中。</p>
+<h4 id="4-4-2-量化（Quantization）——-有损压缩的核心"><a href="#4-4-2-量化（Quantization）——-有损压缩的核心" class="headerlink" title="4.4.2 量化（Quantization）—— 有损压缩的核心"></a>4.4.2 量化（Quantization）—— 有损压缩的核心</h4><p>量化是 H.264 编码中<strong>唯一的必然有损环节</strong>（预测中的子像素插值和去块滤波也是潜在的精度损失源）。它把连续的 DCT 系数映射为离散的整数级别：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">量化公式:  Z_ij = round( Y_ij / Qstep )</span><br><span class="line"></span><br><span class="line">其中:</span><br><span class="line">  Y_ij = 变换系数</span><br><span class="line">  Qstep = 量化步长 (由 QP 决定)</span><br><span class="line">  Z_ij = 量化后的系数</span><br></pre></td></tr></table></figure>
+
+<p><strong>QP（Quantization Parameter）与 Qstep 的关系：</strong></p>
+<ul>
+<li>QP 取值范围：0 ~ 51</li>
+<li>Qstep 随 QP 指数增长：QP 每增加 6，Qstep 翻倍</li>
+<li>QP 增加 1，Qstep 增加约 12.5%，码率约降低 12.5%</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">QP 与 Qstep 对应关系:</span><br><span class="line">QP:   0     6     12    18    24    30    36    42    48    51</span><br><span class="line">Qstep:0.625 1.25  2.5   5     10    20    40    80    160   224</span><br></pre></td></tr></table></figure>
+
+<p><strong>H.264 的量化矩阵（前 6 个 QP 值，4×4 块）：</strong></p>
+<p>H.264 标准定义了量化矩阵 <code>MF</code>（Multiplication Factor），将除法和舍入合并为乘法+移位操作，以便于硬件实现。对于给定的 QP：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">量化:  |Z_ij| = (|Y_ij| × MF[q][i][j] + f) &gt;&gt; qbits</span><br><span class="line"></span><br><span class="line">其中:</span><br><span class="line">  MF[q][i][j] 根据系数位置有所不同 (低频系数量化更精细)</span><br><span class="line">  f = 2^qbits/3 (帧内) 或 2^qbits/6 (帧间) —— 决定了舍入偏向</span><br></pre></td></tr></table></figure>
+
+<p><strong>量化引入了”死区（Dead Zone）”：</strong><br>量化后，绝对值小于阈值的系数被归零。这个”死区”的大小由 <code>f</code> 参数控制。更大的死区清零更多系数，降低码率但损失更多细节。</p>
+<p><strong>量化对视觉质量的影响：</strong></p>
+<ul>
+<li><strong>低频系数量化误差</strong> → 块效应（Blocking Artifacts），去块滤波可缓解</li>
+<li><strong>高频系数被清零</strong> → 细节丢失、模糊、ringing artifacts（振铃效应）</li>
+<li><strong>色度分量过度量化</strong> → 颜色失真和色块（Color Banding）</li>
+</ul>
+<p>这就是为什么编码器通常对色度分量使用比亮度更高的 QP（”色度 QP 偏移”，通常 +6），因为人眼对色彩细节不敏感。</p>
+<h3 id="4-5-第四步：熵编码"><a href="#4-5-第四步：熵编码" class="headerlink" title="4.5 第四步：熵编码"></a>4.5 第四步：熵编码</h3><p>熵编码（Entropy Coding）是<strong>无损压缩</strong>——它不损失任何信息，只是用更紧凑的方式表示量化后的系数。</p>
+<p><strong>H.264 提供了两种熵编码方案：</strong></p>
+<h4 id="CAVLC（Context-Adaptive-Variable-Length-Coding）"><a href="#CAVLC（Context-Adaptive-Variable-Length-Coding）" class="headerlink" title="CAVLC（Context-Adaptive Variable Length Coding）"></a>CAVLC（Context-Adaptive Variable Length Coding）</h4><p>CAVLC 使用上下文自适应的可变长度编码表。它的核心思路：</p>
+<ul>
+<li>统计上，量化后的大多数系数都是零，非零系数通常集中在低频区域</li>
+<li>非零系数中，±1 出现的概率远高于其他值</li>
+<li>相邻块的非零系数数量高度相关</li>
+</ul>
+<p><strong>CAVLC 编码一个 4×4 块的全过程：</strong></p>
+<ol>
+<li><p><strong>将 4×4 系数按 Zig-Zag 扫描为一维数组</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Zig-Zag 扫描顺序 (将 2D 系数矩阵 → 1D 序列):</span><br><span class="line">┌────┬────┬────┬────┐</span><br><span class="line">│ 0  │ 1  │ 5  │ 6  │      扫描: (0,0)→(0,1)→(1,0)→(2,0)→(1,1)→(0,2)→(0,3)→(1,2)→...</span><br><span class="line">├────┼────┼────┼────┤</span><br><span class="line">│ 2  │ 4  │ 7  │ 12 │      效果:低频系数在前，高频系数(多为零)集中在后面</span><br><span class="line">├────┼────┼────┼────┤</span><br><span class="line">│ 3  │ 8  │ 11 │ 13 │</span><br><span class="line">├────┼────┼────┼────┤</span><br><span class="line">│ 9  │ 10 │ 14 │ 15 │</span><br><span class="line">└────┴────┴────┴────┘</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>编码非零系数的个数（TotalCoeff）和 TrailingOnes（尾部连续的 ±1 个数，最多 3 个）：</strong> 使用联合码表，根据相邻块预测当前块可能的 coeff 范围</p>
+</li>
+<li><p><strong>编码每个 TrailingOne 的符号（+ 或 -）：</strong> 每个 1 bit</p>
+</li>
+<li><p><strong>编码剩余非零系数的值（Levels）：</strong> 使用指数哥伦布编码或查找表</p>
+</li>
+<li><p><strong>编码最后一个非零系数之前零的总数（TotalZeros）：</strong> 使用上下文自适应的查找表</p>
+</li>
+<li><p><strong>编码每个非零系数之前的零的个数（RunBefore）：</strong> 从高频向低频方向，编码每个非零系数前面的连续零的个数</p>
+</li>
+</ol>
+<h4 id="CABAC（Context-Adaptive-Binary-Arithmetic-Coding）"><a href="#CABAC（Context-Adaptive-Binary-Arithmetic-Coding）" class="headerlink" title="CABAC（Context-Adaptive Binary Arithmetic Coding）"></a>CABAC（Context-Adaptive Binary Arithmetic Coding）</h4><p>CABAC 是 H.264 Main 和 High Profile 的默认熵编码方式，相比 CAVLC 有 <strong>9-14% 的码率节省</strong>。代价是计算复杂度显著升高。</p>
+<p><strong>CABAC 的三步框架：</strong></p>
+<p><strong>第 1 步：二值化（Binarization）</strong><br>将非二进制的语法元素（如运动矢量差值、系数 Level）映射为二进制串。常用方法：</p>
+<ul>
+<li><strong>一元码（Unary）：</strong> N 用 N 个 “1” + 一个 “0” 表示（如 3 → “1110”）</li>
+<li><strong>截断一元码（Truncated Unary）：</strong> 有限最大值版本</li>
+<li><strong>k 阶指数哥伦布码（Exp-Golomb）：</strong> 适用于无上限的值</li>
+<li><strong>定长码（Fixed Length）：</strong> 如二进制表示的系数符号位</li>
+</ul>
+<p><strong>第 2 步：上下文建模（Context Modeling）</strong><br>为每个比特（bin）动态选择概率模型。CABAC 定义了 460+ 个上下文模型，每个模型维护一个 6 位概率状态索引（共 64 个状态）和当前大概率符号（MPS, Most Probable Symbol）的取值。</p>
+<p>上下文的选取取决于：</p>
+<ul>
+<li>当前语法元素的类型（coeff_flag, last_coeff, mvd 等）</li>
+<li>相邻块同类型语法元素的值（空间相关性）</li>
+<li>当前块在帧内的位置</li>
+</ul>
+<p><strong>第 3 步：二进制算术编码（Binary Arithmetic Coding）</strong><br>对每个 bin，使用所选上下文模型的概率进行算术编码：</p>
+<ul>
+<li>编码器维护一个区间（Range, [0, 2^9-1]）和一个偏移</li>
+<li>根据当前 bin 的概率将区间重新划分为两个子区间（MPS 区间 + LPS 区间）</li>
+<li>选择对应子区间，输出比特</li>
+<li>更新概率模型状态（如果编码的是 MPS，概率增大；如果是 LPS，概率减小并可能翻转 MPS）</li>
+<li>如果 Range 低于阈值（小于 256），执行重归一化：Range 倍增并输出一个比特</li>
+</ul>
+<p>CABAC 是高度串行的——每个 bin 的编码依赖上一个 bin 更新后的状态。这让 CABAC 难以并行化，也是硬件解码器的设计瓶颈之一。H.265&#x2F;HEVC 引入的<strong>波前并行处理（Wavefront Parallel Processing, WPP）</strong>和<strong>Tiles</strong>以及在 H.266&#x2F;VVC 中的进一步改进，都是为了绕开 CABAC 的串行瓶颈。</p>
+<h3 id="4-6-第五步：去块滤波（Deblocking-Filter）"><a href="#4-6-第五步：去块滤波（Deblocking-Filter）" class="headerlink" title="4.6 第五步：去块滤波（Deblocking Filter）"></a>4.6 第五步：去块滤波（Deblocking Filter）</h3><p>去块滤波（Deblocking Filter）是 H.264 编码环内的最后一步，也是<strong>解码端的必要环节</strong>。它对块边界附近的像素进行平滑处理，减少因分块编码产生的”块效应”（Blocking Artifacts）。</p>
+<p><strong>为什么会有块效应？</strong></p>
+<ul>
+<li>相邻宏块使用不同的预测模式、参考帧、运动矢量</li>
+<li>量化对每个块的精度影响不同</li>
+<li>块边界处的像素可能来自完全不同的参考区域</li>
+</ul>
+<p><strong>去块滤波如何工作：</strong></p>
+<p>滤波在每个 4×4 块边界上进行（水平和垂直边界，先水平后垂直）。对于每条边界，滤波器根据以下因素决定<strong>滤波强度（Bs, Boundary Strength）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>条件</th>
+<th>Bs 值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>边界是宏块边界，且至少一边是 Intra 预测</td>
+<td>4（最强）</td>
+</tr>
+<tr>
+<td>边界是宏块边界，且至少一边有编码残差</td>
+<td>3</td>
+</tr>
+<tr>
+<td>两边的运动矢量差 &gt;&#x3D; 1 个整像素</td>
+<td>2</td>
+</tr>
+<tr>
+<td>两边使用不同的参考帧，或运动矢量差 &gt;&#x3D; 1 个整像素</td>
+<td>1</td>
+</tr>
+<tr>
+<td>其他情况</td>
+<td>0（不滤波）</td>
+</tr>
+</tbody></table>
+<p><strong>BS &#x3D; 4 的强滤波（针对平坦区域的宏块边界）：</strong><br>同时对边界两侧各 3 个像素（共 6 个像素）进行修改。</p>
+<p><strong>BS &#x3D; 1&#x2F;2&#x2F;3 的弱滤波：</strong><br>只可能修改边界两侧各 1 个像素（最多 2 个），且只在像素值差小于阈值时触发。</p>
+<p><strong>阈值控制（α 和 β）：</strong><br>去块滤波还使用两个与 QP 相关的阈值 α（块边缘阈值）和 β（块内阈值）。这些阈值与 QP 成正比：</p>
+<ul>
+<li>QP 高 → α, β 大 → 更多滤波（因为量化噪声大，块效应更严重）</li>
+<li>QP 低 → α, β 小 → 少滤波或不滤波（避免模糊保留的真实细节）</li>
+<li>可以通过 <code>filterOffsetA</code> 和 <code>filterOffsetB</code> 参数（在 Slice Header 中）偏移</li>
+</ul>
+<p>去块滤波的贡献约占总解码时间的 <strong>1&#x2F;3</strong>，但它对主观视觉质量的提升至关重要——同样的编码比特数下，有去块滤波的 H.264 视频显著优于没有该功能的视频格式（如 MPEG-4 Part 2）。</p>
+<hr>
+<h2 id="五、I-P-B-帧与-GOP-结构"><a href="#五、I-P-B-帧与-GOP-结构" class="headerlink" title="五、I&#x2F;P&#x2F;B 帧与 GOP 结构"></a>五、I&#x2F;P&#x2F;B 帧与 GOP 结构</h2><h3 id="5-1-三种帧类型"><a href="#5-1-三种帧类型" class="headerlink" title="5.1 三种帧类型"></a>5.1 三种帧类型</h3><p>视频编码中的帧可分为三种基本类型，它们的根本区别在于<strong>预测参考</strong>的来源：</p>
+<p><strong>I 帧（Intra-coded Frame，帧内编码帧 &#x2F; 关键帧）：</strong></p>
+<ul>
+<li>只使用帧内预测（不依赖其他帧）</li>
+<li>压缩率最低（约 7:1 到 20:1）——因为没有利用时间冗余</li>
+<li>是<strong>随机访问点（Random Access Point）</strong>——解码可以从任何一个 I 帧开始</li>
+<li>是<strong>错误恢复点</strong>——传输丢包或解码错误后，通过下一个 I 帧重新同步</li>
+<li>I 帧通常以 <strong>IDR（Instantaneous Decoder Refresh）</strong> 形式出现，它告诉解码器：”忘记之前所有的参考帧，从这里开始重新构建”</li>
+</ul>
+<p><strong>P 帧（Predicted Frame，前向预测帧）：</strong></p>
+<ul>
+<li>可以引用<strong>之前的一个或多个帧</strong>（前向参考列表 List0）进行帧间预测</li>
+<li>也可以包含帧内编码的宏块（当帧间预测找不到好的匹配时）</li>
+<li>压缩率约为 I 帧的 3-5 倍</li>
+<li>解码 P 帧需要所有依赖的参考帧已经解码</li>
+</ul>
+<p><strong>B 帧（Bi-directional Predicted Frame，双向预测帧）：</strong></p>
+<ul>
+<li>可以引用<strong>之前的帧和之后的帧</strong>（双向参考，List0 + List1）</li>
+<li>拥有最高的压缩率（约为 I 帧的 10-20 倍）</li>
+<li>两种特殊的预测模式：<ul>
+<li><strong>双向预测（Bi-prediction）：</strong> 前向预测块和后向预测块的加权平均</li>
+<li><strong>直接模式（Direct Mode）：</strong> 不传输运动矢量，从相邻块推算</li>
+</ul>
+</li>
+<li>B 帧不被其他帧引用——它可以被丢弃而不影响后续帧的解码（在码流稀疏化时非常有用）</li>
+</ul>
+<p><strong>B 帧的显示顺序 vs 编码顺序：</strong><br>因为 B 帧引用了”未来”的帧，编码器必须调整顺序。例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">显示顺序:  I₀  B₁  B₂  P₃  B₄  B₅  P₆</span><br><span class="line">编码顺序:  I₀  P₃  B₁  B₂  P₆  B₄  B₅</span><br><span class="line">           ↑   ↑_  └── 未来帧必须在参考帧之前编码</span><br></pre></td></tr></table></figure>
+
+<p>这就是为什么视频容器中有一个 “PTS”（Presentation Time Stamp）和 “DTS”（Decode Time Stamp）的区别——DTS 决定解码时机，PTS 决定显示时机。</p>
+<p><strong>B 帧的参考列表：</strong><br>H.264 允许 B 帧维护两个参考帧列表：</p>
+<ul>
+<li><strong>List0：</strong> 主要是过去帧（前向参考）</li>
+<li><strong>List1：</strong> 主要是未来帧（后向参考）</li>
+</ul>
+<p>一个 B 帧的宏块可以使用：</p>
+<ul>
+<li>来自 List0 的单个参考</li>
+<li>来自 List1 的单个参考</li>
+<li>来自 List0 和 List1 的加权双向参考</li>
+</ul>
+<h3 id="5-2-GOP（Group-of-Pictures）"><a href="#5-2-GOP（Group-of-Pictures）" class="headerlink" title="5.2 GOP（Group of Pictures）"></a>5.2 GOP（Group of Pictures）</h3><p>GOP 是一组连续的图像序列，从 IDR 帧开始，到下一个 IDR 帧之前结束。</p>
+<p><strong>GOP 结构的两个关键参数：</strong></p>
+<ul>
+<li><strong>GOP 长度（GOP Size &#x2F; Keyframe Interval）：</strong> 两个 I 帧之间的帧数。例如 GOP&#x3D;30 意味着每 30 帧就有一个 IDR 帧</li>
+<li><strong>B 帧数量（B-frame Count）：</strong> 连续 P 帧之间的 B 帧数量</li>
+</ul>
+<p><strong>典型的 GOP 结构：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">GOP Size = 30, B-frames = 2 (常见于 HLS 直播):</span><br><span class="line">显示顺序: I₀ B₁ B₂ P₃ B₄ B₅ P₆ ... P₂₇ B₂₈ B₂₉ | I₃₀ (下一个 GOP)</span><br><span class="line">编码顺序: I₀ P₃ B₁ B₂ P₆ B₄ B₅ ... P₂₇ B₂₅ B₂₆ P₃₀ B₂₈ B₂₉</span><br><span class="line"></span><br><span class="line">GOP Size = 250, B-frames = 3 (常见于 VOD 高质量编码):</span><br><span class="line">I₀ B₁ B₂ B₃ P₄ B₅ B₆ B₇ P₈ ... P₂₅₀ B₂₅₁ B₂₅₂ B₂₅₃ | I₂₅₄ (下一个 GOP)</span><br></pre></td></tr></table></figure>
+
+<p><strong>GOP 设计的权衡：</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>更小&#x2F;更少</th>
+<th>更大&#x2F;更多</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GOP 大小</td>
+<td>更多关键帧 → 更大文件，但 seek 更快，错误恢复更快</td>
+<td>更少关键帧 → 更高压缩率，但 seek 慢</td>
+</tr>
+<tr>
+<td>B 帧数量</td>
+<td>编码更快，延迟更低（实时场景）</td>
+<td>更高压缩率，但延迟更高（VOD 场景）</td>
+</tr>
+</tbody></table>
+<p><strong>分层 B 帧（Hierarchical B-frames）：</strong><br>现代编码器（H.264 High Profile, H.265, VP9, AV1）使用分层 B 帧结构进一步提高压缩效率：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">显示顺序:  I₀  B₁  B₂  B₃  P₄  B₅  B₆  B₇  P₈</span><br><span class="line">时间层级:</span><br><span class="line">Level 0:    I₀ ═══════════════ P₄ ═══════════════ P₈   ← 基础层 (如 7.5 fps)</span><br><span class="line">Level 1:           B₂ ═══════════════════ B₆            ← 第一增强层 (如 15 fps)</span><br><span class="line">Level 2:         B₁       B₃       B₅       B₇         ← 第二增强层 (如 30 fps)</span><br></pre></td></tr></table></figure>
+
+<p>分层 B 帧的优点：</p>
+<ul>
+<li>时间可伸缩性：丢弃高层级帧，可以降低帧率而不需要重新编码</li>
+<li>更高压缩率：每个层级的参考帧在时间上更近，预测更准确</li>
+<li>实现帧率自适应：网络拥塞时服务器可以丢弃高层时间层级的帧来降低码率，而客户端仍能播放（以较低帧率）</li>
+</ul>
+<hr>
+<h2 id="六、容器格式"><a href="#六、容器格式" class="headerlink" title="六、容器格式"></a>六、容器格式</h2><p>编码后的视频流（H.264&#x2F;H.265）和音频流（AAC&#x2F;Opus）是<strong>裸流（raw elementary stream）</strong>——它们缺少时间戳、索引、元数据等关键信息。容器格式就是将这些裸流”打包”成可播放的文件或流。</p>
+<h3 id="6-1-MP4-——-最通用的视频容器"><a href="#6-1-MP4-——-最通用的视频容器" class="headerlink" title="6.1 MP4 —— 最通用的视频容器"></a>6.1 MP4 —— 最通用的视频容器</h3><p>MP4 基于 <strong>ISO Base Media File Format（ISOBMFF, ISO 14496-12）</strong>，使用面向对象的”原子”（atom&#x2F;box）结构。每个原子由 4 字节长度 + 4 字节类型 + 数据组成。</p>
+<p><strong>MP4 文件结构概述：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">典型 MP4 文件（非 fragmented）:</span><br><span class="line">┌─────────────────────────────────────────────────────────────────┐</span><br><span class="line">│ ftyp (File Type Box)                                            │</span><br><span class="line">│  - major_brand: &quot;mp42&quot;                                          │</span><br><span class="line">│  - compatible_brands: [&quot;mp42&quot;, &quot;isom&quot;, &quot;avc1&quot;]                  │</span><br><span class="line">├─────────────────────────────────────────────────────────────────┤</span><br><span class="line">│ moov (Movie Box) —— 元数据,包含所有轨道的描述信息                 │</span><br><span class="line">│  ├── mvhd (Movie Header) —— 时长、创建时间、时间标尺               │</span><br><span class="line">│  ├── trak (Track: 视频)                                          │</span><br><span class="line">│  │   ├── tkhd (Track Header) —— 轨道ID、宽高、时长                │</span><br><span class="line">│  │   └── mdia (Media)                                           │</span><br><span class="line">│  │       ├── mdhd (Media Header) —— 时间标尺 (如 90000)           │</span><br><span class="line">│  │       ├── hdlr (Handler) —— &quot;vide&quot;                            │</span><br><span class="line">│  │       └── minf (Media Information)                            │</span><br><span class="line">│  │           ├── vmhd (Video Media Header)                       │</span><br><span class="line">│  │           ├── dinf (Data Information)                         │</span><br><span class="line">│  │           └── stbl (Sample Table)                             │</span><br><span class="line">│  │               ├── stsd (Sample Description) —— 编码器信息      │</span><br><span class="line">│  │               │   └── avc1 (AVC/H.264)                        │</span><br><span class="line">│  │               │       └── avcC (AVC Configuration) —— SPS+PPS │</span><br><span class="line">│  │               ├── stts (Time-to-Sample) —— 帧持续时长          │</span><br><span class="line">│  │               ├── stss (Sync Sample) —— 关键帧索引             │</span><br><span class="line">│  │               ├── stsz (Sample Size) —— 每帧字节数             │</span><br><span class="line">│  │               ├── stco/co64 (Chunk Offset) —— 数据在文件中的偏移│</span><br><span class="line">│  │               └── stsc (Sample-to-Chunk) —— 帧到块映射         │</span><br><span class="line">│  ├── trak (Track: 音频)                                          │</span><br><span class="line">│  │   └── ... (类似视频轨道)                                        │</span><br><span class="line">│  └── udta (User Data) —— 可选元数据 (标题、艺术家等)               │</span><br><span class="line">├─────────────────────────────────────────────────────────────────┤</span><br><span class="line">│ mdat (Media Data Box) —— 实际的音视频编码数据                     │</span><br><span class="line">│   [H.264 NAL Unit] [AAC Frame] [H.264 NAL Unit] ...              │</span><br><span class="line">│   (所有轨道的编码数据交错存储)                                      │</span><br><span class="line">└─────────────────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p><strong>关键原子详解：</strong></p>
+<p><strong>ftyp（File Type Box）：</strong><br>标识文件的品牌（Brand）和兼容性（Compatible Brands）。例如：</p>
+<ul>
+<li><code>mp42</code>: 标准 MP4 文件</li>
+<li><code>isom</code>: 基于 ISOBMFF 的文件</li>
+<li><code>avc1</code>: 包含 AVC&#x2F;H.264 视频</li>
+<li><code>M4A</code>: iTunes 音频 (.m4a)</li>
+</ul>
+<p><strong>moov（Movie Box）：</strong><br>MP4 的核心元数据容器。对于<strong>非 fragmented MP4（普通 mp4 文件）</strong>，moov 必须包含所有帧的索引信息（stts, stsz, stco&#x2F;stco64）。这意味着：</p>
+<ul>
+<li>moov 通常写在 mdat 的<strong>后面</strong>（因为编码结束后才知道所有帧的大小和偏移）</li>
+<li>对于流式播放（HTTP Progressive Download），播放器需要先获取 moov 才能定位到具体的帧</li>
+<li>这就是为什么 <code>ffmpeg</code> 有一个 <code>-movflags +faststart</code> 参数——它将 moov 移动到文件开头，让播放器可以在文件完整下载前就开始播放</li>
+</ul>
+<p><strong>stbl（Sample Table Box）：</strong><br><code>stbl</code> 下的子原子构成了<strong>帧索引表</strong>。理解这些原子之间的关系是理解 MP4 播放的关键：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">时间 → 字节偏移的完整映射链:</span><br><span class="line"></span><br><span class="line">stts (Time-to-Sample):</span><br><span class="line">  Sample 0: duration = 512  (以 mdhd timescale 为单位)</span><br><span class="line">  Sample 1: duration = 512</span><br><span class="line">  Sample 2: duration = 1024  ← 该帧持续 2 倍时间 (可能是隔帧的情况)</span><br><span class="line">  ...</span><br><span class="line"></span><br><span class="line">stsc (Sample-to-Chunk) + stco (Chunk Offset):</span><br><span class="line">  Chunk 0: 起始偏移 0x00001000, 包含 3 个 Samples</span><br><span class="line">  Chunk 1: 起始偏移 0x00003000, 包含 3 个 Samples</span><br><span class="line">  ...</span><br><span class="line"></span><br><span class="line">stsz (Sample Size):</span><br><span class="line">  Sample 0: 25341 bytes</span><br><span class="line">  Sample 1: 12450 bytes</span><br><span class="line">  Sample 2: 35012 bytes</span><br><span class="line">  ...</span><br><span class="line"></span><br><span class="line">要定位到第 N 帧:</span><br><span class="line">1. stsc + stco → 第 N 帧在哪个 Chunk 中，该 Chunk 的起始偏移</span><br><span class="line">2. stsz → 第 N 帧的大小</span><br><span class="line">3. 该 Chunk 中第 N 帧之前的帧大小之和 → 第 N 帧在 Chunk 内的偏移</span><br><span class="line">4. 文件偏移 = Chunk 起始偏移 + Chunk 内偏移</span><br><span class="line">5. stts → 第 N 帧的 PTS</span><br></pre></td></tr></table></figure>
+
+<p><strong>fMP4（Fragmented MP4）：</strong><br>传统的非 fragmented MP4 有一个致命缺陷：必须在编码开始时就知道所有帧的信息——这不适用于直播、录制、或分片传输。<strong>Fragmented MP4（fMP4）</strong>解决了这个问题。</p>
+<p>fMP4 将媒体数据分割为多个<strong>fragment（片段）</strong>，每个 fragment 可以独立解码和播放：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Fragmented MP4 结构:</span><br><span class="line">┌──────────────────────────────────────────┐</span><br><span class="line">│ ftyp                                     │</span><br><span class="line">├──────────────────────────────────────────┤</span><br><span class="line">│ moov (稀疏的元数据，不含 stbl 完整索引)      │</span><br><span class="line">│   └── mvex (Movie Extends)               │</span><br><span class="line">│       └── trex (Track Extends) — 轨道默认值 │</span><br><span class="line">├──────────────────────────────────────────┤</span><br><span class="line">│ moof (Movie Fragment 1)                  │</span><br><span class="line">│   ├── mfhd (Movie Fragment Header)       │</span><br><span class="line">│   └── traf (Track Fragment)              │</span><br><span class="line">│       ├── tfhd (Track Fragment Header)   │</span><br><span class="line">│       ├── tfdt (Track Fragment Decode Time)│</span><br><span class="line">│       ├── trun (Track Run) — 该片段的帧信息│</span><br><span class="line">│       └── ...                            │</span><br><span class="line">├──────────────────────────────────────────┤</span><br><span class="line">│ mdat (Fragment 1 的数据)                  │</span><br><span class="line">├──────────────────────────────────────────┤</span><br><span class="line">│ moof (Movie Fragment 2)                  │</span><br><span class="line">├──────────────────────────────────────────┤</span><br><span class="line">│ mdat (Fragment 2 的数据)                  │</span><br><span class="line">├──────────────────────────────────────────┤</span><br><span class="line">│ mfra (Movie Fragment Random Access)      │ ← 可选，用于 seek</span><br><span class="line">│   ├── tfra (Track Fragment Random Access)│</span><br><span class="line">│   └── mfro (Movie Fragment Random Access Offset)│</span><br><span class="line">└──────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p>fMP4 是 <strong>DASH（Dynamic Adaptive Streaming）</strong>和 <strong>CMAF（Common Media Application Format）</strong>的核心容器格式，也是 HLS 从 TS 迁移到 fMP4 的目标格式。</p>
+<h3 id="6-2-MKV-WebM-——-开放标准的容器"><a href="#6-2-MKV-WebM-——-开放标准的容器" class="headerlink" title="6.2 MKV &#x2F; WebM —— 开放标准的容器"></a>6.2 MKV &#x2F; WebM —— 开放标准的容器</h3><p><strong>MKV（Matroska Video）：</strong></p>
+<ul>
+<li>基于 <strong>EBML（Extensible Binary Meta Language）</strong>，类似 XML 的二进制格式</li>
+<li>完全开源，无专利限制（专利风险已通过专利池覆盖）</li>
+<li>几乎可以封装任何编解码格式（H.264, H.265, VP9, AV1, AAC, Opus, FLAC, ASS 字幕等）</li>
+<li>支持章节、多音轨、多字幕轨、附件（嵌入字体）、菜单</li>
+<li>适合本地存储和归档，不适合流媒体（不支持 fragment 式随机访问）</li>
+</ul>
+<p><strong>WebM：</strong><br>WebM 是 Matroska 的子集，专门为 Web 设计，由 Google 推动：</p>
+<ul>
+<li>视频：VP8 &#x2F; VP9 &#x2F; AV1</li>
+<li>音频：Vorbis &#x2F; Opus</li>
+<li>不支持字幕、章节、多音轨等高级功能</li>
+<li>是 HTML5 <code>&lt;video&gt;</code> 标签的主要支持容器</li>
+</ul>
+<p><strong>EBML 结构：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">EBML 元素:</span><br><span class="line">┌──────────────────┬──────────────────────┬────────────────────┐</span><br><span class="line">│ Element ID       │ Element Data Size    │ Element Data       │</span><br><span class="line">│ (变长编码)        │ (变长编码)            │                    │</span><br><span class="line">└──────────────────┴──────────────────────┴────────────────────┘</span><br><span class="line"></span><br><span class="line">MKV 文件结构:</span><br><span class="line">EBML Header (文档类型、版本)</span><br><span class="line">  └── Segment (整个文件内容)</span><br><span class="line">      ├── SeekHead (索引: 各顶级元素的位置)</span><br><span class="line">      ├── Info (时长、时间标尺、标题)</span><br><span class="line">      ├── Tracks (轨道定义: 视频/音频/字幕)</span><br><span class="line">      ├── Chapters (章节标记)</span><br><span class="line">      ├── Attachments (嵌入的字体文件)</span><br><span class="line">      ├── Tags (元数据标签)</span><br><span class="line">      ├── Cluster (数据块 1)</span><br><span class="line">      │   ├── Timecode (该 Cluster 的起始时间戳)</span><br><span class="line">      │   ├── SimpleBlock (视频帧)</span><br><span class="line">      │   ├── SimpleBlock (音频帧)</span><br><span class="line">      │   └── ...</span><br><span class="line">      ├── Cluster (数据块 2)</span><br><span class="line">      ├── ...</span><br><span class="line">      └── Cues (关键帧索引，用于 seek)</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-3-FLV-——-直播时代的遗产"><a href="#6-3-FLV-——-直播时代的遗产" class="headerlink" title="6.3 FLV —— 直播时代的遗产"></a>6.3 FLV —— 直播时代的遗产</h3><p>FLV（Flash Video）是 Adobe Flash Player 使用的视频容器，虽然 Flash 本身已于 2020 年退役，但 FLV 格式在<strong>直播推流</strong>领域仍然广泛使用，尤其是在中国国内的直播平台中。</p>
+<p><strong>FLV 文件结构：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">FLV 文件:</span><br><span class="line">┌────────────────────────────────────────────┐</span><br><span class="line">│ FLV Header (9 bytes)                       │</span><br><span class="line">│  - Signature: &quot;FLV&quot; (0x46 0x4C 0x56)       │</span><br><span class="line">│  - Version: 0x01                           │</span><br><span class="line">│  - TypeFlags: 0x05 (audio + video)         │</span><br><span class="line">│  - DataOffset: 0x00000009 (9 bytes)        │</span><br><span class="line">├────────────────────────────────────────────┤</span><br><span class="line">│ PreviousTagSize0: 0x00000000 (4 bytes)     │ ← 第一个 tag 之前总是 0</span><br><span class="line">├────────────────────────────────────────────┤</span><br><span class="line">│ FLV Tag (视频)                              │</span><br><span class="line">│  - TagType: 0x09 (视频)                     │</span><br><span class="line">│  - DataSize: 3 bytes                       │</span><br><span class="line">│  - Timestamp: 3 bytes (ms) + 1 byte ext    │</span><br><span class="line">│  - StreamID: 3 bytes (总是 0x000000)        │</span><br><span class="line">│  - Video Data:                             │</span><br><span class="line">│    - FrameType (4 bits): 1=keyframe, 2=inter frame│</span><br><span class="line">│    - CodecID (4 bits): 7=AVC/H.264         │</span><br><span class="line">│    - AVCPacketType: 0=AVC sequence header, 1=AVC NALU│</span><br><span class="line">│    - CompositionTime: 3 bytes (PTS - DTS)  │</span><br><span class="line">│    - H.264 NALU data                       │</span><br><span class="line">├────────────────────────────────────────────┤</span><br><span class="line">│ PreviousTagSize: 4 bytes                   │ ← 前一个 tag 的总字节数</span><br><span class="line">├────────────────────────────────────────────┤</span><br><span class="line">│ FLV Tag (音频)                              │</span><br><span class="line">│  - TagType: 0x08 (音频)                     │</span><br><span class="line">│  - Audio Data:                             │</span><br><span class="line">│    - SoundFormat (4 bits): 10=AAC          │</span><br><span class="line">│    - SoundRate (2 bits): 3=44kHz           │</span><br><span class="line">│    - SoundSize (1 bit): 1=16-bit           │</span><br><span class="line">│    - SoundType (1 bit): 1=stereo           │</span><br><span class="line">│    - AACPacketType: 0=sequence header, 1=AAC raw│</span><br><span class="line">│    - AAC data                               │</span><br><span class="line">├────────────────────────────────────────────┤</span><br><span class="line">│ PreviousTagSize: ...                       │</span><br><span class="line">├────────────────────────────────────────────┤</span><br><span class="line">│ FLV Tag (视频) ...                          │</span><br><span class="line">└────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p>FLV 的 tag 结构简单直接，每个 tag 有明确的时间戳。这使得 FLV 在直播场景中有两个优势：</p>
+<ul>
+<li>可以<strong>边录制边推流</strong>——每个 tag 自成一体，不需要全局索引</li>
+<li>解析器极其简单，适合低延迟场景</li>
+</ul>
+<p><strong>FLV 在 RTMP 中的应用：</strong><br>在 RTMP 直播推流中，上行（推流）和下行（拉流）都使用 FLV 格式承载音视频数据。RTMP 的 <code>VideoData</code> 和 <code>AudioData</code> 消息体实际上就是 FLV tag 的数据部分（去掉 tag header）。</p>
+<hr>
+<h2 id="七、流媒体协议"><a href="#七、流媒体协议" class="headerlink" title="七、流媒体协议"></a>七、流媒体协议</h2><h3 id="7-1-RTMP-——-实时消息传输协议"><a href="#7-1-RTMP-——-实时消息传输协议" class="headerlink" title="7.1 RTMP —— 实时消息传输协议"></a>7.1 RTMP —— 实时消息传输协议</h3><p>RTMP（Real-Time Messaging Protocol）是 Adobe 开发的用于 Flash Player 和服务器之间传输音视频和数据的协议。虽然 Flash 已死，RTMP 在<strong>直播推流</strong>领域依然是主力。</p>
+<p><strong>RTMP 握手（Handshake）：</strong></p>
+<p>RTMP 使用一个独特的三次握手来验证连接和交换随机数：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Client                          Server</span><br><span class="line">  │                                │</span><br><span class="line">  │── C0+C1 ──────────────────►    │</span><br><span class="line">  │   C0: 协议版本 (1 byte, 0x03)    │</span><br><span class="line">  │   C1: 1536 bytes                │</span><br><span class="line">  │     - time (4B): 当前时间戳       │</span><br><span class="line">  │     - zero (4B): 0x00000000     │</span><br><span class="line">  │     - random (1528B): 随机数据   │</span><br><span class="line">  │                                │</span><br><span class="line">  │                    ◄── S0+S1+S2 │</span><br><span class="line">  │                        S0: 版本  │</span><br><span class="line">  │                        S1: 服务器时间 + 随机数 │</span><br><span class="line">  │                        S2: 回显 C1 的时间 + 随机数 │</span><br><span class="line">  │                                │</span><br><span class="line">  │── C2 ──────────────────────►    │</span><br><span class="line">  │   回显 S1 的时间戳 + 随机数       │</span><br><span class="line">  │                                │</span><br><span class="line">  │          握手完成, 开始交换消息    │</span><br></pre></td></tr></table></figure>
+
+<p>这个握手过程看起来繁琐，但它实现了：</p>
+<ul>
+<li>协议版本协商</li>
+<li>确定连接的延迟（通过回显时间戳）</li>
+<li>确保双方都能正确处理随机数据（防御某些代理&#x2F;缓存设备的错误行为）</li>
+</ul>
+<p><strong>RTMP 消息类型：</strong></p>
+<table>
+<thead>
+<tr>
+<th>消息类型 ID</th>
+<th>名称</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>Set Chunk Size</td>
+<td>调整分块大小（默认 128 字节）</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Abort Message</td>
+<td>取消一个消息的传输</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Acknowledgement</td>
+<td>流量控制：收到一定字节后回确认</td>
+</tr>
+<tr>
+<td>4</td>
+<td>User Control Message</td>
+<td>流事件（Stream Begin, Stream EOF, Buffer Empty 等）</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Window Ack Size</td>
+<td>设置确认窗口大小</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Set Peer Bandwidth</td>
+<td>设置对端带宽限制</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Audio Message</td>
+<td>音频数据</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Video Message</td>
+<td>视频数据</td>
+</tr>
+<tr>
+<td>15</td>
+<td>AMF3 Data Message</td>
+<td>元数据&#x2F;数据消息（ActionScript 3 格式）</td>
+</tr>
+<tr>
+<td>18</td>
+<td>AMF0 Data Message</td>
+<td>元数据&#x2F;数据消息（ActionScript 1.0 格式）</td>
+</tr>
+<tr>
+<td>20</td>
+<td>Command Message (AMF0)</td>
+<td>RPC 命令：connect, createStream, publish, play 等</td>
+</tr>
+<tr>
+<td>22</td>
+<td>Aggregate Message</td>
+<td>聚合消息（将多个子消息打包为一个，减少开销）</td>
+</tr>
+</tbody></table>
+<p><strong>RTMP 分块（Chunking）机制：</strong></p>
+<p>RTMP 将大消息拆分为固定大小的<strong>块（chunk）</strong>，在多路复用的连接上交错发送。默认块大小 128 字节——即消息超过 128 字节就会被拆分。块越小，音频帧可以更快地插入到视频帧之间，减少音频延迟；块越大，头部开销越小。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">RTMP 消息分块示例 (一个 350 字节的视频消息, chunk size = 128):</span><br><span class="line"></span><br><span class="line">┌──────────────┬──────────┐  ┌──────────────┬──────────┐  ┌──────────────┬──────────┐</span><br><span class="line">│ Chunk Header │ 128 字节  │  │ Chunk Header │ 128 字节  │  │ Chunk Header │  94 字节  │</span><br><span class="line">│ (Type 0)     │  数据     │  │ (Type 3)     │  数据     │  │ (Type 3)     │  数据     │</span><br><span class="line">└──────────────┴──────────┘  └──────────────┴──────────┘  └──────────────┴──────────┘</span><br></pre></td></tr></table></figure>
+
+<p>四种 Chunk Header 类型：</p>
+<ul>
+<li><strong>Type 0（12 字节）：</strong> 完整头部。包含 Stream ID、Message Type、Timestamp 等全部信息</li>
+<li><strong>Type 1（8 字节）：</strong> 省略了 Message Stream ID（与上一个相同），但包含 Timestamp Delta 和 Message Length</li>
+<li><strong>Type 2（4 字节）：</strong> 只包含 Timestamp Delta。消息流 ID、消息类型、消息长度都与上一个相同</li>
+<li><strong>Type 3（1 字节）：</strong> 最精简。Timestamps 也沿用之前的值（或使用 Timestamp Delta 扩展）</li>
+</ul>
+<p>这个设计巧妙地利用了<strong>消息流的时序局部性</strong>——同一消息类型在同一条流中往往连续出现。</p>
+<p><strong>RTMP 的典型推&#x2F;拉流交互流程：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">推流 (Publishing):</span><br><span class="line">Client → Server: connect(&quot;rtmp://server/app&quot;)</span><br><span class="line">Server → Client: _result (连接成功)</span><br><span class="line">Client → Server: releaseStream(&quot;streamKey&quot;)</span><br><span class="line">Client → Server: FCPublish(&quot;streamKey&quot;)</span><br><span class="line">Client → Server: createStream()</span><br><span class="line">Server → Client: _result (stream ID = 1)</span><br><span class="line">Client → Server: publish(&quot;streamKey&quot;)</span><br><span class="line">Server → Client: onStatus(&quot;NetStream.Publish.Start&quot;)</span><br><span class="line">Client → Server: @setDataFrame (onMetaData: 宽, 高, 帧率, 编码器等)</span><br><span class="line">Client → Server: Video Data / Audio Data (连续的 FLV tag 数据)</span><br><span class="line"></span><br><span class="line">拉流 (Playback):</span><br><span class="line">Client → Server: connect(&quot;rtmp://server/app&quot;)</span><br><span class="line">Server → Client: _result</span><br><span class="line">Client → Server: createStream()</span><br><span class="line">Server → Client: _result (stream ID = 1)</span><br><span class="line">Client → Server: play(&quot;streamKey&quot;)</span><br><span class="line">Server → Client: onStatus(&quot;NetStream.Play.Start&quot;)</span><br><span class="line">Server → Client: @setDataFrame (onMetaData)</span><br><span class="line">Server → Client: Video Data / Audio Data (连续的 FLV tag 数据)</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-2-HLS-——-HTTP-Live-Streaming"><a href="#7-2-HLS-——-HTTP-Live-Streaming" class="headerlink" title="7.2 HLS —— HTTP Live Streaming"></a>7.2 HLS —— HTTP Live Streaming</h3><p>HLS（HTTP Live Streaming）是 Apple 开发的基于 HTTP 的自适应流媒体协议。它是最广泛支持的流媒体协议——iOS 和 macOS 原生支持，Android 从 3.1 开始支持，所有主流浏览器通过 MSE（Media Source Extensions）支持。</p>
+<p><strong>HLS 的核心概念：</strong></p>
+<p>HLS 将视频切成一系列短小的媒体段（通常 2-10 秒），每个段是一个独立的文件（.ts 或 .mp4），然后通过播放列表（.m3u8）串联起来。</p>
+<p><strong>主播放列表（Master Playlist &#x2F; Multivariant Playlist）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#EXTM3U</span><br><span class="line">#EXT-X-VERSION:3</span><br><span class="line"></span><br><span class="line">#EXT-X-STREAM-INF:BANDWIDTH=800000,RESOLUTION=640x360,CODECS=&quot;avc1.4d001e,mp4a.40.2&quot;</span><br><span class="line">360p/prog_index.m3u8</span><br><span class="line"></span><br><span class="line">#EXT-X-STREAM-INF:BANDWIDTH=1400000,RESOLUTION=842x480,CODECS=&quot;avc1.4d001f,mp4a.40.2&quot;</span><br><span class="line">480p/prog_index.m3u8</span><br><span class="line"></span><br><span class="line">#EXT-X-STREAM-INF:BANDWIDTH=2800000,RESOLUTION=1280x720,CODECS=&quot;avc1.4d001f,mp4a.40.2&quot;</span><br><span class="line">720p/prog_index.m3u8</span><br><span class="line"></span><br><span class="line">#EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=1920x1080,CODECS=&quot;avc1.4d0028,mp4a.40.2&quot;</span><br><span class="line">1080p/prog_index.m3u8</span><br></pre></td></tr></table></figure>
+
+<p>主播放列表列出了<strong>不同码率的变体（Variant）</strong>。播放器根据当前网络带宽自动选择并切换——这就是<strong>自适应码率（ABR, Adaptive Bitrate）</strong>。</p>
+<p><strong>媒体播放列表（Media Playlist）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#EXTM3U</span><br><span class="line">#EXT-X-VERSION:3</span><br><span class="line">#EXT-X-TARGETDURATION:6</span><br><span class="line">#EXT-X-MEDIA-SEQUENCE:100</span><br><span class="line">#EXTINF:6.000,</span><br><span class="line">segment-100.ts</span><br><span class="line">#EXTINF:6.000,</span><br><span class="line">segment-101.ts</span><br><span class="line">#EXTINF:5.500,</span><br><span class="line">segment-102.ts</span><br><span class="line">#EXTINF:6.000,</span><br><span class="line">segment-103.ts</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>EXT-X-TARGETDURATION</code>：最大分片时长（播放器据此计算缓冲策略）</li>
+<li><code>EXT-X-MEDIA-SEQUENCE</code>：第一个分片的序号（用于直播的滑动窗口）</li>
+<li><code>EXTINF</code>：每个分片的具体时长</li>
+</ul>
+<p><strong>直播 HLS 的滑动窗口：</strong><br>在直播中，服务器不断添加新的分片并移除旧的分片，播放列表始终保持一个固定长度的窗口（通常是 3-5 个分片）。播放器定期重新请求播放列表来获取最新分片。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Live HLS 播放列表随时间的变化:</span><br><span class="line"></span><br><span class="line">T=00:00:  segment-100.ts, segment-101.ts, segment-102.ts</span><br><span class="line">T=00:06:  segment-101.ts, segment-102.ts, segment-103.ts</span><br><span class="line">T=00:12:  segment-102.ts, segment-103.ts, segment-104.ts</span><br><span class="line">          ↑ 旧分片滑出                ↑ 新分片滑入</span><br></pre></td></tr></table></figure>
+
+<p><strong>延迟来源（HLS 延迟通常 15-30 秒）：</strong></p>
+<ol>
+<li>分片时长（如 6 秒）——一个分片必须先完全生成才能被客户端请求</li>
+<li>分片缓冲——播放器通常缓冲 2-3 个分片以应对网络抖动</li>
+<li>播放列表更新间隔——播放器每隔一定时间（通常是一个分片时长）请求更新</li>
+<li>总延迟 ≈ 3 × 分片时长 ≈ 18 秒（基于 6 秒分片）</li>
+</ol>
+<p><strong>低延迟 HLS（LL-HLS &#x2F; Apple Low-Latency HLS）：</strong><br>通过以下技术将 HLS 延迟降低到 2-5 秒：</p>
+<ul>
+<li><strong>分片化 MP4（fMP4）：</strong> 代替 .ts 文件</li>
+<li><strong>Partial Segments：</strong> 分片在完整生成前就可以部分交付</li>
+<li><strong>Blocking Playlist Reload：</strong> 服务器保持 HTTP 连接打开，直到有新分片再返回</li>
+<li><strong>Playlist Delta Updates：</strong> 只传输播放列表的变化部分</li>
+<li><strong><code>EXT-X-PRELOAD-HINT</code>：</strong> 预告下一个即将可用的分片，让播放器提前发起请求</li>
+</ul>
+<h3 id="7-3-DASH-——-Dynamic-Adaptive-Streaming-over-HTTP"><a href="#7-3-DASH-——-Dynamic-Adaptive-Streaming-over-HTTP" class="headerlink" title="7.3 DASH —— Dynamic Adaptive Streaming over HTTP"></a>7.3 DASH —— Dynamic Adaptive Streaming over HTTP</h3><p>DASH（MPEG-DASH, ISO 23009-1）是国际标准化的自适���流媒体协议，与 HLS 类似但更灵活（也更复杂）。</p>
+<p><strong>DASH 的核心文件：MPD（Media Presentation Description）</strong></p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;utf-8&quot;</span>?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">MPD</span> <span class="attr">xmlns</span>=<span class="string">&quot;urn:mpeg:dash:schema:mpd:2011&quot;</span></span></span><br><span class="line"><span class="tag">     <span class="attr">minBufferTime</span>=<span class="string">&quot;PT1.5S&quot;</span></span></span><br><span class="line"><span class="tag">     <span class="attr">type</span>=<span class="string">&quot;static&quot;</span></span></span><br><span class="line"><span class="tag">     <span class="attr">mediaPresentationDuration</span>=<span class="string">&quot;PT0H9M56.46S&quot;</span></span></span><br><span class="line"><span class="tag">     <span class="attr">profiles</span>=<span class="string">&quot;urn:mpeg:dash:profile:isoff-live:2011&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 同一个内容的多个适应集 (AdaptationSet) --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">Period</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 视频适应集 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">AdaptationSet</span> <span class="attr">mimeType</span>=<span class="string">&quot;video/mp4&quot;</span></span></span><br><span class="line"><span class="tag">                   <span class="attr">codecs</span>=<span class="string">&quot;avc1.4d001f&quot;</span></span></span><br><span class="line"><span class="tag">                   <span class="attr">frameRate</span>=<span class="string">&quot;30&quot;</span></span></span><br><span class="line"><span class="tag">                   <span class="attr">segmentAlignment</span>=<span class="string">&quot;true&quot;</span></span></span><br><span class="line"><span class="tag">                   <span class="attr">startWithSAP</span>=<span class="string">&quot;1&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line">      <span class="comment">&lt;!-- 每个 Representation 代表一个码率/分辨率级别 --&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">Representation</span> <span class="attr">id</span>=<span class="string">&quot;1&quot;</span> <span class="attr">bandwidth</span>=<span class="string">&quot;800000&quot;</span></span></span><br><span class="line"><span class="tag">                      <span class="attr">width</span>=<span class="string">&quot;640&quot;</span> <span class="attr">height</span>=<span class="string">&quot;360&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">SegmentTemplate</span> <span class="attr">timescale</span>=<span class="string">&quot;30000&quot;</span></span></span><br><span class="line"><span class="tag">                         <span class="attr">media</span>=<span class="string">&quot;video_360p_$Number$.m4s&quot;</span></span></span><br><span class="line"><span class="tag">                         <span class="attr">initialization</span>=<span class="string">&quot;video_360p_init.mp4&quot;</span></span></span><br><span class="line"><span class="tag">                         <span class="attr">startNumber</span>=<span class="string">&quot;1&quot;</span> /&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">Representation</span>&gt;</span></span><br><span class="line"></span><br><span class="line">      <span class="tag">&lt;<span class="name">Representation</span> <span class="attr">id</span>=<span class="string">&quot;2&quot;</span> <span class="attr">bandwidth</span>=<span class="string">&quot;2800000&quot;</span></span></span><br><span class="line"><span class="tag">                      <span class="attr">width</span>=<span class="string">&quot;1280&quot;</span> <span class="attr">height</span>=<span class="string">&quot;720&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">SegmentTemplate</span> <span class="attr">timescale</span>=<span class="string">&quot;30000&quot;</span></span></span><br><span class="line"><span class="tag">                         <span class="attr">media</span>=<span class="string">&quot;video_720p_$Number$.m4s&quot;</span></span></span><br><span class="line"><span class="tag">                         <span class="attr">initialization</span>=<span class="string">&quot;video_720p_init.mp4&quot;</span></span></span><br><span class="line"><span class="tag">                         <span class="attr">startNumber</span>=<span class="string">&quot;1&quot;</span> /&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">Representation</span>&gt;</span></span><br><span class="line"></span><br><span class="line">      <span class="tag">&lt;<span class="name">Representation</span> <span class="attr">id</span>=<span class="string">&quot;3&quot;</span> <span class="attr">bandwidth</span>=<span class="string">&quot;5000000&quot;</span></span></span><br><span class="line"><span class="tag">                      <span class="attr">width</span>=<span class="string">&quot;1920&quot;</span> <span class="attr">height</span>=<span class="string">&quot;1080&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">SegmentTemplate</span> <span class="attr">timescale</span>=<span class="string">&quot;30000&quot;</span></span></span><br><span class="line"><span class="tag">                         <span class="attr">media</span>=<span class="string">&quot;video_1080p_$Number$.m4s&quot;</span></span></span><br><span class="line"><span class="tag">                         <span class="attr">initialization</span>=<span class="string">&quot;video_1080p_init.mp4&quot;</span></span></span><br><span class="line"><span class="tag">                         <span class="attr">startNumber</span>=<span class="string">&quot;1&quot;</span> /&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">Representation</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">AdaptationSet</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!-- 音频适应集 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">AdaptationSet</span> <span class="attr">mimeType</span>=<span class="string">&quot;audio/mp4&quot;</span></span></span><br><span class="line"><span class="tag">                   <span class="attr">codecs</span>=<span class="string">&quot;mp4a.40.2&quot;</span></span></span><br><span class="line"><span class="tag">                   <span class="attr">audioSamplingRate</span>=<span class="string">&quot;48000&quot;</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">Representation</span> <span class="attr">id</span>=<span class="string">&quot;4&quot;</span> <span class="attr">bandwidth</span>=<span class="string">&quot;128000&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">SegmentTemplate</span> <span class="attr">timescale</span>=<span class="string">&quot;48000&quot;</span></span></span><br><span class="line"><span class="tag">                         <span class="attr">media</span>=<span class="string">&quot;audio_$Number$.m4s&quot;</span></span></span><br><span class="line"><span class="tag">                         <span class="attr">initialization</span>=<span class="string">&quot;audio_init.mp4&quot;</span></span></span><br><span class="line"><span class="tag">                         <span class="attr">startNumber</span>=<span class="string">&quot;1&quot;</span> /&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">Representation</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">AdaptationSet</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">Period</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">MPD</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>DASH 的分段（Segment）格式：</strong></p>
+<ul>
+<li><strong>初始化分片（Initialization Segment）：</strong> 包含 ftyp + moov，只需加载一次</li>
+<li><strong>媒体分片（Media Segment）：</strong> 每个分片是一个独立的 fragmented MP4（包含 moof + mdat）</li>
+</ul>
+<p><strong>DASH vs HLS 对比：</strong></p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>HLS</th>
+<th>DASH</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>播放列表格式</td>
+<td>m3u8 (文本)</td>
+<td>MPD (XML)</td>
+</tr>
+<tr>
+<td>分片格式</td>
+<td>TS 或 fMP4 (CMAF)</td>
+<td>fMP4 或 CMAF</td>
+</tr>
+<tr>
+<td>编解码限制</td>
+<td>H.264&#x2F;H.265 + AAC (规范限制)</td>
+<td>无限制 (任意编解码)</td>
+</tr>
+<tr>
+<td>DRM</td>
+<td>FairPlay (Apple 独占)</td>
+<td>Widevine&#x2F;PlayReady&#x2F;FairPlay 均可</td>
+</tr>
+<tr>
+<td>延迟</td>
+<td>传统 15-30s, LL-HLS 2-5s</td>
+<td>传统 15-30s, LL-DASH 2-5s</td>
+</tr>
+<tr>
+<td>平台支持</td>
+<td>iOS&#x2F;macOS 原生, Android 原生</td>
+<td>Android 原生, Web (dash.js)</td>
+</tr>
+</tbody></table>
+<p><strong>CMAF（Common Media Application Format）：</strong><br>CMAF 是一种标准化的分片 MP4 格式，同时被 HLS 和 DASH 支持。使用 CMAF 意味着<strong>同一组媒体分片可以同时用于 HLS 和 DASH</strong>，只需要两份不同的播放列表文件（.m3u8 和 .mpd）和一份初始化分片。这大大简化了媒体源站的基础设施。</p>
+<h3 id="7-4-WebRTC-——-实时通信的革命"><a href="#7-4-WebRTC-——-实时通信的革命" class="headerlink" title="7.4 WebRTC —— 实时通信的革命"></a>7.4 WebRTC —— 实时通信的革命</h3><p>WebRTC（Web Real-Time Communication）是一个开源项目，为浏览器和移动应用提供<strong>实时、点对点（P2P）的音视频和数据通信</strong>。</p>
+<p><strong>WebRTC 的三大核心 API：</strong></p>
+<ul>
+<li><strong>MediaStream &#x2F; getUserMedia：</strong> 访问本地摄像头和麦克风</li>
+<li><strong>RTCPeerConnection：</strong> 建立点对点连接，传输音视频流</li>
+<li><strong>RTCDataChannel：</strong> 传输任意数据（低延迟，基于 SCTP）</li>
+</ul>
+<p><strong>WebRTC 的协议栈：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌─────────────────────────────────────────────────┐</span><br><span class="line">│              应用层 (WebRTC API)                  │</span><br><span class="line">├─────────────────────────────────────────────────┤</span><br><span class="line">│  信令 (SDP + ICE candidates, 通过 WebSocket      │</span><br><span class="line">│        或自定义通道交换)                           │</span><br><span class="line">├─────────────────────────────────────────────────┤</span><br><span class="line">│  媒体传输                 │  数据通道              │</span><br><span class="line">│  SRTP (加密)              │  SCTP over DTLS       │</span><br><span class="line">│  音频/视频编解码 (Opus,   │  (可靠/不可靠传输)      │</span><br><span class="line">│  H.264, VP8, VP9, AV1)   │                       │</span><br><span class="line">├───────────────────────────┴───────────────────────┤</span><br><span class="line">│  DTLS (密钥交换, 加密握手)                          │</span><br><span class="line">├─────────────────────────────────────────────────┤</span><br><span class="line">│  ICE / STUN / TURN (NAT 穿透)                     │</span><br><span class="line">├─────────────────────────────────────────────────┤</span><br><span class="line">│  UDP (主要) 或 TCP (备选)                          │</span><br><span class="line">└─────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p><strong>WebRTC 连接建立全流程：</strong></p>
+<p><strong>第一步：SDP（Session Description Protocol）交换（Offer&#x2F;Answer 模型）</strong></p>
+<p>SDP 描述媒体能力：支持的编解码器、码率、分辨率、传输协议等。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">呼叫方 (Offer) → 信令服务器 → 被叫方 (Answer):</span><br><span class="line"></span><br><span class="line">呼叫方 SDP Offer:</span><br><span class="line">v=0</span><br><span class="line">o=- 461173043 2 IN IP4 127.0.0.1</span><br><span class="line">s=-</span><br><span class="line">t=0 0</span><br><span class="line">m=audio 9 UDP/TLS/RTP/SAVPF 111 103</span><br><span class="line">c=IN IP4 0.0.0.0</span><br><span class="line">a=rtcp:9 IN IP4 0.0.0.0</span><br><span class="line">a=mid:audio</span><br><span class="line">a=rtpmap:111 opus/48000/2     ← 支持 Opus 48kHz 立体声</span><br><span class="line">a=fmtp:111 minptime=10;useinbandfec=1</span><br><span class="line">a=rtpmap:103 ISAC/16000       ← 也支持 iSAC 16kHz</span><br><span class="line">m=video 9 UDP/TLS/RTP/SAVPF 100 96</span><br><span class="line">a=mid:video</span><br><span class="line">a=rtpmap:100 VP8/90000        ← 支持 VP8 和 H.264</span><br><span class="line">a=rtpmap:96 H264/90000</span><br><span class="line">a=fmtp:96 profile-level-id=42e01f;packetization-mode=1</span><br><span class="line"></span><br><span class="line">被叫方 SDP Answer:</span><br><span class="line">v=0</span><br><span class="line">o=- 672938074 2 IN IP4 127.0.0.1</span><br><span class="line">...</span><br><span class="line">m=audio 5000 UDP/TLS/RTP/SAVPF 111</span><br><span class="line">a=rtpmap:111 opus/48000/2     ← 选择 Opus</span><br><span class="line">m=video 5002 UDP/TLS/RTP/SAVPF 96</span><br><span class="line">a=rtpmap:96 H264/90000        ← 选择 H.264</span><br></pre></td></tr></table></figure>
+
+<p><strong>第二步：ICE（Interactive Connectivity Establishment）—— NAT 穿透</strong></p>
+<p>ICE 是 WebRTC 最精妙的部分。它尝试所有可能的方法在两个位于不同 NAT 后面的设备之间建立直接连接。</p>
+<p><strong>ICE 候选（Candidates）类型：</strong></p>
+<ol>
+<li><p><strong>Host Candidate（主机候选）：</strong> 设备自身的 IP 地址</p>
+<ul>
+<li>如 <code>192.168.1.10</code></li>
+<li>只在同一局域网内可用</li>
+</ul>
+</li>
+<li><p><strong>Server Reflexive Candidate（srflx &#x2F; STUN 候选）：</strong> 通过 STUN 服务器获取的公网 IP:Port</p>
+<ul>
+<li>过程：客户端向 STUN 服务器发送请求，STUN 服务器回复”你的公网地址是 203.0.113.5:45678”</li>
+<li>这是在 NAT 上自动创建的<strong>端口映射</strong></li>
+</ul>
+</li>
+<li><p><strong>Relay Candidate（中继候选 &#x2F; TURN 候选）：</strong> 通过 TURN 服务器中继的所有流量</p>
+<ul>
+<li>当 P2P 直接连接失败（如对称 NAT）时使用</li>
+<li>服务器成本高（需要承载所有媒体的带宽）</li>
+</ul>
+</li>
+</ol>
+<p><strong>ICE 的候选收集和连接检查：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. 双方收集本地候选 (host candidates)</span><br><span class="line">2. 双方请求 STUN 服务器获取 srflx candidates</span><br><span class="line">3. 双方通过信令通道交换所有 candidates (包括 host, srflx, relay)</span><br><span class="line">4. ICE 状态机开始连接检查 (Connectivity Checks):</span><br><span class="line">   - 对每对 (local candidate, remote candidate) 发送 STUN Binding Request</span><br><span class="line">   - 收到成功响应 → 这对候选可用</span><br><span class="line">   - 选择延迟最低的一对候选用作通信</span><br></pre></td></tr></table></figure>
+
+<p><strong>第三步：DTLS-SRTP 密钥交换</strong></p>
+<p>连接建立后（ICE 成功后），WebRTC 使用 <strong>DTLS（Datagram Transport Layer Security）</strong>进行密钥交换。DTLS 本质上是在 UDP 上运行的 TLS，解决了”如何在不可靠的数据报传输上提供 TLS 的安全保证”的问题。</p>
+<p>DTLS 握手完成后，从中派生出<strong>SRTP（Secure RTP）密钥</strong>，用于加密后续的媒体数据。这就是为什么叫 “DTLS-SRTP”——DTLS 负责密钥协商，SRTP 负责媒体加密。</p>
+<p><strong>SRTP 的关键特性：</strong></p>
+<ul>
+<li>加密 RTP 载荷（使用 AES-CTR 或 AES-GCM）</li>
+<li>认证 RTP 数据包（使用 HMAC-SHA1）</li>
+<li>防重放攻击（通过序列号检查）</li>
+<li>开销极小（每包约 10 字节的认证标签）</li>
+</ul>
+<p><strong>WebRTC 的媒体传输特点：</strong></p>
+<ul>
+<li><strong>UDP 优先：</strong> 实时通信不能等待 TCP 重传，丢几帧优于增加延迟</li>
+<li><strong>FEC（Forward Error Correction）和 NACK：</strong> 通过冗余数据或选择性重传来恢复丢包</li>
+<li><strong>带宽估计（BWE, Bandwidth Estimation）：</strong> 基于延迟梯度（delay-based, GCC 算法）和丢包率（loss-based）动态调整编码码率</li>
+<li><strong>RTCP（RTP Control Protocol）：</strong> 定期发送 SR（Sender Report）和 RR（Receiver Report），传递丢包率、抖动、RTT 等统计信息</li>
+</ul>
+<hr>
+<h2 id="八、Android-MediaCodec-实战"><a href="#八、Android-MediaCodec-实战" class="headerlink" title="八、Android MediaCodec 实战"></a>八、Android MediaCodec 实战</h2><p>MediaCodec 是 Android 提供的底层音视频编解码 API。它直接使用设备的硬件编解码器（DSP, GPU, 或专用硬件加速模块），提供了远低于软件编解码的功耗和延迟。</p>
+<h3 id="8-1-MediaCodec-的生命周期"><a href="#8-1-MediaCodec-的生命周期" class="headerlink" title="8.1 MediaCodec 的生命周期"></a>8.1 MediaCodec 的生命周期</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">MediaCodec 状态机:</span><br><span class="line">                 ┌──────────┐</span><br><span class="line">                 │Uninitialized│   ← createByCodecName / createEncoderByType / createDecoderByType</span><br><span class="line">                 └────┬─────┘</span><br><span class="line">                      │ configure()</span><br><span class="line">                      ▼</span><br><span class="line">                 ┌──────────┐</span><br><span class="line">          ┌──────│Configured│</span><br><span class="line">          │      └────┬─────┘</span><br><span class="line">          │           │ start()       (同步模式在此调用 getInput/OutputBuffers)</span><br><span class="line">          │           ▼</span><br><span class="line">          │      ┌──────────┐</span><br><span class="line">          │      │ Running  │◄────────────────────────────────┐</span><br><span class="line">          │      └────┬─────┘                                 │</span><br><span class="line">          │           │ queueInputBuffer + dequeueOutputBuffer │</span><br><span class="line">          │           │ (编解码循环在这里)                       │</span><br><span class="line">          │           │                                       │</span><br><span class="line">          │      ┌────▼─────┐                                 │</span><br><span class="line">          │      │End of    │   ← 最后一个输入 buffer 带       │</span><br><span class="line">          │      │Stream    │      BUFFER_FLAG_END_OF_STREAM   │</span><br><span class="line">          │      └────┬─────┘                                 │</span><br><span class="line">          │           │                                       │</span><br><span class="line">          │      ┌────▼─────┐    ┌──────────┐                 │</span><br><span class="line">          │      │Flushing  │◄───│ flush()  ├─────────────────┘</span><br><span class="line">          │      └────┬─────┘    └──────────┘</span><br><span class="line">          │           │</span><br><span class="line">          ▼           ▼</span><br><span class="line">     ┌────────────────────┐</span><br><span class="line">     │  Stopped / Released │</span><br><span class="line">     └────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-2-同步模式（Synchronous-Mode）"><a href="#8-2-同步模式（Synchronous-Mode）" class="headerlink" title="8.2 同步模式（Synchronous Mode）"></a>8.2 同步模式（Synchronous Mode）</h3><p>在同步模式下，编解码器使用一组固定的输入&#x2F;输出缓冲区数组（从 API 21 之后已废弃 <code>getInputBuffers()</code>&#x2F;<code>getOutputBuffers()</code>，改为在 <code>dequeue</code> 时获取 Buffer 索引）：</p>
+<p><strong>视频解码示例（同步模式）：</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 创建 H.264 解码器</span></span><br><span class="line"><span class="type">MediaCodec</span> <span class="variable">codec</span> <span class="operator">=</span> MediaCodec.createDecoderByType(<span class="string">&quot;video/avc&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 配置: MediaFormat中传入 SPS+PPS (csd-0/csd-1)</span></span><br><span class="line"><span class="type">MediaFormat</span> <span class="variable">format</span> <span class="operator">=</span> MediaFormat.createVideoFormat(<span class="string">&quot;video/avc&quot;</span>, width, height);</span><br><span class="line">format.setByteBuffer(<span class="string">&quot;csd-0&quot;</span>, ByteBuffer.wrap(sps));</span><br><span class="line">format.setByteBuffer(<span class="string">&quot;csd-1&quot;</span>, ByteBuffer.wrap(pps));</span><br><span class="line"></span><br><span class="line">codec.configure(format, surface, <span class="literal">null</span>, <span class="number">0</span>);  <span class="comment">// 输出到 Surface</span></span><br><span class="line">codec.start();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取输入输出缓冲区索引</span></span><br><span class="line">MediaCodec.<span class="type">BufferInfo</span> <span class="variable">info</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MediaCodec</span>.BufferInfo();</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> (hasMoreData) &#123;</span><br><span class="line">    <span class="comment">// 1. 从 codec 获取一个空闲的输入缓冲区</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">inputIndex</span> <span class="operator">=</span> codec.dequeueInputBuffer(TIMEOUT_US);</span><br><span class="line">    <span class="keyword">if</span> (inputIndex &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="type">ByteBuffer</span> <span class="variable">inputBuffer</span> <span class="operator">=</span> codec.getInputBuffer(inputIndex);</span><br><span class="line">        <span class="comment">// 从 MediaExtractor 或网络流中读取 H.264 数据</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">sampleSize</span> <span class="operator">=</span> extractor.readSampleData(inputBuffer, <span class="number">0</span>);</span><br><span class="line">        <span class="type">long</span> <span class="variable">pts</span> <span class="operator">=</span> extractor.getSampleTime();</span><br><span class="line">        <span class="type">int</span> <span class="variable">flags</span> <span class="operator">=</span> extractor.getSampleFlags();</span><br><span class="line"></span><br><span class="line">        codec.queueInputBuffer(inputIndex, <span class="number">0</span>, sampleSize, pts, flags);</span><br><span class="line">        extractor.advance();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. 从 codec 获取一个已解码的输出帧</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">outputIndex</span> <span class="operator">=</span> codec.dequeueOutputBuffer(info, TIMEOUT_US);</span><br><span class="line">    <span class="keyword">if</span> (outputIndex &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 如果输出到 Surface, 只需调用 releaseOutputBuffer 并指定 render=true</span></span><br><span class="line">        codec.releaseOutputBuffer(outputIndex, <span class="literal">true</span>);</span><br><span class="line">        <span class="comment">// Surface 上会自动渲染该帧</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (outputIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) &#123;</span><br><span class="line">        <span class="comment">// 编解码器输出格式变化 (如分辨率变化)</span></span><br><span class="line">        <span class="type">MediaFormat</span> <span class="variable">newFormat</span> <span class="operator">=</span> codec.getOutputFormat();</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (outputIndex == MediaCodec.INFO_TRY_AGAIN_LATER) &#123;</span><br><span class="line">        <span class="comment">// 没有可用的输出缓冲区, 稍后重试</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 发送 EOS (End of Stream)</span></span><br><span class="line"><span class="type">int</span> <span class="variable">inputIndex</span> <span class="operator">=</span> codec.dequeueInputBuffer(TIMEOUT_US);</span><br><span class="line">codec.queueInputBuffer(inputIndex, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, MediaCodec.BUFFER_FLAG_END_OF_STREAM);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 等待解码完所有帧</span></span><br><span class="line"><span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">outputIndex</span> <span class="operator">=</span> codec.dequeueOutputBuffer(info, TIMEOUT_US);</span><br><span class="line">    <span class="keyword">if</span> (outputIndex &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">        codec.releaseOutputBuffer(outputIndex, <span class="literal">true</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> ((info.flags &amp; MediaCodec.BUFFER_FLAG_END_OF_STREAM) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">codec.stop();</span><br><span class="line">codec.release();</span><br></pre></td></tr></table></figure>
+
+<p><strong>BufferInfo 详解：</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">MediaCodec</span>.BufferInfo &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> offset;      <span class="comment">// 有效数据在 buffer 中的起始偏移</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> size;        <span class="comment">// 有效数据的字节数</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">long</span> presentationTimeUs;  <span class="comment">// 该帧的 PTS (微秒)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> flags;       <span class="comment">// 标志位：</span></span><br><span class="line">                            <span class="comment">// BUFFER_FLAG_KEY_FRAME (1) — 关键帧</span></span><br><span class="line">                            <span class="comment">// BUFFER_FLAG_CODEC_CONFIG (2) — 编解码配置数据</span></span><br><span class="line">                            <span class="comment">// BUFFER_FLAG_END_OF_STREAM (4) — 流结束</span></span><br><span class="line">                            <span class="comment">// BUFFER_FLAG_PARTIAL_FRAME (8) — 部分帧</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-3-异步模式（Asynchronous-Mode）"><a href="#8-3-异步模式（Asynchronous-Mode）" class="headerlink" title="8.3 异步模式（Asynchronous Mode）"></a>8.3 异步模式（Asynchronous Mode）</h3><p>API 21 引入了异步模式，通过回调接收事件，避免了手动管理缓冲区队列。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">MediaCodec</span> <span class="variable">codec</span> <span class="operator">=</span> MediaCodec.createDecoderByType(<span class="string">&quot;video/avc&quot;</span>);</span><br><span class="line"><span class="type">MediaFormat</span> <span class="variable">format</span> <span class="operator">=</span> MediaFormat.createVideoFormat(<span class="string">&quot;video/avc&quot;</span>, width, height);</span><br><span class="line"></span><br><span class="line">codec.setCallback(<span class="keyword">new</span> <span class="title class_">MediaCodec</span>.Callback() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onInputBufferAvailable</span><span class="params">(MediaCodec codec, <span class="type">int</span> index)</span> &#123;</span><br><span class="line">        <span class="type">ByteBuffer</span> <span class="variable">inputBuffer</span> <span class="operator">=</span> codec.getInputBuffer(index);</span><br><span class="line">        <span class="type">int</span> <span class="variable">sampleSize</span> <span class="operator">=</span> extractor.readSampleData(inputBuffer, <span class="number">0</span>);</span><br><span class="line">        <span class="type">long</span> <span class="variable">pts</span> <span class="operator">=</span> extractor.getSampleTime();</span><br><span class="line">        <span class="type">int</span> <span class="variable">flags</span> <span class="operator">=</span> extractor.getSampleFlags();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (sampleSize &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">            codec.queueInputBuffer(index, <span class="number">0</span>, sampleSize, pts, flags);</span><br><span class="line">            extractor.advance();</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 输入数据已耗尽, 发送 EOS</span></span><br><span class="line">            codec.queueInputBuffer(index, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>,</span><br><span class="line">                MediaCodec.BUFFER_FLAG_END_OF_STREAM);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onOutputBufferAvailable</span><span class="params">(MediaCodec codec, <span class="type">int</span> index,</span></span><br><span class="line"><span class="params">                                         MediaCodec.BufferInfo info)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> ((info.flags &amp; MediaCodec.BUFFER_FLAG_END_OF_STREAM) != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="comment">// 解码完成</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 渲染到 Surface</span></span><br><span class="line">            codec.releaseOutputBuffer(index, <span class="literal">true</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onError</span><span class="params">(MediaCodec codec, MediaCodec.CodecException e)</span> &#123;</span><br><span class="line">        <span class="comment">// 处理错误</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onOutputFormatChanged</span><span class="params">(MediaCodec codec, MediaFormat format)</span> &#123;</span><br><span class="line">        <span class="comment">// 输出格式变化 (如分辨率变化)</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">codec.configure(format, surface, <span class="literal">null</span>, <span class="number">0</span>);</span><br><span class="line">codec.start();</span><br></pre></td></tr></table></figure>
+
+<p><strong>同步 vs 异步模式对比：</strong></p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>同步模式</th>
+<th>异步模式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>API 级别</td>
+<td>16+</td>
+<td>21+</td>
+</tr>
+<tr>
+<td>线程模型</td>
+<td>手动管理, 在调用线程上阻塞</td>
+<td>回调在内部线程上执行</td>
+</tr>
+<tr>
+<td>复杂度</td>
+<td>需要处理超时和重试逻辑</td>
+<td>事件驱动, 代码更简洁</td>
+</tr>
+<tr>
+<td>性能</td>
+<td>理论上略高 (无回调开销)</td>
+<td>几乎相同</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>已有自己的线程模型</td>
+<td>新代码, 简单场景</td>
+</tr>
+</tbody></table>
+<h3 id="8-4-Surface-输入-——-零拷贝编码"><a href="#8-4-Surface-输入-——-零拷贝编码" class="headerlink" title="8.4 Surface 输入 —— 零拷贝编码"></a>8.4 Surface 输入 —— 零拷贝编码</h3><p>从 API 18 开始，MediaCodec 支持将 <strong>Surface</strong> 作为编码器的输入。这是 Android 视频录制中最常用的模式——相机预览直接渲染到 Surface，编码器从 Surface 中取帧。</p>
+<p><strong>Surface 输入的工作流程：</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 创建 H.264 编码器</span></span><br><span class="line"><span class="type">MediaCodec</span> <span class="variable">codec</span> <span class="operator">=</span> MediaCodec.createEncoderByType(<span class="string">&quot;video/avc&quot;</span>);</span><br><span class="line"><span class="type">MediaFormat</span> <span class="variable">format</span> <span class="operator">=</span> MediaFormat.createVideoFormat(<span class="string">&quot;video/avc&quot;</span>,</span><br><span class="line">    width, height);</span><br><span class="line">format.setInteger(MediaFormat.KEY_BIT_RATE, bitrate);</span><br><span class="line">format.setInteger(MediaFormat.KEY_FRAME_RATE, <span class="number">30</span>);</span><br><span class="line">format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, <span class="number">1</span>);  <span class="comment">// 每秒一个 I 帧</span></span><br><span class="line">format.setInteger(MediaFormat.KEY_COLOR_FORMAT,</span><br><span class="line">    MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);</span><br><span class="line"></span><br><span class="line">codec.configure(format, <span class="literal">null</span>, <span class="literal">null</span>, MediaCodec.CONFIGURE_FLAG_ENCODE);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取编码器的输入 Surface</span></span><br><span class="line"><span class="type">Surface</span> <span class="variable">inputSurface</span> <span class="operator">=</span> codec.createInputSurface();</span><br><span class="line">codec.start();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 场景 1: 将相机预览输出到编码器 Surface</span></span><br><span class="line"><span class="comment">// 使用 OpenGL ES 做中间处理 (如滤镜、水印):</span></span><br><span class="line"><span class="comment">//   camera → SurfaceTexture → OpenGL → 编码器 inputSurface</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 场景 2: 通过 EGL/OpenGL 渲染帧到 Surface</span></span><br><span class="line">EGL14.eglMakeCurrent(eglDisplay, inputSurface, inputSurface, eglContext);</span><br><span class="line"><span class="comment">// ... OpenGL 绘制 ...</span></span><br><span class="line">EGL14.eglSwapBuffers(eglDisplay, inputSurface);  <span class="comment">// 提交帧给编码器</span></span><br><span class="line">codec.signalEndOfInputStream();  <span class="comment">// 通知不再有输入帧</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 场景 3: 使用 Canvas 绘制到 Surface (2D 图形)</span></span><br><span class="line"><span class="type">Canvas</span> <span class="variable">canvas</span> <span class="operator">=</span> inputSurface.lockCanvas(<span class="literal">null</span>);</span><br><span class="line"><span class="comment">// ... 绘制操作 ...</span></span><br><span class="line">inputSurface.unlockCanvasAndPost(canvas);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取编码输出</span></span><br><span class="line">MediaCodec.<span class="type">BufferInfo</span> <span class="variable">info</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MediaCodec</span>.BufferInfo();</span><br><span class="line"><span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">outputIndex</span> <span class="operator">=</span> codec.dequeueOutputBuffer(info, TIMEOUT_US);</span><br><span class="line">    <span class="keyword">if</span> (outputIndex &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="type">ByteBuffer</span> <span class="variable">outputBuffer</span> <span class="operator">=</span> codec.getOutputBuffer(outputIndex);</span><br><span class="line">        <span class="comment">// 将编码后的 H.264 数据写入文件或推流</span></span><br><span class="line">        muxer.writeSampleData(trackIndex, outputBuffer, info);</span><br><span class="line">        codec.releaseOutputBuffer(outputIndex, <span class="literal">false</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (outputIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) &#123;</span><br><span class="line">        <span class="comment">// 初始化 MediaMuxer</span></span><br><span class="line">        trackIndex = muxer.addTrack(codec.getOutputFormat());</span><br><span class="line">        muxer.start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">codec.stop();</span><br><span class="line">codec.release();</span><br></pre></td></tr></table></figure>
+
+<p><strong>Surface 输入的底层原理（零拷贝路径）：</strong></p>
+<p>传统的 Buffer 输入模式：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">App 内存 (YUV Buffer)</span><br><span class="line">  → Java/Kotlin 层 (ByteBuffer)</span><br><span class="line">  → JNI 跨边界</span><br><span class="line">  → Native 层 (ABuffer)</span><br><span class="line">  → Binder IPC (到 mediaserver)</span><br><span class="line">  → OMX/Codec2 HAL</span><br><span class="line">  → 硬件编解码器</span><br></pre></td></tr></table></figure>
+
+<p>Surface 输入模式：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">GPU 内存 (GraphicBuffer, 来自 Camera 或 OpenGL)</span><br><span class="line">  → 同一块 GraphicBuffer 通过 BufferQueue 直接传递</span><br><span class="line">  → OMX/Codec2 HAL 直接从 GraphicBuffer 读取</span><br><span class="line">  → 硬件编解码器</span><br><span class="line"></span><br><span class="line">零拷贝！Camera/GPU 的输出 buffer 就是编码器的输入 buffer</span><br></pre></td></tr></table></figure>
+
+<p>这就是 Surface 输入模式的核心优势：<strong>避免了从 GPU 到 CPU、再从 CPU 到编解码器的两次内存拷贝</strong>，对于 1080p@60fps 这样的大数据量场景，节省的带宽和时间非常可观。</p>
+<h3 id="8-5-编解码器选择"><a href="#8-5-编解码器选择" class="headerlink" title="8.5 编解码器选择"></a>8.5 编解码器选择</h3><p>Android 设备上通常有多个 H.264 编解码器可供选择（硬件、软件、不同厂商实现）。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 列出所有 H.264 编解码器</span></span><br><span class="line"><span class="type">MediaCodecList</span> <span class="variable">list</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MediaCodecList</span>(MediaCodecList.ALL_CODECS);</span><br><span class="line">MediaCodecInfo[] codecInfos = list.getCodecInfos();</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (MediaCodecInfo info : codecInfos) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!info.isEncoder()) <span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">    String[] types = info.getSupportedTypes();</span><br><span class="line">    <span class="keyword">for</span> (String type : types) &#123;</span><br><span class="line">        <span class="keyword">if</span> (type.equalsIgnoreCase(<span class="string">&quot;video/avc&quot;</span>)) &#123;</span><br><span class="line">            MediaCodecInfo.<span class="type">CodecCapabilities</span> <span class="variable">caps</span> <span class="operator">=</span></span><br><span class="line">                info.getCapabilitiesForType(type);</span><br><span class="line"></span><br><span class="line">            Log.d(<span class="string">&quot;Codec&quot;</span>, <span class="string">&quot;名称: &quot;</span> + info.getName());</span><br><span class="line">            Log.d(<span class="string">&quot;Codec&quot;</span>, <span class="string">&quot;类型: &quot;</span> + (info.isHardwareAccelerated() ? <span class="string">&quot;硬件&quot;</span> : <span class="string">&quot;软件&quot;</span>));</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 检查是否支持 Surface 输入</span></span><br><span class="line">            <span class="type">boolean</span> <span class="variable">useSurfaceInput</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> colorFormat : caps.colorFormats) &#123;</span><br><span class="line">                <span class="keyword">if</span> (colorFormat == MediaCodecInfo.CodecCapabilities</span><br><span class="line">                        .COLOR_FormatSurface) &#123;</span><br><span class="line">                    useSurfaceInput = <span class="literal">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 支持的 Profile/Level</span></span><br><span class="line">            MediaCodecInfo.CodecProfileLevel[] profiles = caps.profileLevels;</span><br><span class="line">            <span class="keyword">for</span> (MediaCodecInfo.CodecProfileLevel pl : profiles) &#123;</span><br><span class="line">                Log.d(<span class="string">&quot;Codec&quot;</span>, <span class="string">&quot;  Profile: &quot;</span> + pl.profile + <span class="string">&quot;, Level: &quot;</span> + pl.level);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>编解码器选择的经验法则：</strong></p>
+<ol>
+<li><p><strong>硬件编解码器优先</strong>（<code>isHardwareAccelerated() == true</code>）：功耗低、延迟低、吞吐量高，但可能有厂商 bug。同一型号设备下，硬件解码器产生的输出格式（如 YUV 对齐方式）是稳定的。</p>
+</li>
+<li><p><strong>Google 软件编解码器作为备选</strong>：<code>c2.android.avc.encoder</code> &#x2F; <code>c2.android.avc.decoder</code>。行为一致、无厂商 bug、但功耗高、延迟高、4K 以上吃力。</p>
+</li>
+<li><p><strong>永远不要硬编码解码器名称</strong>：使用 <code>createEncoderByType(&quot;video/avc&quot;)</code> &#x2F; <code>createDecoderByType(&quot;video/avc&quot;)</code> 让系统选择默认编解码器。除非你有特定需求（如必须支持 Baseline Profile），才通过遍历选择特定编解码器。</p>
+</li>
+<li><p><strong>H.264 的 Profile &#x2F; Level 选择：</strong></p>
+<ul>
+<li><strong>Baseline Profile：</strong> 最简单，无 B 帧，无 CABAC。兼容性最好，压缩率最低。Android 相机的默认录制 profile。大部分硬件编码器只支持 Baseline。</li>
+<li><strong>Main Profile：</strong> 支持 B 帧和 CABAC。兼容性好，压缩率优于 Baseline。</li>
+<li><strong>High Profile：</strong> 支持 8×8 变换和自定义量化矩阵。最好的压缩率，但兼容性稍差（非常老旧的设备可能不支持）。YouTube 1080p+ 只用 High Profile。</li>
+<li>对于大多数 Android 应用，<strong>Baseline（兼容优先）或 Main（平衡）</strong>是安全的选择。</li>
+</ul>
+</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 通过 ContentResolver 查询设备支持的编码器 (Android 5.0+)</span></span><br><span class="line"><span class="comment">// 这是更简单的获取可用视频编码器列表的方式</span></span><br><span class="line"><span class="type">MediaCodecList</span> <span class="variable">codecList</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MediaCodecList</span>(MediaCodecList.REGULAR_CODECS);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 选择编码器的策略</span></span><br><span class="line">String <span class="title function_">selectCodec</span><span class="params">(String mimeType, <span class="type">boolean</span> isEncoder)</span> &#123;</span><br><span class="line">    <span class="comment">// 优先选择硬件加速的编解码器</span></span><br><span class="line">    <span class="keyword">for</span> (MediaCodecInfo info : codecList.getCodecInfos()) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!info.isEncoder() == !isEncoder) <span class="keyword">continue</span>;</span><br><span class="line">        <span class="keyword">for</span> (String type : info.getSupportedTypes()) &#123;</span><br><span class="line">            <span class="keyword">if</span> (type.equalsIgnoreCase(mimeType)) &#123;</span><br><span class="line">                <span class="keyword">if</span> (info.isHardwareAccelerated()) &#123;</span><br><span class="line">                    <span class="keyword">return</span> info.getName();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 硬件解码器不可用, 回退到 createByType</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-6-常见问题与最佳实践"><a href="#8-6-常见问题与最佳实践" class="headerlink" title="8.6 常见问题与最佳实践"></a>8.6 常见问题与最佳实践</h3><p><strong>问题 1：编码器输出绿屏&#x2F;花屏</strong><br>最常见的调试方向是检查 YUV 格式。Android 相机输出通常是 NV21，而许多编码器的硬件实现期望 NV12 或 I420。使用 Surface 输入模式可以完全规避这一问题——OpenGL 纹理没有格式问题。</p>
+<p><strong>问题 2：解码器丢帧</strong><br>确保 <code>dequeueOutputBuffer</code> 的超时时间不要太长（5000-10000 微秒为宜），并且及时调用 <code>releaseOutputBuffer</code>。如果渲染到 Surface 的 <code>render=true</code>，系统会在下一个 VSync 时将帧送达 SurfaceFlinger。</p>
+<p><strong>问题 3：Start-up 延迟</strong><br>MediaCodec 的 <code>start()</code> 调用会有几十到上百毫秒的初始化延迟（硬件编解码器加载固件）。在实时通信场景中，可以预初始化一个”温”的编解码器池来消除这个延迟。</p>
+<p><strong>问题 4：Surface 输入下的时间戳控制</strong><br>每个帧在 Surface 中输入时的时间戳由 <code>eglPresentationTimeANDROID</code> &#x2F; <code>setPresentationTime</code> 控制。如果时间戳不连续或跳跃，编码器可能跳过帧或产生异常大的 GOP。</p>
+<p><strong>问题 5：Codec 2.0 vs OMX</strong><br>Android 10 引入了 Codec 2.0 框架，正在逐步取代 OpenMAX（OMX）。Codec 2.0 使用更简单的 C API、更好的并发模型和更少的厂商定制空间。对于应用层开发者，MediaCodec 的 API 保持不变，但底层驱动逻辑有显著改善。</p>
+<hr>
+<h2 id="九、总结与学习路径"><a href="#九、总结与学习路径" class="headerlink" title="九、总结与学习路径"></a>九、总结与学习路径</h2><p>音视频技术是一个庞大而精密的领域，但它有着清晰的层次结构。以下是从基础到高级的学习建议：</p>
+<p><strong>第一层：理论基础（本文覆盖）</strong></p>
+<ul>
+<li>PCM 音频原理（采样、量化、WAV 格式）</li>
+<li>YUV 色彩空间与色度子采样</li>
+<li>H.264 编码管线（预测、变换、量化、熵编码、去块滤波）</li>
+<li>帧类型与 GOP 结构</li>
+<li>容器格式（MP4、MKV、FLV）</li>
+<li>流媒体协议（RTMP、HLS、DASH、WebRTC）</li>
+</ul>
+<p><strong>第二层：Android 媒体栈</strong></p>
+<ul>
+<li>MediaCodec（解码&#x2F;编码）→ 本文覆盖</li>
+<li>MediaExtractor + MediaMuxer（解封装&#x2F;封装）</li>
+<li>AudioTrack + AudioRecord（PCM 播放&#x2F;录制）</li>
+<li>Camera2 API + Surface（视频采集）</li>
+<li>OpenGL ES 2.0+（渲染、滤镜、特效）</li>
+</ul>
+<p><strong>第三层：高级主题</strong></p>
+<ul>
+<li>FFmpeg（跨平台多媒体处理）</li>
+<li>H.265&#x2F;HEVC、VP9、AV1 编码技术演进</li>
+<li>视频超分辨率、插帧（AI&#x2F;ML 辅助）</li>
+<li>实时通信优化（Jitter Buffer、FEC、Simulcast、SVC）</li>
+<li>视频质量评估（PSNR、SSIM、VMAF）</li>
+</ul>
+<p>音视频开发的独特挑战在于：它跨越了数学、信号处理、计算机体系结构、操作系统、网络协议等多个领域。但它的回报也是丰厚的——你写下的每一条代码优化，都能让用户看到更清晰的画面、体验到更低延迟的通话、消耗更少的流量和电量。这正是系统级开发的魅力所在。</p>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/C-C-%E6%8A%80%E6%9C%AF/">C/C++技术    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/316.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2022/09/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E5%AE%9E%E6%88%98%E7%B3%BB%E5%88%97%E3%80%91IO%E4%B9%8BAES%E5%8A%A0%E5%AF%86%E5%8A%A0%E5%9B%BA/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/dilyara-garifullina-PxuncMFiuvg-unsplash.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【实战系列】IO之AES加密加固</span></div></a></div><div class="next-post pull_right"><a href="/2022/08/10/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%9F%B3%E8%A7%86%E9%A2%91%E3%80%81%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86%E6%8A%80%E6%9C%AF%E3%80%91%E7%9B%B8%E6%9C%BA%E5%BC%80%E5%8F%91%E8%BF%9B%E9%98%B6%E6%8A%80%E6%9C%AF/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/317.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【音视频、图像处理技术】相机开发进阶技术</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2022/08/10/高级Android-【音视频、图像处理技术】相机开发进阶技术/" title="【音视频、图像处理技术】相机开发进阶技术"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/317.jpg"><div class="relatedPosts_title">【音视频、图像处理技术】相机开发进阶技术</div></a></div><div class="relatedPosts_item"><a href="/2022/08/05/高级Android-【音视频、图像处理技术】开源库FFMPEG学习/" title="【音视频、图像处理技术】开源库FFMPEG学习"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/324.jpg"><div class="relatedPosts_title">【音视频、图像处理技术】开源库FFMPEG学习</div></a></div><div class="relatedPosts_item"><a href="/2022/08/01/高级Android-【音视频、图像处理技术】视觉库OpenCV学习/" title="【音视频、图像处理技术】视觉库OpenCV学习"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/321.jpg"><div class="relatedPosts_title">【音视频、图像处理技术】视觉库OpenCV学习</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/316.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

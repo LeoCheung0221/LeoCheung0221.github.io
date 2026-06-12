@@ -1,0 +1,391 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>系统设计之聊天系统与访问限制系统 | ONE·PIECE</title><meta name="description" content="系统设计之聊天系统与访问限制系统"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="系统设计之聊天系统与访问限制系统"><meta name="twitter:description" content="系统设计之聊天系统与访问限制系统"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="系统设计之聊天系统与访问限制系统"><meta property="og:url" content="http://tufusi.com/2021/12/10/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E8%81%8A%E5%A4%A9%E7%B3%BB%E7%BB%9F%E4%B8%8E%E8%AE%BF%E9%97%AE%E9%99%90%E5%88%B6%E7%B3%BB%E7%BB%9F/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="系统设计之聊天系统与访问限制系统"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2021/12/10/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E8%81%8A%E5%A4%A9%E7%B3%BB%E7%BB%9F%E4%B8%8E%E8%AE%BF%E9%97%AE%E9%99%90%E5%88%B6%E7%B3%BB%E7%BB%9F/"><link rel="prev" title="【深入理解TCP协议】TCP协议介绍" href="http://tufusi.com/2021/12/15/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3TCP%E5%8D%8F%E8%AE%AE%E3%80%91TCP%E5%8D%8F%E8%AE%AE%E4%BB%8B%E7%BB%8D/"><link rel="next" title="以Big Table为例探索分布式数据库" href="http://tufusi.com/2021/12/05/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%BB%A5Big-Table%E4%B8%BA%E4%BE%8B%E6%8E%A2%E7%B4%A2%E5%88%86%E5%B8%83%E5%BC%8F%E6%95%B0%E6%8D%AE%E5%BA%93/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E8%81%8A%E5%A4%A9%E7%B3%BB%E7%BB%9F%E7%9A%84%E9%9C%80%E6%B1%82%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、聊天系统的需求分析</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E8%81%8A%E5%A4%A9%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%8A%9F%E8%83%BD%E4%B8%8E%E9%9D%9E%E5%8A%9F%E8%83%BD%E9%9C%80%E6%B1%82%E7%BB%86%E5%8C%96"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">聊天系统的功能与非功能需求细化</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE%E7%9A%84%E9%80%89%E6%8B%A9"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、通信协议的选择</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#WebSocket%E5%B8%A7%E5%8D%8F%E8%AE%AE%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">WebSocket帧协议详解</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#WebSocket%E8%BF%9E%E6%8E%A5%E7%9A%84%E5%BF%83%E8%B7%B3%E4%B8%8E%E4%BF%9D%E6%B4%BB"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">WebSocket连接的心跳与保活</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81%E6%B6%88%E6%81%AF%E7%9A%84%E5%AD%98%E5%82%A8%E8%AE%BE%E8%AE%A1"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、消息的存储设计</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#HBase%E6%B6%88%E6%81%AF%E8%A1%A8%E7%9A%84%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">HBase消息表的详细设计</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%B6%88%E6%81%AFID%E7%9A%84%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95%E6%97%B6%E9%92%9F%E5%9B%9E%E6%8B%A8%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">消息ID的雪花算法时钟回拨解决方案</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E6%B6%88%E6%81%AF%E7%9A%84%E5%8F%91%E9%80%81%E4%B8%8E%E6%8E%A5%E6%94%B6%E6%B5%81%E7%A8%8B"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、消息的发送与接收流程</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%B6%88%E6%81%AF%E6%9C%89%E5%BA%8F%E6%80%A7%E4%BF%9D%E8%AF%81"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">消息有序性保证</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%B6%88%E6%81%AF%E5%8E%BB%E9%87%8D"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">消息去重</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81%E7%BE%A4%E8%81%8A%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、群聊的设计</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E8%B6%85%E5%A4%A7%E7%BE%A4%E7%9A%84%E6%B6%88%E6%81%AF%E6%89%A9%E6%95%A3%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">超大群的消息扩散策略</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%BE%A4%E6%88%90%E5%91%98%E5%8F%98%E6%9B%B4%E7%9A%84%E5%90%8C%E6%AD%A5"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">群成员变更的同步</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E5%B7%B2%E8%AF%BB%E5%9B%9E%E6%89%A7%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、已读回执的设计</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%B7%B2%E8%AF%BB%E5%9B%9E%E6%89%A7%E7%9A%84%E5%AD%98%E5%82%A8%E4%BC%98%E5%8C%96"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">已读回执的存储优化</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%B7%B2%E8%AF%BB%E5%9B%9E%E6%89%A7%E7%9A%84%E9%9A%90%E7%A7%81%E6%9D%83%E8%A1%A1"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">已读回执的隐私权衡</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E8%AE%BF%E9%97%AE%E9%99%90%E5%88%B6%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、访问限制系统的设计</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E7%A7%8D%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95%E7%9A%84%E8%AF%A6%E7%BB%86%E6%AF%94%E8%BE%83"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">四种限流算法的详细比较</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E4%BB%A4%E7%89%8C%E6%A1%B6%E7%9A%84Go%E8%AF%AD%E8%A8%80%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">令牌桶的Go语言实现</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81%E5%88%86%E5%B8%83%E5%BC%8F%E9%99%90%E6%B5%81%E7%9A%84%E6%8C%91%E6%88%98"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、分布式限流的挑战</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%B7%B7%E5%90%88%E9%99%90%E6%B5%81%E7%9A%84%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">混合限流的详细设计</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E5%A4%9A%E5%B1%82%E9%99%90%E6%B5%81%E6%9E%B6%E6%9E%84"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、多层限流架构</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%A4%9A%E5%B1%82%E9%99%90%E6%B5%81%E6%9E%B6%E6%9E%84%E7%9A%84ASCII%E7%A4%BA%E6%84%8F%E5%9B%BE"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">多层限流架构的ASCII示意图</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E9%99%90%E6%B5%81%E7%9A%84%E9%99%8D%E7%BA%A7%E4%B8%8E%E9%98%B2%E6%8A%A4"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">限流的降级与防护</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81%E8%81%8A%E5%A4%A9%E5%8D%8F%E8%AE%AE%E6%97%8F%EF%BC%9AXMPP%E4%B8%8EMQTT%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">十、聊天协议族：XMPP与MQTT的对比</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#XMPP%EF%BC%88%E5%8F%AF%E6%89%A9%E5%B1%95%E6%B6%88%E6%81%AF%E4%B8%8E%E5%AD%98%E5%9C%A8%E5%8D%8F%E8%AE%AE%EF%BC%89"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">XMPP（可扩展消息与存在协议）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#MQTT%EF%BC%88%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E9%81%A5%E6%B5%8B%E4%BC%A0%E8%BE%93%EF%BC%89"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">MQTT（消息队列遥测传输）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%B6%88%E6%81%AF%E5%90%8C%E6%AD%A5%E5%8D%8F%E8%AE%AE%EF%BC%9ASync%E5%8D%8F%E8%AE%AE%E8%AE%BE%E8%AE%A1"><span class="toc_mobile_items-number">10.3.</span> <span class="toc_mobile_items-text">消息同步协议：Sync协议设计</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E8%81%8A%E5%A4%A9%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%A4%9A%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83%E9%83%A8%E7%BD%B2"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">十一、聊天系统的多数据中心部署</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83%E6%9E%B6%E6%9E%84%E6%A8%A1%E5%9E%8B"><span class="toc_mobile_items-number">11.1.</span> <span class="toc_mobile_items-text">数据中心架构模型</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E8%B7%A8DC%E5%90%8C%E6%AD%A5%E7%9A%84%E5%BB%B6%E8%BF%9F%E4%B8%8E%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc_mobile_items-number">11.2.</span> <span class="toc_mobile_items-text">跨DC同步的延迟与一致性</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%A7%81%E8%BF%BD%E9%97%AE"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">十二、面试常见追问</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%89%A9%E5%B1%95%E9%98%85%E8%AF%BB%EF%BC%9A%E5%8D%B3%E6%97%B6%E9%80%9A%E8%AE%AF%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%B7%A5%E4%B8%9A%E7%95%8C%E5%AE%9E%E7%8E%B0%E5%8F%82%E8%80%83"><span class="toc_mobile_items-number">12.1.</span> <span class="toc_mobile_items-text">扩展阅读：即时通讯系统的工业界实现参考</span></a></li></ol></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%81%8A%E5%A4%A9%E7%B3%BB%E7%BB%9F%E7%9A%84%E9%9C%80%E6%B1%82%E5%88%86%E6%9E%90"><span class="toc-number">1.</span> <span class="toc-text">一、聊天系统的需求分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%81%8A%E5%A4%A9%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%8A%9F%E8%83%BD%E4%B8%8E%E9%9D%9E%E5%8A%9F%E8%83%BD%E9%9C%80%E6%B1%82%E7%BB%86%E5%8C%96"><span class="toc-number">1.1.</span> <span class="toc-text">聊天系统的功能与非功能需求细化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE%E7%9A%84%E9%80%89%E6%8B%A9"><span class="toc-number">2.</span> <span class="toc-text">二、通信协议的选择</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#WebSocket%E5%B8%A7%E5%8D%8F%E8%AE%AE%E8%AF%A6%E8%A7%A3"><span class="toc-number">2.1.</span> <span class="toc-text">WebSocket帧协议详解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#WebSocket%E8%BF%9E%E6%8E%A5%E7%9A%84%E5%BF%83%E8%B7%B3%E4%B8%8E%E4%BF%9D%E6%B4%BB"><span class="toc-number">2.2.</span> <span class="toc-text">WebSocket连接的心跳与保活</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%B6%88%E6%81%AF%E7%9A%84%E5%AD%98%E5%82%A8%E8%AE%BE%E8%AE%A1"><span class="toc-number">3.</span> <span class="toc-text">三、消息的存储设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HBase%E6%B6%88%E6%81%AF%E8%A1%A8%E7%9A%84%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1"><span class="toc-number">3.1.</span> <span class="toc-text">HBase消息表的详细设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E6%81%AFID%E7%9A%84%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95%E6%97%B6%E9%92%9F%E5%9B%9E%E6%8B%A8%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">3.2.</span> <span class="toc-text">消息ID的雪花算法时钟回拨解决方案</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%B6%88%E6%81%AF%E7%9A%84%E5%8F%91%E9%80%81%E4%B8%8E%E6%8E%A5%E6%94%B6%E6%B5%81%E7%A8%8B"><span class="toc-number">4.</span> <span class="toc-text">四、消息的发送与接收流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E6%9C%89%E5%BA%8F%E6%80%A7%E4%BF%9D%E8%AF%81"><span class="toc-number">4.1.</span> <span class="toc-text">消息有序性保证</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E5%8E%BB%E9%87%8D"><span class="toc-number">4.2.</span> <span class="toc-text">消息去重</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E7%BE%A4%E8%81%8A%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="toc-number">5.</span> <span class="toc-text">五、群聊的设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B6%85%E5%A4%A7%E7%BE%A4%E7%9A%84%E6%B6%88%E6%81%AF%E6%89%A9%E6%95%A3%E7%AD%96%E7%95%A5"><span class="toc-number">5.1.</span> <span class="toc-text">超大群的消息扩散策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BE%A4%E6%88%90%E5%91%98%E5%8F%98%E6%9B%B4%E7%9A%84%E5%90%8C%E6%AD%A5"><span class="toc-number">5.2.</span> <span class="toc-text">群成员变更的同步</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%B7%B2%E8%AF%BB%E5%9B%9E%E6%89%A7%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="toc-number">6.</span> <span class="toc-text">六、已读回执的设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%B2%E8%AF%BB%E5%9B%9E%E6%89%A7%E7%9A%84%E5%AD%98%E5%82%A8%E4%BC%98%E5%8C%96"><span class="toc-number">6.1.</span> <span class="toc-text">已读回执的存储优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%B2%E8%AF%BB%E5%9B%9E%E6%89%A7%E7%9A%84%E9%9A%90%E7%A7%81%E6%9D%83%E8%A1%A1"><span class="toc-number">6.2.</span> <span class="toc-text">已读回执的隐私权衡</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E8%AE%BF%E9%97%AE%E9%99%90%E5%88%B6%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="toc-number">7.</span> <span class="toc-text">七、访问限制系统的设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E7%A7%8D%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95%E7%9A%84%E8%AF%A6%E7%BB%86%E6%AF%94%E8%BE%83"><span class="toc-number">7.1.</span> <span class="toc-text">四种限流算法的详细比较</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A4%E7%89%8C%E6%A1%B6%E7%9A%84Go%E8%AF%AD%E8%A8%80%E5%AE%9E%E7%8E%B0"><span class="toc-number">7.2.</span> <span class="toc-text">令牌桶的Go语言实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%88%86%E5%B8%83%E5%BC%8F%E9%99%90%E6%B5%81%E7%9A%84%E6%8C%91%E6%88%98"><span class="toc-number">8.</span> <span class="toc-text">八、分布式限流的挑战</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B7%B7%E5%90%88%E9%99%90%E6%B5%81%E7%9A%84%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1"><span class="toc-number">8.1.</span> <span class="toc-text">混合限流的详细设计</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E5%A4%9A%E5%B1%82%E9%99%90%E6%B5%81%E6%9E%B6%E6%9E%84"><span class="toc-number">9.</span> <span class="toc-text">九、多层限流架构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E5%B1%82%E9%99%90%E6%B5%81%E6%9E%B6%E6%9E%84%E7%9A%84ASCII%E7%A4%BA%E6%84%8F%E5%9B%BE"><span class="toc-number">9.1.</span> <span class="toc-text">多层限流架构的ASCII示意图</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%90%E6%B5%81%E7%9A%84%E9%99%8D%E7%BA%A7%E4%B8%8E%E9%98%B2%E6%8A%A4"><span class="toc-number">9.2.</span> <span class="toc-text">限流的降级与防护</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E8%81%8A%E5%A4%A9%E5%8D%8F%E8%AE%AE%E6%97%8F%EF%BC%9AXMPP%E4%B8%8EMQTT%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc-number">10.</span> <span class="toc-text">十、聊天协议族：XMPP与MQTT的对比</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#XMPP%EF%BC%88%E5%8F%AF%E6%89%A9%E5%B1%95%E6%B6%88%E6%81%AF%E4%B8%8E%E5%AD%98%E5%9C%A8%E5%8D%8F%E8%AE%AE%EF%BC%89"><span class="toc-number">10.1.</span> <span class="toc-text">XMPP（可扩展消息与存在协议）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MQTT%EF%BC%88%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E9%81%A5%E6%B5%8B%E4%BC%A0%E8%BE%93%EF%BC%89"><span class="toc-number">10.2.</span> <span class="toc-text">MQTT（消息队列遥测传输）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E5%90%8C%E6%AD%A5%E5%8D%8F%E8%AE%AE%EF%BC%9ASync%E5%8D%8F%E8%AE%AE%E8%AE%BE%E8%AE%A1"><span class="toc-number">10.3.</span> <span class="toc-text">消息同步协议：Sync协议设计</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E8%81%8A%E5%A4%A9%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%A4%9A%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83%E9%83%A8%E7%BD%B2"><span class="toc-number">11.</span> <span class="toc-text">十一、聊天系统的多数据中心部署</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83%E6%9E%B6%E6%9E%84%E6%A8%A1%E5%9E%8B"><span class="toc-number">11.1.</span> <span class="toc-text">数据中心架构模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%A8DC%E5%90%8C%E6%AD%A5%E7%9A%84%E5%BB%B6%E8%BF%9F%E4%B8%8E%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">11.2.</span> <span class="toc-text">跨DC同步的延迟与一致性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%A7%81%E8%BF%BD%E9%97%AE"><span class="toc-number">12.</span> <span class="toc-text">十二、面试常见追问</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A9%E5%B1%95%E9%98%85%E8%AF%BB%EF%BC%9A%E5%8D%B3%E6%97%B6%E9%80%9A%E8%AE%AF%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%B7%A5%E4%B8%9A%E7%95%8C%E5%AE%9E%E7%8E%B0%E5%8F%82%E8%80%83"><span class="toc-number">12.1.</span> <span class="toc-text">扩展阅读：即时通讯系统的工业界实现参考</span></a></li></ol></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">系统设计之聊天系统与访问限制系统</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-12-10<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">系统设计</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">9.4k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 30 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、聊天系统的需求分析"><a href="#一、聊天系统的需求分析" class="headerlink" title="一、聊天系统的需求分析"></a>一、聊天系统的需求分析</h2><p>即时通讯（Instant Messaging）是移动互联网最基础的应用场景之一。设计一个支持十亿用户的一对一聊天和群聊系统，需要考虑以下核心需求。功能需求包括：一对一文字消息发送与接收、群聊消息（最多五百人）、消息已读&#x2F;未读状态、离线消息推送、历史消息查询、消息送达保证（至少一次送达）。非功能需求包括：端到端消息延迟小于一百毫秒、系统可用性99.99%、支持消息持久化存储至少一年。</p>
+<p>容量估算：假设DAU为五亿，平均每个用户每天发送五十条消息，则每日消息量约为二百五十亿条。平均写QPS &#x3D; 250亿 &#x2F; 86400 ≈ 289352 QPS。消息读取远比写入频繁：用户打开聊天窗口时加载历史消息，每条消息可能被读取数十次。因此系统是典型的读写不对称场景，写路径和读路径需要独立优化。</p>
+<h3 id="聊天系统的功能与非功能需求细化"><a href="#聊天系统的功能与非功能需求细化" class="headerlink" title="聊天系统的功能与非功能需求细化"></a>聊天系统的功能与非功能需求细化</h3><p>除了一对一和群聊基础功能外，一个成熟的聊天系统通常还需要支持：消息引用&#x2F;回复、消息撤回、消息转发、文件传输（图片、视频、文件）、消息搜索、语音&#x2F;视频通话信令、正在输入状态提示、消息加密（端到端加密E2EE）。</p>
+<p>非功能需求方面，消息延迟是一个多维度指标：发送确认延迟（用户点击发送到看到”已发送”状态，目标&lt;100ms）、送达延迟（发送到接收者看到消息，目标&lt;500ms）、通知延迟（离线用户收到推送通知的延迟，目标&lt;5秒）。可用性方面，99.99%意味着全年不可用时间不超过52分钟。</p>
+<h2 id="二、通信协议的选择"><a href="#二、通信协议的选择" class="headerlink" title="二、通信协议的选择"></a>二、通信协议的选择</h2><p>实时通讯的传输层协议有三种主流选择：WebSocket、长轮询（Long Polling）和HTTP&#x2F;2 Server Push。WebSocket是首选方案，它在单个TCP连接上提供全双工通信通道，客户端和服务端都可以随时发送数据。WebSocket握手阶段使用HTTP Upgrade协议，握手成功后协议切换为WebSocket帧协议，每个帧仅需2到14字节的头部开销，远小于HTTP请求的数百字节头部。对于不支持WebSocket的老旧网络环境（如某些企业防火墙），长轮询作为降级方案：客户端发起HTTP请求，服务端保持连接直到有新消息或超时（通常30秒），返回后客户端立即重新发起请求。</p>
+<p>连接管理方面，每个在线用户与聊天服务器维持一条持久连接。如果我们有五亿DAU，假设同时在线峰值比例为20%，则同时在线用户约为一亿。每个服务器节点维护约五万到十万个WebSocket连接（受限于文件描述符和内存），需要约一千到两千个服务器节点。连接建立后，服务端维护一个<code>session map</code>：<code>Map&lt;userId, connectionId&gt;</code>，记录每个用户当前连接到哪个服务器节点的哪个连接。</p>
+<p>连接的路由通过服务发现完成：客户端启动时向连接路由服务请求一个可用的聊天服务器地址（基于地理位置就近分配），然后与该服务器建立WebSocket连接。连接建立后，该用户的在线状态和连接信息注册到Redis中，key为<code>user:online:&#123;user_id&#125;</code>，value为<code>server_ip:connection_id</code>，设置合理的TTL（如心跳间隔的三倍）。</p>
+<h3 id="WebSocket帧协议详解"><a href="#WebSocket帧协议详解" class="headerlink" title="WebSocket帧协议详解"></a>WebSocket帧协议详解</h3><p>WebSocket帧格式（RFC 6455）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"> 0                   1                   2                   3</span><br><span class="line"> 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1</span><br><span class="line">+-+-+-+-+-------+-+-------------+-------------------------------+</span><br><span class="line">|F|R|R|R| opcode|M| Payload len |    Extended payload length    |</span><br><span class="line">|I|S|S|S|  (4)  |A|     (7)     |             (16/64)           |</span><br><span class="line">|N|V|V|V|       |S|             |   (if payload len==126/127)   |</span><br><span class="line">| |1|2|3|       |K|             |                               |</span><br><span class="line">+-+-+-+-+-------+-+-------------+-------------------------------+</span><br><span class="line">|     Masking-key (4 bytes, if MASK set to 1)                  |</span><br><span class="line">+---------------------------------------------------------------+</span><br><span class="line">|     Payload Data                                              |</span><br><span class="line">+---------------------------------------------------------------+</span><br></pre></td></tr></table></figure>
+
+<p>一个典型的WebSocket文本帧头部只有2字节（FIN&#x3D;1, opcode&#x3D;1表示文本, MASK&#x3D;1, payload len &lt; 126），加上4字节Masking-key，总头部6字节。对比HTTP&#x2F;1.1请求头部的数百字节，WebSocket的帧头部开销微乎其微。对于聊天消息这种小数据量高频次场景，这一差异非常显著。</p>
+<h3 id="WebSocket连接的心跳与保活"><a href="#WebSocket连接的心跳与保活" class="headerlink" title="WebSocket连接的心跳与保活"></a>WebSocket连接的心跳与保活</h3><p>WebSocket协议定义了Ping&#x2F;Pong控制帧（opcode&#x3D;9&#x2F;10），可用于心跳检测。服务端每30秒发送一个Ping帧，客户端回复Pong帧。如果连续三次未收到Pong，服务端认为客户端已断开，关闭连接并更新在线状态。客户端端也应实现心跳——如果连续三次未收到服务端的Ping，主动重连。</p>
+<p>此外，中间网络设备（NAT网关、负载均衡器、代理）通常有无连接超时设置（如180秒）。心跳间隔必须小于这个超时时间，以防止连接被中间设备静默断开而两端不知。</p>
+<h2 id="三、消息的存储设计"><a href="#三、消息的存储设计" class="headerlink" title="三、消息的存储设计"></a>三、消息的存储设计</h2><p>消息存储是聊天系统的核心。消息的数据模型包括：消息ID（全局唯一）、发送者ID、接收者ID（或群ID）、消息类型（文本、图片、语音、视频）、消息内容、发送时间戳、消息状态（已发送、已送达、已读）。</p>
+<p>对于一对一聊天，消息存储以<code>conversation_id</code>（会话ID）为分区键。会话ID由两个用户ID按字典序拼接而成：<code>conversation_id = min(userA, userB) + &quot;_&quot; + max(userA, userB)</code>。这样无论谁发起会话，消息都落在同一个分区内，便于查询整个会话历史。</p>
+<p>消息存储的技术选型上，关系型数据库（MySQL）不适合海量消息场景——每天二百五十亿条消息，一年约九万亿条，MySQL的分库分表方案在运维和数据迁移上极其痛苦。HBase和Cassandra这类宽列存储系统是更合适的选择。以HBase为例，行键设计为<code>conversation_id + &quot;_&quot; + timestamp</code>，列族<code>msg</code>包含消息内容的各个字段。由于行键按字典序排列，同一会话的消息自然按时间顺序相邻存储，范围扫描效率极高。</p>
+<p>消息ID的生成是分布式系统中的经典问题。要求全局唯一且趋势递增（便于按时间排序）。Snowflake算法是Twitter开源的分布式ID生成方案，64位Long类型ID的结构如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[1位保留][41位时间戳(毫秒)][10位工作机器ID][12位序列号]</span><br></pre></td></tr></table></figure>
+
+<p>41位时间戳可以支撑约69年（从自定义起始时间算起），10位工作机器ID支持1024个节点，12位序列号支持单节点每毫秒生成4096个ID。Snowflake的优点是本地生成，无需远程调用，性能极高；缺点是有时钟回拨问题——如果服务器时钟被回拨，可能产生重复ID。解决方案包括：等待时钟追上之前的时间、使用备用机器ID、或者改用美团Leaf等依赖数据库或ZooKeeper的方案。</p>
+<h3 id="HBase消息表的详细设计"><a href="#HBase消息表的详细设计" class="headerlink" title="HBase消息表的详细设计"></a>HBase消息表的详细设计</h3><figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="comment">-- HBase表: chat_messages</span></span><br><span class="line"><span class="comment">-- 行键: &#123;conversation_id&#125;_&#123;reverse_timestamp&#125;  (Long.MAX_VALUE - timestamp)</span></span><br><span class="line"><span class="comment">-- 为什么用反转时间戳？因为HBase按键的字典序升序排列，最新消息需要排在最前面。</span></span><br><span class="line"><span class="comment">-- 反转时间戳使得最新的消息排在行键的最前面（时间戳越大反转后越小），</span></span><br><span class="line"><span class="comment">-- Scan时自然获取到最新消息。</span></span><br><span class="line"></span><br><span class="line"><span class="comment">-- 列族: msg</span></span><br><span class="line"><span class="comment">--   列: sender_id (Long)</span></span><br><span class="line"><span class="comment">--   列: msg_type (Int) -- 1:文本 2:图片 3:语音 4:视频 5:文件 6:系统消息</span></span><br><span class="line"><span class="comment">--   列: content (String/byte[]) -- 文本内容或媒体元数据JSON</span></span><br><span class="line"><span class="comment">--   列: created_at (Long) -- 原始时间戳（用于客户端展示）</span></span><br><span class="line"><span class="comment">--   列: status (Int) -- 0:已发送 1:已送达 2:已读</span></span><br><span class="line"><span class="comment">--   列: client_msg_id (String) -- 客户端生成的唯一ID（用于去重）</span></span><br><span class="line"></span><br><span class="line"><span class="comment">-- TTL: ColumnFamily级别设置 TTL = 1年 (31536000秒)</span></span><br><span class="line"><span class="comment">-- HBase自动在Compaction时清理过期数据，无需手动清理</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="消息ID的雪花算法时钟回拨解决方案"><a href="#消息ID的雪花算法时钟回拨解决方案" class="headerlink" title="消息ID的雪花算法时钟回拨解决方案"></a>消息ID的雪花算法时钟回拨解决方案</h3><p>时钟回拨是Snowflake在实际生产中的头号问题。除了等待和切换机器ID，还有以下方案：</p>
+<ol>
+<li><strong>美团Leaf方案</strong>：使用ZooKeeper持久化每个工作节点的当前时间戳和序列号。启动时检查与ZK记录的时间是否发生了回拨。</li>
+<li><strong>百度UidGenerator</strong>：使用RingBuffer预生成ID，缓存未来一段时间的可用ID号段，减少时钟回拨对实时生成的影响。</li>
+<li><strong>混合方案</strong>：在Snowflake ID中嵌入一个随机数位（如2位），略微降低时间精度但提供了额外的唯一性保证。即使时间戳完全重复，4倍随机数空间也能保证4096×4个不重复ID。</li>
+</ol>
+<h2 id="四、消息的发送与接收流程"><a href="#四、消息的发送与接收流程" class="headerlink" title="四、消息的发送与接收流程"></a>四、消息的发送与接收流程</h2><p>用户A给用户B发送一条消息的完整流程如下：</p>
+<p>第一步，A的客户端通过WebSocket将消息发送到与其连接的聊天服务器S1。消息体包含：接收者B的用户ID、消息类型、消息内容、客户端生成的消息本地ID。</p>
+<p>第二步，聊天服务器S1为消息分配全局消息ID（使用Snowflake），将消息写入消息队列（Kafka）。使用消息队列的目的是解耦——消息发送和消息存储、消息推送异步进行，提高系统的吞吐和容错能力。Topic可以按<code>receiver_id</code>分区，保证发给同一个用户的消息有序。</p>
+<p>第三步，消息持久化服务从Kafka消费消息，写入HBase。同时，每条一对一消息写两份——一份存入<code>min(A,B)_max(A,B)</code>的会话键中，另一份可选的备份策略视具体需求而定。</p>
+<p>第四步，消息推送服务从Kafka消费消息，查询Redis获取接收者B的在线状态。如果B在线，根据<code>user:online:B</code>的值找到B连接的聊天服务器S2，通过内部RPC将消息推送到S2，S2再通过WebSocket推送给B的客户端。</p>
+<p>第五步，B的客户端收到消息后，发送ACK确认消息。S2将确认回传给S1，S1更新消息状态为”已送达”。如果B打开了聊天窗口，客户端自动上报”已读”状态，S1更新消息状态。</p>
+<p>对于离线消息的处理：如果B不在线，消息推送服务无法找到B的连接信息。此时消息已经在HBase中持久化存储。当B下次上线时，客户端向服务器请求离线期间的消息（带上本地最后一条消息的ID或时间戳），服务器从HBase中查询该时间戳之后的消息返回。同时，服务器通过移动推送通道（APNs&#x2F;FCM）发送推送通知，提醒用户有新消息。</p>
+<h3 id="消息有序性保证"><a href="#消息有序性保证" class="headerlink" title="消息有序性保证"></a>消息有序性保证</h3><p>在分布式环境中保证消息有序是一个挑战。如果用户A在一秒内向用户B发送了消息M1、M2、M3，B必须按相同顺序收到。Kafka的分区机制提供了有序性保证：同一个分区内的消息严格按写入顺序排列。只要A→B的所有消息都写入Kafka的同一个分区（如按conversation_id分区），消费者按顺序消费即可保证B看到正确的消息顺序。</p>
+<p>对于群聊，消息按group_id分区，保证同一群内的消息顺序。</p>
+<h3 id="消息去重"><a href="#消息去重" class="headerlink" title="消息去重"></a>消息去重</h3><p>消息去重发生在多个层面：</p>
+<ol>
+<li><strong>发送端去重</strong>：客户端为每条消息生成唯一的client_msg_id（UUID），如果发送超时（未收到服务端ACK），客户端用相同client_msg_id重试。服务端检查client_msg_id是否已存在，已存在则只返回ACK，不重复存储。</li>
+<li><strong>推送端去重</strong>：服务端向客户端推送消息时，携带消息的全局消息ID（msg_id）。客户端维护已接收的最大msg_id，如果收到的消息msg_id &lt;&#x3D; 已确认的msg_id，忽略该消息。</li>
+</ol>
+<h2 id="五、群聊的设计"><a href="#五、群聊的设计" class="headerlink" title="五、群聊的设计"></a>五、群聊的设计</h2><p>群聊是一对多通信，核心挑战在于消息扩散。假设一个五百人的群，每发一条消息需要将消息推送给五百人。如果采用简单的逐一推送模式，写放大严重。</p>
+<p>群聊消息的发送流程：用户A在群G中发送消息，消息先写入Kafka（topic按<code>group_id</code>分区），消息持久化服务将其写入HBase（行键为<code>group_id + &quot;_&quot; + timestamp</code>）。消息推送服务查询群成员列表（从Redis或MySQL中获取），然后查询每个成员的在线状态。对于在线的成员，通过其连接的聊天服务器推送消息；对于离线成员，依靠移动推送通知和上线后的消息同步。</p>
+<p>群成员列表的存储与管理：群成员信息存储在MySQL中，<code>group_members(group_id, user_id, role, joined_at)</code>。热数据（活跃群的成员列表）缓存在Redis中，使用Set数据结构：<code>group:members:&#123;group_id&#125;</code>。</p>
+<p>群聊的读扩散优化：对于超大群（如万人群），查询所有在线成员并逐一推送的成本太高。可以采用”信箱模式”——每个用户维护一个消息信箱（类似新鲜事时间线），群消息写入所有成员的收件箱。成员上线后从自己的收件箱拉取消息。这实际上将群聊转化为类似新鲜事系统的推拉结合模式。</p>
+<h3 id="超大群的消息扩散策略"><a href="#超大群的消息扩散策略" class="headerlink" title="超大群的消息扩散策略"></a>超大群的消息扩散策略</h3><p>对于万人群（甚至数十万人的直播聊天室），逐一推送的成本不可接受。以下是分层扩散策略：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌─────────────────────────────────────────────┐</span><br><span class="line">│  第一层: 在线活跃用户 (约10-20%)             │</span><br><span class="line">│  → 长连接WebSocket直接推送                   │</span><br><span class="line">├─────────────────────────────────────────────┤</span><br><span class="line">│  第二层: 在线但静默用户 (约30-50%)            │</span><br><span class="line">│  → 收件箱模式, 用户拉取新消息数               │</span><br><span class="line">├─────────────────────────────────────────────┤</span><br><span class="line">│  第三层: 离线用户 (约30-50%)                  │</span><br><span class="line">│  → APNs/FCM推送 + 上线后拉取                  │</span><br><span class="line">└─────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p>具体实现：聊天服务器为每个在线用户维护一个未读消息计数（在Redis中，<code>unread:group:&#123;group_id&#125;:&#123;user_id&#125;</code>），原子递增。用户与该群的WebSocket连接上，服务端只发送”有新消息”的轻量通知（而非完整消息内容），客户端收到通知后按需拉取。这样将服务端推的消息从”群成员数 × 消息大小”降低为”在线成员数 × 20字节的轻量通知”。</p>
+<h3 id="群成员变更的同步"><a href="#群成员变更的同步" class="headerlink" title="群成员变更的同步"></a>群成员变更的同步</h3><p>群成员加入&#x2F;退出时，需要向所有在线成员广播成员变更事件，同时在本地维护成员列表的一致性。实现方式：</p>
+<ol>
+<li>群服务更新MySQL中的群成员表</li>
+<li>群服务发送成员变更事件到Kafka（<code>group_member_change</code> topic）</li>
+<li>聊天服务消费事件，向在线的群成员推送变更通知</li>
+<li>客户端收到通知后，从服务端拉取最新的完整成员列表</li>
+<li>Redis中的群成员缓存设置较短的TTL（如5分钟），保证最终一致性</li>
+</ol>
+<h2 id="六、已读回执的设计"><a href="#六、已读回执的设计" class="headerlink" title="六、已读回执的设计"></a>六、已读回执的设计</h2><p>已读回执（Read Receipt）是即时通讯的重要体验功能。在一对一聊天中，每条消息的状态分为：已发送（客户端发出）、已送达（服务器转发给接收者且接收者ACK）、已读（接收者打开了聊天窗口并看到了消息）。</p>
+<p>对于一对一聊天，已读回执的实现相对直接：当接收者打开与发送者的聊天窗口时，客户端向服务器发送一个”会话已读”事件，包含会话ID和已读到的最后一条消息ID。服务器更新该会话的已读游标，并通知发送者（如果在线）。</p>
+<p>对于群聊，已读回执的实现更为复杂。如果记录每个人对每条消息的已读状态，存储量将爆炸式增长——一个五百人的群每发一条消息需要五百条已读记录。常见的折中方案是：群聊只记录每个用户在每个群中已读的最后一条消息序号，不细化到每条消息。用户进入群聊时，标记当前最新消息序号为已读；用户向上滚动查看历史时，不更新已读位置。</p>
+<h3 id="已读回执的存储优化"><a href="#已读回执的存储优化" class="headerlink" title="已读回执的存储优化"></a>已读回执的存储优化</h3><p>一对一聊天场景中，每个会话只有两条已读记录（A的已读游标和B的已读游标），数据量极小。存储方案：在Redis中维护<code>read_cursor:&#123;conversation_id&#125;:&#123;user_id&#125;</code> → 最后已读消息ID，设置永久TTL。</p>
+<p>群聊场景中，如果使用相同方案，一个500人群需要存储500条游标。但由于群聊的已读状态查询频率相对低（只在用户进入群聊时查询），可以存储在HBase中（行键 &#x3D; <code>group_id:user_id</code>），并在Redis中做热点缓存。</p>
+<h3 id="已读回执的隐私权衡"><a href="#已读回执的隐私权衡" class="headerlink" title="已读回执的隐私权衡"></a>已读回执的隐私权衡</h3><p>很多聊天应用（如WhatsApp）提供关闭已读回执的选项。技术实现：当用户关闭已读回执后，服务端不更新已读游标，也不向发送者推送已读状态。但用户自己仍然可以看到消息已读状态（本地标记）。这需要在消息发送时不依赖全局的已读状态来决定UI展示。</p>
+<h2 id="七、访问限制系统的设计"><a href="#七、访问限制系统的设计" class="headerlink" title="七、访问限制系统的设计"></a>七、访问限制系统的设计</h2><p>访问限制（Rate Limiting）是保护后端服务不被过量请求击垮的关键组件。在一个高并发系统中，没有限流的系统就像没有保险丝的电闸——一次流量尖峰就可能导致级联故障。</p>
+<p>限流算法的选择有三个经典方案。<strong>令牌桶算法</strong>（Token Bucket）：以恒定速率向桶中添加令牌，桶有最大容量。每个请求需要消耗一个令牌，如果桶中没有令牌则拒绝请求。令牌桶允许一定的突发流量——桶中积累的令牌可以在瞬间被消耗掉。适用于允许短时突发但需要控制平均速率的场景。</p>
+<p><strong>漏桶算法</strong>（Leaky Bucket）：请求先进入一个队列（桶），以恒定速率从桶中取出请求处理。如果桶满则丢弃新请求。漏桶强制平滑输出速率，不允许多余的突发。适用于需要严格控制处理速率的场景。</p>
+<p><strong>滑动窗口计数器</strong>（Sliding Window Counter）：将时间划分为固定窗口（如1分钟），统计每个窗口内的请求数。超过阈值则限流。固定窗口的问题在于边界——假设每分钟限制100次请求，用户在0:59和1:00各发100次，实际2秒内发出了200次请求，但两个窗口都没超限。滑动窗口的改进方案是维护最近N秒的请求计数，利用Redis的有序集合（Sorted Set）实现：以请求时间戳为score，以请求唯一标识为member，每次请求时<code>ZREMRANGEBYSCORE</code>移除N秒之前的记录，然后<code>ZCARD</code>统计当前窗口内请求数。</p>
+<p>Redis实现的滑动窗口限流器：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">-- Lua脚本保证原子性</span><br><span class="line">local key = KEYS[1]        -- 限流key，如 rate_limit:user:&#123;user_id&#125;</span><br><span class="line">local window = ARGV[1]     -- 窗口大小，秒</span><br><span class="line">local limit = ARGV[2]      -- 窗口内允许的最大请求数</span><br><span class="line">local now = ARGV[3]        -- 当前时间戳</span><br><span class="line">redis.call(&#x27;ZREMRANGEBYSCORE&#x27;, key, 0, now - window)</span><br><span class="line">local count = redis.call(&#x27;ZCARD&#x27;, key)</span><br><span class="line">if count &lt; tonumber(limit) then</span><br><span class="line">    redis.call(&#x27;ZADD&#x27;, key, now, now .. &#x27;-&#x27; .. math.random())</span><br><span class="line">    redis.call(&#x27;EXPIRE&#x27;, key, window)</span><br><span class="line">    return 1  -- 允许通过</span><br><span class="line">else</span><br><span class="line">    return 0  -- 限流</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+
+<p>这段Lua脚本在Redis服务端原子执行，避免了多次Redis命令往返的网络开销和竞态条件。</p>
+<h3 id="四种限流算法的详细比较"><a href="#四种限流算法的详细比较" class="headerlink" title="四种限流算法的详细比较"></a>四种限流算法的详细比较</h3><table>
+<thead>
+<tr>
+<th>算法</th>
+<th>突发允许</th>
+<th>实现复杂度</th>
+<th>内存开销</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>固定窗口计数器</td>
+<td>有限</td>
+<td>极低</td>
+<td>极低</td>
+<td>粗粒度限流、Nginx层</td>
+</tr>
+<tr>
+<td>滑动窗口日志</td>
+<td>精确控制</td>
+<td>中</td>
+<td>中</td>
+<td>API Gateway、用户级限流</td>
+</tr>
+<tr>
+<td>令牌桶</td>
+<td>允许</td>
+<td>高</td>
+<td>低</td>
+<td>网关入口、允许短时突发</td>
+</tr>
+<tr>
+<td>漏桶</td>
+<td>不允许</td>
+<td>低</td>
+<td>中</td>
+<td>流量整形、严格速率控制</td>
+</tr>
+</tbody></table>
+<h3 id="令牌桶的Go语言实现"><a href="#令牌桶的Go语言实现" class="headerlink" title="令牌桶的Go语言实现"></a>令牌桶的Go语言实现</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> TokenBucket <span class="keyword">struct</span> &#123;</span><br><span class="line">    rate       <span class="type">float64</span>    <span class="comment">// 令牌生成速率 (令牌/秒)</span></span><br><span class="line">    capacity   <span class="type">float64</span>    <span class="comment">// 桶容量</span></span><br><span class="line">    tokens     <span class="type">float64</span>    <span class="comment">// 当前令牌数</span></span><br><span class="line">    lastRefill time.Time  <span class="comment">// 上次填充时间</span></span><br><span class="line">    mu         sync.Mutex</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(tb *TokenBucket)</span></span> Allow() <span class="type">bool</span> &#123;</span><br><span class="line">    tb.mu.Lock()</span><br><span class="line">    <span class="keyword">defer</span> tb.mu.Unlock()</span><br><span class="line">    </span><br><span class="line">    now := time.Now()</span><br><span class="line">    elapsed := now.Sub(tb.lastRefill).Seconds()</span><br><span class="line">    tb.tokens = math.Min(tb.capacity, tb.tokens + elapsed * tb.rate)</span><br><span class="line">    tb.lastRefill = now</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> tb.tokens &gt;= <span class="number">1</span> &#123;</span><br><span class="line">        tb.tokens--</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个实现的核心思想是在每次<code>Allow()</code>调用时惰性计算应补充的令牌数，而不是启动一个后台goroutine定期补充，避免了定时器开销。</p>
+<h2 id="八、分布式限流的挑战"><a href="#八、分布式限流的挑战" class="headerlink" title="八、分布式限流的挑战"></a>八、分布式限流的挑战</h2><p>单机限流实现简单，但分布式环境下存在额外挑战。如果限流规则是”每个用户每分钟最多发100条消息”，而用户请求可能被负载均衡分发到多个服务器节点，那么每个节点只看到部分请求，各自独立限流会导致实际通过的请求远超阈值。</p>
+<p>解决方案一：集中式限流，所有限流判断统一通过Redis进行。上面的Lua脚本就是集中式方案——无论请求落到哪个应用服务器，都到同一个Redis集群中计数。缺点是每次请求多一次Redis网络调用，增加约0.5到1毫秒的延迟。</p>
+<p>解决方案二：混合限流，结合本地限流和远端限流。例如，每分钟100次的配额，本地节点预分配30次，超出30次再向远端Redis申请。这样大部分请求在本地内存中判断，只有少数需要远端调用，减少了Redis的压力和网络开销。Google的Guava RateLimiter就是本地限流的典型实现，使用令牌桶算法。</p>
+<p>解决方案三：Nginx层限流，在反向代理层面进行简单的IP级别限流，过滤掉明显的恶意流量，减轻应用层的压力。Nginx的<code>limit_req_zone</code>和<code>limit_conn_zone</code>模块可以配置基于IP的速率和并发连接数限制。</p>
+<h3 id="混合限流的详细设计"><a href="#混合限流的详细设计" class="headerlink" title="混合限流的详细设计"></a>混合限流的详细设计</h3><p>混合限流的实现方案：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. 本地桶容量 = 总配额 / N (如100次/分钟 → 本地容量30次)</span><br><span class="line">2. 本地计数器 tracking: </span><br><span class="line">   - 本地已消耗次数</span><br><span class="line">   - 本地窗口起始时间</span><br><span class="line">3. 请求到达:</span><br><span class="line">   a. 如果本地计数 &lt; 本地容量 → 本地放行, 计数+1</span><br><span class="line">   b. 如果本地计数 ≥ 本地容量 → 向Redis申请新配额</span><br><span class="line">      - Redis执行: DECR quota:&#123;user_id&#125; &#123;batch_size&#125;</span><br><span class="line">      - 如果返回值 &gt; 0 → 配额申请成功, 重置本地计数</span><br><span class="line">      - 如果返回值 &lt;= 0 → 配额耗尽, 限流</span><br><span class="line">4. 窗口到期时, 未使用的本地配额自动作废</span><br></pre></td></tr></table></figure>
+
+<p>这个方案的优点：将Redis调用频率从”每请求1次”降低到”每消耗本地容量1次”，Redis负载降低30倍（以本地容量30为例）。缺点：配额分配的精度降低（因为预分配了离散批次），但对于大多数场景足够。</p>
+<h2 id="九、多层限流架构"><a href="#九、多层限流架构" class="headerlink" title="九、多层限流架构"></a>九、多层限流架构</h2><p>一个健壮的限流系统通常采用多层防线：</p>
+<p>第一层：硬件防火墙&#x2F;DDoS防护，在入口处过滤掉超大规模的流量攻击。</p>
+<p>第二层：负载均衡&#x2F;反向代理层（Nginx&#x2F;HAProxy），基于IP的简单限流，处理明显的流量异常。</p>
+<p>第三层：API网关层，基于用户身份（JWT Token中的user_id）和API路径的精细化限流。网关层可以从Redis中读取每个用户+API的配额使用情况。</p>
+<p>第四层：应用服务层，对于核心业务逻辑进行业务级别的限流。例如聊天系统中，除了用户级别的消息发送频率限制，还需要对单个会话的消息频率进行限制，防止单用户对某一会话刷屏。</p>
+<p>限流响应的处理：当请求被限流时，应该返回HTTP 429 (Too Many Requests)状态码，并在响应头中包含限流信息，如<code>X-RateLimit-Limit</code>（总配额）、<code>X-RateLimit-Remaining</code>（剩余配额）、<code>X-RateLimit-Reset</code>（配额重置时间）。客户端应根据这些信息实现退避策略（如指数退避重试）。</p>
+<h3 id="多层限流架构的ASCII示意图"><a href="#多层限流架构的ASCII示意图" class="headerlink" title="多层限流架构的ASCII示意图"></a>多层限流架构的ASCII示意图</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">外部流量</span><br><span class="line">    │</span><br><span class="line">    ▼</span><br><span class="line">┌──────────────────────┐</span><br><span class="line">│  第一层: DDoS防护    │  (硬件防火墙/云清洗)</span><br><span class="line">│  过滤超大规模攻击    │</span><br><span class="line">└──────────┬───────────┘</span><br><span class="line">           │</span><br><span class="line">           ▼</span><br><span class="line">┌──────────────────────┐</span><br><span class="line">│  第二层: Nginx限流   │  (IP级别, 并发连接数限制)</span><br><span class="line">│  limit_req_zone      │</span><br><span class="line">└──────────┬───────────┘</span><br><span class="line">           │</span><br><span class="line">           ▼</span><br><span class="line">┌──────────────────────┐</span><br><span class="line">│  第三层: API网关限流 │  (用户+API级别, Redis滑动窗口)</span><br><span class="line">│  Kong / APISIX       │</span><br><span class="line">└──────────┬───────────┘</span><br><span class="line">           │</span><br><span class="line">           ▼</span><br><span class="line">┌──────────────────────┐</span><br><span class="line">│  第四层: 应用限流    │  (业务级别, 本地+分布式)</span><br><span class="line">│  聊天频率/会话频率   │</span><br><span class="line">└──────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="限流的降级与防护"><a href="#限流的降级与防护" class="headerlink" title="限流的降级与防护"></a>限流的降级与防护</h3><p>当Redis不可用时，所有集中式限流失效。此时有两种降级策略：</p>
+<ol>
+<li><strong>Fail Open</strong>：Redis不可用时放行所有请求。风险是可能被流量击垮，适用于对外部依赖可用性有信心的场景。</li>
+<li><strong>Fail Closed</strong>：Redis不可用时拒绝所有请求（或只放行一定比例）。保护了后端，但影响了用户体验。通常使用Fallback到本地限流（使用最近同步的配额信息）作为折中。</li>
+</ol>
+<p>最佳实践：本地维护一个简化的限流器（令牌桶），正常情况下被Redis集中限流覆盖。当Redis不可用时，自动切换为本地限流模式，虽然精度下降但提供了基本保护。</p>
+<h2 id="十、聊天协议族：XMPP与MQTT的对比"><a href="#十、聊天协议族：XMPP与MQTT的对比" class="headerlink" title="十、聊天协议族：XMPP与MQTT的对比"></a>十、聊天协议族：XMPP与MQTT的对比</h2><p>除了WebSocket这种通用传输协议，即时通讯领域还有两大专用协议族值得深入理解。</p>
+<h3 id="XMPP（可扩展消息与存在协议）"><a href="#XMPP（可扩展消息与存在协议）" class="headerlink" title="XMPP（可扩展消息与存在协议）"></a>XMPP（可扩展消息与存在协议）</h3><p>XMPP（Extensible Messaging and Presence Protocol，原Jabber）是IETF标准化的即时通讯协议（RFC 6120&#x2F;6121），WhatsApp早期就基于XMPP构建。</p>
+<p>XMPP的核心概念：</p>
+<ul>
+<li><strong>JID（Jabber ID）</strong>：<code>user@domain/resource</code>格式的全局唯一标识。<code>domain</code>是XMPP服务器域，<code>resource</code>标识设备（如<code>alice@whatsapp.com/android-phone</code>）</li>
+<li><strong>Presence</strong>：在线状态订阅机制。用户订阅好友的Presence，好友状态变化时自动推送</li>
+<li><strong>Roster</strong>：联系人名单，存储在XMPP服务器上，跨设备同步</li>
+<li><strong>Stanza</strong>：XML格式的消息原语。三种核心Stanza：<code>&lt;message&gt;</code>（聊天消息），<code>&lt;presence&gt;</code>（在线状态），<code>&lt;iq&gt;</code>（Info&#x2F;Query，请求-响应模式）</li>
+</ul>
+<p>XMPP的优点：成熟的标准协议（20+年历史），丰富的扩展（XEP系列），联合协议（Federation——不同域的用户可以通信）。缺点：XML的解析开销大（二进制替代方案如Google的Protobuf更高效），协议较重（移动设备上电力和带宽消耗高），Presence传送在网络不稳定时产生大量信令开销。</p>
+<p>实际使用中，WhatsApp对XMPP做了大量简化（自定义二进制编码替代XML、简化Presence机制），本质上是”受了XMPP启发的自定义协议”。</p>
+<h3 id="MQTT（消息队列遥测传输）"><a href="#MQTT（消息队列遥测传输）" class="headerlink" title="MQTT（消息队列遥测传输）"></a>MQTT（消息队列遥测传输）</h3><p>MQTT是IBM为物联网设计的轻量级发布&#x2F;订阅协议，近年来也被用于即时通讯（尤其是移动端）。</p>
+<p>MQTT的核心特性：</p>
+<ul>
+<li><strong>极轻量</strong>：最小的MQTT控制包仅2字节（CONNACK：连接确认），适合低带宽、高延迟网络</li>
+<li><strong>发布&#x2F;订阅模型</strong>：客户端发布消息到Topic，订阅该Topic的客户端收到消息。天然支持群聊（一个Topic &#x3D; 一个群）</li>
+<li><strong>三种QoS级别</strong>：QoS 0（At most once，消息可能丢失），QoS 1（At least once，消息可能重复），QoS 2（Exactly once，消息确保送达且不重复）</li>
+<li><strong>遗嘱消息（Last Will and Testament, LWT）</strong>：客户端意外断开时，Broker自动发布一条预先设定的”遗嘱消息”，通知其他客户端该用户离线</li>
+<li><strong>持久会话（Persistent Session）</strong>：Broker保存客户端的订阅和未发送消息，客户端重连后自动恢复</li>
+</ul>
+<p>MQTT的QoS 2（Exactly Once）是它的差异化特性，其四次握手流程：PUBLISH → PUBREC → PUBREL → PUBCOMP。对于金融级消息和支付通知等场景，QoS 2提供了关键的消息不丢失保证。</p>
+<p>WebSocket vs MQTT的选择：WebSocket适合Web&#x2F;App环境（浏览器原生支持、防火墙友好），MQTT适合IoT和移动网络弱网环境（极小开销、天然支持离线消息、QoS分级）。许多现代即时通讯系统将两者结合——客户端与Broker使用MQTT协议（通过TCP或WebSocket传输），服务端内部使用gRPC进行服务间通信。</p>
+<h3 id="消息同步协议：Sync协议设计"><a href="#消息同步协议：Sync协议设计" class="headerlink" title="消息同步协议：Sync协议设计"></a>消息同步协议：Sync协议设计</h3><p>当用户更换设备或多设备同时在线时，消息同步是一个复杂的问题。设计良好的Sync协议需要考虑：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">客户端离线期间：</span><br><span class="line">1. 服务端为每个用户维护一个消息游标 (message cursor)</span><br><span class="line">2. 新消息到达 → 持久化到HBase → 游标递增</span><br><span class="line">3. 客户端上线 → 发送本地最后已知游标</span><br><span class="line">4. 服务端返回游标之后的所有消息（支持分页）</span><br><span class="line"></span><br><span class="line">多设备同步：</span><br><span class="line">1. 每个设备维护独立的同步游标</span><br><span class="line">2. 消息写入时，为每个在线设备推送（实时）</span><br><span class="line">3. 离线设备上线后拉取（增量同步）</span><br><span class="line">4. 首次登录新设备时拉取全量历史（全量同步，可通过最近N条消息做种子同步）</span><br><span class="line"></span><br><span class="line">冲突处理：</span><br><span class="line">- 以服务端时间戳为准（而不是客户端时间戳）</span><br><span class="line">- 相同消息ID去重（通过client_msg_id）</span><br></pre></td></tr></table></figure>
+
+<h2 id="十一、聊天系统的多数据中心部署"><a href="#十一、聊天系统的多数据中心部署" class="headerlink" title="十一、聊天系统的多数据中心部署"></a>十一、聊天系统的多数据中心部署</h2><p>为实现99.99%以上的可用性和全球化低延迟体验，聊天系统需要多数据中心部署。</p>
+<h3 id="数据中心架构模型"><a href="#数据中心架构模型" class="headerlink" title="数据中心架构模型"></a>数据中心架构模型</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">                   ┌──────────┐</span><br><span class="line">                   │  Global   │</span><br><span class="line">                   │  DNS LB   │ ← 按用户地理位置路由到最近DC</span><br><span class="line">                   └────┬─────┘</span><br><span class="line">                        │</span><br><span class="line">       ┌────────────────┼────────────────┐</span><br><span class="line">       │                │                │</span><br><span class="line">┌──────▼──────┐  ┌─────▼──────┐  ┌─────▼──────┐</span><br><span class="line">│  DC-Asia    │  │  DC-Europe │  │ DC-America │</span><br><span class="line">│  (Singapore)│  │ (Frankfurt)│  │ (Virginia) │</span><br><span class="line">└──────┬──────┘  └─────┬──────┘  └─────┬──────┘</span><br><span class="line">       │                │                │</span><br><span class="line">┌──────▼──────┐  ┌─────▼──────┐  ┌─────▼──────┐</span><br><span class="line">│HBase Cluster│  │HBase Cluster│ │HBase Cluster│</span><br><span class="line">│ (本DC写入)   │  │ (本DC写入) │  │ (本DC写入)  │</span><br><span class="line">└──────┬──────┘  └─────┬──────┘  └─────┬──────┘</span><br><span class="line">       │                │                │</span><br><span class="line">       └────────────────┼────────────────┘</span><br><span class="line">                        │</span><br><span class="line">                ┌───────▼────────┐</span><br><span class="line">                │ Cross-DC Sync  │</span><br><span class="line">                │ (异步复制)      │</span><br><span class="line">                └────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p>用户按注册时选择或当前地理位置分配到最近的DC。用户A（亚洲）和用户B（美洲）的一对一聊天：</p>
+<ol>
+<li>A发送消息 → 写入DC-Asia的Kafka和HBase</li>
+<li>Cross-DC同步服务将消息复制到DC-America的Kafka</li>
+<li>B在DC-America的连接上收到推送</li>
+<li>B读取历史消息时从DC-America的HBase副本读取（无需跨DC查询）</li>
+</ol>
+<h3 id="跨DC同步的延迟与一致性"><a href="#跨DC同步的延迟与一致性" class="headerlink" title="跨DC同步的延迟与一致性"></a>跨DC同步的延迟与一致性</h3><p>跨太平洋的光纤延迟约100-150ms（理论极限，加上路由器跳数约150-200ms）。这意味着A的消息到达B的客户端最快约150ms（如果B在线且DC-America的推送立即执行）。对于即时通讯来说，这个延迟在可接受范围内。</p>
+<p>但如果Cross-DC复制链路故障（太平洋光缆断裂等），将出现数据不一致——DC-Asia有消息但DC-America没有。解决方案：在Cross-DC复制恢复前，DC-America代理请求到DC-Asia读取（增加延迟但保证数据完整性）；或者接受短暂的数据不可用（DC-America的用户暂时看不到跨DC用户的消息），在复制恢复后补同步。</p>
+<h2 id="十二、面试常见追问"><a href="#十二、面试常见追问" class="headerlink" title="十二、面试常见追问"></a>十二、面试常见追问</h2><p><strong>问题一：WebSocket连接断了怎么办？</strong></p>
+<p>客户端需要实现自动重连机制。重连策略通常采用指数退避：第一次重连等待1秒，第二次2秒，第三次4秒，以此类推，最大等待时间设上限（如30秒）。连接断开期间的消息通过离线消息同步机制补偿——重连成功后，客户端发送本地最后一条消息的时间戳，服务端返回该时间戳之后的所有消息。心跳机制用于检测连接存活：客户端每30秒发送一个ping帧，服务端回复pong帧。如果连续三次没有收到pong，客户端认为连接已断开并启动重连。</p>
+<p><strong>问题二：为什么消息存储选择HBase而不是MySQL？</strong></p>
+<p>HBase是为海量写入和范围扫描优化的LSM-Tree结构，随机写入性能远超MySQL的B+树。消息系统的负载特征是大规模顺序写入和按时间范围扫描查询，与HBase的设计完美匹配。MySQL在这种场景下，随着数据量增长，索引维护成本急剧上升，需要频繁的分库分表扩容，运维复杂度高。此外，HBase天然支持按时间范围做TTL（Time-To-Live）自动过期，消息存储可以在一年后自动删除，无需手动清理。</p>
+<p><strong>问题三：如何保证消息不丢失？</strong></p>
+<p>消息可靠性的保障贯穿整个链路。发送端：客户端在消息体中带唯一ID（客户端生成），如果发送后没有收到服务端ACK，客户端重试。服务端通过消息ID去重，保证同一条消息不会被存储两次。服务端：消息先写入Kafka（配置<code>acks=all</code>，确保所有ISR副本确认），再异步写入HBase。Kafka的多副本机制保证即使节点故障消息也不会丢失。推送端：服务端向接收者客户端推送消息后，等待客户端的ACK。如果超时未收到ACK，消息标记为未送达，客户端下次上线时通过同步机制拉取。移动推送（APNs&#x2F;FCM）本身不保证送达，只做唤醒用途，消息内容仍通过应用自身的同步机制获取。</p>
+<p><strong>问题四：限流中滑动窗口和令牌桶如何选择？</strong></p>
+<p>滑动窗口适合需要精确控制时间窗口内请求数量的场景（如”每分钟最多100次”），实现简单直观。令牌桶适合允许一定突发流量的场景（如”平均每秒10次，但瞬时可以发出20次”），更灵活。对于API限流场景，令牌桶更常用——因为需要允许客户端在正常使用中偶尔的请求突发（如页面加载时同时发多个API请求），同时保证长期的平均速率不超标。滑动窗口更适合硬限（Hard Limit）场景，如短信验证码发送（严格N次&#x2F;分钟）。</p>
+<p><strong>问题五：如何设计消息的端到端加密（E2EE）？</strong></p>
+<p>端到端加密保证即使是服务端也无法读取消息内容。Signal Protocol（由Open Whisper Systems开发）是当前最广泛使用的E2EE协议，被WhatsApp、Signal、Skype（私密对话）采用。其核心机制：</p>
+<ol>
+<li>使用Double Ratchet算法——每次消息发送都更新密钥（前向安全性）</li>
+<li>使用X3DH（Extended Triple Diffie-Hellman）密钥协商——在双方首次通信时安全地建立共享密钥</li>
+<li>每个参与者的设备有一对长期身份密钥（Identity Key）和一组预密钥（Pre-Key）</li>
+<li>消息发送方从服务器获取接收方的预密钥Bundle（存储为公开值），在本地执行X3DH计算生成共享密钥</li>
+<li>服务端只看到加密后的密文，无法解密</li>
+<li>对于群聊，使用Sender Key分发机制——每个成员向群发布加密的Sender Key，之后使用该Key对群消息进行对称加密</li>
+</ol>
+<p>E2EE对服务端的功能提出了限制——服务端无法对消息内容进行搜索、内容审核、智能回复等功能，这些需要在客户端本地完成。</p>
+<p>本文全面解析了即时通讯系统和限流系统的核心设计，涵盖了从协议选型、消息存储、ID生成到分布式限流的各个层面。掌握了这些知识，你就可以在系统设计面试中有条不紊地应对聊天系统和访问控制相关的设计问题。</p>
+<h3 id="扩展阅读：即时通讯系统的工业界实现参考"><a href="#扩展阅读：即时通讯系统的工业界实现参考" class="headerlink" title="扩展阅读：即时通讯系统的工业界实现参考"></a>扩展阅读：即时通讯系统的工业界实现参考</h3><p><strong>微信的消息系统架构</strong>（基于公开技术分享推断）：</p>
+<ul>
+<li>使用长连接（可能基于MMTLS协议，微信自研的加密传输协议）</li>
+<li>消息同步使用序列号（Seq）机制——每个用户维护一个单调递增的全局消息序列号</li>
+<li>消息存储使用自研的PaxosStore（基于Paxos协议的分布式KV存储），替代了早期的HBase</li>
+<li>群聊采用收件箱模式——群消息写入所有在线成员的收件箱，离线成员通过序列号增量同步</li>
+</ul>
+<p><strong>WhatsApp的技术栈</strong>（2014年Facebook收购时的公开资料）：</p>
+<ul>
+<li>FreeBSD + Erlang&#x2F;OTP（用于实时消息路由）服务器</li>
+<li>XMPP协议的简化自定义版本（二进制编码替代XML）</li>
+<li>单台Erlang服务器可维持200万+活跃WebSocket连接</li>
+<li>使用Soft-Layer裸金属服务器（而非云虚拟机），追求极致的单机连接密度</li>
+</ul>
+<p><strong>Slack的实时消息架构</strong>（基于工程博客）：</p>
+<ul>
+<li>使用WebSocket（通过Phoenix框架的Channel抽象，Elixir语言）</li>
+<li>消息分发通过Pub&#x2F;Sub模式——每个频道是一个Pub&#x2F;Sub频道</li>
+<li>使用Flannel（自研）在Erlang节点间高效广播消息</li>
+<li>消息持久化使用Vitess（MySQL水平扩展中间件），按Team ID分片</li>
+</ul>
+<p><strong>核心经验总结</strong>：</p>
+<ol>
+<li>长连接管理是技术核心——单机10万+ WebSocket连接需要精细的OS调优（文件描述符、TCP参数、内存管理）</li>
+<li>消息队列是解耦利器——发送、存储、推送三条路径异步化，互不阻塞</li>
+<li>离线消息同步使用序列号而非时间戳更可靠——序列号单调递增，无时钟同步问题</li>
+<li>移动推送（APNs&#x2F;FCM）只做唤醒用途，真正的消息同步通过应用自己的长连接完成</li>
+</ol>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2021/12/10/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E8%81%8A%E5%A4%A9%E7%B3%BB%E7%BB%9F%E4%B8%8E%E8%AE%BF%E9%97%AE%E9%99%90%E5%88%B6%E7%B3%BB%E7%BB%9F/">http://tufusi.com/2021/12/10/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E8%81%8A%E5%A4%A9%E7%B3%BB%E7%BB%9F%E4%B8%8E%E8%AE%BF%E9%97%AE%E9%99%90%E5%88%B6%E7%B3%BB%E7%BB%9F/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/12/15/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3TCP%E5%8D%8F%E8%AE%AE%E3%80%91TCP%E5%8D%8F%E8%AE%AE%E4%BB%8B%E7%BB%8D/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/305.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【深入理解TCP协议】TCP协议介绍</span></div></a></div><div class="next-post pull_right"><a href="/2021/12/05/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%BB%A5Big-Table%E4%B8%BA%E4%BE%8B%E6%8E%A2%E7%B4%A2%E5%88%86%E5%B8%83%E5%BC%8F%E6%95%B0%E6%8D%AE%E5%BA%93/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>以Big Table为例探索分布式数据库</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

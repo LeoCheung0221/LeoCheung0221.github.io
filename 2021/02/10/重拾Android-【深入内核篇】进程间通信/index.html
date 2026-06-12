@@ -1,0 +1,532 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【深入内核篇】进程间通信 | ONE·PIECE</title><meta name="description" content="【深入内核篇】进程间通信"><meta name="keywords" content="IPC,Binder"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【深入内核篇】进程间通信"><meta name="twitter:description" content="【深入内核篇】进程间通信"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286826.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【深入内核篇】进程间通信"><meta property="og:url" content="http://tufusi.com/2021/02/10/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【深入内核篇】进程间通信"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286826.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2021/02/10/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/"><link rel="prev" title="【深入内核篇】经典同步机制" href="http://tufusi.com/2021/02/15/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91%E7%BB%8F%E5%85%B8%E5%90%8C%E6%AD%A5%E6%9C%BA%E5%88%B6/"><link rel="next" title="【深入内核篇】操作系统介绍" href="http://tufusi.com/2021/02/05/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E4%BB%8B%E7%BB%8D/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81Android-%E4%B8%AD%E4%BD%BF%E7%94%A8%E7%9A%84-IPC-%E6%9C%BA%E5%88%B6%E6%A6%82%E8%A7%88"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、Android 中使用的 IPC 机制概览</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81Binder%E2%80%94%E2%80%94Android-%E7%9A%84%E6%A0%B8%E5%BF%83-IPC"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、Binder——Android 的核心 IPC</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-1-%E4%B8%BA%E4%BB%80%E4%B9%88-Android-%E9%80%89%E6%8B%A9%E4%BA%86-Binder%EF%BC%9F"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 为什么 Android 选择了 Binder？</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-2-Binder-%E9%80%9A%E4%BF%A1%E6%B5%81%E7%A8%8B%E5%9B%9E%E9%A1%BE"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 Binder 通信流程回顾</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-3-Binder-%E9%A9%B1%E5%8A%A8%E7%9A%84%E5%86%85%E5%AD%98%E6%98%A0%E5%B0%84%EF%BC%88mmap%EF%BC%89"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 Binder 驱动的内存映射（mmap）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-4-Binder-%E7%9A%84%E8%BA%AB%E4%BB%BD%E9%AA%8C%E8%AF%81%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">2.4 Binder 的身份验证机制</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-5-Binder-%E7%9A%84%E6%AD%BB%E4%BA%A1%E9%80%9A%E7%9F%A5%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">2.5.</span> <span class="toc_mobile_items-text">2.5 Binder 的死亡通知机制</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81Unix-Domain-Socket"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、Unix Domain Socket</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-1-%E5%9C%A8-Android-%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 在 Android 中的应用</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-2-Zygote-%E7%9A%84-Socket-%E9%80%9A%E4%BF%A1"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 Zygote 的 Socket 通信</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-3-installd-%E7%9A%84-Socket-%E9%80%9A%E4%BF%A1"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 installd 的 Socket 通信</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-4-Unix-Domain-Socket-vs-TCP-Socket-%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">3.4 Unix Domain Socket vs TCP Socket 对比</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-5-Zygote-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8-Socket-%E8%80%8C%E4%B8%8D%E6%98%AF-Binder%EF%BC%9F"><span class="toc_mobile_items-number">3.5.</span> <span class="toc_mobile_items-text">3.5 Zygote 为什么用 Socket 而不是 Binder？</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、共享内存机制</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-1-ashmem%EF%BC%88Android-Shared-Memory%EF%BC%89"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 ashmem（Android Shared Memory）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-1-ashmem-%E7%9A%84-pin-unpin-%E6%9C%BA%E5%88%B6%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">4.1.1.</span> <span class="toc_mobile_items-text">4.1.1 ashmem 的 pin&#x2F;unpin 机制详解</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-2-ION-dma-buf"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 ION &#x2F; dma-buf</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-1-ION-%E4%B8%8E-dma-buf-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc_mobile_items-number">4.2.1.</span> <span class="toc_mobile_items-text">4.2.1 ION 与 dma-buf 的区别</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-3-%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98%E5%8D%8F%E5%90%8C-Binder-%E7%9A%84%E4%BC%98%E5%8A%BF"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 共享内存协同 Binder 的优势</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81%E7%AE%A1%E9%81%93%E4%B8%8E%E4%BF%A1%E5%8F%B7%EF%BC%88%E8%BE%85%E5%8A%A9-IPC%EF%BC%89"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、管道与信号（辅助 IPC）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-1-%E7%AE%A1%E9%81%93%EF%BC%88pipe%EF%BC%89"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 管道（pipe）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-2-%E4%BF%A1%E5%8F%B7%EF%BC%88Signal%EF%BC%89"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 信号（Signal）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81System-V-IPC-%E4%B8%8E-POSIX-IPC-%E5%9C%A8-Android-%E4%B8%AD%E7%9A%84%E7%8A%B6%E6%80%81"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、System V IPC 与 POSIX IPC 在 Android 中的状态</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E5%90%84-IPC-%E6%9C%BA%E5%88%B6%E7%9A%84%E6%80%A7%E8%83%BD%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、各 IPC 机制的性能对比</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#7-1-%E5%9F%BA%E5%87%86%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">7.1 基准对比</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#7-2-Binder-%E7%9A%84%E6%80%A7%E8%83%BD%E7%93%B6%E9%A2%88%E4%B8%8E%E4%BC%98%E5%8C%96"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">7.2 Binder 的性能瓶颈与优化</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1%E7%9A%84-SELinux-%E5%AE%89%E5%85%A8%E6%8E%A7%E5%88%B6"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、进程间通信的 SELinux 安全控制</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E6%A0%B8%E5%BF%83%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、核心面试题</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81Android-%E4%B8%AD%E4%BD%BF%E7%94%A8%E7%9A%84-IPC-%E6%9C%BA%E5%88%B6%E6%A6%82%E8%A7%88"><span class="toc-number">1.</span> <span class="toc-text">一、Android 中使用的 IPC 机制概览</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Binder%E2%80%94%E2%80%94Android-%E7%9A%84%E6%A0%B8%E5%BF%83-IPC"><span class="toc-number">2.</span> <span class="toc-text">二、Binder——Android 的核心 IPC</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-%E4%B8%BA%E4%BB%80%E4%B9%88-Android-%E9%80%89%E6%8B%A9%E4%BA%86-Binder%EF%BC%9F"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 为什么 Android 选择了 Binder？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-Binder-%E9%80%9A%E4%BF%A1%E6%B5%81%E7%A8%8B%E5%9B%9E%E9%A1%BE"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 Binder 通信流程回顾</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-Binder-%E9%A9%B1%E5%8A%A8%E7%9A%84%E5%86%85%E5%AD%98%E6%98%A0%E5%B0%84%EF%BC%88mmap%EF%BC%89"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 Binder 驱动的内存映射（mmap）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-4-Binder-%E7%9A%84%E8%BA%AB%E4%BB%BD%E9%AA%8C%E8%AF%81%E6%9C%BA%E5%88%B6"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 Binder 的身份验证机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-5-Binder-%E7%9A%84%E6%AD%BB%E4%BA%A1%E9%80%9A%E7%9F%A5%E6%9C%BA%E5%88%B6"><span class="toc-number">2.5.</span> <span class="toc-text">2.5 Binder 的死亡通知机制</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81Unix-Domain-Socket"><span class="toc-number">3.</span> <span class="toc-text">三、Unix Domain Socket</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-%E5%9C%A8-Android-%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 在 Android 中的应用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-Zygote-%E7%9A%84-Socket-%E9%80%9A%E4%BF%A1"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 Zygote 的 Socket 通信</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-installd-%E7%9A%84-Socket-%E9%80%9A%E4%BF%A1"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 installd 的 Socket 通信</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-4-Unix-Domain-Socket-vs-TCP-Socket-%E5%AF%B9%E6%AF%94"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 Unix Domain Socket vs TCP Socket 对比</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-5-Zygote-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8-Socket-%E8%80%8C%E4%B8%8D%E6%98%AF-Binder%EF%BC%9F"><span class="toc-number">3.5.</span> <span class="toc-text">3.5 Zygote 为什么用 Socket 而不是 Binder？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98%E6%9C%BA%E5%88%B6"><span class="toc-number">4.</span> <span class="toc-text">四、共享内存机制</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-ashmem%EF%BC%88Android-Shared-Memory%EF%BC%89"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 ashmem（Android Shared Memory）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-1-ashmem-%E7%9A%84-pin-unpin-%E6%9C%BA%E5%88%B6%E8%AF%A6%E8%A7%A3"><span class="toc-number">4.1.1.</span> <span class="toc-text">4.1.1 ashmem 的 pin&#x2F;unpin 机制详解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-ION-dma-buf"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 ION &#x2F; dma-buf</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-1-ION-%E4%B8%8E-dma-buf-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">4.2.1.</span> <span class="toc-text">4.2.1 ION 与 dma-buf 的区别</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-3-%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98%E5%8D%8F%E5%90%8C-Binder-%E7%9A%84%E4%BC%98%E5%8A%BF"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 共享内存协同 Binder 的优势</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E7%AE%A1%E9%81%93%E4%B8%8E%E4%BF%A1%E5%8F%B7%EF%BC%88%E8%BE%85%E5%8A%A9-IPC%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">五、管道与信号（辅助 IPC）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#5-1-%E7%AE%A1%E9%81%93%EF%BC%88pipe%EF%BC%89"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 管道（pipe）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-2-%E4%BF%A1%E5%8F%B7%EF%BC%88Signal%EF%BC%89"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 信号（Signal）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AD%E3%80%81System-V-IPC-%E4%B8%8E-POSIX-IPC-%E5%9C%A8-Android-%E4%B8%AD%E7%9A%84%E7%8A%B6%E6%80%81"><span class="toc-number">6.</span> <span class="toc-text">六、System V IPC 与 POSIX IPC 在 Android 中的状态</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%90%84-IPC-%E6%9C%BA%E5%88%B6%E7%9A%84%E6%80%A7%E8%83%BD%E5%AF%B9%E6%AF%94"><span class="toc-number">7.</span> <span class="toc-text">七、各 IPC 机制的性能对比</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#7-1-%E5%9F%BA%E5%87%86%E5%AF%B9%E6%AF%94"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 基准对比</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-2-Binder-%E7%9A%84%E6%80%A7%E8%83%BD%E7%93%B6%E9%A2%88%E4%B8%8E%E4%BC%98%E5%8C%96"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 Binder 的性能瓶颈与优化</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1%E7%9A%84-SELinux-%E5%AE%89%E5%85%A8%E6%8E%A7%E5%88%B6"><span class="toc-number">8.</span> <span class="toc-text">八、进程间通信的 SELinux 安全控制</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E6%A0%B8%E5%BF%83%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="toc-number">9.</span> <span class="toc-text">九、核心面试题</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286826.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【深入内核篇】进程间通信</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-02-10<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">5.3k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 20 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>Android 基于 Linux 内核，继承了 Linux 所有的 IPC 机制，同时引入了专用的 Binder 作为核心 IPC 框架。理解 Android 使用的各种 IPC 机制的差异、优劣和适用场景，是深入系统架构的必修课。</p>
+<span id="more"></span>
+
+<h1 id="一、Android-中使用的-IPC-机制概览"><a href="#一、Android-中使用的-IPC-机制概览" class="headerlink" title="一、Android 中使用的 IPC 机制概览"></a>一、Android 中使用的 IPC 机制概览</h1><table>
+<thead>
+<tr>
+<th>IPC 机制</th>
+<th>是否主要</th>
+<th>典型用途</th>
+<th>数据拷贝次数</th>
+<th>安全性</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Binder</td>
+<td>是</td>
+<td>系统服务通信、四大组件调度</td>
+<td>1 次</td>
+<td>基于能力+UID 检查</td>
+</tr>
+<tr>
+<td>Unix Domain Socket</td>
+<td>是</td>
+<td>Zygote ↔ system_server, init, adbd</td>
+<td>2 次</td>
+<td>基于 UID&#x2F;GID</td>
+</tr>
+<tr>
+<td>ashmem（匿名共享内存）</td>
+<td>是</td>
+<td>SurfaceFlinger, AudioFlinger</td>
+<td>0 次（映射后）</td>
+<td>基于 fd 传递</td>
+</tr>
+<tr>
+<td>管道 (pipe) &#x2F; 信号 (signal)</td>
+<td>辅助</td>
+<td>进程同步、轻量通知</td>
+<td>2 次</td>
+<td>基于 fd</td>
+</tr>
+<tr>
+<td>dma-buf &#x2F; ION</td>
+<td>是</td>
+<td>图形缓冲区、Camera</td>
+<td>0 次（硬件直接访问）</td>
+<td>基于 fd</td>
+</tr>
+<tr>
+<td>SysV IPC &#x2F; POSIX 消息队列</td>
+<td>极少</td>
+<td>无广泛使用</td>
+<td>2 次</td>
+<td>较弱</td>
+</tr>
+</tbody></table>
+<h1 id="二、Binder——Android-的核心-IPC"><a href="#二、Binder——Android-的核心-IPC" class="headerlink" title="二、Binder——Android 的核心 IPC"></a>二、Binder——Android 的核心 IPC</h1><h2 id="2-1-为什么-Android-选择了-Binder？"><a href="#2-1-为什么-Android-选择了-Binder？" class="headerlink" title="2.1 为什么 Android 选择了 Binder？"></a>2.1 为什么 Android 选择了 Binder？</h2><p>Android 在设计之初评估了多种 IPC 方案，选择了 Binder 作为核心 IPC 而非传统 Linux IPC（如 Socket、管道、SysV）的原因：</p>
+<p><strong>1. 安全模型</strong>：Binder 天然支持基于能力的访问控制。每个 Binder 对象有唯一的标识（binder_node），不能伪造。配合 UID&#x2F;PID 检查（<code>IPCThreadState</code> 在每次调用时自动传递调用者的 UID&#x2F;PID），实现了细粒度的权限控制。相比之下，Socket&#x2F;管道缺乏内置的身份传递机制。</p>
+<p><strong>2. 一次拷贝</strong>：通过 mmap 机制，Binder 将数据拷贝从两次减少为一次，提升了大数据量场景下的性能。</p>
+<p><strong>3. 对象引用计数</strong>：Binder 内置强&#x2F;弱引用计数（通过 binder_node 的 <code>internal_strong_refs</code> &#x2F; <code>local_weak_refs</code> 等字段），配合死亡通知机制，使得跨进程对象生命周期管理自动化。</p>
+<p><strong>4. 线程池管理</strong>：Binder 驱动管理服务端线程池（最多 15 个线程），自动根据负载请求创建或回收线程。</p>
+<p><strong>5. 同步语义（RPC 模型）</strong>：Binder 天然支持同步调用（Client 阻塞等待 Server 回复），也支持异步的 oneway 调用。</p>
+<h2 id="2-2-Binder-通信流程回顾"><a href="#2-2-Binder-通信流程回顾" class="headerlink" title="2.2 Binder 通信流程回顾"></a>2.2 Binder 通信流程回顾</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Client 进程                        Server 进程</span><br><span class="line">BpBinder.transact()               BBinder.onTransact()</span><br><span class="line">    ↓                                  ↑</span><br><span class="line">IPCThreadState.transact()         IPCThreadState.joinThreadPool()</span><br><span class="line">    ↓                                  ↑</span><br><span class="line">ioctl(BINDER_WRITE_READ)          ioctl(BINDER_WRITE_READ)</span><br><span class="line">    ↓                                  ↑</span><br><span class="line">===== Binder Driver (内核) ============</span><br><span class="line">    binder_transaction()</span><br><span class="line">      copy_from_user (一次拷贝)</span><br><span class="line">      挂入目标进程 todo 队列</span><br><span class="line">      wake_up 目标进程</span><br></pre></td></tr></table></figure>
+
+<p>用户空间库：<code>frameworks/native/libs/binder/</code></p>
+<h2 id="2-3-Binder-驱动的内存映射（mmap）"><a href="#2-3-Binder-驱动的内存映射（mmap）" class="headerlink" title="2.3 Binder 驱动的内存映射（mmap）"></a>2.3 Binder 驱动的内存映射（mmap）</h2><p>Binder 驱动的一次拷贝能力来源于其巧妙的 mmap 设计。在 <code>ProcessState</code> 初始化时，会调用 <code>open(&quot;/dev/binder&quot;)</code> 然后执行 <code>mmap</code> 映射一块内核缓冲区：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// frameworks/native/libs/binder/ProcessState.cpp</span></span><br><span class="line">ProcessState::<span class="built_in">ProcessState</span>(<span class="type">const</span> <span class="type">char</span>* driver)</span><br><span class="line">    : <span class="built_in">mDriverFD</span>(<span class="built_in">open_driver</span>(driver))</span><br><span class="line">    , <span class="built_in">mVMStart</span>(MAP_FAILED)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// mmap 参数：大小 1MB - 8KB（约 1016KB）</span></span><br><span class="line">    mVMStart = <span class="built_in">mmap</span>(<span class="literal">nullptr</span>, BINDER_VM_SIZE, PROT_READ,</span><br><span class="line">                    MAP_PRIVATE | MAP_NORESERVE, mDriverFD, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Binder 驱动的 mmap 实现：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// kernel/drivers/staging/android/binder.c (旧版，新版在 drivers/android/)</span></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">binder_mmap</span><span class="params">(<span class="keyword">struct</span> file *filp, <span class="keyword">struct</span> vm_area_struct *vma)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_proc</span> *<span class="title">proc</span> =</span> filp-&gt;private_data;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 1. 在内核空间分配一块连续的虚拟内存</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">vm_struct</span> *<span class="title">area</span>;</span></span><br><span class="line">    area = get_vm_area(vma-&gt;vm_end - vma-&gt;vm_start, VM_IOREMAP);</span><br><span class="line">    proc-&gt;buffer = area-&gt;addr;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. 计算用户空间与内核空间的偏移</span></span><br><span class="line">    <span class="comment">//    这样内核可以通过加上偏移直接访问用户空间的地址</span></span><br><span class="line">    proc-&gt;user_buffer_offset = vma-&gt;vm_start - (<span class="type">uintptr_t</span>)proc-&gt;buffer;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 3. 分配物理页面并建立映射</span></span><br><span class="line">    proc-&gt;pages = kzalloc(<span class="keyword">sizeof</span>(<span class="keyword">struct</span> page*) * ...);</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; num_pages; i++) &#123;</span><br><span class="line">        proc-&gt;pages[i] = alloc_page(GFP_KERNEL | __GFP_HIGHMEM | __GFP_ZERO);</span><br><span class="line">        <span class="comment">// 映射到用户空间</span></span><br><span class="line">        vm_insert_page(vma, vma-&gt;vm_start + i * PAGE_SIZE, proc-&gt;pages[i]);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>关键设计：内核空间和用户空间映射到<strong>同一块物理内存</strong>。</p>
+<ul>
+<li>用户空间通过 mmap 返回的虚拟地址访问。</li>
+<li>内核空间通过 <code>proc-&gt;buffer</code> 访问。</li>
+<li>两者共享相同的物理页面，使 Binder 实现了一次拷贝。</li>
+</ul>
+<p>数据拷贝的实际流程：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Client (用户空间)                    Binder 驱动 (内核)</span><br><span class="line">     │                                    │</span><br><span class="line">     │  ioctl(BINDER_WRITE_READ)          │</span><br><span class="line">     ├────────────────────────────────────►│</span><br><span class="line">     │  copy_from_user()                  │</span><br><span class="line">     │  (数据从 Client 用户空间拷贝到        │</span><br><span class="line">     │   内核缓冲区)                        │</span><br><span class="line">     │                                    │</span><br><span class="line">     │          === Server 侧 ====         │</span><br><span class="line">     │                                    │ 数据已在内核缓冲区</span><br><span class="line">     │                                    │ == Server 用户空间的 mmap 区域</span><br><span class="line">     │                                    │ Server 直接读取，无需再次 copy_to_user</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-4-Binder-的身份验证机制"><a href="#2-4-Binder-的身份验证机制" class="headerlink" title="2.4 Binder 的身份验证机制"></a>2.4 Binder 的身份验证机制</h2><p>Binder 在每次跨进程通信中自动附加调用者的 UID 和 PID：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// frameworks/native/libs/binder/IPCThreadState.cpp</span></span><br><span class="line"><span class="function"><span class="type">status_t</span> <span class="title">IPCThreadState::transact</span><span class="params">(<span class="type">int32_t</span> handle,</span></span></span><br><span class="line"><span class="params"><span class="function">                                   <span class="type">uint32_t</span> code,</span></span></span><br><span class="line"><span class="params"><span class="function">                                   <span class="type">const</span> Parcel&amp; data,</span></span></span><br><span class="line"><span class="params"><span class="function">                                   Parcel* reply,</span></span></span><br><span class="line"><span class="params"><span class="function">                                   <span class="type">uint32_t</span> flags)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// 写事务数据到 Binder 驱动</span></span><br><span class="line">    err = <span class="built_in">writeTransactionData</span>(BC_TRANSACTION, flags, handle, code, data);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 等待回复（同步调用）</span></span><br><span class="line">    err = <span class="built_in">waitForResponse</span>(reply);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Binder 驱动自动记录调用者的 UID/PID</span></span><br><span class="line"><span class="comment">// 在驱动层 binder_transaction() 中：</span></span><br><span class="line"><span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">binder_transaction</span><span class="params">(<span class="keyword">struct</span> binder_proc *proc,</span></span></span><br><span class="line"><span class="params"><span class="function">                               <span class="keyword">struct</span> binder_thread *thread,</span></span></span><br><span class="line"><span class="params"><span class="function">                               <span class="keyword">struct</span> binder_transaction_data *tr,</span></span></span><br><span class="line"><span class="params"><span class="function">                               <span class="type">int</span> reply)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    t-&gt;from_euid = <span class="built_in">task_euid</span>(proc-&gt;tsk);  <span class="comment">// 记录调用者的 effective UID</span></span><br><span class="line">    t-&gt;from_pid = proc-&gt;pid;                <span class="comment">// 记录调用者的 PID</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 服务端可以通过以下方法获取调用者身份：</span></span><br><span class="line"><span class="comment">// Binder.getCallingUid() - 获取调用方 UID</span></span><br><span class="line"><span class="comment">// Binder.getCallingPid() - 获取调用方 PID</span></span><br></pre></td></tr></table></figure>
+
+<p>这个机制使得服务端可以安全地进行权限检查：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">checkPermission</span><span class="params">(String permission, <span class="type">int</span> pid, <span class="type">int</span> uid)</span> &#123;</span><br><span class="line">    <span class="comment">// Binder.getCallingUid() 是驱动保证的真实 UID，无法伪造</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">int</span> <span class="variable">callingUid</span> <span class="operator">=</span> Binder.getCallingUid();</span><br><span class="line">    <span class="keyword">return</span> ActivityManager.checkComponentPermission(permission, callingUid, ...);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-5-Binder-的死亡通知机制"><a href="#2-5-Binder-的死亡通知机制" class="headerlink" title="2.5 Binder 的死亡通知机制"></a>2.5 Binder 的死亡通知机制</h2><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 客户端注册死亡通知</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">DeathRecipient</span> : <span class="keyword">public</span> IBinder::DeathRecipient &#123;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">binderDied</span><span class="params">(<span class="type">const</span> wp&lt;IBinder&gt;&amp; who)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 服务端 Binder 进程死亡，执行清理</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">sp&lt;IBinder&gt; binder = sm-&gt;<span class="built_in">getService</span>(<span class="built_in">String16</span>(<span class="string">&quot;myservice&quot;</span>));</span><br><span class="line">binder-&gt;<span class="built_in">linkToDeath</span>(<span class="keyword">new</span> <span class="built_in">DeathRecipient</span>());</span><br><span class="line"></span><br><span class="line"><span class="comment">// 驱动层实现（简化）：</span></span><br><span class="line"><span class="comment">// 当 Binder 实体所在进程死亡时，驱动遍历该实体的引用列表</span></span><br><span class="line"><span class="comment">// 向所有注册了死亡通知的进程发送 BR_DEAD_BINDER 命令</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="三、Unix-Domain-Socket"><a href="#三、Unix-Domain-Socket" class="headerlink" title="三、Unix Domain Socket"></a>三、Unix Domain Socket</h1><h2 id="3-1-在-Android-中的应用"><a href="#3-1-在-Android-中的应用" class="headerlink" title="3.1 在 Android 中的应用"></a>3.1 在 Android 中的应用</h2><p>Unix Domain Socket（UDS）是 Android 中第二重要的 IPC 机制，用于以下关键场景：</p>
+<ul>
+<li><strong>init -&gt; Zygote</strong>：init 进程通过 socket 向 Zygote 发送 fork 请求</li>
+<li><strong>adbd</strong>：ADB 守护进程使用 socket 与 system_server 和应用通信</li>
+<li><strong>installd</strong>：PKMS 通过 socket 与 installd 守护进程通信执行 dexopt、数据目录创建等</li>
+<li><strong>netd</strong>：网络管理守护进程</li>
+<li><strong>keystore</strong>：密钥管理守护进程</li>
+<li><strong>lmkd</strong>：低内存守护进程通过 socket 与 AMS 通信</li>
+<li><strong>tombstoned</strong>：崩溃 dump 采集守护进程</li>
+<li><strong>vold</strong>：卷管理守护进程</li>
+</ul>
+<h2 id="3-2-Zygote-的-Socket-通信"><a href="#3-2-Zygote-的-Socket-通信" class="headerlink" title="3.2 Zygote 的 Socket 通信"></a>3.2 Zygote 的 Socket 通信</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/java/android/os/ZygoteProcess.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Process.ProcessStartResult <span class="title function_">start</span><span class="params">(...)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> startViaZygote(processClass, niceName, uid, gid, gids,</span><br><span class="line">            runtimeFlags, mountExternal, targetSdkVersion, seInfo,</span><br><span class="line">            abi, instructionSet, appDataDir, invokeWith,</span><br><span class="line">            packageName, zygoteArgs);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> Process.ProcessStartResult <span class="title function_">zygoteSendArgsAndGetResult</span><span class="params">(</span></span><br><span class="line"><span class="params">        ZygoteState zygoteState, ArrayList&lt;String&gt; args)</span></span><br><span class="line">        <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">    <span class="comment">// 通过 LocalSocket 发送参数</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">BufferedWriter</span> <span class="variable">writer</span> <span class="operator">=</span> zygoteState.writer;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">DataInputStream</span> <span class="variable">inputStream</span> <span class="operator">=</span> zygoteState.inputStream;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 协议格式：行分隔的文本</span></span><br><span class="line">    writer.write(Integer.toString(args.size()));</span><br><span class="line">    writer.newLine();</span><br><span class="line">    <span class="keyword">for</span> (String s : args) &#123;</span><br><span class="line">        writer.write(s);</span><br><span class="line">        writer.newLine();</span><br><span class="line">    &#125;</span><br><span class="line">    writer.flush();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 等待 Zygote 返回结果（新进程的 PID）</span></span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Zygote 的 socket 初始化在 <code>frameworks/base/core/java/com/android/internal/os/ZygoteInit.java</code>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// ZygoteInit.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String argv[])</span> &#123;</span><br><span class="line">    <span class="type">ZygoteServer</span> <span class="variable">zygoteServer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ZygoteServer</span>();</span><br><span class="line">    <span class="comment">// 注册 socket（通常是 /dev/socket/zygote）</span></span><br><span class="line">    zygoteServer.registerServerSocketFromEnv(socketName);</span><br><span class="line">    <span class="comment">// 进入 accept 循环</span></span><br><span class="line">    <span class="type">Runnable</span> <span class="variable">caller</span> <span class="operator">=</span> zygoteServer.runSelectLoop(abiList);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-3-installd-的-Socket-通信"><a href="#3-3-installd-的-Socket-通信" class="headerlink" title="3.3 installd 的 Socket 通信"></a>3.3 installd 的 Socket 通信</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/services/core/java/com/android/server/pm/Installer.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Installer</span> <span class="keyword">extends</span> <span class="title class_">SystemService</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> InstallerConnection mInstaller;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">long</span> <span class="title function_">createAppData</span><span class="params">(String uuid, String packageName, <span class="type">int</span> userId,</span></span><br><span class="line"><span class="params">            <span class="type">int</span> flags, <span class="type">int</span> appId, String seInfo, <span class="type">int</span> targetSdkVersion)</span> &#123;</span><br><span class="line">        <span class="comment">// 通过 Unix Domain Socket 向 installd 发送指令</span></span><br><span class="line">        <span class="keyword">return</span> mInstaller.createAppData(uuid, packageName, userId, flags,</span><br><span class="line">                appId, seInfo, targetSdkVersion);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>installd 守护进程路径：<code>frameworks/native/cmds/installd/</code></p>
+<p>installd 的 socket 通信使用 Binder 风格的命令码 + Parcel 数据格式：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">InstallerConnection  ──── socket ────►  installd 守护进程</span><br><span class="line">   (Java)                /dev/socket/    (Native C++)</span><br><span class="line">                         installd</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-4-Unix-Domain-Socket-vs-TCP-Socket-对比"><a href="#3-4-Unix-Domain-Socket-vs-TCP-Socket-对比" class="headerlink" title="3.4 Unix Domain Socket vs TCP Socket 对比"></a>3.4 Unix Domain Socket vs TCP Socket 对比</h2><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>Unix Domain Socket</th>
+<th>TCP Socket</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>地址</td>
+<td>文件系统路径</td>
+<td>IP:Port</td>
+</tr>
+<tr>
+<td>数据拷贝</td>
+<td>2 次</td>
+<td>2 次 + 网络协议栈</td>
+</tr>
+<tr>
+<td>延迟</td>
+<td>~200us</td>
+<td>~1ms (localhost)</td>
+</tr>
+<tr>
+<td>吞吐</td>
+<td>~80MB&#x2F;s</td>
+<td>~50MB&#x2F;s (localhost)</td>
+</tr>
+<tr>
+<td>安全性</td>
+<td>文件系统权限 + UID&#x2F;GID</td>
+<td>IP + Port，需要额外认证</td>
+</tr>
+<tr>
+<td>作用域</td>
+<td>单机</td>
+<td>跨网络</td>
+</tr>
+<tr>
+<td>sendmsg&#x2F;recvmsg 传 fd</td>
+<td>支持 (SCM_RIGHTS)</td>
+<td>不支持</td>
+</tr>
+<tr>
+<td>sendmsg&#x2F;recvmsg 传凭证</td>
+<td>支持 (SCM_CREDENTIALS)</td>
+<td>不支持</td>
+</tr>
+</tbody></table>
+<p>UDS 的两个关键优势：</p>
+<ol>
+<li><strong>fd 传递</strong>：通过 <code>SCM_RIGHTS</code> 控制消息可以在进程间传递文件描述符。这在 Android 中广泛使用（如传递 ashmem fd）。</li>
+<li><strong>对端凭证</strong>：通过 <code>SO_PEERCRED</code> 可以获取对端进程的 UID&#x2F;GID&#x2F;PID，实现基本的身份验证。</li>
+</ol>
+<h2 id="3-5-Zygote-为什么用-Socket-而不是-Binder？"><a href="#3-5-Zygote-为什么用-Socket-而不是-Binder？" class="headerlink" title="3.5 Zygote 为什么用 Socket 而不是 Binder？"></a>3.5 Zygote 为什么用 Socket 而不是 Binder？</h2><p>Zygote 的特殊性在于它 fork 子进程。fork 会复制父进程的文件描述符表。如果 Zygote 已经打开 <code>/dev/binder</code> 并通过 Binder 通信，那么 fork 出的每个子进程都继承了这些 Binder 相关的 fd 和 binder_proc 状态。</p>
+<p>具体原因：</p>
+<ol>
+<li><strong>fd 清理</strong>：Zygote fork 子进程后，子进程通过 exec 执行具体的 Android 应用。在 exec 之前，Zygote 会关闭所有不需要的 fd（通过 <code>Zygote.closeDescriptors()</code>）。Socket 的 fd 可以简单地关闭，但 Binder 的 fd 涉及驱动状态（binder_proc、binder_thread、todo 队列），清理复杂。</li>
+<li><strong>Binder 身份冲突</strong>：fork 后的子进程继承了 Zygote 的 Binder 身份（binder_proc），如果子进程也在同一 Binder 上下文中通信，会导致 identity 混乱。</li>
+<li><strong>通信模型简单</strong>：Zygote 只需要”请求-响应”模式（”请 fork 一个进程，参数是…”），不需要 Binder 的面向对象 RPC 能力。</li>
+<li><strong>启动时序</strong>：Zygote 在 init 阶段启动，此时 Binder 的 ServiceManager 可能尚未就绪。Socket 不依赖任何其他服务，可以在最早阶段初始化。</li>
+</ol>
+<h1 id="四、共享内存机制"><a href="#四、共享内存机制" class="headerlink" title="四、共享内存机制"></a>四、共享内存机制</h1><h2 id="4-1-ashmem（Android-Shared-Memory）"><a href="#4-1-ashmem（Android-Shared-Memory）" class="headerlink" title="4.1 ashmem（Android Shared Memory）"></a>4.1 ashmem（Android Shared Memory）</h2><p>ashmem 是 Android 对 Linux 共享内存的扩展，增加了引用计数和 pin&#x2F;unpin 机制：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// system/core/libcutils/ashmem-dev.cpp</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">ashmem_create_region</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *name, <span class="type">size_t</span> size)</span> &#123;</span><br><span class="line">    <span class="type">int</span> fd = open(<span class="string">&quot;/dev/ashmem&quot;</span>, O_RDWR);</span><br><span class="line">    ioctl(fd, ASHMEM_SET_NAME, name);</span><br><span class="line">    ioctl(fd, ASHMEM_SET_SIZE, size);</span><br><span class="line">    <span class="keyword">return</span> fd;  <span class="comment">// 返回 fd，可以通过 Binder 传递</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">ashmem_set_prot_region</span><span class="params">(<span class="type">int</span> fd, <span class="type">int</span> prot)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> ioctl(fd, ASHMEM_SET_PROT_MASK, prot);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// pin/unpin 机制</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">ashmem_pin_region</span><span class="params">(<span class="type">int</span> fd, <span class="type">size_t</span> offset, <span class="type">size_t</span> len)</span> &#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">ashmem_pin</span> <span class="title">pin</span> =</span> &#123; offset, len &#125;;</span><br><span class="line">    <span class="keyword">return</span> ioctl(fd, ASHMEM_PIN, &amp;pin);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">ashmem_unpin_region</span><span class="params">(<span class="type">int</span> fd, <span class="type">size_t</span> offset, <span class="type">size_t</span> len)</span> &#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">ashmem_pin</span> <span class="title">pin</span> =</span> &#123; offset, len &#125;;</span><br><span class="line">    <span class="keyword">return</span> ioctl(fd, ASHMEM_UNPIN, &amp;pin);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>应用场景：</p>
+<ul>
+<li><strong>SurfaceFlinger</strong>：应用通过 <code>GraphicBuffer</code>（底层使用 ashmem）将渲染的帧传递给 SurfaceFlinger。</li>
+<li><strong>AudioFlinger</strong>：音频数据缓冲区。</li>
+<li><strong>ContentProvider 的 Cursor window</strong>：通过 ashmem 在 Provider 进程和 Client 进程间共享查询结果。</li>
+</ul>
+<h3 id="4-1-1-ashmem-的-pin-unpin-机制详解"><a href="#4-1-1-ashmem-的-pin-unpin-机制详解" class="headerlink" title="4.1.1 ashmem 的 pin&#x2F;unpin 机制详解"></a>4.1.1 ashmem 的 pin&#x2F;unpin 机制详解</h3><p>这是 ashmem 与标准 POSIX 共享内存最本质的区别。当系统内存紧张时，内核的 LMK 或内存回收机制可以回收 unpin 的 ashmem 页：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// drivers/staging/android/ashmem.c</span></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">ashmem_pin</span><span class="params">(<span class="keyword">struct</span> ashmem_area *asma, <span class="type">size_t</span> pgstart, <span class="type">size_t</span> pgend)</span> &#123;</span><br><span class="line">    <span class="comment">// 将指定范围设置为不可回收（pinned）</span></span><br><span class="line">    <span class="comment">// 对应页面的 PG_unevictable 标志被设置</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">ashmem_unpin</span><span class="params">(<span class="keyword">struct</span> ashmem_area *asma, <span class="type">size_t</span> pgstart, <span class="type">size_t</span> pgend)</span> &#123;</span><br><span class="line">    <span class="comment">// 将指定范围设置为可回收（unpinned）</span></span><br><span class="line">    <span class="comment">// 对应页面的 PG_unevictable 标志被清除</span></span><br><span class="line">    <span class="comment">// 内存紧张时这些页面可以被回收</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在 SurfaceFlinger 的 BufferQueue 中：</p>
+<ul>
+<li>当一帧被渲染完成并传递给 SurfaceFlinger 后，该 buffer 被 unpin。</li>
+<li>如果 SurfaceFlinger 还需要该 buffer（如作为下一帧的参考），它会被重新 pin。</li>
+<li>当系统内存紧张时，unpin 的 buffer 可以被内核回收，释放物理内存。</li>
+<li>如果没有 pin&#x2F;unpin 机制，所有已分配的 GraphicBuffer 都会一直占用物理内存，即使它们已经不再被需要。</li>
+</ul>
+<h2 id="4-2-ION-dma-buf"><a href="#4-2-ION-dma-buf" class="headerlink" title="4.2 ION &#x2F; dma-buf"></a>4.2 ION &#x2F; dma-buf</h2><p>ION 是 Android 为多媒体场景设计的内存分配器，dma-buf 是 Linux 标准的 DMA 缓冲区共享机制：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Camera HAL  -&gt;  ION buffer  -&gt;  Gralloc  -&gt;  SurfaceFlinger</span><br><span class="line">                                      ↑</span><br><span class="line">                                   dma-buf fd 跨进程传递</span><br></pre></td></tr></table></figure>
+
+<p>Android 11+ 逐步用标准的 Linux dma-buf 取代 ION。AOSP 路径：<code>drivers/dma-buf/</code></p>
+<h3 id="4-2-1-ION-与-dma-buf-的区别"><a href="#4-2-1-ION-与-dma-buf-的区别" class="headerlink" title="4.2.1 ION 与 dma-buf 的区别"></a>4.2.1 ION 与 dma-buf 的区别</h3><p>ION 是 Android 特有的内存管理器（在 <code>drivers/staging/android/ion/</code>），它将内存按 heap 类型分类：</p>
+<ul>
+<li><code>ION_HEAP_TYPE_SYSTEM</code>：通用系统内存</li>
+<li><code>ION_HEAP_TYPE_SYSTEM_CONTIG</code>：连续物理内存</li>
+<li><code>ION_HEAP_TYPE_CARVEOUT</code>：预留的专用内存</li>
+<li><code>ION_HEAP_TYPE_DMA</code>：DMA 可访问内存</li>
+</ul>
+<p>dma-buf 是 Linux 内核标准框架（3.3+），用于在不同设备驱动之间共享 DMA 缓冲区。Android 的迁移路径是将 ION 的 heap 功能逐步迁移到标准的 dma-buf heaps 框架。</p>
+<h2 id="4-3-共享内存协同-Binder-的优势"><a href="#4-3-共享内存协同-Binder-的优势" class="headerlink" title="4.3 共享内存协同 Binder 的优势"></a>4.3 共享内存协同 Binder 的优势</h2><p>共享内存的典型使用模式是：</p>
+<ol>
+<li>使用 ashmem 创建共享内存，获取 fd</li>
+<li>通过 Binder 将 fd 传递给对端进程</li>
+<li>对端进程通过 fd 做 mmap，直接访问同一块物理内存</li>
+<li>数据读写不再经过 Binder 通道，零拷贝</li>
+</ol>
+<p>这种模式结合了 Binder 的安全性和共享内存的高效性。</p>
+<p>具体示例（ContentProvider 的 Cursor window）：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/jni/android_database_CursorWindow.cpp</span></span><br><span class="line"><span class="function"><span class="type">static</span> jlong <span class="title">nativeCreate</span><span class="params">(JNIEnv* env, jclass clazz,</span></span></span><br><span class="line"><span class="params"><span class="function">        jstring nameObj, jint cursorWindowSize)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 创建 ashmem 共享内存</span></span><br><span class="line">    <span class="type">int</span> ashmemFd = <span class="built_in">ashmem_create_region</span>(name, cursorWindowSize);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. mmap 到当前进程</span></span><br><span class="line">    <span class="type">void</span>* data = <span class="built_in">mmap</span>(<span class="literal">NULL</span>, cursorWindowSize, PROT_READ | PROT_WRITE,</span><br><span class="line">                      MAP_SHARED, ashmemFd, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 3. 通过 Binder 将 fd 传递给调用方进程</span></span><br><span class="line">    <span class="comment">//    （在 CursorWindow 的 native 方法中）</span></span><br><span class="line">    CursorWindow* window = <span class="keyword">new</span> <span class="built_in">CursorWindow</span>();</span><br><span class="line">    window-&gt;mAshmemFd = ashmemFd;  <span class="comment">// 此 fd 将被打包到 Binder 事务中</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">reinterpret_cast</span>&lt;jlong&gt;(window);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="五、管道与信号（辅助-IPC）"><a href="#五、管道与信号（辅助-IPC）" class="headerlink" title="五、管道与信号（辅助 IPC）"></a>五、管道与信号（辅助 IPC）</h1><h2 id="5-1-管道（pipe）"><a href="#5-1-管道（pipe）" class="headerlink" title="5.1 管道（pipe）"></a>5.1 管道（pipe）</h2><p>管道在 Android 中的核心应用：</p>
+<p><strong>Looper 的唤醒机制</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// system/core/libutils/Looper.cpp</span></span><br><span class="line">Looper::<span class="built_in">Looper</span>(<span class="type">bool</span> allowNonCallbacks) &#123;</span><br><span class="line">    <span class="comment">// 创建 eventfd 或 pipe 用于唤醒</span></span><br><span class="line">    <span class="comment">// eventfd 是 Linux 的轻量级替代方案（2.6.22+）</span></span><br><span class="line">    mWakeEventFd.<span class="built_in">reset</span>(<span class="built_in">eventfd</span>(<span class="number">0</span>, EFD_NONBLOCK | EFD_CLOEXEC));</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 将唤醒 fd 加入 epoll 监听</span></span><br><span class="line">    <span class="built_in">rebuildEpollLocked</span>();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">Looper::wake</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="type">uint64_t</span> inc = <span class="number">1</span>;</span><br><span class="line">    <span class="built_in">write</span>(mWakeEventFd.<span class="built_in">get</span>(), &amp;inc, <span class="built_in">sizeof</span>(<span class="type">uint64_t</span>));  <span class="comment">// 写入一个值唤醒</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>Zygote 的子进程同步</strong>：USAP（Unspecialized App Process）Pool 使用 pipe 来管理预 fork 的进程池，通过 pipe 的阻塞读实现进程的同步等待。</p>
+<p><strong>Looper 为什么用 eventfd 而非 pipe？</strong></p>
+<ul>
+<li>eventfd 只需要一个 fd（管道需要两个）</li>
+<li>eventfd 更轻量（内核中只有 16 字节的结构体，管道需要至少一页的环形缓冲区）</li>
+<li>eventfd 语义更清晰（计数器型，而非流型）</li>
+</ul>
+<h2 id="5-2-信号（Signal）"><a href="#5-2-信号（Signal）" class="headerlink" title="5.2 信号（Signal）"></a>5.2 信号（Signal）</h2><p>Android 中信号的使用场景：</p>
+<ul>
+<li><strong>SIGCHLD</strong>：Zygote 监控子进程退出。当应用进程异常退出时，Zygote 收到 SIGCHLD，清理子进程资源。</li>
+<li><strong>SIGQUIT</strong>（kill -3）：ANR 时触发线程 dump。AMS 检测到 ANR 后，向目标进程发送 SIGQUIT，ART 的信号处理器捕获后打印所有线程的堆栈到 <code>/data/anr/traces.txt</code>。</li>
+<li><strong>SIGSTOP &#x2F; SIGCONT</strong>：进程的暂停和恢复。AMS 可以使用这些信号来暂停后台进程（Android 实际上不使用 SIGSTOP，而是使用 cgroup 的 freezer）。</li>
+<li><strong>SIGPIPE</strong>：管道&#x2F;Socket 对端关闭时的默认行为。Android 应用通常忽略 SIGPIPE，改用 EPIPE 错误处理。</li>
+<li><strong>SIGUSR1</strong>：用于 ART GC 的某些场景，如 hprof 堆转储触发。</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/jni/android_os_Process.cpp</span></span><br><span class="line"><span class="comment">// 向目标进程发送 SIGQUIT 触发 ANR trace</span></span><br><span class="line"><span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">android_os_Process_sendSignal</span><span class="params">(<span class="type">int</span> pid, <span class="type">int</span> sig)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">kill</span>(pid, sig);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="六、System-V-IPC-与-POSIX-IPC-在-Android-中的状态"><a href="#六、System-V-IPC-与-POSIX-IPC-在-Android-中的状态" class="headerlink" title="六、System V IPC 与 POSIX IPC 在 Android 中的状态"></a>六、System V IPC 与 POSIX IPC 在 Android 中的状态</h1><p>Android 基本上不使用 SysV IPC（<code>shmget</code>、<code>msgget</code>、<code>semget</code>）和 POSIX 消息队列（<code>mq_open</code>）。原因：</p>
+<ol>
+<li><p><strong>安全模型不匹配</strong>：SysV IPC 使用全局 key（<code>IPC_PRIVATE</code> 或 <code>ftok()</code> 生成的 key），容易冲突和被恶意猜测。虽然 Android 通过 <code>CONFIG_SYSVIPC</code> 内核选项默认禁用 SysV IPC。</p>
+</li>
+<li><p><strong>生命周期管理困难</strong>：SysV IPC 对象是全局的、持久的（需要通过 <code>ipcrm</code> 或程序显式删除），进程崩溃后可能残留。Binder 有自动引用计数和死亡通知。</p>
+</li>
+<li><p><strong>缺乏身份传递</strong>：SysV IPC 不传递调用者 UID&#x2F;PID，服务端无法做权限检查。</p>
+</li>
+<li><p><strong>资源限制</strong>：SysV IPC 有全局数量限制（<code>/proc/sys/kernel/shmmni</code>、<code>/proc/sys/kernel/msgmni</code>），在大规模 Android 系统上可能不够。</p>
+</li>
+</ol>
+<p>Android 内核编译配置中 <code>CONFIG_SYSVIPC</code> 通常是关闭的，这意味着 <code>shmget()</code> &#x2F; <code>msgget()</code> &#x2F; <code>semget()</code> 调用会失败。</p>
+<h1 id="七、各-IPC-机制的性能对比"><a href="#七、各-IPC-机制的性能对比" class="headerlink" title="七、各 IPC 机制的性能对比"></a>七、各 IPC 机制的性能对比</h1><h2 id="7-1-基准对比"><a href="#7-1-基准对比" class="headerlink" title="7.1 基准对比"></a>7.1 基准对比</h2><table>
+<thead>
+<tr>
+<th>IPC 机制</th>
+<th>延迟 (小数据)</th>
+<th>吞吐 (大数据)</th>
+<th>内存开销</th>
+<th>安全模型</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Binder</td>
+<td>~100us</td>
+<td>~50MB&#x2F;s</td>
+<td>低（一次拷贝）</td>
+<td>能力+UID</td>
+</tr>
+<tr>
+<td>Unix Domain Socket</td>
+<td>~200us</td>
+<td>~80MB&#x2F;s</td>
+<td>高（两次拷贝）</td>
+<td>UID&#x2F;GID</td>
+</tr>
+<tr>
+<td>ashmem (mmap)</td>
+<td>初始 ~1ms</td>
+<td>~无限（物理内存带宽）</td>
+<td>最低</td>
+<td>fd 传递</td>
+</tr>
+<tr>
+<td>SysV 消息队列</td>
+<td>~150us</td>
+<td>~10MB&#x2F;s</td>
+<td>中</td>
+<td>弱</td>
+</tr>
+<tr>
+<td>pipe</td>
+<td>~50us</td>
+<td>~200MB&#x2F;s (pipe buffer)</td>
+<td>低</td>
+<td>fd 传递</td>
+</tr>
+</tbody></table>
+<p>延迟数据仅供参考（取决于内核版本和硬件）。Binder 的综合性能在小到中等数据量场景（大多数系统服务调用）下最优，这也是 Android 选择它的重要原因。</p>
+<h2 id="7-2-Binder-的性能瓶颈与优化"><a href="#7-2-Binder-的性能瓶颈与优化" class="headerlink" title="7.2 Binder 的性能瓶颈与优化"></a>7.2 Binder 的性能瓶颈与优化</h2><p>Binder 的事务大小限制为 1MB - 8KB（约 1016KB），超过此大小会导致 <code>FAILED_TRANSACTION</code> 错误。这是因为 Binder 驱动为每个进程分配的 mmap 缓冲区大小为 (1MB - 8KB)。</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// frameworks/native/libs/binder/ProcessState.cpp</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> BINDER_VM_SIZE ((1 * 1024 * 1024) - sysconf(_SC_PAGE_SIZE) * 2)</span></span><br><span class="line"><span class="comment">// 默认：1MB - 8KB * 2 = 1008KB</span></span><br></pre></td></tr></table></figure>
+
+<p>对于大数据传输场景，应该使用 Binder + ashmem 的组合：</p>
+<ul>
+<li>Binder 传递控制命令和 ashmem fd</li>
+<li>ashmem 承载实际数据</li>
+</ul>
+<h1 id="八、进程间通信的-SELinux-安全控制"><a href="#八、进程间通信的-SELinux-安全控制" class="headerlink" title="八、进程间通信的 SELinux 安全控制"></a>八、进程间通信的 SELinux 安全控制</h1><p>Android 使用 SELinux 对所有 IPC 机制施加安全限制：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># system/sepolicy/public/</span><br><span class="line"># Binder 调用限制</span><br><span class="line">neverallow &#123; appdomain &#125; system_server:binder &#123; call transfer &#125;;</span><br><span class="line"></span><br><span class="line"># Socket 创建限制</span><br><span class="line">neverallow &#123; appdomain &#125; self:unix_dgram_socket create;</span><br><span class="line"></span><br><span class="line"># ashmem 访问限制</span><br><span class="line">allow appdomain ashmem_device:chr_file &#123; read write open ioctl &#125;;</span><br></pre></td></tr></table></figure>
+
+<p>SELinux 在 Binder 上的特殊规则：</p>
+<ul>
+<li><code>binder &#123; call &#125;</code>：允许向某进程发起 Binder 调用</li>
+<li><code>binder &#123; transfer &#125;</code>：允许将一个 Binder 对象引用传递给另一个进程</li>
+<li><code>binder &#123; impersonate &#125;</code>：允许以另一个进程的身份执行 Binder 调用</li>
+</ul>
+<p>这些 SELinux 策略在 <code>system/sepolicy/</code> 中定义，通过 MAC（Mandatory Access Control）机制确保即使应用获得了 Binder 引用，也必须满足 SELinux 策略才能成功通信。</p>
+<h1 id="九、核心面试题"><a href="#九、核心面试题" class="headerlink" title="九、核心面试题"></a>九、核心面试题</h1><p><strong>Q1：为什么 Android 不用传统 Linux 的 SysV &#x2F; POSIX IPC，而要单独设计 Binder？</strong></p>
+<p>主要有三点：(1) <strong>安全</strong>：Binder 自动传递调用者 UID&#x2F;PID，服务端可以通过 <code>Binder.getCallingUid()</code> 做权限检查；SysV IPC 依赖全局 key，容易冲突也容易被恶意进程猜测和利用。(2) <strong>性能</strong>：Binder 的一次拷贝优于多数传统 IPC 的两次拷贝。(3) <strong>生命周期管理</strong>：Binder 通过引用计数和死亡通知自动管理跨进程对象生命周期，传统 IPC 需要额外机制实现。</p>
+<p><strong>Q2：Zygote 为什么使用 Socket 而不是 Binder 来通信？</strong></p>
+<p>Zygote 的特殊性在于它 fork 子进程。fork 会复制父进程的文件描述符表。如果 Zygote 已经打开 <code>/dev/binder</code> 并通过 Binder 通信，那么 fork 出的每个子进程都继承了这些 Binder 相关的 fd 和 binder_proc 状态。这会导致混乱——子进程继承了 Zygote 的 Binder 身份。实际上，在 Zygote fork 和 exec 新进程之前，会关闭大部分不需要的 fd。Socket 在此场景下更简单：对端明确（只有 system_server 中的 ZygoteProcess），通信模型简单（发送 fork 请求，等待返回 PID），不需要复杂的能力模型。</p>
+<p><strong>Q3：ashmem 的 pin&#x2F;unpin 机制有什么作用？和普通的 POSIX shm（如 shmget&#x2F;shm_open）有什么区别？</strong></p>
+<p>ashmem 的 pin&#x2F;unpin 是 Android 特有的内存管理功能。当系统内存紧张时，内核可以”回收”unpin 的 ashmem 页面（将其内容丢弃），这在 SurfaceFlinger 的 BufferQueue 中非常有用——当 Buffer 已经被消费且不再需要时，可以 unpin 让内核回收内存。POSIX 标准 shm 缺乏这种 fine-grained 控制，分配后会一直占用物理内存直到进程退出或显式释放。</p>
+<p>其他区别：</p>
+<ul>
+<li>ashmem 通过引用计数确定何时真正释放物理内存（当所有 mmap 和 fd 引用都关闭时才释放）。</li>
+<li>ashmem 的内存可以在 pin 和 unpin 之间动态切换，而 POSIX shm 是静态的。</li>
+<li>ashmem 支持更大的区域（受限于虚拟内存），而 System V shm 受系统全局限制。</li>
+</ul>
+<p><strong>Q4：Binder 的 mmap 缓冲区为什么是 1MB - 8KB？如果超过这个限制怎么办？</strong></p>
+<p>Binder 驱动为每个进程分配一个固定的 mmap 缓冲区（默认约 1016KB）。这个值是在 <code>ProcessState</code> 初始化时硬编码的。原因：</p>
+<ul>
+<li>Binder 最初设计用于系统服务调用，传输的数据量通常很小（几十到几百字节）。</li>
+<li>内核空间不能无限分配内存给用户空间。</li>
+<li>1MB 是足够的大小，同时避免单个进程占用过多内核资源。</li>
+</ul>
+<p>超过限制的处理方案：</p>
+<ol>
+<li>减少单次传输的数据量（分批处理）。</li>
+<li>使用 Binder + ashmem 组合：Binder 传递 ashmem fd，实际数据通过 ashmem 共享。</li>
+<li>对于大文件&#x2F;大块数据，使用 ContentProvider 的 openFile 接口（底层通过 pipe 或 fd 传递）。</li>
+<li>在设备出厂时，可以通过修改 BINDER_VM_SIZE 宏来增大缓冲区（需要重新编译 Binder 驱动和 libbinder）。</li>
+</ol>
+<p><strong>Q5：Unix Domain Socket 如何实现文件描述符传递？在 Android 中哪些场景用到了这个特性？</strong></p>
+<p>Unix Domain Socket 通过 <code>SCM_RIGHTS</code> 辅助消息实现 fd 传递：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 发送端：将 fd 附着在消息上发送</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">msghdr</span> <span class="title">msg</span> =</span> &#123;<span class="number">0</span>&#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">cmsghdr</span> *<span class="title">cmsg</span>;</span></span><br><span class="line"><span class="type">char</span> buf[CMSG_SPACE(<span class="keyword">sizeof</span>(<span class="type">int</span>))];</span><br><span class="line"></span><br><span class="line">cmsg = CMSG_FIRSTHDR(&amp;msg);</span><br><span class="line">cmsg-&gt;cmsg_level = SOL_SOCKET;</span><br><span class="line">cmsg-&gt;cmsg_type = SCM_RIGHTS;</span><br><span class="line">cmsg-&gt;cmsg_len = CMSG_LEN(<span class="keyword">sizeof</span>(<span class="type">int</span>));</span><br><span class="line">*(<span class="type">int</span> *)CMSG_DATA(cmsg) = fd_to_send;  <span class="comment">// 要传递的 fd</span></span><br><span class="line"></span><br><span class="line">sendmsg(sockfd, &amp;msg, <span class="number">0</span>);  <span class="comment">// 发送</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 接收端：从消息中提取 fd</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">msghdr</span> <span class="title">msg</span> =</span> &#123;<span class="number">0</span>&#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">cmsghdr</span> *<span class="title">cmsg</span>;</span></span><br><span class="line"></span><br><span class="line">recvmsg(sockfd, &amp;msg, <span class="number">0</span>);</span><br><span class="line">cmsg = CMSG_FIRSTHDR(&amp;msg);</span><br><span class="line"><span class="type">int</span> received_fd = *(<span class="type">int</span> *)CMSG_DATA(cmsg);  <span class="comment">// 提取 fd</span></span><br></pre></td></tr></table></figure>
+
+<p>在 Android 中的应用场景：</p>
+<ol>
+<li><strong>Zygote -&gt; App</strong>：Zygote 通过 socket 将应用的相关 fd 传递给刚刚 fork 出的子进程。</li>
+<li><strong>installd</strong>：installd 守护进程创建数据目录后，可以通过 socket 将目录 fd 传回 system_server。</li>
+<li><strong>adb</strong>：ADB 在 host 和 device 之间传递文件时使用 socket 对传递 fd。</li>
+</ol>
+<p>核心：fd 传递是零拷贝的——接收方拿到的 fd 指向同一内核文件描述符，不需要再复制数据。</p>
+<p><strong>AOSP 核心路径参考：</strong></p>
+<ul>
+<li><code>frameworks/native/libs/binder/</code> — Binder 用户空间库</li>
+<li><code>drivers/android/binder.c</code> — Binder 驱动（Android 10+ 新版路径）</li>
+<li><code>system/core/libcutils/ashmem-dev.cpp</code> — ashmem 封装</li>
+<li><code>frameworks/base/core/java/android/os/ZygoteProcess.java</code> — Zygote Socket 通信</li>
+<li><code>frameworks/native/cmds/installd/</code> — installd 守护进程</li>
+<li><code>system/core/adb/</code> — ADB 守护进程</li>
+<li><code>system/core/libutils/Looper.cpp</code> — Looper 唤醒（eventfd）</li>
+<li><code>frameworks/base/core/jni/android_database_CursorWindow.cpp</code> — ashmem 在 ContentProvider 中的使用</li>
+<li><code>drivers/staging/android/ion/</code> — ION 内存分配器（逐步废弃）</li>
+<li><code>drivers/dma-buf/</code> — dma-buf 框架</li>
+</ul>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/IPC/">IPC    </a><a class="post-meta__tags" href="/tags/Binder/">Binder    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286826.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/02/15/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91%E7%BB%8F%E5%85%B8%E5%90%8C%E6%AD%A5%E6%9C%BA%E5%88%B6/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286825.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【深入内核篇】经典同步机制</span></div></a></div><div class="next-post pull_right"><a href="/2021/02/05/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E4%BB%8B%E7%BB%8D/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286851.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【深入内核篇】操作系统介绍</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2021/10/20/重拾Android-【吃透源码系列】之Binder/" title="【吃透源码系列】之Binder"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286986.jpg"><div class="relatedPosts_title">【吃透源码系列】之Binder</div></a></div><div class="relatedPosts_item"><a href="/2021/01/10/重拾Android-【深入内核篇】Binder驱动/" title="【深入内核篇】Binder驱动"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286773.jpg"><div class="relatedPosts_title">【深入内核篇】Binder驱动</div></a></div><div class="relatedPosts_item"><a href="/2021/09/25/重拾Android-【吃透源码系列】之四大组件的工作过程/" title="【吃透源码系列】之四大组件的工作过程"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/794.jpg"><div class="relatedPosts_title">【吃透源码系列】之四大组件的工作过程</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286826.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

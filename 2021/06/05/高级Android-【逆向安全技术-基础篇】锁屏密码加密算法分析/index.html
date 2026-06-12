@@ -1,0 +1,511 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【逆向安全技术-基础篇】锁屏密码加密算法分析 | ONE·PIECE</title><meta name="description" content="【逆向安全技术-基础篇】锁屏密码加密算法分析"><meta name="keywords" content="安全"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【逆向安全技术-基础篇】锁屏密码加密算法分析"><meta name="twitter:description" content="【逆向安全技术-基础篇】锁屏密码加密算法分析"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【逆向安全技术-基础篇】锁屏密码加密算法分析"><meta property="og:url" content="http://tufusi.com/2021/06/05/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%9F%BA%E7%A1%80%E7%AF%87%E3%80%91%E9%94%81%E5%B1%8F%E5%AF%86%E7%A0%81%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E5%88%86%E6%9E%90/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【逆向安全技术-基础篇】锁屏密码加密算法分析"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2021/06/05/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%9F%BA%E7%A1%80%E7%AF%87%E3%80%91%E9%94%81%E5%B1%8F%E5%AF%86%E7%A0%81%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E5%88%86%E6%9E%90/"><link rel="prev" title="【逆向安全技术-基础篇】NDK开发技巧" href="http://tufusi.com/2021/06/10/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%9F%BA%E7%A1%80%E7%AF%87%E3%80%91NDK%E5%BC%80%E5%8F%91%E6%8A%80%E5%B7%A7/"><link rel="next" title="【逆向安全技术-基础篇】dex文件格式解析" href="http://tufusi.com/2021/06/01/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%9F%BA%E7%A1%80%E7%AF%87%E3%80%91dex%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%89%8D%E8%A8%80"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">前言</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%AF%86%E7%A0%81%E5%AD%98%E5%82%A8%E7%9A%84%E6%BC%94%E8%BF%9B"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">密码存储的演进</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#Gatekeeper-%E6%9E%B6%E6%9E%84%E6%A6%82%E8%BF%B0"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">Gatekeeper 架构概述</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Java-%E5%B1%82%EF%BC%9ALockSettingsService"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">Java 层：LockSettingsService</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Native-%E5%B1%82%EF%BC%9Agatekeeperd"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">Native 层：gatekeeperd</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#TEE-%E5%B1%82%EF%BC%9AGatekeeper-TA"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">TEE 层：Gatekeeper TA</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#Gatekeeper-HAL-%E6%8E%A5%E5%8F%A3%E5%AE%9A%E4%B9%89"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">Gatekeeper HAL 接口定义</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%AF%86%E7%A0%81%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">密码文件格式详解</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#gatekeeper-password-key-gatekeeper-pattern-key"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">gatekeeper.password.key &#x2F; gatekeeper.pattern.key</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E8%80%81%E7%89%88%E6%9C%AC%E6%A0%BC%E5%BC%8F%EF%BC%88%E5%85%BC%E5%AE%B9%E6%80%A7%E5%8F%82%E8%80%83%EF%BC%89"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">老版本格式（兼容性参考）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Android-9-0-%E7%9A%84-Synthetic-Password"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">Android 9.0+ 的 Synthetic Password</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#scrypt-%E5%AF%86%E9%92%A5%E6%B4%BE%E7%94%9F%E5%87%BD%E6%95%B0"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">scrypt 密钥派生函数</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#Gatekeeper-%E9%AA%8C%E8%AF%81%E6%B5%81%E7%A8%8B"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">Gatekeeper 验证流程</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#verifyCredential-%E8%AF%A6%E7%BB%86%E4%BB%A3%E7%A0%81%E8%B7%AF%E5%BE%84"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">verifyCredential 详细代码路径</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Auth-Token-%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">Auth Token 机制</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%97%B6%E5%BA%8F%E6%94%BB%E5%87%BB%E9%98%B2%E6%8A%A4"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">时序攻击防护</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%BE%E6%A1%88%E9%94%81%E7%9A%84%E5%AD%98%E5%82%A8"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">图案锁的存储</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%8E-Hardware-Backed-Keystore-%E7%9A%84%E9%9B%86%E6%88%90"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">与 Hardware-Backed Keystore 的集成</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#SID-%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">SID 机制</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Key-Authorization-%E6%B5%81%E7%A8%8B"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">Key Authorization 流程</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%94%9F%E7%89%A9%E8%AF%86%E5%88%AB%E4%B8%8E-Gatekeeper-%E7%9A%84%E9%9B%86%E6%88%90"><span class="toc_mobile_items-number">9.3.</span> <span class="toc_mobile_items-text">生物识别与 Gatekeeper 的集成</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%AE%89%E5%85%A8%E8%AF%84%E4%BC%B0%E4%B8%8E%E5%8F%96%E8%AF%81"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">安全评估与取证</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E8%8E%B7%E5%8F%96%E5%AF%86%E7%A0%81%E7%9A%84%E9%9A%BE%E5%BA%A6%E8%AF%84%E4%BC%B0"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">获取密码的难度评估</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%9A%B4%E5%8A%9B%E7%A0%B4%E8%A7%A3%E7%9A%84%E6%95%B0%E5%AD%A6%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">暴力破解的数学分析</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%80%83%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">面试常考问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8F%82%E8%80%83"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">参考</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%86%E7%A0%81%E5%AD%98%E5%82%A8%E7%9A%84%E6%BC%94%E8%BF%9B"><span class="toc-number">2.</span> <span class="toc-text">密码存储的演进</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Gatekeeper-%E6%9E%B6%E6%9E%84%E6%A6%82%E8%BF%B0"><span class="toc-number">3.</span> <span class="toc-text">Gatekeeper 架构概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Java-%E5%B1%82%EF%BC%9ALockSettingsService"><span class="toc-number">3.1.</span> <span class="toc-text">Java 层：LockSettingsService</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Native-%E5%B1%82%EF%BC%9Agatekeeperd"><span class="toc-number">3.2.</span> <span class="toc-text">Native 层：gatekeeperd</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TEE-%E5%B1%82%EF%BC%9AGatekeeper-TA"><span class="toc-number">3.3.</span> <span class="toc-text">TEE 层：Gatekeeper TA</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Gatekeeper-HAL-%E6%8E%A5%E5%8F%A3%E5%AE%9A%E4%B9%89"><span class="toc-number">4.</span> <span class="toc-text">Gatekeeper HAL 接口定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%86%E7%A0%81%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E8%AF%A6%E8%A7%A3"><span class="toc-number">5.</span> <span class="toc-text">密码文件格式详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#gatekeeper-password-key-gatekeeper-pattern-key"><span class="toc-number">5.1.</span> <span class="toc-text">gatekeeper.password.key &#x2F; gatekeeper.pattern.key</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%80%81%E7%89%88%E6%9C%AC%E6%A0%BC%E5%BC%8F%EF%BC%88%E5%85%BC%E5%AE%B9%E6%80%A7%E5%8F%82%E8%80%83%EF%BC%89"><span class="toc-number">5.2.</span> <span class="toc-text">老版本格式（兼容性参考）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Android-9-0-%E7%9A%84-Synthetic-Password"><span class="toc-number">5.3.</span> <span class="toc-text">Android 9.0+ 的 Synthetic Password</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#scrypt-%E5%AF%86%E9%92%A5%E6%B4%BE%E7%94%9F%E5%87%BD%E6%95%B0"><span class="toc-number">6.</span> <span class="toc-text">scrypt 密钥派生函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Gatekeeper-%E9%AA%8C%E8%AF%81%E6%B5%81%E7%A8%8B"><span class="toc-number">7.</span> <span class="toc-text">Gatekeeper 验证流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#verifyCredential-%E8%AF%A6%E7%BB%86%E4%BB%A3%E7%A0%81%E8%B7%AF%E5%BE%84"><span class="toc-number">7.1.</span> <span class="toc-text">verifyCredential 详细代码路径</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Auth-Token-%E6%9C%BA%E5%88%B6"><span class="toc-number">7.2.</span> <span class="toc-text">Auth Token 机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%B6%E5%BA%8F%E6%94%BB%E5%87%BB%E9%98%B2%E6%8A%A4"><span class="toc-number">7.3.</span> <span class="toc-text">时序攻击防护</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BE%E6%A1%88%E9%94%81%E7%9A%84%E5%AD%98%E5%82%A8"><span class="toc-number">8.</span> <span class="toc-text">图案锁的存储</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8E-Hardware-Backed-Keystore-%E7%9A%84%E9%9B%86%E6%88%90"><span class="toc-number">9.</span> <span class="toc-text">与 Hardware-Backed Keystore 的集成</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#SID-%E6%9C%BA%E5%88%B6"><span class="toc-number">9.1.</span> <span class="toc-text">SID 机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Key-Authorization-%E6%B5%81%E7%A8%8B"><span class="toc-number">9.2.</span> <span class="toc-text">Key Authorization 流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%9F%E7%89%A9%E8%AF%86%E5%88%AB%E4%B8%8E-Gatekeeper-%E7%9A%84%E9%9B%86%E6%88%90"><span class="toc-number">9.3.</span> <span class="toc-text">生物识别与 Gatekeeper 的集成</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E5%85%A8%E8%AF%84%E4%BC%B0%E4%B8%8E%E5%8F%96%E8%AF%81"><span class="toc-number">10.</span> <span class="toc-text">安全评估与取证</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E5%AF%86%E7%A0%81%E7%9A%84%E9%9A%BE%E5%BA%A6%E8%AF%84%E4%BC%B0"><span class="toc-number">10.1.</span> <span class="toc-text">获取密码的难度评估</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9A%B4%E5%8A%9B%E7%A0%B4%E8%A7%A3%E7%9A%84%E6%95%B0%E5%AD%A6%E5%88%86%E6%9E%90"><span class="toc-number">10.2.</span> <span class="toc-text">暴力破解的数学分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%80%83%E9%97%AE%E9%A2%98"><span class="toc-number">11.</span> <span class="toc-text">面试常考问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">12.</span> <span class="toc-text">参考</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【逆向安全技术-基础篇】锁屏密码加密算法分析</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-06-05<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">5.7k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 22 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Android 设备的锁屏密码（PIN、密码、图案）是用户数据保护的第一道防线。理解其存储和验证机制，不仅对手机取证和安全评估至关重要，也是理解 Android 安全架构中 Hardware-Backed Keystore 设计思想的重要切入点。本文将深入分析 Android 锁屏密码的存储格式、加密算法和验证流程，涵盖从 Java 层 LockSettingsService 到 TEE 层 GateKeeper TA 的完整调用链。</p>
+<h2 id="密码存储的演进"><a href="#密码存储的演进" class="headerlink" title="密码存储的演进"></a>密码存储的演进</h2><p>在 Android 早期版本（Android 4.4 之前），锁屏密码的 hash 值存储在 <code>/data/system/password.key</code> 中，使用简单的 MD5 + SHA1 组合，存在彩虹表攻击风险。其格式为：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">MD5(salt + SHA1(salt + password))</span><br></pre></td></tr></table></figure>
+
+<p>salt 为 64 位随机值，存储在前 8 字节中。这种格式由于没有硬件保护，可以通过彩虹表离线破解，且计算成本低（每秒可尝试数百万次），在设备丢失后极不安全。</p>
+<p>从 <strong>Android 5.0</strong> 开始，Google 引入了 <strong>Gatekeeper</strong> 机制，将密码验证转移到 TEE（Trusted Execution Environment）中执行，大幅提升安全性。对应的存储文件也发生了变化：</p>
+<table>
+<thead>
+<tr>
+<th>文件路径</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/data/system/gatekeeper.password.key</code></td>
+<td>PIN&#x2F;密码的加密数据</td>
+</tr>
+<tr>
+<td><code>/data/system/gatekeeper.pattern.key</code></td>
+<td>图案的加密数据</td>
+</tr>
+<tr>
+<td><code>/data/misc/gatekeeper/</code></td>
+<td>Gatekeeper 持久化状态</td>
+</tr>
+</tbody></table>
+<p>从 Android 6.0 开始，Gatekeeper 进一步增强了与 Keymaster 的集成，要求所有密码派生和 hash 验证都必须在 TEE 内完成。Android 7.0 引入了基于文件的加密（FBE，File-Based Encryption），其中锁屏密码与磁盘加密密钥直接关联。Android 9.0 引入了防回滚和更强的度量验证。Android 12 引入 Keystore 2.0，将 Gatekeeper 的 SID（Secure Identifier）与 Keystore auth token 机制更紧密地绑定。</p>
+<p><strong>相关 AOSP 源码路径：</strong></p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>路径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LockSettingsService</td>
+<td><code>frameworks/base/services/core/java/com/android/server/locksettings/LockSettingsService.java</code></td>
+</tr>
+<tr>
+<td>LockSettingsStorage</td>
+<td><code>frameworks/base/services/core/java/com/android/server/locksettings/LockSettingsStorage.java</code></td>
+</tr>
+<tr>
+<td>gatekeeperd</td>
+<td><code>system/gatekeeper/gatekeeperd.cpp</code></td>
+</tr>
+<tr>
+<td>Gatekeeper HAL</td>
+<td><code>hardware/libhardware/include/hardware/gatekeeper.h</code></td>
+</tr>
+<tr>
+<td>Keymaster HAL</td>
+<td><code>hardware/libhardware/include/hardware/keymaster_defs.h</code></td>
+</tr>
+<tr>
+<td>scrypt 实现</td>
+<td><code>external/scrypt/</code></td>
+</tr>
+<tr>
+<td>Keystore 2.0</td>
+<td><code>system/security/keystore2/</code></td>
+</tr>
+<tr>
+<td>SyntheticPasswordManager</td>
+<td><code>frameworks/base/services/core/java/com/android/server/locksettings/SyntheticPasswordManager.java</code></td>
+</tr>
+<tr>
+<td>vold (磁盘加密)</td>
+<td><code>system/vold/</code></td>
+</tr>
+<tr>
+<td>密码策略管理</td>
+<td><code>frameworks/base/services/core/java/com/android/server/locksettings/LockSettingsStrongAuth.java</code></td>
+</tr>
+</tbody></table>
+<h2 id="Gatekeeper-架构概述"><a href="#Gatekeeper-架构概述" class="headerlink" title="Gatekeeper 架构概述"></a>Gatekeeper 架构概述</h2><p>Gatekeeper 分为三层，形成完整的可信执行链：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Java 层 (LockSettingsService)</span><br><span class="line">    ↓ Binder IPC</span><br><span class="line">Native 层 (gatekeeperd 守护进程)</span><br><span class="line">    ↓ HAL 接口 (hw_device_t)</span><br><span class="line">TEE 层 (Gatekeeper TA — Trusted Application)</span><br><span class="line">    ↓</span><br><span class="line">Hardware-Backed (HMAC key 由硬件保护，不可导出)</span><br></pre></td></tr></table></figure>
+
+<p>详细分析每一层：</p>
+<h3 id="Java-层：LockSettingsService"><a href="#Java-层：LockSettingsService" class="headerlink" title="Java 层：LockSettingsService"></a>Java 层：LockSettingsService</h3><p><code>LockSettingsService</code>（简称 LSS）是锁屏密码管理的核心 Java 服务，运行在 <code>system_server</code> 进程中。它通过 Binder 向外部提供 <code>ILockSettings</code> 接口，其调用的主要方法包括：</p>
+<ul>
+<li><code>setLockCredential(credential, type, savedCredential, quality)</code> — 设置或修改锁屏密码</li>
+<li><code>verifyCredential(credential, type, challenge)</code> — 验证锁屏密码</li>
+<li><code>checkCredential(credential, type, userId)</code> — 检查密码是否正确（不改变状态）</li>
+</ul>
+<p>以 <code>verifyCredential</code> 为例，其完整调用链为：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">LockSettingsService.verifyCredential()</span><br><span class="line">  → LockSettingsStorage.readCredentialHash()  // 读取 gatekeeper.password.key 中的 handle</span><br><span class="line">  → getGateKeeperService().verify(userId, challenge, oldHandle, enrolledHandle)</span><br><span class="line">  → gatekeeperd.verify()</span><br><span class="line">  → GateKeeperDevice::verify()</span><br><span class="line">  → ioctl / hw_device_t-&gt;verify()</span><br><span class="line">  → TEE GateKeeper TA</span><br></pre></td></tr></table></figure>
+
+<p>AOSP 关键源码位置：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">frameworks/base/services/core/java/com/android/server/locksettings/LockSettingsService.java</span><br><span class="line">  Line ~932: verifyCredential()</span><br><span class="line">  Line ~1206: setLockCredential()</span><br><span class="line">  Line ~1568: getGateKeeperService()  — 获取 gatekeeperd Binder 代理</span><br></pre></td></tr></table></figure>
+
+<h3 id="Native-层：gatekeeperd"><a href="#Native-层：gatekeeperd" class="headerlink" title="Native 层：gatekeeperd"></a>Native 层：gatekeeperd</h3><p><code>gatekeeperd</code> 是 <code>/system/bin/gatekeeperd</code>，作为 system 服务运行。它负责：</p>
+<ol>
+<li>接收来自 LSS 的 Binder 调用</li>
+<li>连接 GateKeeper HAL（<code>hw_get_module(HAL_GATEKEEPER_ID)</code>）</li>
+<li>从文件中读取&#x2F;写入 handle 数据</li>
+<li>在验证失败时实施指数退避延迟</li>
+</ol>
+<p>gatekeeperd 的关键数据结构：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// system/gatekeeper/gatekeeperd.cpp</span></span><br><span class="line"><span class="comment">// GateKeeperProxy 封装了 HAL 操作</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">GateKeeperProxy</span> &#123;</span><br><span class="line">    android::hardware::gatekeeper::V1_0::IGatekeeper* device;</span><br><span class="line">    <span class="type">uint32_t</span> consecutiveFailureCount;</span><br><span class="line">    <span class="type">uint64_t</span> lastFailureTimestamp;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">enroll</span><span class="params">(<span class="type">uint32_t</span> uid, <span class="type">const</span> <span class="type">uint8_t</span>* currentHandle, <span class="type">uint32_t</span> currentHandleSize,</span></span></span><br><span class="line"><span class="params"><span class="function">               <span class="type">const</span> <span class="type">uint8_t</span>* providedHandle, <span class="type">uint32_t</span> providedHandleSize,</span></span></span><br><span class="line"><span class="params"><span class="function">               <span class="type">uint8_t</span>** enrolledHandle, <span class="type">uint32_t</span>* enrolledHandleSize)</span></span>;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">verify</span><span class="params">(<span class="type">uint32_t</span> uid, <span class="type">uint64_t</span> challenge,</span></span></span><br><span class="line"><span class="params"><span class="function">               <span class="type">const</span> <span class="type">uint8_t</span>* enrolledHandle, <span class="type">uint32_t</span> enrolledHandleSize,</span></span></span><br><span class="line"><span class="params"><span class="function">               <span class="type">const</span> <span class="type">uint8_t</span>* providedHandle, <span class="type">uint32_t</span> providedHandleSize,</span></span></span><br><span class="line"><span class="params"><span class="function">               <span class="type">uint8_t</span>** authToken, <span class="type">uint32_t</span>* authTokenSize)</span></span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="TEE-层：Gatekeeper-TA"><a href="#TEE-层：Gatekeeper-TA" class="headerlink" title="TEE 层：Gatekeeper TA"></a>TEE 层：Gatekeeper TA</h3><p>Gatekeeper TA 运行在 TEE（如 Qualcomm QSEE、ARM TrustZone）中，是一个完全隔离于 Android 操作系统的执行环境。TA 拥有：</p>
+<ul>
+<li><strong>硬件唯一密钥（HUK, Hardware Unique Key）</strong>：在芯片制造时熔断写入，不可读取</li>
+<li><strong>HMAC 签名能力</strong>：使用 HUK 对密码派生结果进行签名，生成不可伪造的 handle</li>
+<li><strong>安全的单调计数器</strong>：用于防重放（anti-replay）和 auth token 的时效性验证</li>
+<li><strong>隔离的执行空间</strong>：Android OS 甚至 Linux 内核都无法访问 TA 的内存</li>
+</ul>
+<h2 id="Gatekeeper-HAL-接口定义"><a href="#Gatekeeper-HAL-接口定义" class="headerlink" title="Gatekeeper HAL 接口定义"></a>Gatekeeper HAL 接口定义</h2><p>完整 HAL 接口定义在 <code>hardware/libhardware/include/hardware/gatekeeper.h</code>：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">gatekeeper_device</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">hw_device_t</span> <span class="title">common</span>;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 注册（设置）新密码</span></span><br><span class="line">    <span class="type">int</span> (*enroll)(<span class="keyword">struct</span> gatekeeper_device *dev, <span class="type">uint32_t</span> uid,</span><br><span class="line">                  <span class="type">const</span> <span class="type">uint8_t</span> *current_password_handle, <span class="type">uint32_t</span> current_password_handle_length,</span><br><span class="line">                  <span class="type">const</span> <span class="type">uint8_t</span> *current_password, <span class="type">uint32_t</span> current_password_length,</span><br><span class="line">                  <span class="type">const</span> <span class="type">uint8_t</span> *desired_password, <span class="type">uint32_t</span> desired_password_length,</span><br><span class="line">                  <span class="type">uint8_t</span> **enrolled_password_handle, <span class="type">uint32_t</span> *enrolled_password_handle_length);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 验证密码</span></span><br><span class="line">    <span class="type">int</span> (*verify)(<span class="keyword">struct</span> gatekeeper_device *dev, <span class="type">uint32_t</span> uid, <span class="type">uint64_t</span> challenge,</span><br><span class="line">                  <span class="type">const</span> <span class="type">uint8_t</span> *enrolled_password_handle, <span class="type">uint32_t</span> enrolled_password_handle_length,</span><br><span class="line">                  <span class="type">const</span> <span class="type">uint8_t</span> *provided_password, <span class="type">uint32_t</span> provided_password_length,</span><br><span class="line">                  <span class="type">uint8_t</span> **auth_token, <span class="type">uint32_t</span> *auth_token_length,</span><br><span class="line">                  <span class="type">bool</span> *request_reenroll);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 删除用户</span></span><br><span class="line">    <span class="type">int</span> (*delete_user)(<span class="keyword">struct</span> gatekeeper_device *dev, <span class="type">uint32_t</span> uid);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 删除所有用户</span></span><br><span class="line">    <span class="type">int</span> (*delete_all_users)(<span class="keyword">struct</span> gatekeeper_device *dev);</span><br><span class="line">&#125; <span class="type">gatekeeper_device_t</span>;</span><br></pre></td></tr></table></figure>
+
+<p>Android 8.0+ 引入了 HAL 模式下的 HIDL 接口（<code>android.hardware.gatekeeper@1.0</code>），AOSP 路径：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hardware/interfaces/gatekeeper/1.0/IGatekeeper.hal</span><br><span class="line">hardware/interfaces/gatekeeper/1.0/default/GateKeeper.cpp</span><br></pre></td></tr></table></figure>
+
+<p>返回值定义：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">GATEKEEPER_RESPONSE_OK          = 0   // 验证成功</span><br><span class="line">GATEKEEPER_RESPONSE_RETRY       = 1   // 需要稍后重试（失败延迟）</span><br><span class="line">GATEKEEPER_RESPONSE_RESET       = 2   // 错误计数器溢出，数据已擦除</span><br></pre></td></tr></table></figure>
+
+<h2 id="密码文件格式详解"><a href="#密码文件格式详解" class="headerlink" title="密码文件格式详解"></a>密码文件格式详解</h2><h3 id="gatekeeper-password-key-gatekeeper-pattern-key"><a href="#gatekeeper-password-key-gatekeeper-pattern-key" class="headerlink" title="gatekeeper.password.key &#x2F; gatekeeper.pattern.key"></a>gatekeeper.password.key &#x2F; gatekeeper.pattern.key</h3><p>这两个文件并不直接存储密码的 hash，而是存储经过 Gatekeeper 处理后的 <strong>密文签名句柄（password handle）</strong>。文件格式如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">offset  size   field</span><br><span class="line">------  ----   -----</span><br><span class="line">0x00    4      version (版本号)</span><br><span class="line">0x04    4      type (0 = 密码/PIN, 1 = 图案)</span><br><span class="line">0x08    4      handle_length (句柄长度)</span><br><span class="line">0x0C    N      handle_data (加密句柄，包含 salt 和 hash 的密文)</span><br></pre></td></tr></table></figure>
+
+<p>handle 的实际二进制内容由 GateKeeper TA 在 TEE 内使用 HUK 派生密钥加密。加密通常使用 AES-256-GCM，确保：</p>
+<ul>
+<li><strong>机密性</strong>：没有 HUK 无法解密 handle 内容</li>
+<li><strong>完整性</strong>：GCM 的认证标签保证 handle 未被篡改</li>
+<li><strong>唯一性</strong>：每次 enroll 即使使用相同密码，生成的 handle 也完全不同（GCM 的随机 IV）</li>
+</ul>
+<p>handle 解密后的内部结构（仅在 TEE 中可见）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">+------------------+</span><br><span class="line">| version (4 bytes)|  -- handle 格式版本</span><br><span class="line">+------------------+</span><br><span class="line">| flags (4 bytes)  |  -- 是否启用硬件签名等标志位</span><br><span class="line">+------------------+</span><br><span class="line">| type (4 bytes)   |  -- 0=密码 1=图案</span><br><span class="line">+------------------+</span><br><span class="line">| salt (16 bytes)  |  -- 随机盐值（scrypt 参数）</span><br><span class="line">+------------------+</span><br><span class="line">| scrypt N (8B)    |  -- N 值（CPU/内存因子）</span><br><span class="line">+------------------+</span><br><span class="line">| scrypt r (4B)    |  -- r 值（块大小）</span><br><span class="line">+------------------+</span><br><span class="line">| scrypt p (4B)    |  -- p 值（并行度）</span><br><span class="line">+------------------+</span><br><span class="line">| password hash    |  -- scrypt(密码, salt, N, r, p)</span><br><span class="line">| (32 bytes)       |  -- 然后再用 HUK 派生的 HMAC key 签名</span><br><span class="line">+------------------+</span><br><span class="line">| auth token key   |  -- HMAC-SHA256(HUK, &quot;auth_token_key&quot;)</span><br><span class="line">| (32 bytes)       |</span><br><span class="line">+------------------+</span><br><span class="line">| HMAC (32 bytes)  |  -- 整个 handle 的完整性校验</span><br><span class="line">+------------------+</span><br></pre></td></tr></table></figure>
+
+<p>注意：这里的 handle 并不是简单的 hash，它由 Gatekeeper TA 在 TEE 中使用硬件派生密钥加密。因此在没有 TEE 密钥的情况下，即使获取了 gatekeeper 文件也无法离线破解密码。</p>
+<p><strong>LockSettingsStorage 读取逻辑</strong>（AOSP 源码参考）：</p>
+<p><code>LockSettingsStorage.java</code> 中的 <code>readCredentialHash()</code> 方法负责从磁盘读取 handle：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/services/core/java/com/android/server/locksettings/LockSettingsStorage.java</span></span><br><span class="line"><span class="keyword">public</span> CredentialHash <span class="title function_">readCredentialHash</span><span class="params">(<span class="type">int</span> userId)</span> &#123;</span><br><span class="line">    <span class="type">byte</span>[] contents = readFile(getLockCredentialFilePathForUser(userId));</span><br><span class="line">    <span class="keyword">if</span> (contents == <span class="literal">null</span>) <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> <span class="variable">offset</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">int</span> <span class="variable">version</span> <span class="operator">=</span> LittleEndian.readInt(contents, offset);</span><br><span class="line">    offset += <span class="number">4</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (version &lt; <span class="number">3</span>) &#123;</span><br><span class="line">        <span class="comment">// 老版本格式：直接存 hash</span></span><br><span class="line">        offset += <span class="number">4</span>;  <span class="comment">// type</span></span><br><span class="line">        <span class="type">byte</span>[] hash = <span class="keyword">new</span> <span class="title class_">byte</span>[contents.length - offset];</span><br><span class="line">        System.arraycopy(contents, offset, hash, <span class="number">0</span>, hash.length);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">CredentialHash</span>(hash, version);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 新版本格式：包含加密 handle</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">int</span> <span class="variable">type</span> <span class="operator">=</span> LittleEndian.readInt(contents, offset);</span><br><span class="line">    offset += <span class="number">4</span>;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">int</span> <span class="variable">handleLength</span> <span class="operator">=</span> LittleEndian.readInt(contents, offset);</span><br><span class="line">    offset += <span class="number">4</span>;</span><br><span class="line">    <span class="type">byte</span>[] handle = <span class="keyword">new</span> <span class="title class_">byte</span>[handleLength];</span><br><span class="line">    System.arraycopy(contents, offset, handle, <span class="number">0</span>, handleLength);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 现在还需要读取 SecureSyntheticPassword 相关的数据...</span></span><br><span class="line">    <span class="keyword">return</span> CredentialHash.create(handle, type, version);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="老版本格式（兼容性参考）"><a href="#老版本格式（兼容性参考）" class="headerlink" title="老版本格式（兼容性参考）"></a>老版本格式（兼容性参考）</h3><p>在没有 Gatekeeper 的老设备上，<code>password.key</code> 格式为：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">offset  size   field</span><br><span class="line">------  ----   -----</span><br><span class="line">0x00    8      salt (64-bit random)</span><br><span class="line">0x08    20     MD5(salt + SHA1(salt + password))</span><br></pre></td></tr></table></figure>
+
+<p>sail 为 64 位随机值，存储在前 8 字节中。这种格式由于没有硬件保护，可以通过彩虹表离线破解。</p>
+<h3 id="Android-9-0-的-Synthetic-Password"><a href="#Android-9-0-的-Synthetic-Password" class="headerlink" title="Android 9.0+ 的 Synthetic Password"></a>Android 9.0+ 的 Synthetic Password</h3><p>从 Android 9.0 开始，Google 引入了 <strong>Synthetic Password</strong> 机制（AOSP 路径：<code>frameworks/base/services/core/java/com/android/server/locksettings/SyntheticPasswordManager.java</code>），进一步将锁屏密码与磁盘加密密钥（FBE）绑定：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">用户密码</span><br><span class="line">  ↓</span><br><span class="line">Gatekeeper enroll → 生成 password handle</span><br><span class="line">  ↓</span><br><span class="line">SyntheticPasswordManager → 生成 synthetic password（SP）</span><br><span class="line">  ↓</span><br><span class="line">SP 加密 Disk Encryption Key</span><br><span class="line">  ↓</span><br><span class="line">DEK 用于加密 /data 分区</span><br></pre></td></tr></table></figure>
+
+<p>Synthetic Password 的关键特点是：</p>
+<ol>
+<li><strong>SP 本身从不存储</strong>，只在验证密码成功后的短时间内存在于内存中</li>
+<li><strong>SP 的生成依赖多个因子</strong>：用户密码 + Gatekeeper handle + 设备绑定密钥</li>
+<li><strong>修改密码不会重新加密整个磁盘</strong>：只需用旧 SP 解密 DEK，再用新 SP 加密即可</li>
+</ol>
+<p>SyntheticPasswordManager 的核心数据结构：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// SyntheticPasswordManager.java 中的关键 Token</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AuthenticationToken</span> &#123;</span><br><span class="line">    <span class="type">byte</span>[] E0;  <span class="comment">// escrow token（托管令牌）</span></span><br><span class="line">    <span class="type">byte</span>[] P1;  <span class="comment">// application token（应用令牌）</span></span><br><span class="line">    <span class="type">byte</span>[] P2;  <span class="comment">// protector token（保护令牌）</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">PasswordData</span> &#123;</span><br><span class="line">    <span class="type">byte</span>[] passwordHandle;  <span class="comment">// Gatekeeper 返回的 handle</span></span><br><span class="line">    <span class="type">byte</span> scryptN;           <span class="comment">// 简化的 N 参数</span></span><br><span class="line">    <span class="type">byte</span> scryptR;</span><br><span class="line">    <span class="type">byte</span> scryptP;</span><br><span class="line">    <span class="type">byte</span>[] salt;            <span class="comment">// 16 bytes</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="scrypt-密钥派生函数"><a href="#scrypt-密钥派生函数" class="headerlink" title="scrypt 密钥派生函数"></a>scrypt 密钥派生函数</h2><p>Gatekeeper 使用 <strong>scrypt</strong>（发音 “ess crypt”）作为密码派生的核心算法。scrypt 是一种内存硬性（memory-hard）的 KDF，专门设计用于对抗暴力破解——因为每次派生需要大量内存，使得 GPU&#x2F;ASIC 并行攻击成本极高。</p>
+<p>scrypt 的完整实现在 AOSP 的 <code>external/scrypt/</code> 目录下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">external/scrypt/</span><br><span class="line">  lib/crypto/crypto_scrypt.c       — 核心算法实现</span><br><span class="line">  lib/crypto/crypto_scrypt-ref.c   — 参考实现</span><br><span class="line">  lib/crypto/sha256.c              — SHA-256 基础原语</span><br><span class="line">  lib/util/memlimit.c              — 内存限制检查</span><br></pre></td></tr></table></figure>
+
+<p>scrypt 的函数签名：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">crypto_scrypt</span><span class="params">(<span class="type">const</span> <span class="type">uint8_t</span> *passwd, <span class="type">size_t</span> passwdlen,</span></span><br><span class="line"><span class="params">                  <span class="type">const</span> <span class="type">uint8_t</span> *salt, <span class="type">size_t</span> saltlen,</span></span><br><span class="line"><span class="params">                  <span class="type">uint64_t</span> N, <span class="type">uint32_t</span> r, <span class="type">uint32_t</span> p,</span></span><br><span class="line"><span class="params">                  <span class="type">uint8_t</span> *buf, <span class="type">size_t</span> buflen)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>参数含义：</p>
+<ul>
+<li><strong>N</strong> (65536 ~ 1048576 &#x3D; 2^16 ~ 2^20)：CPU&#x2F;内存成本因子，必须为 2 的幂。值越大越安全但越慢。</li>
+<li><strong>r</strong> (通常为 8)：块大小因子，增大 r 增加对每个密码猜测的内存需求。</li>
+<li><strong>p</strong> (通常为 1)：并行度因子，增大 p 增加并行猜测的成本。</li>
+<li><strong>salt</strong> (16 bytes)：随机盐值，防止彩虹表攻击。</li>
+</ul>
+<p>内存使用量近似公式：<code>128 × r × N</code> 字节。</p>
+<p>实例：N&#x3D;2^16, r&#x3D;8 → 128 × 8 × 65536 &#x3D; <strong>67,108,864 字节 ≈ 64 MB &#x2F; 次猜测</strong>。</p>
+<p>这意味着攻击者想要每秒尝试 1000 个密码，就需要 64 GB 的内存带宽——对于传统 GPU（通常只有数 GB 显存）来说极不现实，即使对于 ASIC 也需要极高的片上 SRAM 成本。</p>
+<p>scrypt 算法内部的四步过程：</p>
+<ol>
+<li><strong>PBKDF2-SHA256（第一轮）</strong>：password + salt → 生成初始块 B（p × r × 128 字节）</li>
+<li><strong>BlockMix</strong>：对 B 进行 r 轮混合，利用 Salsa20&#x2F;8 核心作为混搅函数</li>
+<li><strong>ROMix（内存硬性核心）</strong>：进行 N 次 BlockMix，每次结果存入内存（这正是 N × r × 128 字节的来源），后续的混搅随机访问已存储的块</li>
+<li><strong>PBKDF2-SHA256（第二轮）</strong>：password + 第3步结果 → 最终派生密钥</li>
+</ol>
+<p>Android 中 scrypt 在 Gatekeeper 的初始实现（Android 5.0&#x2F;5.1）中用于软件层密码派生；从 <strong>Android 6.0</strong> 开始，密码派生被移入 TEE，scrypt 参数由 TA 决定，宿主机无法直接干预。TEE 内部的 scrypt 实现通常由芯片厂商提供并经过安全审计。</p>
+<h2 id="Gatekeeper-验证流程"><a href="#Gatekeeper-验证流程" class="headerlink" title="Gatekeeper 验证流程"></a>Gatekeeper 验证流程</h2><p>完整的锁屏密码验证流程如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">用户输入密码</span><br><span class="line">    ↓</span><br><span class="line">LockSettingsService.verifyCredential()</span><br><span class="line">    ↓ Binder 调用 (ILockSettings.Stub)</span><br><span class="line">gatekeeperd (native daemon, /system/bin/gatekeeperd)</span><br><span class="line">    ↓ 读取 /data/system/gatekeeper.password.key</span><br><span class="line">    提取 handle（含 salt + scrypt 参数）</span><br><span class="line">    ↓ HAL 调用 (hw_device_t-&gt;verify / HIDL IGatekeeper::verify)</span><br><span class="line">Gatekeeper TA (TEE 中运行)</span><br><span class="line">    ↓</span><br><span class="line">    1. 使用 HUK 解密 handle</span><br><span class="line">    2. 从 handle 中恢复 salt 和 scrypt 参数</span><br><span class="line">    3. 对输入的密码执行 scrypt(password, salt, N, r, p) → 派生密钥</span><br><span class="line">    4. 使用 HUK 派生的 HMAC key 对派生密钥签名 → candidate hash</span><br><span class="line">    5. 恒定时间比较 candidate hash 与 handle 中存储的 hash</span><br><span class="line">    6. 如果匹配，生成 auth token（HMAC(challenge, SID)）</span><br><span class="line">    ↓ 返回结果</span><br><span class="line">gatekeeperd ← 验证成功/失败 + auth token</span><br><span class="line">    ↓</span><br><span class="line">LockSettingsService ← 更新失败计数器</span><br><span class="line">    ↓</span><br><span class="line">DevicePolicyManager ← 检查是否触发 Wipe (失败次数超过阈值)</span><br><span class="line">    ↓</span><br><span class="line">SyntheticPasswordManager ← 使用 auth token 解密 SP → 解锁 DEK</span><br></pre></td></tr></table></figure>
+
+<p>关键点：<strong>密码原文永远不会离开 TEE</strong>，Android 用户空间和 Linux 内核都无法接触到明文密码或派生密钥。</p>
+<h3 id="verifyCredential-详细代码路径"><a href="#verifyCredential-详细代码路径" class="headerlink" title="verifyCredential 详细代码路径"></a>verifyCredential 详细代码路径</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// frameworks/base/services/core/java/com/android/server/locksettings/LockSettingsService.java</span><br><span class="line">private VerifyCredentialResponse verifyCredential(LockscreenCredential credential,</span><br><span class="line">                                                  int userId, long challenge) &#123;</span><br><span class="line">    // 1. 从存储中读取已注册的 handle</span><br><span class="line">    CredentialHash storedHash = mStorage.readCredentialHash(userId);</span><br><span class="line"></span><br><span class="line">    // 2. 调用 gatekeeperd 验证</span><br><span class="line">    final GateKeeperResponse gateKeeperResponse = getGateKeeperService().verifyChallenge(</span><br><span class="line">        userId, challenge, storedHash.gatekeeperHandle, credential.getGatekeeperCredential());</span><br><span class="line"></span><br><span class="line">    // 3. 处理返回结果</span><br><span class="line">    VerifyCredentialResponse response = VerifyCredentialResponse.fromGateKeeperResponse(</span><br><span class="line">            gateKeeperResponse);</span><br><span class="line"></span><br><span class="line">    // 4. 如果成功，使用 auth token 解锁 Synthetic Password</span><br><span class="line">    if (response.getResponseCode() == RESPONSE_OK) &#123;</span><br><span class="line">        // 通知 SyntheticPasswordManager 使用 auth token</span><br><span class="line">        mSpManager.unwrapPasswordBasedKey(response.getGatekeeperAuthToken());</span><br><span class="line">        // 重置失败计数器</span><br><span class="line">        mStrongAuthTracker.onSuccessfulAuthentication(userId);</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        // 更新失败计数和延迟</span><br><span class="line">        mStrongAuthTracker.onFailedAuthentication(userId);</span><br><span class="line">    &#125;</span><br><span class="line">    return response;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Auth-Token-机制"><a href="#Auth-Token-机制" class="headerlink" title="Auth Token 机制"></a>Auth Token 机制</h3><p>验证成功后，Gatekeeper TA 生成一个 auth token，格式为：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">+------------------+</span><br><span class="line">| version (1 byte) |  -- token 版本</span><br><span class="line">+------------------+</span><br><span class="line">| challenge (8B)   |  -- 来自 verify 调用的 challenge（防重放）</span><br><span class="line">+------------------+</span><br><span class="line">| user_id (8B)     |  -- 用户 ID</span><br><span class="line">+------------------+</span><br><span class="line">| authenticator_id |  -- SID（Secure Identifier）</span><br><span class="line">| (8B)             |</span><br><span class="line">+------------------+</span><br><span class="line">| authenticator_type|  -- 0=Gatekeeper, 1=Fingerprint, 2=Face</span><br><span class="line">| (4B)             |</span><br><span class="line">+------------------+</span><br><span class="line">| timestamp (8B)   |  -- Unix 时间戳（毫秒）</span><br><span class="line">+------------------+</span><br><span class="line">| HMAC (32B)       |  -- HMAC-SHA256(shared_key, 以上所有字段)</span><br><span class="line">+------------------+</span><br></pre></td></tr></table></figure>
+
+<p>Auth token 由 TimedAuthenticationToken 封装（Keystore 2.0 中）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">system/security/keystore2/src/raw_device.cpp  — createAuthToken()</span><br><span class="line">system/security/keystore2/keystore2_client.cpp — checkAuthToken()</span><br></pre></td></tr></table></figure>
+
+<p>Keystore 在使用 auth token 进行密钥授权时会验证：</p>
+<ol>
+<li>HMAC 完整性校验</li>
+<li>时间戳是否在有效期（通常 5-10 分钟）内</li>
+<li>challenge 是否匹配（防重放）</li>
+<li>authenticator type 是否与密钥的需求匹配</li>
+</ol>
+<h3 id="时序攻击防护"><a href="#时序攻击防护" class="headerlink" title="时序攻击防护"></a>时序攻击防护</h3><p>Gatekeeper 在验证失败时会引入递增延迟：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// gatekeeperd 逻辑（简化）</span></span><br><span class="line"><span class="comment">// system/gatekeeper/gatekeeperd.cpp</span></span><br><span class="line"><span class="keyword">if</span> (verify_result == ERROR_RETRY_TIMEOUT) &#123;</span><br><span class="line">    <span class="comment">// 失败次数越多，等待时间越长（指数退避）</span></span><br><span class="line">    usleep(<span class="number">30</span> * <span class="number">1000</span> * (<span class="number">1</span> &lt;&lt; consecutive_failures));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这有效防止了暴力破解：失败 5 次后等待 30 × 2^4 &#x3D; 480 秒 &#x3D; 8 分钟；失败 10 次后等待 30 × 2^9 &#x3D; 15360 秒 ≈ 4.3 小时。</p>
+<p>此外，Gatekeeper TA 内部使用 <strong>恒定时间比较</strong>（constant-time comparison）来防止侧信道时序攻击：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 恒定时间比较（简化）</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">constant_time_compare</span><span class="params">(<span class="type">const</span> <span class="type">uint8_t</span> *a, <span class="type">const</span> <span class="type">uint8_t</span> *b, <span class="type">size_t</span> len)</span> &#123;</span><br><span class="line">    <span class="type">uint8_t</span> diff = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">size_t</span> i = <span class="number">0</span>; i &lt; len; i++) &#123;</span><br><span class="line">        diff |= a[i] ^ b[i];  <span class="comment">// XOR 每一位</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> diff == <span class="number">0</span>;  <span class="comment">// 如果 diff 为 0 则相等</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>无论 hash 在第几个字节不匹配，循环总是遍历全部字节，比较操作耗时始终相同。</p>
+<h2 id="图案锁的存储"><a href="#图案锁的存储" class="headerlink" title="图案锁的存储"></a>图案锁的存储</h2><p>图案锁（Pattern Lock）的记录方式与 PIN&#x2F;密码不同。图案被编码为一个字节序列，代表网格中的点连接顺序（3x3 网格，编号 1-9）。</p>
+<p>3x3 网格的点编号：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1  2  3</span><br><span class="line">4  5  6</span><br><span class="line">7  8  9</span><br></pre></td></tr></table></figure>
+
+<p>例如图案 “L 形” 编码为 <code>[1, 4, 7, 8, 9]</code>。LockPatternUtils 中的编码逻辑：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/java/com/android/internal/widget/LockPatternUtils.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">byte</span>[] patternToHash(List&lt;LockPatternView.Cell&gt; pattern) &#123;</span><br><span class="line">    <span class="keyword">if</span> (pattern == <span class="literal">null</span>) <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">int</span> <span class="variable">patternSize</span> <span class="operator">=</span> pattern.size();</span><br><span class="line">    <span class="type">byte</span>[] res = <span class="keyword">new</span> <span class="title class_">byte</span>[patternSize];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; patternSize; i++) &#123;</span><br><span class="line">        LockPatternView.<span class="type">Cell</span> <span class="variable">cell</span> <span class="operator">=</span> pattern.get(i);</span><br><span class="line">        res[i] = (<span class="type">byte</span>)(cell.getRow() * <span class="number">3</span> + cell.getColumn());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后对该字节序列进行与密码相同的处理流程：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pattern_bytes → SHA-256(pattern_bytes) → scrypt(hash, salt, N, r, p) → Gatekeeper TA 加密签名</span><br></pre></td></tr></table></figure>
+
+<p>图案锁先做了 SHA-256 哈希是为了将变长序列（图案最少 4 个点、最多 9 个点）转为定长输入。</p>
+<p>图案的最大可能性数（最少 4 点、最多 9 点、每个点最多使用一次）：</p>
+<table>
+<thead>
+<tr>
+<th>点数</th>
+<th>排列数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>4</td>
+<td>≥ 1624</td>
+</tr>
+<tr>
+<td>5</td>
+<td>≥ 7152</td>
+</tr>
+<tr>
+<td>6</td>
+<td>≥ 26016</td>
+</tr>
+<tr>
+<td>7</td>
+<td>≥ 72912</td>
+</tr>
+<tr>
+<td>8</td>
+<td>≥ 140704</td>
+</tr>
+<tr>
+<td>9</td>
+<td>140704 (9! 但受限于相邻规则)</td>
+</tr>
+</tbody></table>
+<p>相比 4 位 PIN（10000 种可能）或 6 位 PIN（100 万种），图案锁的暴力空间更大，但实际中用户常选择简单图案（如 Z 形、L 形），通过肩窥（shoulder surfing）易于破解。</p>
+<h2 id="与-Hardware-Backed-Keystore-的集成"><a href="#与-Hardware-Backed-Keystore-的集成" class="headerlink" title="与 Hardware-Backed Keystore 的集成"></a>与 Hardware-Backed Keystore 的集成</h2><p>Android <strong>Keystore 2.0</strong>（Android 12+，AOSP 路径：<code>system/security/keystore2/</code>）将 Gatekeeper 与 Keystore 更紧密地结合：</p>
+<h3 id="SID-机制"><a href="#SID-机制" class="headerlink" title="SID 机制"></a>SID 机制</h3><ol>
+<li>用户设置锁屏密码 → Gatekeeper enroll → 生成 <strong>SID</strong>（Secure Identifier，64-bit 随机值）</li>
+<li>SID 被封装在 password handle 中，随 handle 一起存储</li>
+<li>Keystore 中的 auth-bound 密钥在生成时会绑定到当前 SID</li>
+<li>每次验证密码成功后，Gatekeeper 输出 SID 和 auth token</li>
+<li>Keystore 用此 SID 验证 auth token 的合法性</li>
+<li>auth token 带有时间戳和 HMAC（用 Keystore 和 Gatekeeper 共享的密钥签名），用于授权 Keystore 操作</li>
+<li>这个机制确保：<strong>只有知道锁屏密码的人才能使用设备上的加密密钥</strong></li>
+</ol>
+<h3 id="Key-Authorization-流程"><a href="#Key-Authorization-流程" class="headerlink" title="Key Authorization 流程"></a>Key Authorization 流程</h3><p>Keystore 2.0 的密钥授权检查流程（简化）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">应用请求使用密钥</span><br><span class="line">    ↓</span><br><span class="line">Keystore 2.0 检查 key descriptor 中的 AuthorizationList</span><br><span class="line">    ↓</span><br><span class="line">如果包含 KeyAuthorization.TAG_TRUSTED_USER_PRESENCE_REQUIRED：</span><br><span class="line">    ↓</span><br><span class="line">调用 IAuthTokenManager.checkAuthorization(authToken, authTokenChallenge)</span><br><span class="line">    ↓</span><br><span class="line">验证 auth token:</span><br><span class="line">  (1) HMAC 签名合法性</span><br><span class="line">  (2) 时间戳未过期（ChallengeExpirySeconds，默认 60 秒）</span><br><span class="line">  (3) SID 匹配</span><br><span class="line">  (4) AuthType 匹配（Password/Fingerprint/Face）</span><br><span class="line">    ↓</span><br><span class="line">通过 → 执行密钥操作</span><br><span class="line">拒绝 → 抛出 KeyPermanentlyInvalidatedException</span><br></pre></td></tr></table></figure>
+
+<p>AOSP 相关源码：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">system/security/keystore2/src/authorization.cpp          — 授权检查实现</span><br><span class="line">system/security/keystore2/src/auth_token_manager.cpp     — auth token 管理</span><br><span class="line">system/security/keystore/include/keystore/keymaster_enforcement.h  — Keymaster enforcement</span><br></pre></td></tr></table></figure>
+
+<p>这就解释了为什么修改锁屏密码后，某些应用的加密数据会丢失——因为 Gatekeeper enroll 会生成新的 SID（除非使用 SyntheticPassword 的 re-enroll 路径），旧的 auth-bound 密钥再也无法通过 SID 匹配验证，从而永久失效。Android 9.0+ 的 SyntheticPassword 部分解决了这个问题（支持 re-enroll to new password 而不改变 DEK），但应用层 auth-bound 密钥仍可能受影响。</p>
+<h3 id="生物识别与-Gatekeeper-的集成"><a href="#生物识别与-Gatekeeper-的集成" class="headerlink" title="生物识别与 Gatekeeper 的集成"></a>生物识别与 Gatekeeper 的集成</h3><p>指纹和面部识别与 Gatekeeper 的协作机制：</p>
+<ol>
+<li>用户解锁设备 → BiometricPrompt 调用 <code>BiometricService.authenticate()</code></li>
+<li>Biometric HAL 验证指纹&#x2F;面部成功后，调用 GateKeeper 的 verify 接口</li>
+<li>GateKeeper TA 生成 auth token（类型标识为 Fingerprint 或 Face）</li>
+<li>auth token 传递给 Keystore，允许使用 biometric-bound 密钥</li>
+<li>注意：首次启动或 72 小时未解锁后，biometric auth token 失效，强制要求密码验证</li>
+</ol>
+<p>AOSP 相关源码：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">frameworks/base/services/core/java/com/android/server/biometrics/BiometricService.java</span><br><span class="line">frameworks/base/services/core/java/com/android/server/biometrics/AuthSession.java</span><br><span class="line">hardware/interfaces/biometrics/fingerprint/2.1/IBiometricsFingerprint.hal</span><br></pre></td></tr></table></figure>
+
+<h2 id="安全评估与取证"><a href="#安全评估与取证" class="headerlink" title="安全评估与取证"></a>安全评估与取证</h2><h3 id="获取密码的难度评估"><a href="#获取密码的难度评估" class="headerlink" title="获取密码的难度评估"></a>获取密码的难度评估</h3><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>难度</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>肩窥&#x2F;涂抹痕迹</td>
+<td>低</td>
+<td>物理观察图案或 PIN</td>
+</tr>
+<tr>
+<td>老设备 (4.4-)</td>
+<td>中</td>
+<td>离线彩虹表攻击 password.key</td>
+</tr>
+<tr>
+<td>现代设备 + root</td>
+<td>高</td>
+<td>可读取 gatekeeper 文件但无法离线破解（需 TEE 密钥）</td>
+</tr>
+<tr>
+<td>现代设备 - root</td>
+<td>极高</td>
+<td>无法读取 gatekeeper 文件，需硬件攻击 TEE</td>
+</tr>
+<tr>
+<td>FBE 启用 + 关机</td>
+<td>几乎不可能</td>
+<td>DEK 被 wrapped，解锁需要密码进入 TEE</td>
+</tr>
+</tbody></table>
+<h3 id="暴力破解的数学分析"><a href="#暴力破解的数学分析" class="headerlink" title="暴力破解的数学分析"></a>暴力破解的数学分析</h3><p>假设攻击者可以以 10^6 hash&#x2F;s 的速度尝试（软件 scrypt，N&#x3D;2^16 约 64MB&#x2F;次）：</p>
+<ul>
+<li>4 位 PIN（10000 种）：0.01 秒</li>
+<li>6 位 PIN（1000000 种）：1 秒</li>
+<li>8 位字母数字密码（~2.8×10^14 种）：约 8892 年</li>
+</ul>
+<p>加上 gatekeeperd 的指数退避延迟后，即使是最简单的 4 位 PIN 也需要数小时才能完成在线暴力破解（每次失败后延迟递增），远远超出抓取设备的时间窗口。</p>
+<h2 id="面试常考问题"><a href="#面试常考问题" class="headerlink" title="面试常考问题"></a>面试常考问题</h2><p><strong>Q1: Android 是如何存储锁屏密码的？是否可以直接从文件中读取密码原文？</strong></p>
+<p>A: Android 从 5.0 开始使用 Gatekeeper 机制存储密码。密码原文不会存储在任何地方。<code>/data/system/gatekeeper.password.key</code> 中存储的是一个加密句柄（handle），包含 salt、scrypt 参数和经过 TEE 中硬件密钥签名后的 hash。由于签名密钥存储在 TEE 的硬件安全区域（HUK&#x2F;Hardware Unique Key），即使获取了 root 权限也无法直接提取密钥来离线破解密码。攻击者在拥有 TEE 密钥的情况下，仍需通过暴力破解（每次猜测都需要 scrypt 计算），而 scrypt 的内存硬性特征（~64MB&#x2F;次）使得 GPU&#x2F;ASIC 加速效果有限。关键 AOSP 源码路径：<code>system/gatekeeper/gatekeeperd.cpp</code>、<code>hardware/libhardware/include/hardware/gatekeeper.h</code>、<code>frameworks/base/services/core/java/com/android/server/locksettings/LockSettingsService.java</code>。</p>
+<p><strong>Q2: scrypt 与 PBKDF2、bcrypt 相比有什么优势？为什么 Android 选择 scrypt？</strong></p>
+<p>A: scrypt 是内存硬性（memory-hard）的 KDF，每次派生需要分配大量内存（通常 16-64 MB）。PBKDF2 和 bcrypt 主要是 CPU 硬性，通过增加迭代次数提高成本，但可以使用 GPU&#x2F;ASIC 大规模并行攻击——因为它们不需要大量内存。而 scrypt 的 memory-hard 特性意味着：攻击者无论使用多么强大的 GPU，都必须为每个密码猜测分配同样大小的内存，这在硬件成本上形成了硬性限制。以密码破解常见的 ASIC 设计为例，要在单片芯片上并行处理 1000 个 scrypt 猜测（64MB&#x2F;次），需要 64GB 的片上 SRAM，这在物理和商业上都不可行。Android 选择 scrypt 正是出于对抗大规模离线破解的考虑，尤其在移动设备取证场景中尤为重要。AOSP 实现路径：<code>external/scrypt/lib/crypto/crypto_scrypt.c</code>。</p>
+<p><strong>Q3: Gatekeeper 和 Keymaster 是什么关系？它们如何协作保护用户数据？</strong></p>
+<p>A: Gatekeeper 负责密码验证和 SID 生成；Keymaster 负责密钥管理和加密操作。协作流程：(1) 用户设置锁屏密码 → Gatekeeper TA 在 TEE 中 enroll 密码并生成 SID；(2) 应用创建 auth-bound 密钥时，Keymaster 将该密钥绑定到当前 SID；(3) 解锁验证时，Gatekeeper 验证密码成功后输出 SID 和 auth token；(4) Keymaster 用此 SID 验证 auth token 的合法性（验证 HMAC、时间戳、challenge）；(5) 应用执行 Keystore 操作时，Keymaster 通过 auth token 检查授权。这个架构确保即使攻击者拿到设备的完整文件系统镜像，在没有正确锁屏密码的情况下也无法使用硬件保护的密钥。AOSP 关键路径：<code>system/security/keystore2/src/auth_token_manager.cpp</code>、<code>system/security/keystore2/src/authorization.cpp</code>、<code>system/gatekeeper/gatekeeperd.cpp</code>。</p>
+<p><strong>Q4: 什么是 Synthetic Password？它解决了什么问题？</strong></p>
+<p>A: Synthetic Password（SP）是 Android 9.0 引入的密码保护方案（AOSP：<code>frameworks/base/services/core/java/com/android/server/locksettings/SyntheticPasswordManager.java</code>），解决了两大问题：(1) 修改锁屏密码不再需要重新加密整个磁盘——因为实际加密磁盘的 DEK 由 SP 保护，修改密码时只需用旧 SP 解密 DEK、用新 SP 重新加密，IO 操作是常数时间；(2) 多用户支持——每个用户有独立的 SP 和密钥链，互不干扰。SP 的生成依赖多个因子（用户密码 + Gatekeeper handle + 设备绑定密钥），使得任何单点（如只盗取 password key 文件）都无法重建 SP。</p>
+<p><strong>Q5: 锁屏密码的延迟退避机制如何工作？能否通过重启绕过？</strong></p>
+<p>A: gatekeeperd 在验证失败后采用指数退避：<code>30ms × 2^(失败次数)</code>。失败次数存储在 <code>/data/misc/gatekeeper/</code> 的持久化文件中，重启不会重置。当失败次数达到 DevicePolicyManager 配置的阈值（默认无限制，但设备管理员可设置为 5-20 次），系统自动执行 <code>wipeData(0)</code> 恢复出厂设置。退避延迟在 gatekeeperd 的 Native 层实现（<code>system/gatekeeper/gatekeeperd.cpp</code>），不受 Java 层的生命周期影响，因此应用被杀死后重启仍然继承之前的失败计数。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li>AOSP: <code>system/gatekeeper/gatekeeperd.cpp</code> — gatekeeperd 守护进程实现</li>
+<li>AOSP: <code>hardware/libhardware/include/hardware/gatekeeper.h</code> — Gatekeeper HAL 接口定义</li>
+<li>AOSP: <code>hardware/interfaces/gatekeeper/1.0/IGatekeeper.hal</code> — HIDL GateKeeper 接口</li>
+<li>AOSP: <code>system/keymaster/</code> — Keymaster HAL 实现</li>
+<li>AOSP: <code>system/security/keystore/</code> — Keystore 1.0</li>
+<li>AOSP: <code>system/security/keystore2/</code> — Keystore 2.0 (Android 12+)</li>
+<li>AOSP: <code>external/scrypt/</code> — Android 使用的 scrypt 实现</li>
+<li>AOSP: <code>frameworks/base/services/core/java/com/android/server/locksettings/LockSettingsService.java</code> — 密码设置&#x2F;验证的 Java 层入口</li>
+<li>AOSP: <code>frameworks/base/services/core/java/com/android/server/locksettings/LockSettingsStorage.java</code> — handle 文件的读写逻辑</li>
+<li>AOSP: <code>frameworks/base/services/core/java/com/android/server/locksettings/SyntheticPasswordManager.java</code> — Synthetic Password 实现</li>
+<li>AOSP: <code>frameworks/base/core/java/com/android/internal/widget/LockPatternUtils.java</code> — 图案锁工具类</li>
+<li><code>https://www.tarsnap.com/scrypt.html</code> — scrypt 算法论文与原始实现</li>
+</ul>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%AE%89%E5%85%A8/">安全    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/06/10/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%9F%BA%E7%A1%80%E7%AF%87%E3%80%91NDK%E5%BC%80%E5%8F%91%E6%8A%80%E5%B7%A7/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【逆向安全技术-基础篇】NDK开发技巧</span></div></a></div><div class="next-post pull_right"><a href="/2021/06/01/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%9F%BA%E7%A1%80%E7%AF%87%E3%80%91dex%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【逆向安全技术-基础篇】dex文件格式解析</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2022/05/10/高级Android-【实战开发系列】NDK文件拆分加密处理/" title="NDK文件拆分加密处理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/325.jpg"><div class="relatedPosts_title">NDK文件拆分加密处理</div></a></div><div class="relatedPosts_item"><a href="/2021/08/30/高级Android-【逆向安全技术-实战篇】文件加密病毒Wannacry样本分析/" title="【逆向安全技术-实战篇】文件加密病毒Wannacry样本分析"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【逆向安全技术-实战篇】文件加密病毒Wannacry样本分析</div></a></div><div class="relatedPosts_item"><a href="/2021/06/15/高级Android-【逆向安全技术-基础篇】逆向开发常用命令/" title="【逆向安全技术-基础篇】逆向开发常用命令"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【逆向安全技术-基础篇】逆向开发常用命令</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

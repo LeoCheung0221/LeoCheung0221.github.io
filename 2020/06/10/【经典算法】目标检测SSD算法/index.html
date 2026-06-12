@@ -1,0 +1,690 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【经典算法】目标检测SSD算法 | ONE·PIECE</title><meta name="description" content="【经典算法】目标检测SSD算法"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【经典算法】目标检测SSD算法"><meta name="twitter:description" content="【经典算法】目标检测SSD算法"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【经典算法】目标检测SSD算法"><meta property="og:url" content="http://tufusi.com/2020/06/10/%E3%80%90%E7%BB%8F%E5%85%B8%E7%AE%97%E6%B3%95%E3%80%91%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8BSSD%E7%AE%97%E6%B3%95/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【经典算法】目标检测SSD算法"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2020/06/10/%E3%80%90%E7%BB%8F%E5%85%B8%E7%AE%97%E6%B3%95%E3%80%91%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8BSSD%E7%AE%97%E6%B3%95/"><link rel="prev" title="【统计学习方法死磕系列】支持向量机" href="http://tufusi.com/2020/06/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA/"><link rel="next" title="【统计学习方法死磕系列Ⅱ】PageRank算法" href="http://tufusi.com/2020/06/01/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E2%85%A1%E3%80%91PageRank%E7%AE%97%E6%B3%95/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#1-SSD-%E7%AE%97%E6%B3%95%E7%AE%80%E4%BB%8B"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">1. SSD 算法简介</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-%E7%BD%91%E7%BB%9C%E6%9E%B6%E6%9E%84%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">2. 网络架构详解</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E6%95%B4%E4%BD%93%E7%BB%93%E6%9E%84%E6%A6%82%E8%A7%88"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 整体结构概览</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E5%9F%BA%E7%A1%80%E7%BD%91%E7%BB%9C%EF%BC%9AVGG-16-%E4%B8%8E-ResNet"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 基础网络：VGG-16 与 ResNet</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-%E9%A2%9D%E5%A4%96%E5%8D%B7%E7%A7%AF%E5%B1%82%EF%BC%88Extra-Feature-Layers%EF%BC%89"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 额外卷积层（Extra Feature Layers）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-4-%E5%A4%9A%E5%B0%BA%E5%BA%A6%E6%A3%80%E6%B5%8B%E5%B1%82%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%93%B2%E5%AD%A6"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">2.4 多尺度检测层的设计哲学</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-5-L2-%E5%BD%92%E4%B8%80%E5%8C%96%EF%BC%88conv4-3-%E4%B8%93%E7%94%A8%EF%BC%89"><span class="toc_mobile_items-number">2.5.</span> <span class="toc_mobile_items-text">2.5 L2 归一化（conv4_3 专用）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-%E9%BB%98%E8%AE%A4%E6%A1%86%EF%BC%88Default-Boxes%EF%BC%89%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%8C%B9%E9%85%8D%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">3. 默认框（Default Boxes）设计与匹配策略</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E9%BB%98%E8%AE%A4%E6%A1%86%E7%9A%84%E5%B0%BA%E5%BA%A6%E5%88%86%E9%85%8D"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 默认框的尺度分配</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E9%BB%98%E8%AE%A4%E6%A1%86%E7%9A%84%E9%95%BF%E5%AE%BD%E6%AF%94"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 默认框的长宽比</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-%E9%BB%98%E8%AE%A4%E6%A1%86%E5%8C%B9%E9%85%8D%E7%AD%96%E7%95%A5%EF%BC%88Matching-Strategy%EF%BC%89"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 默认框匹配策略（Matching Strategy）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-%E9%BB%98%E8%AE%A4%E6%A1%86%E7%9A%84%E4%B8%AD%E5%BF%83%E5%9D%90%E6%A0%87%E5%92%8C%E5%B0%BA%E5%AF%B8%E7%BC%96%E7%A0%81"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">3.4 默认框的中心坐标和尺寸编码</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-%E9%A2%84%E6%B5%8B%E5%8D%B7%E7%A7%AF%E5%B1%82%EF%BC%88Prediction-Convolutions%EF%BC%89"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">4. 预测卷积层（Prediction Convolutions）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E9%A2%84%E6%B5%8B%E5%A4%B4%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 预测头的设计</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E8%BE%B9%E7%95%8C%E6%A1%86%E7%BC%96%E7%A0%81%EF%BC%88Bounding-Box-Encoding%EF%BC%89"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 边界框编码（Bounding Box Encoding）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">5. 损失函数</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E5%AE%9A%E4%BD%8D%E6%8D%9F%E5%A4%B1%EF%BC%9ASmooth-L1"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 定位损失：Smooth L1</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-%E7%BD%AE%E4%BF%A1%E5%BA%A6%E6%8D%9F%E5%A4%B1%EF%BC%9ASoftmax-Cross-Entropy"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 置信度损失：Softmax Cross-Entropy</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-%E5%9B%B0%E9%9A%BE%E8%B4%9F%E6%A0%B7%E6%9C%AC%E6%8C%96%E6%8E%98%EF%BC%88Hard-Negative-Mining%EF%BC%89"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 困难负样本挖掘（Hard Negative Mining）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA%E4%B8%8E%E8%AE%AD%E7%BB%83%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">6. 数据增强与训练策略</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA%E6%96%B9%E6%B3%95"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 数据增强方法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-%E8%AE%AD%E7%BB%83%E9%85%8D%E7%BD%AE"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 训练配置</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#7-SSD-vs-YOLO-vs-Faster-R-CNN-%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">7. SSD vs YOLO vs Faster R-CNN 对比</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-%E6%A0%B8%E5%BF%83%E8%AE%BE%E8%AE%A1%E5%B7%AE%E5%BC%82"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">7.1 核心设计差异</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-SSD-%E7%9B%B8%E6%AF%94-YOLO-v1-%E7%9A%84%E4%BC%98%E5%8A%BF"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">7.2 SSD 相比 YOLO v1 的优势</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-3-SSD-%E7%9B%B8%E6%AF%94-Faster-R-CNN-%E7%9A%84%E4%BC%98%E5%8A%BF%E4%B8%8E%E4%B8%8D%E8%B6%B3"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">7.3 SSD 相比 Faster R-CNN 的优势与不足</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-4-%E8%A7%86%E8%A7%89%E5%8C%96%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">7.4.</span> <span class="toc_mobile_items-text">7.4 视觉化对比</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-SSD-%E7%9A%84%E6%94%B9%E8%BF%9B%E4%B8%8E%E5%8F%98%E4%BD%93"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">8. SSD 的改进与变体</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-DSSD%EF%BC%88Deconvolutional-SSD%EF%BC%89"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">8.1 DSSD（Deconvolutional SSD）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-FSSD%EF%BC%88Feature-Fusion-SSD%EF%BC%89"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">8.2 FSSD（Feature Fusion SSD）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-3-RetinaNet%EF%BC%88Focal-Loss%EF%BC%89"><span class="toc_mobile_items-number">8.3.</span> <span class="toc_mobile_items-text">8.3 RetinaNet（Focal Loss）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-4-RefineDet"><span class="toc_mobile_items-number">8.4.</span> <span class="toc_mobile_items-text">8.4 RefineDet</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-%E9%9D%9E%E6%9E%81%E5%A4%A7%E5%80%BC%E6%8A%91%E5%88%B6%EF%BC%88NMS%EF%BC%89"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">9. 非极大值抑制（NMS）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-1-NMS-%E5%9C%A8-SSD-%E4%B8%AD%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">9.1 NMS 在 SSD 中的作用</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-2-%E7%B1%BB%E5%88%AB%E6%84%9F%E7%9F%A5-NMS-vs-%E7%B1%BB%E5%88%AB%E6%97%A0%E5%85%B3-NMS"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">9.2 类别感知 NMS vs 类别无关 NMS</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#10-%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E7%AD%94"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">10. 面试高频问答</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-SSD-%E7%AE%97%E6%B3%95%E7%AE%80%E4%BB%8B"><span class="toc-number">1.</span> <span class="toc-text">1. SSD 算法简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E7%BD%91%E7%BB%9C%E6%9E%B6%E6%9E%84%E8%AF%A6%E8%A7%A3"><span class="toc-number">2.</span> <span class="toc-text">2. 网络架构详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E6%95%B4%E4%BD%93%E7%BB%93%E6%9E%84%E6%A6%82%E8%A7%88"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 整体结构概览</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%9F%BA%E7%A1%80%E7%BD%91%E7%BB%9C%EF%BC%9AVGG-16-%E4%B8%8E-ResNet"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 基础网络：VGG-16 与 ResNet</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E9%A2%9D%E5%A4%96%E5%8D%B7%E7%A7%AF%E5%B1%82%EF%BC%88Extra-Feature-Layers%EF%BC%89"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 额外卷积层（Extra Feature Layers）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%A4%9A%E5%B0%BA%E5%BA%A6%E6%A3%80%E6%B5%8B%E5%B1%82%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%93%B2%E5%AD%A6"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 多尺度检测层的设计哲学</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-L2-%E5%BD%92%E4%B8%80%E5%8C%96%EF%BC%88conv4-3-%E4%B8%93%E7%94%A8%EF%BC%89"><span class="toc-number">2.5.</span> <span class="toc-text">2.5 L2 归一化（conv4_3 专用）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E9%BB%98%E8%AE%A4%E6%A1%86%EF%BC%88Default-Boxes%EF%BC%89%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%8C%B9%E9%85%8D%E7%AD%96%E7%95%A5"><span class="toc-number">3.</span> <span class="toc-text">3. 默认框（Default Boxes）设计与匹配策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E9%BB%98%E8%AE%A4%E6%A1%86%E7%9A%84%E5%B0%BA%E5%BA%A6%E5%88%86%E9%85%8D"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 默认框的尺度分配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E9%BB%98%E8%AE%A4%E6%A1%86%E7%9A%84%E9%95%BF%E5%AE%BD%E6%AF%94"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 默认框的长宽比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E9%BB%98%E8%AE%A4%E6%A1%86%E5%8C%B9%E9%85%8D%E7%AD%96%E7%95%A5%EF%BC%88Matching-Strategy%EF%BC%89"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 默认框匹配策略（Matching Strategy）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E9%BB%98%E8%AE%A4%E6%A1%86%E7%9A%84%E4%B8%AD%E5%BF%83%E5%9D%90%E6%A0%87%E5%92%8C%E5%B0%BA%E5%AF%B8%E7%BC%96%E7%A0%81"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 默认框的中心坐标和尺寸编码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E9%A2%84%E6%B5%8B%E5%8D%B7%E7%A7%AF%E5%B1%82%EF%BC%88Prediction-Convolutions%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">4. 预测卷积层（Prediction Convolutions）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E9%A2%84%E6%B5%8B%E5%A4%B4%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 预测头的设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E8%BE%B9%E7%95%8C%E6%A1%86%E7%BC%96%E7%A0%81%EF%BC%88Bounding-Box-Encoding%EF%BC%89"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 边界框编码（Bounding Box Encoding）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0"><span class="toc-number">5.</span> <span class="toc-text">5. 损失函数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E5%AE%9A%E4%BD%8D%E6%8D%9F%E5%A4%B1%EF%BC%9ASmooth-L1"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 定位损失：Smooth L1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E7%BD%AE%E4%BF%A1%E5%BA%A6%E6%8D%9F%E5%A4%B1%EF%BC%9ASoftmax-Cross-Entropy"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 置信度损失：Softmax Cross-Entropy</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E5%9B%B0%E9%9A%BE%E8%B4%9F%E6%A0%B7%E6%9C%AC%E6%8C%96%E6%8E%98%EF%BC%88Hard-Negative-Mining%EF%BC%89"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 困难负样本挖掘（Hard Negative Mining）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA%E4%B8%8E%E8%AE%AD%E7%BB%83%E7%AD%96%E7%95%A5"><span class="toc-number">6.</span> <span class="toc-text">6. 数据增强与训练策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA%E6%96%B9%E6%B3%95"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 数据增强方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E8%AE%AD%E7%BB%83%E9%85%8D%E7%BD%AE"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 训练配置</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-SSD-vs-YOLO-vs-Faster-R-CNN-%E5%AF%B9%E6%AF%94"><span class="toc-number">7.</span> <span class="toc-text">7. SSD vs YOLO vs Faster R-CNN 对比</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E6%A0%B8%E5%BF%83%E8%AE%BE%E8%AE%A1%E5%B7%AE%E5%BC%82"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 核心设计差异</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-SSD-%E7%9B%B8%E6%AF%94-YOLO-v1-%E7%9A%84%E4%BC%98%E5%8A%BF"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 SSD 相比 YOLO v1 的优势</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-SSD-%E7%9B%B8%E6%AF%94-Faster-R-CNN-%E7%9A%84%E4%BC%98%E5%8A%BF%E4%B8%8E%E4%B8%8D%E8%B6%B3"><span class="toc-number">7.3.</span> <span class="toc-text">7.3 SSD 相比 Faster R-CNN 的优势与不足</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-4-%E8%A7%86%E8%A7%89%E5%8C%96%E5%AF%B9%E6%AF%94"><span class="toc-number">7.4.</span> <span class="toc-text">7.4 视觉化对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-SSD-%E7%9A%84%E6%94%B9%E8%BF%9B%E4%B8%8E%E5%8F%98%E4%BD%93"><span class="toc-number">8.</span> <span class="toc-text">8. SSD 的改进与变体</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-DSSD%EF%BC%88Deconvolutional-SSD%EF%BC%89"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 DSSD（Deconvolutional SSD）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-FSSD%EF%BC%88Feature-Fusion-SSD%EF%BC%89"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 FSSD（Feature Fusion SSD）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-RetinaNet%EF%BC%88Focal-Loss%EF%BC%89"><span class="toc-number">8.3.</span> <span class="toc-text">8.3 RetinaNet（Focal Loss）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-4-RefineDet"><span class="toc-number">8.4.</span> <span class="toc-text">8.4 RefineDet</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E9%9D%9E%E6%9E%81%E5%A4%A7%E5%80%BC%E6%8A%91%E5%88%B6%EF%BC%88NMS%EF%BC%89"><span class="toc-number">9.</span> <span class="toc-text">9. 非极大值抑制（NMS）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-NMS-%E5%9C%A8-SSD-%E4%B8%AD%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-number">9.1.</span> <span class="toc-text">9.1 NMS 在 SSD 中的作用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E7%B1%BB%E5%88%AB%E6%84%9F%E7%9F%A5-NMS-vs-%E7%B1%BB%E5%88%AB%E6%97%A0%E5%85%B3-NMS"><span class="toc-number">9.2.</span> <span class="toc-text">9.2 类别感知 NMS vs 类别无关 NMS</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E7%AD%94"><span class="toc-number">10.</span> <span class="toc-text">10. 面试高频问答</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【经典算法】目标检测SSD算法</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2020-06-10<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">深度学习</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/">目标检测</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">5.4k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 20 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="1-SSD-算法简介"><a href="#1-SSD-算法简介" class="headerlink" title="1. SSD 算法简介"></a>1. SSD 算法简介</h2><p>SSD（Single Shot MultiBox Detector）是 Wei Liu 等人在 ECCV 2016 上提出的单阶段（one-stage）目标检测算法。它的核心设计思想是：<strong>在一个前向传播中直接预测目标框的类别和位置偏移，无需单独的区域提议（Region Proposal）阶段</strong>。</p>
+<p>SSD 的主要创新包括：</p>
+<ul>
+<li>使用<strong>多尺度特征图（multi-scale feature maps）</strong>进行检测，大特征图负责检测小目标，小特征图负责检测大目标</li>
+<li>在每个特征图的每个空间位置设置一组<strong>默认框（default boxes）</strong>（也称为 anchor boxes &#x2F; prior boxes），不同层的默认框有不同的尺度和长宽比</li>
+<li>直接通过卷积预测每个默认框的类别分数和边界框偏移，端到端训练</li>
+</ul>
+<p>SSD 在 VOC2007 上达到了 74.3% mAP（使用 300x300 输入）和 76.8% mAP（使用 512x512 输入），在速度和精度的平衡上超越了同期 YOLO v1 和 Faster R-CNN。</p>
+<hr>
+<h2 id="2-网络架构详解"><a href="#2-网络架构详解" class="headerlink" title="2. 网络架构详解"></a>2. 网络架构详解</h2><h3 id="2-1-整体结构概览"><a href="#2-1-整体结构概览" class="headerlink" title="2.1 整体结构概览"></a>2.1 整体结构概览</h3><p>SSD 的网络由两部分组成：</p>
+<ol>
+<li><strong>基础网络（Base Network）</strong>：标准图像分类网络去掉最后的全连接分类层。论文使用 VGG-16（截断至 conv5_3）</li>
+<li><strong>附加层（Extra Feature Layers）</strong>：在基础网络后添加一系列卷积层，逐步降低空间分辨率，产生多个尺度的特征图</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SSD 架构示意：</span><br><span class="line"></span><br><span class="line">Input (300x300x3)</span><br><span class="line">    |</span><br><span class="line">    v</span><br><span class="line">VGG-16 up to conv4_3 (38x38x512)  &lt;--- 检测层1 (Detector &amp; Classifier)</span><br><span class="line">    |</span><br><span class="line">    v</span><br><span class="line">VGG-16 conv5_3 (19x19x512)        &lt;--- 检测层2 (通过空洞卷积)</span><br><span class="line">    |</span><br><span class="line">    v</span><br><span class="line">FC6 → FC7 (19x19x1024)            &lt;--- 检测层3</span><br><span class="line">    |</span><br><span class="line">    v</span><br><span class="line">Conv8_2 (10x10x512)               &lt;--- 检测层4</span><br><span class="line">    |</span><br><span class="line">    v</span><br><span class="line">Conv9_2 (5x5x256)                 &lt;--- 检测层5</span><br><span class="line">    |</span><br><span class="line">    v</span><br><span class="line">Conv10_2 (3x3x256)                &lt;--- 检测层6</span><br><span class="line">    |</span><br><span class="line">    v</span><br><span class="line">Conv11_2 (1x1x256)                &lt;--- 检测层7</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-基础网络：VGG-16-与-ResNet"><a href="#2-2-基础网络：VGG-16-与-ResNet" class="headerlink" title="2.2 基础网络：VGG-16 与 ResNet"></a>2.2 基础网络：VGG-16 与 ResNet</h3><p><strong>VGG-16 作为 Backbone</strong>：</p>
+<p>原始的 SSD 使用 VGG-16 作为骨干网络（截断在conv5_3），并做了如下修改：</p>
+<ul>
+<li>将 VGG-16 的 FC6 和 FC7 全连接层替换为卷积层（使用空洞卷积保持感受野）</li>
+<li>FC6 替换为：3x3 空洞卷积，dilation&#x3D;6，输出 1024 通道</li>
+<li>FC7 替换为：1x1 卷积，输出 1024 通道</li>
+<li>去掉所有 Dropout 层和 FC8 分类层</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">VGG-16 backbone 参数配置：</span><br><span class="line"></span><br><span class="line">conv1_1:  3x3, 64</span><br><span class="line">conv1_2:  3x3, 64         →  MaxPool (2x2, stride 2)</span><br><span class="line">conv2_1:  3x3, 128</span><br><span class="line">conv2_2:  3x3, 128        →  MaxPool (2x2, stride 2)</span><br><span class="line">conv3_1:  3x3, 256</span><br><span class="line">conv3_2:  3x3, 256</span><br><span class="line">conv3_3:  3x3, 256        →  MaxPool (2x2, stride 2)  (Ceil Mode)</span><br><span class="line">conv4_1:  3x3, 512</span><br><span class="line">conv4_2:  3x3, 512</span><br><span class="line">conv4_3:  3x3, 512        →  MaxPool (2x2, stride 2)  ← L2 Norm 后输出检测</span><br><span class="line">conv5_1:  3x3, 512</span><br><span class="line">conv5_2:  3x3, 512</span><br><span class="line">conv5_3:  3x3, 512</span><br></pre></td></tr></table></figure>
+
+<p><strong>ResNet 作为 Backbone</strong>：</p>
+<p>后续工作（如 DSSD）将 VGG-16 替换为 ResNet-101，获得了显著的精度提升。使用 ResNet 时：</p>
+<ul>
+<li>在 ResNet 的 conv3_x 输出后额外添加反卷积层来增强特征图分辨率</li>
+<li>特征提取能力比 VGG-16 更强，尤其对小目标</li>
+</ul>
+<h3 id="2-3-额外卷积层（Extra-Feature-Layers）"><a href="#2-3-额外卷积层（Extra-Feature-Layers）" class="headerlink" title="2.3 额外卷积层（Extra Feature Layers）"></a>2.3 额外卷积层（Extra Feature Layers）</h3><table>
+<thead>
+<tr>
+<th>层名</th>
+<th>输入尺寸</th>
+<th>卷积参数</th>
+<th>输出尺寸</th>
+<th>下采样方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Conv6 (FC6)</td>
+<td>19x19x512</td>
+<td>3x3x1024, dil&#x3D;6</td>
+<td>19x19x1024</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Conv7 (FC7)</td>
+<td>19x19x1024</td>
+<td>1x1x1024</td>
+<td>19x19x1024</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Conv8_1</td>
+<td>19x19x1024</td>
+<td>1x1x256</td>
+<td>19x19x256</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Conv8_2</td>
+<td>19x19x256</td>
+<td>3x3x512, s2</td>
+<td>10x10x512</td>
+<td>stride&#x3D;2</td>
+</tr>
+<tr>
+<td>Conv9_1</td>
+<td>10x10x512</td>
+<td>1x1x128</td>
+<td>10x10x128</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Conv9_2</td>
+<td>10x10x128</td>
+<td>3x3x256, s2</td>
+<td>5x5x256</td>
+<td>stride&#x3D;2</td>
+</tr>
+<tr>
+<td>Conv10_1</td>
+<td>5x5x256</td>
+<td>1x1x128</td>
+<td>5x5x128</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Conv10_2</td>
+<td>5x5x128</td>
+<td>3x3x256, s2</td>
+<td>3x3x256</td>
+<td>stride&#x3D;2</td>
+</tr>
+<tr>
+<td>Conv11_1</td>
+<td>3x3x256</td>
+<td>1x1x128</td>
+<td>3x3x128</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Conv11_2</td>
+<td>3x3x128</td>
+<td>3x3x256</td>
+<td>1x1x256</td>
+<td>valid padding</td>
+</tr>
+</tbody></table>
+<h3 id="2-4-多尺度检测层的设计哲学"><a href="#2-4-多尺度检测层的设计哲学" class="headerlink" title="2.4 多尺度检测层的设计哲学"></a>2.4 多尺度检测层的设计哲学</h3><p>SSD 从 6 个不同分辨率的特征图上进行检测（实际使用 6 层，conv4_3 + FC7 + conv8_2 + conv9_2 + conv10_2 + conv11_2）：</p>
+<table>
+<thead>
+<tr>
+<th>检测层</th>
+<th>特征图尺寸</th>
+<th>感受野</th>
+<th>主要负责检测的目标尺寸</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>conv4_3</td>
+<td>38x38</td>
+<td>小（~30-60 px）</td>
+<td>极小目标</td>
+</tr>
+<tr>
+<td>fc7</td>
+<td>19x19</td>
+<td>中（~60-110 px）</td>
+<td>小目标</td>
+</tr>
+<tr>
+<td>conv8_2</td>
+<td>10x10</td>
+<td>中偏大（~110-160 px）</td>
+<td>中等目标</td>
+</tr>
+<tr>
+<td>conv9_2</td>
+<td>5x5</td>
+<td>大（~160-220 px）</td>
+<td>较大目标</td>
+</tr>
+<tr>
+<td>conv10_2</td>
+<td>3x3</td>
+<td>很大（~220-280 px）</td>
+<td>大目标</td>
+</tr>
+<tr>
+<td>conv11_2</td>
+<td>1x1</td>
+<td>最大（~280-350 px）</td>
+<td>超大目标</td>
+</tr>
+</tbody></table>
+<p><strong>为什么需要多尺度检测？</strong></p>
+<p>深度卷积网络中，浅层特征图空间分辨率高但语义信息弱，适合定位小目标；深层特征图空间分辨率低但语义信息强，适合对大目标进行分类。SSD 的多尺度检测策略使其能够同时利用不同深度的特征信息，从而在不同尺度的目标上都有良好的检测效果。这与图像金字塔（image pyramid）的思想类似，但计算开销小得多。</p>
+<h3 id="2-5-L2-归一化（conv4-3-专用）"><a href="#2-5-L2-归一化（conv4-3-专用）" class="headerlink" title="2.5 L2 归一化（conv4_3 专用）"></a>2.5 L2 归一化（conv4_3 专用）</h3><p>conv4_3 层的特征值尺度（norm）通常比其他层大许多（约为 20:1），如果直接与其他层的特征混用，会导致训练不稳定。SSD 在 conv4_3 的输出后添加了一个 L2 归一化层，并引入一个可学习的缩放因子 $\gamma$：</p>
+<p>$$
+\text{output} = \gamma \cdot \frac{x}{\|x\|_2}
+$$</p>
+<p>初始 $\gamma &#x3D; 20$，让模型在学习过程中自行调整到合适的尺度。</p>
+<hr>
+<h2 id="3-默认框（Default-Boxes）设计与匹配策略"><a href="#3-默认框（Default-Boxes）设计与匹配策略" class="headerlink" title="3. 默认框（Default Boxes）设计与匹配策略"></a>3. 默认框（Default Boxes）设计与匹配策略</h2><h3 id="3-1-默认框的尺度分配"><a href="#3-1-默认框的尺度分配" class="headerlink" title="3.1 默认框的尺度分配"></a>3.1 默认框的尺度分配</h3><p>SSD 为每个检测层设计了一组默认框，这些默认框的尺度（scale）随着层加深而线性递增：</p>
+<p>$$
+s_k = s_{\min} + \frac{s_{\max} - s_{\min}}{m - 1}(k - 1), \quad k \in [1, m]
+$$</p>
+<p>其中 $s_{\min} &#x3D; 0.2$，$s_{\max} &#x3D; 0.9$（相对于输入尺寸的比例），$m &#x3D; 6$ 是检测层的数量。</p>
+<p>实际每一层的尺度为：</p>
+<ul>
+<li>conv4_3: $s_1 &#x3D; 0.2$ （即 $0.2 \times 300 &#x3D; 60$ px，但实际设为 30 px）</li>
+<li>fc7: $s_2 &#x3D; 0.34$（~102 px）</li>
+<li>conv8_2: $s_3 &#x3D; 0.48$（~144 px）</li>
+<li>conv9_2: $s_4 &#x3D; 0.62$（~186 px）</li>
+<li>conv10_2: $s_5 &#x3D; 0.76$（~228 px）</li>
+<li>conv11_2: $s_6 &#x3D; 0.9$（~270 px）</li>
+</ul>
+<p>注意：conv4_3 的 scale 缩小处理（$s_{\min}&#x2F;2 &#x3D; 0.1$）。</p>
+<h3 id="3-2-默认框的长宽比"><a href="#3-2-默认框的长宽比" class="headerlink" title="3.2 默认框的长宽比"></a>3.2 默认框的长宽比</h3><p>每个空间位置设置多种长宽比的默认框。标准长宽比集合为：</p>
+<p>$$
+a_r \in \left\{1, 2, 3, \frac{1}{2}, \frac{1}{3}\right\}
+$$</p>
+<p>对于每个长宽比 $a_r$，默认框的宽和高分别为：</p>
+<p>$$
+w_k^a = s_k \sqrt{a_r}, \quad h_k^a = \frac{s_k}{\sqrt{a_r}}
+$$</p>
+<p>对于长宽比为 1 的情况，额外增加一个尺度为 $s_k’ &#x3D; \sqrt{s_k \cdot s_{k+1}}$ 的默认框：</p>
+<p>$$
+w_k^1 = h_k^1 = \sqrt{s_k \cdot s_{k+1}}
+$$</p>
+<p><strong>各层默认框配置总结</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>检测层</th>
+<th>长宽比</th>
+<th>每位置默认框数</th>
+<th>总默认框数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>conv4_3</td>
+<td>1, 2, 1&#x2F;2</td>
+<td>4 (含 $s_k’$ 的方形框)</td>
+<td>38x38x4 &#x3D; 5,776</td>
+</tr>
+<tr>
+<td>fc7</td>
+<td>1, 2, 3, 1&#x2F;2, 1&#x2F;3</td>
+<td>6</td>
+<td>19x19x6 &#x3D; 2,166</td>
+</tr>
+<tr>
+<td>conv8_2</td>
+<td>1, 2, 3, 1&#x2F;2, 1&#x2F;3</td>
+<td>6</td>
+<td>10x10x6 &#x3D; 600</td>
+</tr>
+<tr>
+<td>conv9_2</td>
+<td>1, 2, 3, 1&#x2F;2, 1&#x2F;3</td>
+<td>6</td>
+<td>5x5x6 &#x3D; 150</td>
+</tr>
+<tr>
+<td>conv10_2</td>
+<td>1, 2, 1&#x2F;2</td>
+<td>4</td>
+<td>3x3x4 &#x3D; 36</td>
+</tr>
+<tr>
+<td>conv11_2</td>
+<td>1, 2, 1&#x2F;2</td>
+<td>4</td>
+<td>1x1x4 &#x3D; 4</td>
+</tr>
+</tbody></table>
+<p><strong>总计默认框数量</strong>：$38^2 \times 4 + 19^2 \times 6 + 10^2 \times 6 + 5^2 \times 6 + 3^2 \times 4 + 1^2 \times 4 &#x3D; 5,776 + 2,166 + 600 + 150 + 36 + 4 &#x3D; 8,732$</p>
+<p>这些默认框密集地覆盖了输入图像的各种位置和尺度，为后续的预测和匹配奠定了基础。</p>
+<h3 id="3-3-默认框匹配策略（Matching-Strategy）"><a href="#3-3-默认框匹配策略（Matching-Strategy）" class="headerlink" title="3.3 默认框匹配策略（Matching Strategy）"></a>3.3 默认框匹配策略（Matching Strategy）</h3><p>SSD 通过 Jaccard 重叠（即 IoU, Intersection over Union）将默认框与真实框（ground truth boxes）进行匹配：</p>
+<ol>
+<li><strong>最佳匹配</strong>：对于每个真实框，选择与其 IoU 最高的默认框作为正样本</li>
+<li><strong>阈值匹配</strong>：对于所有默认框，如果与任意真实框的 IoU &gt; 阈值（通常设为 0.5），则也标记为正样本</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Pseudo-code: Matching Strategy</span><br><span class="line"></span><br><span class="line">for each ground_truth_box gt in batch:</span><br><span class="line">    // Step 1: best matching — 对每个 gt 保证至少有一个匹配</span><br><span class="line">    ious = compute_iou(gt, all_default_boxes)</span><br><span class="line">    best_match = argmax(ious)</span><br><span class="line">    match[best_match] = gt  // 正样本</span><br><span class="line"></span><br><span class="line">    // Step 2: IoU threshold — 保证足够的正样本</span><br><span class="line">    for each default_box db:</span><br><span class="line">        max_iou = max(compute_iou(db, all_gt_boxes))</span><br><span class="line">        if max_iou &gt; 0.5:</span><br><span class="line">            match[db] = argmax_gt(db)  // 正样本</span><br></pre></td></tr></table></figure>
+
+<p>经过匹配后，大部分默认框都是负样本（背景类），正样本通常占总默认框的 1% 不到。这个严重的正负样本不平衡问题由<strong>困难负样本挖掘（Hard Negative Mining）</strong>来解决。</p>
+<h3 id="3-4-默认框的中心坐标和尺寸编码"><a href="#3-4-默认框的中心坐标和尺寸编码" class="headerlink" title="3.4 默认框的中心坐标和尺寸编码"></a>3.4 默认框的中心坐标和尺寸编码</h3><p>对于特征图位置 $(i, j)$，其默认框的中心坐标（归一化到 $[0, 1]$）：</p>
+<p>$$
+cx = \frac{i + 0.5}{|f_k|}, \quad cy = \frac{j + 0.5}{|f_k|}
+$$</p>
+<p>其中 $|f_k|$ 是第 $k$ 个特征图的宽度&#x2F;高度（假设为方形）。</p>
+<hr>
+<h2 id="4-预测卷积层（Prediction-Convolutions）"><a href="#4-预测卷积层（Prediction-Convolutions）" class="headerlink" title="4. 预测卷积层（Prediction Convolutions）"></a>4. 预测卷积层（Prediction Convolutions）</h2><h3 id="4-1-预测头的设计"><a href="#4-1-预测头的设计" class="headerlink" title="4.1 预测头的设计"></a>4.1 预测头的设计</h3><p>对于每个检测层，SSD 使用一组小的卷积核（3x3 convolutions with padding&#x3D;1）直接预测默认框的类别分数和边界框偏移：</p>
+<p><strong>类别预测</strong>：对于 $K$ 个类别（含背景类），每个空间位置、每个默认框需要预测 $K$ 个分数：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">conv_cls: 3x3 conv, output channels = num_boxes_per_location * num_classes</span><br></pre></td></tr></table></figure>
+
+<p><strong>边界框回归</strong>：对于每个默认框，预测 4 个偏移量（中心坐标 cx, cy 的偏移和宽度 w, 高度 h 的对数缩放）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">conv_loc: 3x3 conv, output channels = num_boxes_per_location * 4</span><br></pre></td></tr></table></figure>
+
+<p><strong>数值示例</strong>（conv4_3 层）：</p>
+<ul>
+<li>每位置 4 个默认框</li>
+<li>类别数（含背景）：VOC 为 21，COCO 为 81</li>
+<li>分类输出通道：4 x 21 &#x3D; 84</li>
+<li>回归输出通道：4 x 4 &#x3D; 16</li>
+</ul>
+<h3 id="4-2-边界框编码（Bounding-Box-Encoding）"><a href="#4-2-边界框编码（Bounding-Box-Encoding）" class="headerlink" title="4.2 边界框编码（Bounding Box Encoding）"></a>4.2 边界框编码（Bounding Box Encoding）</h3><p>SSD 使用与 Faster R-CNN 类似的边界框编码方式。对于默认框 $d &#x3D; (d^{cx}, d^{cy}, d^w, d^h)$ 和真实框 $g &#x3D; (g^{cx}, g^{cy}, g^w, g^h)$，编码后的回归目标 $\hat{g}$ 为：</p>
+<p>$$
+\hat{g}^{cx} = \frac{g^{cx} - d^{cx}}{d^w}, \quad \hat{g}^{cy} = \frac{g^{cy} - d^{cy}}{d^h}
+$$</p>
+<p>$$
+\hat{g}^{w} = \log\left(\frac{g^w}{d^w}\right), \quad \hat{g}^{h} = \log\left(\frac{g^h}{d^h}\right)
+$$</p>
+<p>解码时：</p>
+<p>$$
+g^{cx} = d^{cx} + \hat{g}^{cx} \cdot d^w, \quad g^{cy} = d^{cy} + \hat{g}^{cy} \cdot d^h
+$$</p>
+<p>$$
+g^w = d^w \cdot \exp(\hat{g}^{w}), \quad g^h = d^h \cdot \exp(\hat{g}^{h})
+$$</p>
+<hr>
+<h2 id="5-损失函数"><a href="#5-损失函数" class="headerlink" title="5. 损失函数"></a>5. 损失函数</h2><p>SSD 的总损失函数为分类损失和定位损失的加权和：</p>
+<p>$$
+L(x, c, l, g) = \frac{1}{N} \left[ L_{\text{conf}}(x, c) + \alpha L_{\text{loc}}(x, l, g) \right]
+$$</p>
+<p>其中 $N$ 是匹配的正样本默认框数量，$\alpha$ 是平衡系数（通常设为 1），$x$ 是匹配指示矩阵。</p>
+<h3 id="5-1-定位损失：Smooth-L1"><a href="#5-1-定位损失：Smooth-L1" class="headerlink" title="5.1 定位损失：Smooth L1"></a>5.1 定位损失：Smooth L1</h3><p>SSD 使用 Smooth L1 损失进行边界框回归。对于匹配到第 $k$ 类、第 $j$ 个真实框的第 $i$ 个默认框：</p>
+<p>$$
+L_{\text{loc}}(x, l, g) = \sum_{i \in \text{Pos}} \sum_{m \in \{cx, cy, w, h\}} x_{ij}^k \cdot \text{smooth}_{L1}(l_i^m - \hat{g}_j^m)
+$$</p>
+<p>其中：</p>
+<p>$$
+\text{smooth}_{L1}(z) = \begin{cases} 0.5 z^2, & |z| < 1 \\ |z| - 0.5, & |z| \geq 1 \end{cases}
+$$</p>
+<p>Smooth L1 的优点：相比于 L2 损失，对离群值（outliers）不那么敏感，训练更稳定；相比于 L1 损失，在零点附近是光滑的，梯度连续。</p>
+<h3 id="5-2-置信度损失：Softmax-Cross-Entropy"><a href="#5-2-置信度损失：Softmax-Cross-Entropy" class="headerlink" title="5.2 置信度损失：Softmax Cross-Entropy"></a>5.2 置信度损失：Softmax Cross-Entropy</h3><p>$$
+L_{\text{conf}}(x, c) = -\sum_{i \in \text{Pos}} x_{ij}^p \log(\hat{c}_i^p) - \sum_{i \in \text{Neg}} \log(\hat{c}_i^0)
+$$</p>
+<p>其中 $\hat{c}_i^p &#x3D; \frac{\exp(c_i^p)}{\sum_p \exp(c_i^p)}$ 是经过 softmax 的类别概率，背景类为 $p&#x3D;0$。</p>
+<h3 id="5-3-困难负样本挖掘（Hard-Negative-Mining）"><a href="#5-3-困难负样本挖掘（Hard-Negative-Mining）" class="headerlink" title="5.3 困难负样本挖掘（Hard Negative Mining）"></a>5.3 困难负样本挖掘（Hard Negative Mining）</h3><p>SSD 检测中的一个关键挑战是极端的正负样本不平衡。在 8732 个默认框中，通常只有数个到数十个正样本，其余全部是负样本。简单地将所有负样本用于训练会导致模型倾向于预测”所有框都是背景”。</p>
+<p><strong>Hard Negative Mining 算法</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Algorithm: Hard Negative Mining in SSD</span><br><span class="line"></span><br><span class="line">positive_samples = matched boxes (IoU &gt; 0.5)</span><br><span class="line">negative_samples = unmatched boxes (IoU &lt; 0.5)</span><br><span class="line"></span><br><span class="line">// 计算所有负样本的置信度损失（背景类的交叉熵）</span><br><span class="line">conf_loss_neg = cross_entropy(pred_neg, label=0)  // shape: (num_neg,)</span><br><span class="line"></span><br><span class="line">// 按损失值降序排序，选择 Top-K（困难负样本）</span><br><span class="line">sorted_indices = argsort(conf_loss_neg, descending=True)</span><br><span class="line">hard_negatives = sorted_indices[:k]  // k = 3 * num_positives</span><br><span class="line"></span><br><span class="line">// 最终的训练负样本 = 困难负样本</span><br><span class="line">training_samples = positive_samples ∪ hard_negatives</span><br></pre></td></tr></table></figure>
+
+<p>通常将正负样本比例控制在 1:3 左右（即 $k &#x3D; 3 \times N_{\text{pos}}$），这样既保证了足够的负样本参与训练，又避免了负样本淹没模型的问题。</p>
+<p><strong>为什么困难负样本挖掘有效？</strong></p>
+<ul>
+<li>简单的负样本（模型已经可以正确预测为背景）不会产生有意义的梯度信号</li>
+<li>困难负样本（模型误将背景预测为某类别）能提供最有价值的梯度信息，引导模型学习到正确的分类边界</li>
+<li>保持正负比例平衡有利于训练稳定</li>
+</ul>
+<hr>
+<h2 id="6-数据增强与训练策略"><a href="#6-数据增强与训练策略" class="headerlink" title="6. 数据增强与训练策略"></a>6. 数据增强与训练策略</h2><h3 id="6-1-数据增强方法"><a href="#6-1-数据增强方法" class="headerlink" title="6.1 数据增强方法"></a>6.1 数据增强方法</h3><p>SSD 使用了广泛的数据增强来提升模型鲁棒性：</p>
+<table>
+<thead>
+<tr>
+<th>增强方法</th>
+<th>参数设置</th>
+<th>目的</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>随机裁剪（Random Crop）</td>
+<td>IoU约束：[0.1, 0.3, 0.5, 0.7, 0.9]</td>
+<td>模拟目标被部分遮挡的情况</td>
+</tr>
+<tr>
+<td>颜色抖动（Color Jitter）</td>
+<td>亮度、对比度、饱和度、色调</td>
+<td>提升对光照变化的鲁棒性</td>
+</tr>
+<tr>
+<td>随机翻转（Random Flip）</td>
+<td>水平翻转，概率 0.5</td>
+<td>使模型不受目标朝向影响</td>
+</tr>
+<tr>
+<td>尺寸变化（Resize）</td>
+<td>统一 resize 到 300x300</td>
+<td>保证固定输入尺寸</td>
+</tr>
+</tbody></table>
+<p><strong>随机裁剪的具体实现</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Algorithm: SSD Sampling Strategy for Data Augmentation</span><br><span class="line"></span><br><span class="line">for each training image:</span><br><span class="line">    while True:</span><br><span class="line">        // 随机采样裁剪窗口</span><br><span class="line">        crop_box = random_crop_window(image)</span><br><span class="line"></span><br><span class="line">        // 计算裁剪窗口与所有 gt 框的 IoU</span><br><span class="line">        ious = [iou(crop_box, gt) for gt in ground_truth_boxes]</span><br><span class="line"></span><br><span class="line">        // 采样策略（均匀随机选择一种）：</span><br><span class="line">        mode = random.choice([&#x27;full&#x27;, &#x27;partial&#x27;, &#x27;random&#x27;])</span><br><span class="line">        if mode == &#x27;full&#x27;:       # 直接使用原图（不裁剪）</span><br><span class="line">            break</span><br><span class="line">        elif mode == &#x27;partial&#x27;:  # 裁剪窗口必须与某个 gt 框的 IoU 在某个区间内</span><br><span class="line">            if any(iou in [0.1, 0.3, 0.5, 0.7, 0.9] for iou in ious):</span><br><span class="line">                keep gt boxes with center in crop box</span><br><span class="line">                break</span><br><span class="line">        else:                    # 随机裁剪</span><br><span class="line">            break</span><br><span class="line"></span><br><span class="line">    // 以 0.5 的概率水平翻转</span><br><span class="line">    if random() &lt; 0.5:</span><br><span class="line">        image, boxes = horizontal_flip(image, boxes)</span><br><span class="line"></span><br><span class="line">    // 颜色扰动</span><br><span class="line">    image = photometric_distortions(image)</span><br><span class="line"></span><br><span class="line">    // resize 到固定尺寸</span><br><span class="line">    image = resize(image, (300, 300))</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-2-训练配置"><a href="#6-2-训练配置" class="headerlink" title="6.2 训练配置"></a>6.2 训练配置</h3><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>设置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>优化器</td>
+<td>SGD</td>
+</tr>
+<tr>
+<td>动量（Momentum）</td>
+<td>0.9</td>
+</tr>
+<tr>
+<td>权重衰减（Weight Decay）</td>
+<td>0.0005</td>
+</tr>
+<tr>
+<td>Batch Size</td>
+<td>32</td>
+</tr>
+<tr>
+<td>初始学习率</td>
+<td>0.001 (前 40k 迭代)，之后降至 0.0001，再降至 0.00001</td>
+</tr>
+<tr>
+<td>总迭代数</td>
+<td>120k (VOC0712)</td>
+</tr>
+<tr>
+<td>学习率衰减策略</td>
+<td>在第 80k 和 100k 迭代时衰减为原来的 1&#x2F;10</td>
+</tr>
+<tr>
+<td>权重初始化</td>
+<td>Xavier (所有卷积层)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="7-SSD-vs-YOLO-vs-Faster-R-CNN-对比"><a href="#7-SSD-vs-YOLO-vs-Faster-R-CNN-对比" class="headerlink" title="7. SSD vs YOLO vs Faster R-CNN 对比"></a>7. SSD vs YOLO vs Faster R-CNN 对比</h2><h3 id="7-1-核心设计差异"><a href="#7-1-核心设计差异" class="headerlink" title="7.1 核心设计差异"></a>7.1 核心设计差异</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Faster R-CNN</th>
+<th>YOLO v1</th>
+<th>SSD</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>检测范式</td>
+<td>Two-stage</td>
+<td>One-stage</td>
+<td>One-stage</td>
+</tr>
+<tr>
+<td>区域提议</td>
+<td>RPN（独立网络）</td>
+<td>无（网格划分）</td>
+<td>无（默认框）</td>
+</tr>
+<tr>
+<td>特征图尺度</td>
+<td>单一（RPN + RoI Pooling 后处理）</td>
+<td>单一（7x7 网格）</td>
+<td>多个（6 个尺度）</td>
+</tr>
+<tr>
+<td>Anchor&#x2F;Default Box</td>
+<td>9 种 anchors（3 尺度 x 3 比例）</td>
+<td>无 explicit anchor</td>
+<td>4-6 每层，共 8732 个</td>
+</tr>
+<tr>
+<td>正负样本平衡</td>
+<td>RPN 中 1:1（大约）</td>
+<td>NMS + 阈值</td>
+<td>Hard Negative Mining 1:3</td>
+</tr>
+<tr>
+<td>速度 (VOC2007)</td>
+<td>5-7 FPS</td>
+<td>45 FPS</td>
+<td>59 FPS（300x300），22 FPS（512x512）</td>
+</tr>
+<tr>
+<td>mAP (VOC2007)</td>
+<td>73.2%</td>
+<td>63.4%</td>
+<td>74.3%（300x300），76.8%（512x512）</td>
+</tr>
+</tbody></table>
+<h3 id="7-2-SSD-相比-YOLO-v1-的优势"><a href="#7-2-SSD-相比-YOLO-v1-的优势" class="headerlink" title="7.2 SSD 相比 YOLO v1 的优势"></a>7.2 SSD 相比 YOLO v1 的优势</h3><ol>
+<li><strong>多尺度检测</strong>：SSD 从不同分辨率的特征图上做预测，对尺度变化的适应性强于 YOLO v1 的单一特征图</li>
+<li><strong>默认框 vs 网格</strong>：SSD 的密集默认框比 YOLO v1 的稀疏网格（7x7&#x3D;49 个预测位置）提供了更好的空间覆盖和更多的正样本匹配机会</li>
+<li><strong>卷积预测 vs 全连接</strong>：SSD 使用全卷积的预测头，参数更少、效率更高；YOLO v1 在最后使用了全连接层</li>
+<li><strong>小目标检测更好</strong>：得益于 conv4_3 的大特征图（38x38）检测小目标，SSD 对小目标的检测能力明显优于 YOLO v1</li>
+</ol>
+<h3 id="7-3-SSD-相比-Faster-R-CNN-的优势与不足"><a href="#7-3-SSD-相比-Faster-R-CNN-的优势与不足" class="headerlink" title="7.3 SSD 相比 Faster R-CNN 的优势与不足"></a>7.3 SSD 相比 Faster R-CNN 的优势与不足</h3><p><strong>优势</strong>：</p>
+<ul>
+<li>速度更快：单阶段设计避免了 RPN 和 RoI Pooling 等耗时步骤</li>
+<li>更简单：无需单独的区域提议网络和 RoI 对齐操作</li>
+</ul>
+<p><strong>不足</strong>：</p>
+<ul>
+<li>小目标检测仍不如 Faster R-CNN（后者通过 RoI Pooling 对每个 proposal 重新提取特征，精度更高）</li>
+<li>默认框的超参数（尺度、长宽比）需要手工调整</li>
+</ul>
+<h3 id="7-4-视觉化对比"><a href="#7-4-视觉化对比" class="headerlink" title="7.4 视觉化对比"></a>7.4 视觉化对比</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Faster R-CNN (Two-stage):</span><br><span class="line">    Image → CNN → Feature Map → RPN → Proposals → RoI Pooling → FC → cls + reg</span><br><span class="line"></span><br><span class="line">YOLO v1 (One-stage, grid-based):</span><br><span class="line">    Image → CNN → 7x7 Grid → FC → 7x7x(2*5 + 20) → cls + reg</span><br><span class="line"></span><br><span class="line">SSD (One-stage, multi-scale default boxes):</span><br><span class="line">    Image → CNN → ┌─ conv4_3 (38x38) ──→ det &amp; cls</span><br><span class="line">                   ├─ fc7    (19x19) ──→ det &amp; cls</span><br><span class="line">                   ├─ conv8_2 (10x10) ──→ det &amp; cls</span><br><span class="line">                   ├─ conv9_2  (5x5)  ──→ det &amp; cls</span><br><span class="line">                   ├─ conv10_2 (3x3)  ──→ det &amp; cls</span><br><span class="line">                   └─ conv11_2 (1x1)  ──→ det &amp; cls</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="8-SSD-的改进与变体"><a href="#8-SSD-的改进与变体" class="headerlink" title="8. SSD 的改进与变体"></a>8. SSD 的改进与变体</h2><h3 id="8-1-DSSD（Deconvolutional-SSD）"><a href="#8-1-DSSD（Deconvolutional-SSD）" class="headerlink" title="8.1 DSSD（Deconvolutional SSD）"></a>8.1 DSSD（Deconvolutional SSD）</h3><p>DSSD 的主要改进：</p>
+<ul>
+<li>将 VGG-16 backbone 替换为 ResNet-101，获得更强的特征提取能力</li>
+<li>在预测层之间添加反卷积模块（deconvolutional module），将高层的强语义信息传递到低层特征图中</li>
+<li>这种”自上而下”的特征融合显著提升了小目标检测性能（VOC2007 mAP：78.6%）</li>
+</ul>
+<h3 id="8-2-FSSD（Feature-Fusion-SSD）"><a href="#8-2-FSSD（Feature-Fusion-SSD）" class="headerlink" title="8.2 FSSD（Feature Fusion SSD）"></a>8.2 FSSD（Feature Fusion SSD）</h3><p>在 SSD 的多个检测层之间添加特征融合模块，将各层特征上采样到相同分辨率后拼接（concatenate），再生成新的特征金字塔用于检测。</p>
+<h3 id="8-3-RetinaNet（Focal-Loss）"><a href="#8-3-RetinaNet（Focal-Loss）" class="headerlink" title="8.3 RetinaNet（Focal Loss）"></a>8.3 RetinaNet（Focal Loss）</h3><p>虽然 RetinaNet 不是 SSD 的变体，但它解决了 SSD 面临的核心问题：极端的正负样本不平衡。RetinaNet 提出了 Focal Loss：</p>
+<p>$$
+\text{FL}(p_t) = -\alpha_t (1 - p_t)^\gamma \log(p_t)
+$$</p>
+<p>其中 $(1 - p_t)^\gamma$ 自动降低简单负样本的权重，使得模型无需 Hard Negative Mining 就能处理类别不平衡。$\gamma &#x3D; 2$ 是常用设置。</p>
+<h3 id="8-4-RefineDet"><a href="#8-4-RefineDet" class="headerlink" title="8.4 RefineDet"></a>8.4 RefineDet</h3><p>将 Two-stage 的”先粗后精”思想引入 SSD：先通过 Anchor Refinement Module（ARM）对默认框进行初步调整，再通过 Object Detection Module（ODM）进行最终检测。</p>
+<hr>
+<h2 id="9-非极大值抑制（NMS）"><a href="#9-非极大值抑制（NMS）" class="headerlink" title="9. 非极大值抑制（NMS）"></a>9. 非极大值抑制（NMS）</h2><h3 id="9-1-NMS-在-SSD-中的作用"><a href="#9-1-NMS-在-SSD-中的作用" class="headerlink" title="9.1 NMS 在 SSD 中的作用"></a>9.1 NMS 在 SSD 中的作用</h3><p>SSD 产生 8732 个预测框，其中绝大多数是冗余的（同一目标被多个默认框检测到）。NMS 用于去除重复检测：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Algorithm: Non-Maximum Suppression (NMS)</span><br><span class="line"></span><br><span class="line">Input:  B = &#123;b_1, ..., b_N&#125;  predicted boxes with scores</span><br><span class="line">Output: D = &#123;selected boxes&#125;</span><br><span class="line"></span><br><span class="line">D = []</span><br><span class="line">Sort B by confidence score in descending order</span><br><span class="line"></span><br><span class="line">while B is not empty:</span><br><span class="line">    b_best = B[0]  // 当前得分最高的框</span><br><span class="line">    D.append(b_best)</span><br><span class="line">    B.remove(b_best)</span><br><span class="line"></span><br><span class="line">    for each b in B:</span><br><span class="line">        if IoU(b_best, b) &gt; threshold (e.g., 0.45):</span><br><span class="line">            B.remove(b)  // 与 b_best 重叠过高的框被抑制</span><br><span class="line"></span><br><span class="line">return D</span><br></pre></td></tr></table></figure>
+
+<h3 id="9-2-类别感知-NMS-vs-类别无关-NMS"><a href="#9-2-类别感知-NMS-vs-类别无关-NMS" class="headerlink" title="9.2 类别感知 NMS vs 类别无关 NMS"></a>9.2 类别感知 NMS vs 类别无关 NMS</h3><ul>
+<li><strong>类别无关 NMS</strong>（Faster R-CNN 风格）：对所有类别的框一起做 NMS。速度快但可能抑制不同类别的重叠目标。</li>
+<li><strong>类别感知 NMS</strong>：每个类别独立做 NMS。SSD 使用此方式，能更好地处理同一空间位置有不同类别目标的情况。</li>
+</ul>
+<p>SSD 先对每类的预测框做 Top-K 筛选（保留得分最高的 K&#x3D;200 个框），再对每个类别独立做 NMS，最后综合所有类别的结果。</p>
+<hr>
+<h2 id="10-面试高频问答"><a href="#10-面试高频问答" class="headerlink" title="10. 面试高频问答"></a>10. 面试高频问答</h2><p><strong>Q1: SSD 为什么叫 “Single Shot”？与 Two-stage 检测器的本质区别是什么？</strong></p>
+<p>“Single Shot” 意味着整个检测过程（从图像到预测框）只经过一次前向传播，不像 Faster R-CNN 那样需要先通过 RPN 生成区域提议（First Shot），再通过 RoI Pooling + 分类回归头处理每个提议（Second Shot）。SSD 直接在单次前向传播中完成分类和回归，这使得它的速度通常比 Two-stage 方法快 5-10 倍。</p>
+<p><strong>Q2: SSD 的默认框（Default Box）和 Faster R-CNN 的 Anchor 有何异同？</strong></p>
+<p>相同点：两者都是在每个特征图位置预先设计的一组固定形状和大小的参考框，用于后续的分类和回归预测。</p>
+<p>不同点：</p>
+<ul>
+<li>Anchor 只在 RPN 最后一层（或 FPN 的各层）特征图上设置，而 SSD 的默认框分布在 6 个不同分辨率的特征图上</li>
+<li>Anchor 的尺度和比例通常比较统一（如 3 尺度 x 3 比例 &#x3D; 9 个），而 SSD 的默认框在不同层有不同的尺度和长宽比配置</li>
+<li>Faster R-CNN 中 anchor 仅用于 RPN 的二分类（前景&#x2F;背景）和粗略回归，而 SSD 的默认框直接用于最终的分类和细粒度回归</li>
+</ul>
+<p><strong>Q3: 为什么 SSD 对���目标检测效果不如大目标？</strong></p>
+<p>主要原因有三：</p>
+<ol>
+<li>conv4_3（检测小目标的主要层）虽然分辨率高，但语义特征不够强，缺乏足够的上下文信息</li>
+<li>预设的默认框最小尺度为 30px，对于小于 30px 的目标，可能没有任何默认框与之匹配（IoU &lt; 0.5）</li>
+<li>后续的改进（如 DSSD、FPN-based SSD）通过特征融合缓解了这个问题，但原始 SSD 缺少高层语义到低层特征的传递机制</li>
+</ol>
+<p>相比之下，Faster R-CNN 的 RoI Pooling 会对每个提议区域的深层特征图做裁剪和 pooling，即使小目标也能利用深层的强语义特征。</p>
+<p><strong>Q4: Hard Negative Mining 在训练过程中是如何运作的？为什么不能简单用正负样本加权来替代？</strong></p>
+<p>Hard Negative Mining 在每个 batch 中动态筛选最具误导性的负样本（即模型将其错误地以高置信度预测为某个非背景类别的默认框）。这种动态选择比静态加权更有效，因为：</p>
+<ol>
+<li>哪些负样本是”困难”的会随着训练进行而变化（早期的困难负样本在后期可能变为简单负样本）</li>
+<li>静态加权需要对每个默认框固定一个权重，而实际训练中 8000+ 个负样本的”难度”分布是持续变化的</li>
+<li>HNM 确保了每个 batch 中最有价值（即梯度最大）的负样本参与训练，相当于一种”主动学习”策略</li>
+</ol>
+<p>不过，Focal Loss 通过 $(1-p_t)^\gamma$ 动态调节每个样本的损失贡献，在 RetinaNet 中证明不需要显式的 HNM 也能处理类别不平衡。</p>
+<p><strong>Q5: 如果让你重新设计 SSD，你会做哪些改进？</strong></p>
+<p>几个可能的改进方向：</p>
+<ol>
+<li><strong>加入特征金字塔网络（FPN）</strong>：将深层强语义特征通过上采样 + 横向连接传递到浅层，提升小目标检测</li>
+<li><strong>替换 backbone 为更现代的网络</strong>：如 EfficientNet 或 ConvNeXt，在相同计算预算下获得更好的特征提取能力</li>
+<li><strong>将 Hard Negative Mining 替换为 Focal Loss</strong>：简化训练流程，让所有负样本参与训练但自动降低简单样本的权重</li>
+<li><strong>学习默认框的配置</strong>：使用如 Guided Anchoring 或 NAS（Neural Architecture Search）自动搜索每层最优的锚框尺度和比例</li>
+<li><strong>加入自注意力机制</strong>：在检测层之间加入 Transformer-style 的 cross-scale attention 来更好地融合多尺度信息</li>
+</ol>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2020/06/10/%E3%80%90%E7%BB%8F%E5%85%B8%E7%AE%97%E6%B3%95%E3%80%91%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8BSSD%E7%AE%97%E6%B3%95/">http://tufusi.com/2020/06/10/%E3%80%90%E7%BB%8F%E5%85%B8%E7%AE%97%E6%B3%95%E3%80%91%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8BSSD%E7%AE%97%E6%B3%95/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2020/06/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【统计学习方法死磕系列】支持向量机</span></div></a></div><div class="next-post pull_right"><a href="/2020/06/01/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E2%85%A1%E3%80%91PageRank%E7%AE%97%E6%B3%95/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【统计学习方法死磕系列Ⅱ】PageRank算法</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

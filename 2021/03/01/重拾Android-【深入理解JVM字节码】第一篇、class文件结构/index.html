@@ -1,0 +1,1150 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【深入理解JVM字节码】第一篇、class文件结构 | ONE·PIECE</title><meta name="description" content="【深入理解JVM字节码】第一篇、class文件结构"><meta name="keywords" content="字节码,JVM,文件格式"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【深入理解JVM字节码】第一篇、class文件结构"><meta name="twitter:description" content="【深入理解JVM字节码】第一篇、class文件结构"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/247.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【深入理解JVM字节码】第一篇、class文件结构"><meta property="og:url" content="http://tufusi.com/2021/03/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E4%B8%80%E7%AF%87%E3%80%81class%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【深入理解JVM字节码】第一篇、class文件结构"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/247.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2021/03/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E4%B8%80%E7%AF%87%E3%80%81class%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84/"><link rel="prev" title="【深入理解JVM字节码】第二篇、字节码基础" href="http://tufusi.com/2021/03/05/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E4%BA%8C%E7%AF%87%E3%80%81%E5%AD%97%E8%8A%82%E7%A0%81%E5%9F%BA%E7%A1%80/"><link rel="next" title="【深入内核篇】系统映像文件" href="http://tufusi.com/2021/02/25/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91%E7%B3%BB%E7%BB%9F%E6%98%A0%E5%83%8F%E6%96%87%E4%BB%B6/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E5%88%9D%E6%8E%A2-class-%E6%96%87%E4%BB%B6%EF%BC%9A%E5%B9%B3%E5%8F%B0%E6%97%A0%E5%85%B3%E6%80%A7%E7%9A%84%E5%9F%BA%E7%9F%B3"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、初探 class 文件：平台无关性的基石</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81class-%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E5%85%A8%E6%99%AF"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、class 文件结构全景</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81%E9%AD%94%E6%95%B0%EF%BC%88Magic-Number%EF%BC%89%EF%BC%9A0xCAFEBABE"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、魔数（Magic Number）：0xCAFEBABE</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E7%89%88%E6%9C%AC%E5%8F%B7%EF%BC%88Minor-Major-Version%EF%BC%89"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、版本号（Minor &amp; Major Version）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81%E5%B8%B8%E9%87%8F%E6%B1%A0%EF%BC%88Constant-Pool%EF%BC%89%EF%BC%9A%E5%AD%97%E8%8A%82%E7%A0%81%E7%9A%84%E5%BF%83%E8%84%8F"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、常量池（Constant Pool）：字节码的心脏</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-1-%E5%B8%B8%E9%87%8F%E6%B1%A0%E6%80%BB%E8%A7%88"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 常量池总览</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-2-%E5%B8%B8%E9%87%8F%E6%B1%A0%E9%A1%B9%E7%B1%BB%E5%9E%8B%E5%AE%8C%E6%95%B4%E8%A1%A8"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 常量池项类型完整表</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-3-%E7%AC%A6%E5%8F%B7%E5%BC%95%E7%94%A8%E9%93%BE%E8%BF%BD%E8%B8%AA"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 符号引用链追踪</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-4-%E5%B8%B8%E9%87%8F%E6%B1%A0%E8%A7%A3%E6%9E%90%E4%B8%8E%E8%BF%90%E8%A1%8C%E6%97%B6%E7%BC%93%E5%AD%98"><span class="toc_mobile_items-number">5.4.</span> <span class="toc_mobile_items-text">5.4 常量池解析与运行时缓存</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-5-%E5%B8%B8%E9%87%8F%E6%B1%A0%E5%AE%9E%E6%88%98%EF%BC%9Ajavap-verbose-%E8%BE%93%E5%87%BA%E8%A7%A3%E6%9E%90"><span class="toc_mobile_items-number">5.5.</span> <span class="toc_mobile_items-text">5.5 常量池实战：javap -verbose 输出解析</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E8%AE%BF%E9%97%AE%E6%A0%87%E8%AE%B0%EF%BC%88Access-Flags%EF%BC%89"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、访问标记（Access Flags）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81this-class%E3%80%81super-class-%E5%92%8C%E6%8E%A5%E5%8F%A3%E8%A1%A8"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、this_class、super_class 和接口表</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81%E5%AD%97%E6%AE%B5%E8%A1%A8%EF%BC%88Fields%EF%BC%89"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、字段表（Fields）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-1-field-info-%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">8.1 field_info 结构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-2-%E5%AD%97%E6%AE%B5%E8%AE%BF%E9%97%AE%E6%A0%87%E8%AE%B0"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">8.2 字段访问标记</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-3-%E5%AD%97%E6%AE%B5%E6%8F%8F%E8%BF%B0%E7%AC%A6%EF%BC%88Field-Descriptor%EF%BC%89"><span class="toc_mobile_items-number">8.3.</span> <span class="toc_mobile_items-text">8.3 字段描述符（Field Descriptor）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-4-%E5%AD%97%E6%AE%B5%E5%B1%9E%E6%80%A7"><span class="toc_mobile_items-number">8.4.</span> <span class="toc_mobile_items-text">8.4 字段属性</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E6%96%B9%E6%B3%95%E8%A1%A8%EF%BC%88Methods%EF%BC%89"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、方法表（Methods）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-1-method-info-%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">9.1 method_info 结构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-2-%E6%96%B9%E6%B3%95%E8%AE%BF%E9%97%AE%E6%A0%87%E8%AE%B0"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">9.2 方法访问标记</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-3-%E6%96%B9%E6%B3%95%E6%8F%8F%E8%BF%B0%E7%AC%A6%EF%BC%88Method-Descriptor%EF%BC%89"><span class="toc_mobile_items-number">9.3.</span> <span class="toc_mobile_items-text">9.3 方法描述符（Method Descriptor）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-4-Code-%E5%B1%9E%E6%80%A7%EF%BC%9A%E6%96%B9%E6%B3%95%E4%BD%93%E7%9A%84%E6%A0%B8%E5%BF%83"><span class="toc_mobile_items-number">9.4.</span> <span class="toc_mobile_items-text">9.4 Code 属性：方法体的核心</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-5-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E5%99%A8%E5%AE%9E%E4%BE%8B"><span class="toc_mobile_items-number">9.5.</span> <span class="toc_mobile_items-text">9.5 异常处理器实例</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81%E5%B1%9E%E6%80%A7%E8%A1%A8%EF%BC%88Attributes%EF%BC%89"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">十、属性表（Attributes）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#10-1-%E7%B1%BB%E7%BA%A7%E5%B1%9E%E6%80%A7%EF%BC%88Class-level-Attributes%EF%BC%89"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">10.1 类级属性（Class-level Attributes）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#10-2-%E6%96%B9%E6%B3%95%E7%BA%A7%E5%B1%9E%E6%80%A7%EF%BC%88Method-level-Attributes%EF%BC%89"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">10.2 方法级属性（Method-level Attributes）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E5%AE%9E%E6%88%98%EF%BC%9A%E5%AE%8C%E6%95%B4-class-%E6%96%87%E4%BB%B6%E7%9A%84%E9%80%90%E5%AD%97%E8%8A%82%E8%A7%A3%E8%AF%BB"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">十一、实战：完整 class 文件的逐字节解读</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81class-%E6%96%87%E4%BB%B6-vs-DEX-%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">十二、class 文件 vs DEX 文件结构对比</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#12-1-%E5%B8%B8%E9%87%8F%E7%AE%A1%E7%90%86%E6%96%B9%E5%BC%8F"><span class="toc_mobile_items-number">12.1.</span> <span class="toc_mobile_items-text">12.1 常量管理方式</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#12-2-%E7%B1%BB%E5%AE%9A%E4%B9%89%E6%96%B9%E5%BC%8F"><span class="toc_mobile_items-number">12.2.</span> <span class="toc_mobile_items-text">12.2 类定义方式</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#12-3-%E6%8C%87%E4%BB%A4%E9%9B%86%E5%B7%AE%E5%BC%82"><span class="toc_mobile_items-number">12.3.</span> <span class="toc_mobile_items-text">12.3 指令集差异</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#12-4-%E5%9C%A8-ART-%E4%B8%AD%E7%9A%84%E5%8A%A0%E8%BD%BD%E9%80%BB%E8%BE%91"><span class="toc_mobile_items-number">12.4.</span> <span class="toc_mobile_items-text">12.4 在 ART 中的加载逻辑</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%89%E3%80%81Modified-UTF-8-%E7%BC%96%E7%A0%81"><span class="toc_mobile_items-number">13.</span> <span class="toc_mobile_items-text">十三、Modified UTF-8 编码</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#13-1-UTF-8-%E6%A0%87%E5%87%86%E7%BC%96%E7%A0%81%E5%8E%9F%E7%90%86%E5%9B%9E%E9%A1%BE"><span class="toc_mobile_items-number">13.1.</span> <span class="toc_mobile_items-text">13.1 UTF-8 标准编码原理回顾</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#13-2-MUTF-8-%E4%B8%8E%E6%A0%87%E5%87%86-UTF-8-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc_mobile_items-number">13.2.</span> <span class="toc_mobile_items-text">13.2 MUTF-8 与标准 UTF-8 的区别</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%8D%81%E5%9B%9B%E3%80%81ART-%E4%B8%AD%E7%9A%84-class-%E5%8A%A0%E8%BD%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90"><span class="toc_mobile_items-number">14.</span> <span class="toc_mobile_items-text">十四、ART 中的 class 加载与文件解析</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#14-1-%E5%8A%A0%E8%BD%BD%E5%85%A5%E5%8F%A3"><span class="toc_mobile_items-number">14.1.</span> <span class="toc_mobile_items-text">14.1 加载入口</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#14-2-Native-%E5%B1%82-DefineClass"><span class="toc_mobile_items-number">14.2.</span> <span class="toc_mobile_items-text">14.2 Native 层 DefineClass</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#14-3-ClassLinker-%E7%9A%84%E8%A7%92%E8%89%B2"><span class="toc_mobile_items-number">14.3.</span> <span class="toc_mobile_items-text">14.3 ClassLinker 的角色</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#14-4-vtable-%E5%92%8C-iftable-%E7%9A%84%E6%9E%84%E5%BB%BA"><span class="toc_mobile_items-number">14.4.</span> <span class="toc_mobile_items-text">14.4 vtable 和 iftable 的构建</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%BA%94%E3%80%81%E5%AE%9E%E6%88%98%EF%BC%9A%E4%BD%BF%E7%94%A8-javap-%E5%B7%A5%E5%85%B7%E8%A7%A3%E8%AF%BB-class-%E6%96%87%E4%BB%B6"><span class="toc_mobile_items-number">15.</span> <span class="toc_mobile_items-text">十五、实战：使用 javap 工具解读 class 文件</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%8D%81%E5%85%AD%E3%80%81%E8%AE%BE%E8%AE%A1%E5%90%AF%E7%A4%BA%E4%B8%8E%E6%B7%B1%E5%B1%82%E6%80%9D%E8%80%83"><span class="toc_mobile_items-number">16.</span> <span class="toc_mobile_items-text">十六、设计启示与深层思考</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#16-1-class-%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E4%B8%BA%E4%BD%95%E5%A6%82%E6%AD%A4%E8%AE%BE%E8%AE%A1"><span class="toc_mobile_items-number">16.1.</span> <span class="toc_mobile_items-text">16.1 class 文件格式为何如此设计</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#16-2-%E4%BB%8E-class-%E6%96%87%E4%BB%B6%E5%88%B0%E5%B9%B3%E5%8F%B0%E6%97%A0%E5%85%B3%E6%89%A7%E8%A1%8C"><span class="toc_mobile_items-number">16.2.</span> <span class="toc_mobile_items-text">16.2 从 class 文件到平台无关执行</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%9D%A2%E8%AF%95%E9%97%AE%E7%AD%94"><span class="toc_mobile_items-number">16.3.</span> <span class="toc_mobile_items-text">面试问答</span></a></li></ol></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%88%9D%E6%8E%A2-class-%E6%96%87%E4%BB%B6%EF%BC%9A%E5%B9%B3%E5%8F%B0%E6%97%A0%E5%85%B3%E6%80%A7%E7%9A%84%E5%9F%BA%E7%9F%B3"><span class="toc-number">1.</span> <span class="toc-text">一、初探 class 文件：平台无关性的基石</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81class-%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E5%85%A8%E6%99%AF"><span class="toc-number">2.</span> <span class="toc-text">二、class 文件结构全景</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E9%AD%94%E6%95%B0%EF%BC%88Magic-Number%EF%BC%89%EF%BC%9A0xCAFEBABE"><span class="toc-number">3.</span> <span class="toc-text">三、魔数（Magic Number）：0xCAFEBABE</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E7%89%88%E6%9C%AC%E5%8F%B7%EF%BC%88Minor-Major-Version%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">四、版本号（Minor &amp; Major Version）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%B8%B8%E9%87%8F%E6%B1%A0%EF%BC%88Constant-Pool%EF%BC%89%EF%BC%9A%E5%AD%97%E8%8A%82%E7%A0%81%E7%9A%84%E5%BF%83%E8%84%8F"><span class="toc-number">5.</span> <span class="toc-text">五、常量池（Constant Pool）：字节码的心脏</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#5-1-%E5%B8%B8%E9%87%8F%E6%B1%A0%E6%80%BB%E8%A7%88"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 常量池总览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-2-%E5%B8%B8%E9%87%8F%E6%B1%A0%E9%A1%B9%E7%B1%BB%E5%9E%8B%E5%AE%8C%E6%95%B4%E8%A1%A8"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 常量池项类型完整表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-3-%E7%AC%A6%E5%8F%B7%E5%BC%95%E7%94%A8%E9%93%BE%E8%BF%BD%E8%B8%AA"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 符号引用链追踪</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-4-%E5%B8%B8%E9%87%8F%E6%B1%A0%E8%A7%A3%E6%9E%90%E4%B8%8E%E8%BF%90%E8%A1%8C%E6%97%B6%E7%BC%93%E5%AD%98"><span class="toc-number">5.4.</span> <span class="toc-text">5.4 常量池解析与运行时缓存</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-5-%E5%B8%B8%E9%87%8F%E6%B1%A0%E5%AE%9E%E6%88%98%EF%BC%9Ajavap-verbose-%E8%BE%93%E5%87%BA%E8%A7%A3%E6%9E%90"><span class="toc-number">5.5.</span> <span class="toc-text">5.5 常量池实战：javap -verbose 输出解析</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E8%AE%BF%E9%97%AE%E6%A0%87%E8%AE%B0%EF%BC%88Access-Flags%EF%BC%89"><span class="toc-number">6.</span> <span class="toc-text">六、访问标记（Access Flags）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%83%E3%80%81this-class%E3%80%81super-class-%E5%92%8C%E6%8E%A5%E5%8F%A3%E8%A1%A8"><span class="toc-number">7.</span> <span class="toc-text">七、this_class、super_class 和接口表</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%AD%97%E6%AE%B5%E8%A1%A8%EF%BC%88Fields%EF%BC%89"><span class="toc-number">8.</span> <span class="toc-text">八、字段表（Fields）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#8-1-field-info-%E7%BB%93%E6%9E%84"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 field_info 结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-2-%E5%AD%97%E6%AE%B5%E8%AE%BF%E9%97%AE%E6%A0%87%E8%AE%B0"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 字段访问标记</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-3-%E5%AD%97%E6%AE%B5%E6%8F%8F%E8%BF%B0%E7%AC%A6%EF%BC%88Field-Descriptor%EF%BC%89"><span class="toc-number">8.3.</span> <span class="toc-text">8.3 字段描述符（Field Descriptor）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-4-%E5%AD%97%E6%AE%B5%E5%B1%9E%E6%80%A7"><span class="toc-number">8.4.</span> <span class="toc-text">8.4 字段属性</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E6%96%B9%E6%B3%95%E8%A1%A8%EF%BC%88Methods%EF%BC%89"><span class="toc-number">9.</span> <span class="toc-text">九、方法表（Methods）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#9-1-method-info-%E7%BB%93%E6%9E%84"><span class="toc-number">9.1.</span> <span class="toc-text">9.1 method_info 结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-2-%E6%96%B9%E6%B3%95%E8%AE%BF%E9%97%AE%E6%A0%87%E8%AE%B0"><span class="toc-number">9.2.</span> <span class="toc-text">9.2 方法访问标记</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-3-%E6%96%B9%E6%B3%95%E6%8F%8F%E8%BF%B0%E7%AC%A6%EF%BC%88Method-Descriptor%EF%BC%89"><span class="toc-number">9.3.</span> <span class="toc-text">9.3 方法描述符（Method Descriptor）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-4-Code-%E5%B1%9E%E6%80%A7%EF%BC%9A%E6%96%B9%E6%B3%95%E4%BD%93%E7%9A%84%E6%A0%B8%E5%BF%83"><span class="toc-number">9.4.</span> <span class="toc-text">9.4 Code 属性：方法体的核心</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-5-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E5%99%A8%E5%AE%9E%E4%BE%8B"><span class="toc-number">9.5.</span> <span class="toc-text">9.5 异常处理器实例</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E5%B1%9E%E6%80%A7%E8%A1%A8%EF%BC%88Attributes%EF%BC%89"><span class="toc-number">10.</span> <span class="toc-text">十、属性表（Attributes）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#10-1-%E7%B1%BB%E7%BA%A7%E5%B1%9E%E6%80%A7%EF%BC%88Class-level-Attributes%EF%BC%89"><span class="toc-number">10.1.</span> <span class="toc-text">10.1 类级属性（Class-level Attributes）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-2-%E6%96%B9%E6%B3%95%E7%BA%A7%E5%B1%9E%E6%80%A7%EF%BC%88Method-level-Attributes%EF%BC%89"><span class="toc-number">10.2.</span> <span class="toc-text">10.2 方法级属性（Method-level Attributes）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E5%AE%9E%E6%88%98%EF%BC%9A%E5%AE%8C%E6%95%B4-class-%E6%96%87%E4%BB%B6%E7%9A%84%E9%80%90%E5%AD%97%E8%8A%82%E8%A7%A3%E8%AF%BB"><span class="toc-number">11.</span> <span class="toc-text">十一、实战：完整 class 文件的逐字节解读</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81class-%E6%96%87%E4%BB%B6-vs-DEX-%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E5%AF%B9%E6%AF%94"><span class="toc-number">12.</span> <span class="toc-text">十二、class 文件 vs DEX 文件结构对比</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#12-1-%E5%B8%B8%E9%87%8F%E7%AE%A1%E7%90%86%E6%96%B9%E5%BC%8F"><span class="toc-number">12.1.</span> <span class="toc-text">12.1 常量管理方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-2-%E7%B1%BB%E5%AE%9A%E4%B9%89%E6%96%B9%E5%BC%8F"><span class="toc-number">12.2.</span> <span class="toc-text">12.2 类定义方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-3-%E6%8C%87%E4%BB%A4%E9%9B%86%E5%B7%AE%E5%BC%82"><span class="toc-number">12.3.</span> <span class="toc-text">12.3 指令集差异</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-4-%E5%9C%A8-ART-%E4%B8%AD%E7%9A%84%E5%8A%A0%E8%BD%BD%E9%80%BB%E8%BE%91"><span class="toc-number">12.4.</span> <span class="toc-text">12.4 在 ART 中的加载逻辑</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81%E4%B8%89%E3%80%81Modified-UTF-8-%E7%BC%96%E7%A0%81"><span class="toc-number">13.</span> <span class="toc-text">十三、Modified UTF-8 编码</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#13-1-UTF-8-%E6%A0%87%E5%87%86%E7%BC%96%E7%A0%81%E5%8E%9F%E7%90%86%E5%9B%9E%E9%A1%BE"><span class="toc-number">13.1.</span> <span class="toc-text">13.1 UTF-8 标准编码原理回顾</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-2-MUTF-8-%E4%B8%8E%E6%A0%87%E5%87%86-UTF-8-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">13.2.</span> <span class="toc-text">13.2 MUTF-8 与标准 UTF-8 的区别</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81%E5%9B%9B%E3%80%81ART-%E4%B8%AD%E7%9A%84-class-%E5%8A%A0%E8%BD%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90"><span class="toc-number">14.</span> <span class="toc-text">十四、ART 中的 class 加载与文件解析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#14-1-%E5%8A%A0%E8%BD%BD%E5%85%A5%E5%8F%A3"><span class="toc-number">14.1.</span> <span class="toc-text">14.1 加载入口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-2-Native-%E5%B1%82-DefineClass"><span class="toc-number">14.2.</span> <span class="toc-text">14.2 Native 层 DefineClass</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-3-ClassLinker-%E7%9A%84%E8%A7%92%E8%89%B2"><span class="toc-number">14.3.</span> <span class="toc-text">14.3 ClassLinker 的角色</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-4-vtable-%E5%92%8C-iftable-%E7%9A%84%E6%9E%84%E5%BB%BA"><span class="toc-number">14.4.</span> <span class="toc-text">14.4 vtable 和 iftable 的构建</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81%E4%BA%94%E3%80%81%E5%AE%9E%E6%88%98%EF%BC%9A%E4%BD%BF%E7%94%A8-javap-%E5%B7%A5%E5%85%B7%E8%A7%A3%E8%AF%BB-class-%E6%96%87%E4%BB%B6"><span class="toc-number">15.</span> <span class="toc-text">十五、实战：使用 javap 工具解读 class 文件</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81%E5%85%AD%E3%80%81%E8%AE%BE%E8%AE%A1%E5%90%AF%E7%A4%BA%E4%B8%8E%E6%B7%B1%E5%B1%82%E6%80%9D%E8%80%83"><span class="toc-number">16.</span> <span class="toc-text">十六、设计启示与深层思考</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#16-1-class-%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E4%B8%BA%E4%BD%95%E5%A6%82%E6%AD%A4%E8%AE%BE%E8%AE%A1"><span class="toc-number">16.1.</span> <span class="toc-text">16.1 class 文件格式为何如此设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#16-2-%E4%BB%8E-class-%E6%96%87%E4%BB%B6%E5%88%B0%E5%B9%B3%E5%8F%B0%E6%97%A0%E5%85%B3%E6%89%A7%E8%A1%8C"><span class="toc-number">16.2.</span> <span class="toc-text">16.2 从 class 文件到平台无关执行</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E9%97%AE%E7%AD%94"><span class="toc-number">16.3.</span> <span class="toc-text">面试问答</span></a></li></ol></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/247.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【深入理解JVM字节码】第一篇、class文件结构</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-03-01<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">10.8k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 41 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p><strong><center><font size="5px">第11天  【深入理解JVM字节码】class文件结构 </font></center></strong></p>
+<h1 id="一、初探-class-文件：平台无关性的基石"><a href="#一、初探-class-文件：平台无关性的基石" class="headerlink" title="一、初探 class 文件：平台无关性的基石"></a>一、初探 class 文件：平台无关性的基石</h1><p>Java 在设计之初就提出一个非常著名的口号：”一次编写，随处运行”（Write Once, Run Anywhere）。亦即 Java 编译生成的二进制文件能够在不做任何改变的情况下运行于多个平台。而这也是 Java 语言平台无关性的由来。</p>
+<p>然而 JVM 却非跨平台的——不同操作系统、不同 CPU 架构上的 JVM 实现各不相同。HotSpot、OpenJ9、ART 等虚拟机通过各自的方式加载和执行同一种平台无关的字节码（bytecode），使得源代码不用根据不同平台编译成不同的二进制可执行文件。这正是 Java 历经二十余年依然稳居主流语言之列的原因所在。</p>
+<p>class 文件是字节码的物理载体。它是一个与平台无关的、严格二进制格式的文件，由 Java 编译器（javac）或其它 JVM 语言编译器（Kotlin、Scala、Groovy 等）生成。每一个 class 文件对应一个 Java 类（或接口），其中包含该类的全部元信息：版本号、常量池、访问标志、字段表、方法表、属性表。</p>
+<p>在 Android 生态中，class 文件并非最终产物。Android 构建流程是 <code>.java → .class → .dex</code>，其中 class 到 dex 的转换由 d8 工具完成。但理解 class 文件结构对于深入理解字节码、反编译、性能优化以及安全分析都至关重要——毕竟 DEX 格式的设计思想直接来源于 class 文件格式，对其规范的理解是分析一切字节码工具链的基础。</p>
+<h1 id="二、class-文件结构全景"><a href="#二、class-文件结构全景" class="headerlink" title="二、class 文件结构全景"></a>二、class 文件结构全景</h1><p>Java 虚拟机规范（Java Virtual Machine Specification, Chapter 4: The class File Format）规定用 u1、u2、u4 三种基本数据类型来表示 1、2、4 字节的无符号整数。若干条相同类型的数据集合用表（table）的形式存储。表是一个变长的结构，由代表长度的表头 n 和紧随着的 n 个数据项组成。class 文件采用类似 C 语言结构体的方式来组织数据。</p>
+<p>以下是大端序（Big-Endian）class 文件的完整数据结构：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ClassFile &#123;</span><br><span class="line">    u4                 magic;                                       <span class="comment">// 魔数</span></span><br><span class="line">    u2                 minor_version;                               <span class="comment">// 副版本号</span></span><br><span class="line">    u2                 major_version;                               <span class="comment">// 主版本号</span></span><br><span class="line">    u2                 constant_pool_count;                         <span class="comment">// 常量池大小</span></span><br><span class="line">    cp_info            constant_pool[constant_pool_count - <span class="number">1</span>];      <span class="comment">// 常量池项</span></span><br><span class="line">    u2                 access_flags;                                <span class="comment">// 类访问标记</span></span><br><span class="line">    u2                 this_class;                                  <span class="comment">// 当前类索引</span></span><br><span class="line">    u2                 super_class;                                 <span class="comment">// 父类索引</span></span><br><span class="line">    u2                 interfaces_count;                            <span class="comment">// 接口数量</span></span><br><span class="line">    u2                 interfaces[interfaces_count];                <span class="comment">// 接口索引表</span></span><br><span class="line">    u2                 fields_count;                                <span class="comment">// 字段数量</span></span><br><span class="line">    field_info         fields[fields_count];                        <span class="comment">// 字段表</span></span><br><span class="line">    u2                 methods_count;                               <span class="comment">// 方法数量</span></span><br><span class="line">    method_info        methods[methods_count];                      <span class="comment">// 方法表</span></span><br><span class="line">    u2                 attributes_count;                            <span class="comment">// 属性数量</span></span><br><span class="line">    attribute_info     attributes[attributes_count];                <span class="comment">// 属性表</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>【记住】</strong> class 文件由下面十个部分组成，可以通过一句英文助记：</p>
+<table>
+<thead>
+<tr>
+<th>部分</th>
+<th>英文</th>
+<th>助记</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>魔数（Magic Number）</td>
+<td>Magic</td>
+<td><strong>M</strong>y</td>
+</tr>
+<tr>
+<td>版本号（Version）</td>
+<td>Minor &amp; Major Version</td>
+<td><strong>V</strong>ery</td>
+</tr>
+<tr>
+<td>常量池（Constant Pool）</td>
+<td>Constant Pool</td>
+<td><strong>C</strong>ute</td>
+</tr>
+<tr>
+<td>类访问标记（Access Flags）</td>
+<td>Access Flags</td>
+<td><strong>A</strong>nimal</td>
+</tr>
+<tr>
+<td>当前类（This Class）</td>
+<td>This Class</td>
+<td><strong>T</strong>urns</td>
+</tr>
+<tr>
+<td>父类（Super Class）</td>
+<td>Super Class</td>
+<td><strong>S</strong>avage</td>
+</tr>
+<tr>
+<td>接口表（Interfaces）</td>
+<td>Interfaces</td>
+<td><strong>I</strong>n</td>
+</tr>
+<tr>
+<td>字段表（Fields）</td>
+<td>Fields</td>
+<td><strong>F</strong>ull</td>
+</tr>
+<tr>
+<td>方法表（Methods）</td>
+<td>Methods</td>
+<td><strong>M</strong>oon</td>
+</tr>
+<tr>
+<td>属性表（Attributes）</td>
+<td>Attributes</td>
+<td><strong>A</strong>reas</td>
+</tr>
+</tbody></table>
+<p>下文将逐一对这十个部分进行深入剖析。</p>
+<h1 id="三、魔数（Magic-Number）：0xCAFEBABE"><a href="#三、魔数（Magic-Number）：0xCAFEBABE" class="headerlink" title="三、魔数（Magic Number）：0xCAFEBABE"></a>三、魔数（Magic Number）：0xCAFEBABE</h1><p>class 文件的前 4 个字节是魔数，固定为 <strong>0xCAFEBABE</strong>（咖啡宝贝）。这个名字的由来颇具传奇色彩——据说是 Java 早期开发者 James Gosling 或其同事在讨论时看到桌上的咖啡杯（Java 的标志正是一杯热气腾腾的咖啡），遂将十六进制的咖啡（CAFE）和宝贝（BABE）组合而成。</p>
+<p>虚拟机在加载类文件之前会首先校验这 4 个字节，如果不是 0xCAFEBABE，则抛出 <code>java.lang.ClassFormatError</code> 异常并拒绝加载。这与操作系统加载可执行文件时检查魔数（如 ELF 的 <code>0x7f 0x45 0x4c 0x46</code>、PE 的 <code>MZ</code>）是同一种思路。</p>
+<p>使用 <code>xxd</code> 或 <code>hexdump</code> 命令查看任意 class 文件的开头：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ xxd HelloWorld.class | head -3</span><br><span class="line">00000000: cafe babe 0000 003d 001d 0a00 0600 0f09  .......=........</span><br><span class="line">00000010: 0010 0011 0800 120a 0013 0014 0700 1507  ................</span><br><span class="line">00000020: 0016 0100 063c 696e 6974 3e01 0003 2829  .....&lt;init&gt;...()</span><br></pre></td></tr></table></figure>
+
+<p><strong>逐字节解读前 8 个字节（偏移 0x00 ~ 0x07）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>偏移</th>
+<th>字节</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x00 ~ 0x03</td>
+<td><code>CA FE BA BE</code></td>
+<td>魔数：0xCAFEBABE</td>
+</tr>
+<tr>
+<td>0x04 ~ 0x05</td>
+<td><code>00 00</code></td>
+<td>副版本号（minor_version）：0</td>
+</tr>
+<tr>
+<td>0x06 ~ 0x07</td>
+<td><code>00 3D</code></td>
+<td>主版本号（major_version）：61（即 Java 17）</td>
+</tr>
+</tbody></table>
+<p>需要特别注意 <strong>class 文件使用大端序（Big-Endian）</strong>，即高位字节在前。这一点与 x86 架构的默认小端序相反，但对于十六进制查看工具（如 xxd）来说，默认即可直接按顺序阅读字节。</p>
+<p>在 ART 的类加载流程中，<code>art/runtime/class_linker.cc</code> 的 <code>OpenDexFilesFromOat</code> 函数会校验 DEX 文件的魔数（DEX 文件的魔数是 <code>dex\n035</code> 或 <code>dex\n037</code> 等），这等效于 class 文件中对 0xCAFEBABE 的校验。不同的文件格式有不同的魔数约定，但设计意图一致——提供文件类型识别和格式校验的第一道防线。</p>
+<h1 id="四、版本号（Minor-Major-Version）"><a href="#四、版本号（Minor-Major-Version）" class="headerlink" title="四、版本号（Minor &amp; Major Version）"></a>四、版本号（Minor &amp; Major Version）</h1><p>魔数之后的 4 个字节分别表示副版本号（minor_version）和主版本号（major_version）。JVM 拒绝加载版本号超过自身支持的 class 文件，抛出 <code>java.lang.UnsupportedClassVersionError</code>。</p>
+<p>下表是完整的主版本号与 Java 版本对应关系：</p>
+<table>
+<thead>
+<tr>
+<th>Java 版本</th>
+<th>major_version</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Java 1.0.2</td>
+<td>45</td>
+<td>首个公开版本</td>
+</tr>
+<tr>
+<td>Java 1.1</td>
+<td>45.3</td>
+<td>内部类、反射、JDBC</td>
+</tr>
+<tr>
+<td>Java 1.2</td>
+<td>46</td>
+<td>Collections 框架</td>
+</tr>
+<tr>
+<td>Java 1.3</td>
+<td>47</td>
+<td>HotSpot 默认虚拟机</td>
+</tr>
+<tr>
+<td>Java 1.4</td>
+<td>48</td>
+<td>assert、NIO、正则</td>
+</tr>
+<tr>
+<td>Java 5 (1.5)</td>
+<td>49</td>
+<td>泛型、注解、枚举、可变参数</td>
+</tr>
+<tr>
+<td>Java 6 (1.6)</td>
+<td>50</td>
+<td>脚本语言支持、编译 API</td>
+</tr>
+<tr>
+<td>Java 7 (1.7)</td>
+<td>51</td>
+<td>invokedynamic、try-with-resources</td>
+</tr>
+<tr>
+<td>Java 8 (1.8)</td>
+<td>52</td>
+<td>Lambda、Stream API、默认方法</td>
+</tr>
+<tr>
+<td>Java 9</td>
+<td>53</td>
+<td>模块系统（Project Jigsaw）</td>
+</tr>
+<tr>
+<td>Java 10</td>
+<td>54</td>
+<td>var 局部变量类型推断</td>
+</tr>
+<tr>
+<td>Java 11 (LTS)</td>
+<td>55</td>
+<td>HTTP Client API、ZGC</td>
+</tr>
+<tr>
+<td>Java 12</td>
+<td>56</td>
+<td>Switch 表达式预览</td>
+</tr>
+<tr>
+<td>Java 13</td>
+<td>57</td>
+<td>文本块预览</td>
+</tr>
+<tr>
+<td>Java 14</td>
+<td>58</td>
+<td>Records、Pattern Matching 预览</td>
+</tr>
+<tr>
+<td>Java 15</td>
+<td>59</td>
+<td>密封类预览</td>
+</tr>
+<tr>
+<td>Java 16</td>
+<td>60</td>
+<td>Records 正式、Pattern Matching</td>
+</tr>
+<tr>
+<td>Java 17 (LTS)</td>
+<td>61</td>
+<td>密封类正式</td>
+</tr>
+<tr>
+<td>Java 18</td>
+<td>62</td>
+<td>简易 Web 服务器</td>
+</tr>
+<tr>
+<td>Java 19</td>
+<td>63</td>
+<td>虚拟线程预览</td>
+</tr>
+<tr>
+<td>Java 20</td>
+<td>64</td>
+<td>虚拟线程第二次预览</td>
+</tr>
+<tr>
+<td>Java 21 (LTS)</td>
+<td>65</td>
+<td>虚拟线程正式、Record Patterns</td>
+</tr>
+</tbody></table>
+<p><strong>跨版本兼容性规则：</strong></p>
+<ul>
+<li>低版本 JVM 不能加载高版本 class 文件。例如，Java 8 的 JVM（major&#x3D;52）无法加载 Java 17 编译的 class（major&#x3D;61）。</li>
+<li>高版本 JVM 可以加载低版本 class 文件。但现代 JVM 通常会对待旧版 class 文件触发特殊的兼容性处理逻辑。</li>
+<li>minor_version 主要用于修正大版本中的小修订，目前主流的 Java 版本中 minor_version 几乎总是 0。</li>
+</ul>
+<p>在真机上验证版本号：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ javap -verbose HelloWorld.class | <span class="built_in">head</span> -5</span><br><span class="line">Classfile /path/to/HelloWorld.class</span><br><span class="line">  Last modified 2024-01-01; size 426 bytes</span><br><span class="line">  SHA-256 checksum ...</span><br><span class="line">  minor version: 0</span><br><span class="line">  major version: 61</span><br></pre></td></tr></table></figure>
+
+<h1 id="五、常量池（Constant-Pool）：字节码的心脏"><a href="#五、常量池（Constant-Pool）：字节码的心脏" class="headerlink" title="五、常量池（Constant Pool）：字节码的心脏"></a>五、常量池（Constant Pool）：字节码的心脏</h1><h2 id="5-1-常量池总览"><a href="#5-1-常量池总览" class="headerlink" title="5.1 常量池总览"></a>5.1 常量池总览</h2><p>常量池是 class 文件中结构最复杂、信息量最丰富的部分，可以说是整个 class 文件的”心脏”。它紧随版本号之后，存储了该类用到的所有字面量（literal）和符号引用（symbolic reference）。</p>
+<p><strong>字面量</strong>包括：文本字符串（如 “Hello World”）、声明为 final 的常量值、数值常量（int、float、long、double 等）。</p>
+<p><strong>符号引用</strong>包括：类和接口的全限定名、字段的名称和描述符、方法的名称和描述符、方法句柄和方法类型、动态调用点和动态常量。</p>
+<p>常量池以 2 字节的 <code>constant_pool_count</code> 开头，其值等于常量池中的项数加 1。<strong>索引从 1 开始，0 被保留</strong>。这意味着如果 <code>constant_pool_count = 27</code>，则实际有 26 个常量池项（#1~#26），索引 #0 留空，用于表示”不引用任何常量池项”。</p>
+<p><strong>为什么索引 0 被保留？</strong> 在某些 class 文件结构元素中（如 exception_table 的 catch_type 字段、BootstrapMethods 的 method_handle 引用等），需要一种方式表达”无引用”的语义。指向索引 0 即表示”没有对应的常量池引用”。</p>
+<h2 id="5-2-常量池项类型完整表"><a href="#5-2-常量池项类型完整表" class="headerlink" title="5.2 常量池项类型完整表"></a>5.2 常量池项类型完整表</h2><p>每个 <code>cp_info</code> 项的第一个字节（u1）是 <code>tag</code>，标明该常量项的类型。JVM 规范目前定义了 17 种常量类型（Java SE 21）：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>tag 值</th>
+<th>引入版本</th>
+<th>结构说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CONSTANT_Utf8</td>
+<td>1</td>
+<td>45.0（1.0）</td>
+<td>length(u2) + bytes(u1[length])：UTF-8 编码的字符串</td>
+</tr>
+<tr>
+<td>CONSTANT_Integer</td>
+<td>3</td>
+<td>45.0</td>
+<td>bytes(u4)：4 字节 int 值（大端序）</td>
+</tr>
+<tr>
+<td>CONSTANT_Float</td>
+<td>4</td>
+<td>45.0</td>
+<td>bytes(u4)：4 字节 float 值（IEEE 754 单精度）</td>
+</tr>
+<tr>
+<td>CONSTANT_Long</td>
+<td>5</td>
+<td>45.0</td>
+<td>high_bytes(u4) + low_bytes(u4)：8 字节 long 值</td>
+</tr>
+<tr>
+<td>CONSTANT_Double</td>
+<td>6</td>
+<td>45.0</td>
+<td>high_bytes(u4) + low_bytes(u4)：8 字节 double 值</td>
+</tr>
+<tr>
+<td>CONSTANT_Class</td>
+<td>7</td>
+<td>45.0</td>
+<td>name_index(u2)：指向 CONSTANT_Utf8 的内部类名</td>
+</tr>
+<tr>
+<td>CONSTANT_String</td>
+<td>8</td>
+<td>45.0</td>
+<td>string_index(u2)：指向 CONSTANT_Utf8 的字符串字面量</td>
+</tr>
+<tr>
+<td>CONSTANT_Fieldref</td>
+<td>9</td>
+<td>45.0</td>
+<td>class_index(u2) + name_and_type_index(u2)</td>
+</tr>
+<tr>
+<td>CONSTANT_Methodref</td>
+<td>10</td>
+<td>45.0</td>
+<td>class_index(u2) + name_and_type_index(u2)</td>
+</tr>
+<tr>
+<td>CONSTANT_InterfaceMethodref</td>
+<td>11</td>
+<td>45.0</td>
+<td>class_index(u2) + name_and_type_index(u2)</td>
+</tr>
+<tr>
+<td>CONSTANT_NameAndType</td>
+<td>12</td>
+<td>45.0</td>
+<td>name_index(u2) + descriptor_index(u2)</td>
+</tr>
+<tr>
+<td>CONSTANT_MethodHandle</td>
+<td>15</td>
+<td>51.0（Java 7）</td>
+<td>reference_kind(u1) + reference_index(u2)</td>
+</tr>
+<tr>
+<td>CONSTANT_MethodType</td>
+<td>16</td>
+<td>51.0（Java 7）</td>
+<td>descriptor_index(u2)</td>
+</tr>
+<tr>
+<td>CONSTANT_Dynamic</td>
+<td>17</td>
+<td>55.0（Java 11）</td>
+<td>bootstrap_method_attr_index(u2) + name_and_type_index(u2)</td>
+</tr>
+<tr>
+<td>CONSTANT_InvokeDynamic</td>
+<td>18</td>
+<td>51.0（Java 7）</td>
+<td>bootstrap_method_attr_index(u2) + name_and_type_index(u2)</td>
+</tr>
+<tr>
+<td>CONSTANT_Module</td>
+<td>19</td>
+<td>53.0（Java 9）</td>
+<td>name_index(u2)</td>
+</tr>
+<tr>
+<td>CONSTANT_Package</td>
+<td>20</td>
+<td>53.0（Java 9）</td>
+<td>name_index(u2)</td>
+</tr>
+</tbody></table>
+<p><strong>注意：</strong> tag 值 0（无效）、2（保留给 CONSTANT_Unicode，从未实现）、13 和 14（曾经用作 CONSTANT_Fieldref info 和 CONSTANT_Methodref info 的历史变体，已废弃）均未被使用或已废弃。</p>
+<p><strong>重要规则：</strong> CONSTANT_Long 和 CONSTANT_Double 在常量池中占用两个索引槽位。例如，如果 #5 是一个 CONSTANT_Long，则 #6 被视为无效（不可用），下一项需从 #7 开始。这是因为这两种常量占用 8 字节，在 32 位体系结构中需要两个 32 位槽位存储。</p>
+<h2 id="5-3-符号引用链追踪"><a href="#5-3-符号引用链追踪" class="headerlink" title="5.3 符号引用链追踪"></a>5.3 符号引用链追踪</h2><p>常量池的核心设计在于<strong>符号引用链</strong>——各项之间通过索引相互链接，最终汇聚到 CONSTANT_Utf8 以获取人类可读的名字和描述符。</p>
+<p><strong>以 CONSTANT_Methodref 为例，追踪一条完整的引用链：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CONSTANT_Methodref_info (tag=10)</span><br><span class="line">  ├── class_index ──────────► CONSTANT_Class_info (tag=7)</span><br><span class="line">  │                            └── name_index ──► CONSTANT_Utf8_info (tag=1)</span><br><span class="line">  │                                                └── bytes = &quot;java/lang/StringBuilder&quot;</span><br><span class="line">  └── name_and_type_index ─► CONSTANT_NameAndType_info (tag=12)</span><br><span class="line">                              ├── name_index ──────► CONSTANT_Utf8_info (tag=1)</span><br><span class="line">                              │                       └── bytes = &quot;append&quot;</span><br><span class="line">                              └── descriptor_index ─► CONSTANT_Utf8_info (tag=1)</span><br><span class="line">                                                       └── bytes = &quot;(Ljava/lang/String;)Ljava/lang/StringBuilder;&quot;</span><br></pre></td></tr></table></figure>
+
+<p>这条链完整表达了：”在类 <code>java/lang/StringBuilder</code> 中，有一个名为 <code>append</code>，类型描述符为 <code>(Ljava/lang/String;)Ljava/lang/StringBuilder;</code> 的方法”。JVM 在首次执行到该引用时，会通过这条链定位到目标类的目标方法，完成所谓的「常量池解析」（constant pool resolution）。</p>
+<p><strong>各引用类型的典型引用链：</strong></p>
+<ul>
+<li>**CONSTANT_Fieldref (tag&#x3D;9)**：class_index → CONSTANT_Class → CONSTANT_Utf8（类名），name_and_type_index → CONSTANT_NameAndType → CONSTANT_Utf8（字段名） + CONSTANT_Utf8（字段描述符）</li>
+<li>**CONSTANT_InterfaceMethodref (tag&#x3D;11)**：结构同 Methodref 但用于接口方法调用</li>
+<li>**CONSTANT_String (tag&#x3D;8)**：string_index → CONSTANT_Utf8（字符串字面量内容）</li>
+<li>**CONSTANT_MethodHandle (tag&#x3D;15)**：reference_kind（引用种类，1-9，如 REF_getField&#x3D;1, REF_getStatic&#x3D;2, REF_putField&#x3D;3, REF_putStatic&#x3D;4, REF_invokeVirtual&#x3D;5, REF_invokeStatic&#x3D;6, REF_invokeSpecial&#x3D;7, REF_newInvokeSpecial&#x3D;8, REF_invokeInterface&#x3D;9）+ reference_index → CONSTANT_Fieldref 或 CONSTANT_Methodref</li>
+<li>**CONSTANT_MethodType (tag&#x3D;16)**：descriptor_index → CONSTANT_Utf8（方法描述符，如 <code>()V</code> 或 <code>(IJ)Ljava/lang/String;</code>）</li>
+<li>**CONSTANT_InvokeDynamic (tag&#x3D;18)**：bootstrap_method_attr_index → BootstrapMethods 属性表中的引导方法，name_and_type_index → CONSTANT_NameAndType</li>
+<li>**CONSTANT_Dynamic (tag&#x3D;17)**：同 InvokeDynamic，但用于动态常量的计算</li>
+<li>**CONSTANT_Module (tag&#x3D;19)**：name_index → CONSTANT_Utf8（模块名，如 <code>java.base</code>）</li>
+<li>**CONSTANT_Package (tag&#x3D;20)**：name_index → CONSTANT_Utf8（包名，如 <code>java/lang</code>）</li>
+</ul>
+<h2 id="5-4-常量池解析与运行时缓存"><a href="#5-4-常量池解析与运行时缓存" class="headerlink" title="5.4 常量池解析与运行时缓存"></a>5.4 常量池解析与运行时缓存</h2><p>在 ART 中，常量池的解析（resolution）发生在首次使用该符号引用时（懒解析，lazy resolution），而非类加载时。解析过程的核心代码在 <code>art/runtime/class_linker.cc</code> 中：</p>
+<ul>
+<li><strong>字段解析</strong>：<code>ClassLinker::ResolveField</code> 和 <code>ClassLinker::ResolveFieldJLS</code>——根据 class_index 定位目标类（必要时先加载），再根据 name_and_type_index 匹配字段，最终返回一个 <code>ArtField*</code> 指针。</li>
+<li><strong>方法解析</strong>：<code>ClassLinker::ResolveMethod</code>——类似流程，在目标类及其父类和接口的 vtable&#x2F;iftable 中匹配方法，返回 <code>ArtMethod*</code> 指针。</li>
+</ul>
+<p><strong>Quickening（快速化）</strong>：解析成功后，ART 不会每次都重新解析常量池。解释器会将 <code>ArtField*</code> 或 <code>ArtMethod*</code> 指针直接写入 DEX 文件的对应槽位（或者在其内部缓存结构中记录），后续执行直接使用该指针，消除了重复解析的昂贵开销。</p>
+<h2 id="5-5-常量池实战：javap-verbose-输出解析"><a href="#5-5-常量池实战：javap-verbose-输出解析" class="headerlink" title="5.5 常量池实战：javap -verbose 输出解析"></a>5.5 常量池实战：javap -verbose 输出解析</h2><p>以下是一个简单类编译后 <code>javap -verbose</code> 的常量池输出片段：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Constant pool:</span><br><span class="line">   #1 = Methodref          #6.#17         // java/lang/Object.&quot;&lt;init&gt;&quot;:()V</span><br><span class="line">   #2 = Fieldref           #18.#19        // HelloWorld.message:Ljava/lang/String;</span><br><span class="line">   #3 = String             #20            // &quot;Hello from class file!&quot;</span><br><span class="line">   #4 = Methodref          #21.#22        // java/io/PrintStream.println:(Ljava/lang/String;)V</span><br><span class="line">   #5 = Fieldref           #23.#24        // java/lang/System.out:Ljava/io/PrintStream;</span><br><span class="line">   #6 = Class              #25            // java/lang/Object</span><br><span class="line">   #7 = Class              #26            // HelloWorld</span><br><span class="line">   ...</span><br><span class="line">  #17 = NameAndType        #27.#28        // &quot;&lt;init&gt;&quot;:()V</span><br><span class="line">  #18 = Class              #26            // HelloWorld</span><br><span class="line">  #19 = NameAndType        #29.#30        // message:Ljava/lang/String;</span><br><span class="line">  #20 = Utf8               Hello from class file!</span><br><span class="line">  #21 = Class              #31            // java/io/PrintStream</span><br><span class="line">  #22 = NameAndType        #32.#33        // println:(Ljava/lang/String;)V</span><br><span class="line">  ...</span><br><span class="line">  #25 = Utf8               java/lang/Object</span><br><span class="line">  #26 = Utf8               HelloWorld</span><br><span class="line">  #27 = Utf8               &lt;init&gt;</span><br><span class="line">  #28 = Utf8               ()V</span><br><span class="line">  #29 = Utf8               message</span><br><span class="line">  #30 = Utf8               Ljava/lang/String;</span><br><span class="line">  #31 = Utf8               java/io/PrintStream</span><br><span class="line">  #32 = Utf8               println</span><br><span class="line">  #33 = Utf8               (Ljava/lang/String;)V</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，常量池最底层的叶子节点全部是 CONSTANT_Utf8，它们提供了字符串和标识符的实体内容。所有符号引用（Methodref、Fieldref 等）最终都追溯到 CONSTANT_Utf8。</p>
+<h1 id="六、访问标记（Access-Flags）"><a href="#六、访问标记（Access-Flags）" class="headerlink" title="六、访问标记（Access Flags）"></a>六、访问标记（Access Flags）</h1><p>紧随常量池之后的 2 个字节是访问标记（access_flags），用来标识该类或接口的访问权限和属性。它是一个位掩码，使用 16 个标志位。目前共定义了 9 个标志位：</p>
+<table>
+<thead>
+<tr>
+<th>标志名</th>
+<th>十六进制值</th>
+<th>二进制位</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ACC_PUBLIC</td>
+<td>0x0001</td>
+<td>0</td>
+<td>public 访问</td>
+</tr>
+<tr>
+<td>ACC_FINAL</td>
+<td>0x0010</td>
+<td>4</td>
+<td>无法派生子类</td>
+</tr>
+<tr>
+<td>ACC_SUPER</td>
+<td>0x0020</td>
+<td>5</td>
+<td>调用父类方法时使用 invokespecial 语义（现代 javac 始终设置）</td>
+</tr>
+<tr>
+<td>ACC_INTERFACE</td>
+<td>0x0200</td>
+<td>9</td>
+<td>标识为接口而非类</td>
+</tr>
+<tr>
+<td>ACC_ABSTRACT</td>
+<td>0x0400</td>
+<td>10</td>
+<td>抽象类或接口，无法实例化</td>
+</tr>
+<tr>
+<td>ACC_SYNTHETIC</td>
+<td>0x1000</td>
+<td>12</td>
+<td>编译器合成，非源码中显式出现</td>
+</tr>
+<tr>
+<td>ACC_ANNOTATION</td>
+<td>0x2000</td>
+<td>13</td>
+<td>标识为注解类型</td>
+</tr>
+<tr>
+<td>ACC_ENUM</td>
+<td>0x4000</td>
+<td>14</td>
+<td>标识为枚举类型</td>
+</tr>
+<tr>
+<td>ACC_MODULE</td>
+<td>0x8000</td>
+<td>15</td>
+<td>标识为模块描述（module-info.class）</td>
+</tr>
+</tbody></table>
+<p><strong>组合示例：</strong></p>
+<ul>
+<li>普通 public 类：<code>ACC_PUBLIC | ACC_SUPER = 0x0021</code></li>
+<li>public final 类：<code>ACC_PUBLIC | ACC_FINAL | ACC_SUPER = 0x0031</code></li>
+<li>public abstract 类：<code>ACC_PUBLIC | ACC_ABSTRACT | ACC_SUPER = 0x0421</code></li>
+<li>interface：<code>ACC_PUBLIC | ACC_INTERFACE | ACC_ABSTRACT | ACC_SUPER = 0x0621</code>（注意接口隐式为 abstract）</li>
+<li>enum：<code>ACC_PUBLIC | ACC_FINAL | ACC_SUPER | ACC_ENUM = 0x4031</code></li>
+<li>package-private 类（无 ACC_PUBLIC）：<code>ACC_SUPER = 0x0020</code></li>
+</ul>
+<p><strong>关于 ACC_SUPER：</strong> 历史上（Java 1.0 时代），<code>invokespecial</code> 指令在处理父类方法调用时的语义有所不同。ACC_SUPER 标志告诉 JVM 使用修正后的语义。所有现代 javac 都会自动设置此标志。只有非常老的类（Java 1.0.2 之前编译）才不会设置此标志。</p>
+<h1 id="七、this-class、super-class-和接口表"><a href="#七、this-class、super-class-和接口表" class="headerlink" title="七、this_class、super_class 和接口表"></a>七、this_class、super_class 和接口表</h1><p>这三个要素共同定义了该类在类型层级中的位置：</p>
+<ul>
+<li>**this_class (u2)**：指向常量池中的一个 CONSTANT_Class_info，表示当前类的全限定名。</li>
+<li>**super_class (u2)**：指向常量池中的一个 CONSTANT_Class_info，表示直接父类。对于 <code>java.lang.Object</code>，这个值为 0（因为 Object 没有父类）。对于接口，super_class 指向 <code>java/lang/Object</code>。</li>
+<li>**interfaces_count (u2) 和 interfaces[]**：接口数量及每个接口在常量池中的 CONSTANT_Class_info 索引。</li>
+</ul>
+<p>假设有一个类声明 <code>public class MyClass extends BaseClass implements InterfaceA, InterfaceB</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">access_flags:     0x0021 (ACC_PUBLIC | ACC_SUPER)</span><br><span class="line">this_class:       #5  → CONSTANT_Class → &quot;com/example/MyClass&quot;</span><br><span class="line">super_class:      #6  → CONSTANT_Class → &quot;com/example/BaseClass&quot;</span><br><span class="line">interfaces_count: 2</span><br><span class="line">interfaces[0]:    #7  → CONSTANT_Class → &quot;com/example/InterfaceA&quot;</span><br><span class="line">interfaces[1]:    #8  → CONSTANT_Class → &quot;com/example/InterfaceB&quot;</span><br></pre></td></tr></table></figure>
+
+<p>在二进制层面，this_class 只是一个 2 字节的无符号整数，实际类名需要通过两级间接引用（this_class → CONSTANT_Class → name_index → CONSTANT_Utf8）才能获得。</p>
+<h1 id="八、字段表（Fields）"><a href="#八、字段表（Fields）" class="headerlink" title="八、字段表（Fields）"></a>八、字段表（Fields）</h1><h2 id="8-1-field-info-结构"><a href="#8-1-field-info-结构" class="headerlink" title="8.1 field_info 结构"></a>8.1 field_info 结构</h2><p>每个字段由一个 <code>field_info</code> 结构描述：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">field_info &#123;</span><br><span class="line">    u2                 access_flags;        <span class="comment">// 字段访问标记</span></span><br><span class="line">    u2                 name_index;          <span class="comment">// 字段名，指向 CONSTANT_Utf8</span></span><br><span class="line">    u2                 descriptor_index;    <span class="comment">// 描述符，指向 CONSTANT_Utf8</span></span><br><span class="line">    u2                 attributes_count;    <span class="comment">// 属性数量</span></span><br><span class="line">    attribute_info     attributes[attributes_count];  <span class="comment">// 属性表</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="8-2-字段访问标记"><a href="#8-2-字段访问标记" class="headerlink" title="8.2 字段访问标记"></a>8.2 字段访问标记</h2><p>字段的 access_flags 是类访问标记的子集，包含以下标志：</p>
+<table>
+<thead>
+<tr>
+<th>标志名</th>
+<th>值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ACC_PUBLIC</td>
+<td>0x0001</td>
+<td>公有</td>
+</tr>
+<tr>
+<td>ACC_PRIVATE</td>
+<td>0x0002</td>
+<td>私有</td>
+</tr>
+<tr>
+<td>ACC_PROTECTED</td>
+<td>0x0004</td>
+<td>受保护</td>
+</tr>
+<tr>
+<td>ACC_STATIC</td>
+<td>0x0008</td>
+<td>静态</td>
+</tr>
+<tr>
+<td>ACC_FINAL</td>
+<td>0x0010</td>
+<td>不可变（final）</td>
+</tr>
+<tr>
+<td>ACC_VOLATILE</td>
+<td>0x0040</td>
+<td>易变（volatile，禁止缓存）</td>
+</tr>
+<tr>
+<td>ACC_TRANSIENT</td>
+<td>0x0080</td>
+<td>瞬时（不参与序列化）</td>
+</tr>
+<tr>
+<td>ACC_SYNTHETIC</td>
+<td>0x1000</td>
+<td>编译器合成</td>
+</tr>
+<tr>
+<td>ACC_ENUM</td>
+<td>0x4000</td>
+<td>枚举值</td>
+</tr>
+</tbody></table>
+<h2 id="8-3-字段描述符（Field-Descriptor）"><a href="#8-3-字段描述符（Field-Descriptor）" class="headerlink" title="8.3 字段描述符（Field Descriptor）"></a>8.3 字段描述符（Field Descriptor）</h2><p>字段描述符使用单字符编码来表示基本类型：</p>
+<table>
+<thead>
+<tr>
+<th>描述符字符</th>
+<th>Java 类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>B</td>
+<td>byte</td>
+<td>8 位有符号整数</td>
+</tr>
+<tr>
+<td>C</td>
+<td>char</td>
+<td>16 位无符号 Unicode 字符</td>
+</tr>
+<tr>
+<td>D</td>
+<td>double</td>
+<td>64 位 IEEE 754 双精度浮点数</td>
+</tr>
+<tr>
+<td>F</td>
+<td>float</td>
+<td>32 位 IEEE 754 单精度浮点数</td>
+</tr>
+<tr>
+<td>I</td>
+<td>int</td>
+<td>32 位有符号整数</td>
+</tr>
+<tr>
+<td>J</td>
+<td>long</td>
+<td>64 位有符号整数</td>
+</tr>
+<tr>
+<td>S</td>
+<td>short</td>
+<td>16 位有符号整数</td>
+</tr>
+<tr>
+<td>Z</td>
+<td>boolean</td>
+<td>true&#x2F;false（以 int 形式存储）</td>
+</tr>
+<tr>
+<td>L&lt;classname&gt;;</td>
+<td>对象引用</td>
+<td>如 <code>Ljava/lang/String;</code></td>
+</tr>
+<tr>
+<td>[</td>
+<td>数组</td>
+<td>如 <code>[I</code> 为 int[]，<code>[[Ljava/lang/String;</code> 为 String[][]</td>
+</tr>
+</tbody></table>
+<p>示例：</p>
+<ul>
+<li><code>int count;</code> → 描述符 <code>I</code></li>
+<li><code>String name;</code> → 描述符 <code>Ljava/lang/String;</code></li>
+<li><code>long[] numbers;</code> → 描述符 <code>[J</code></li>
+<li><code>Object[][] matrix;</code> → 描述符 <code>[[Ljava/lang/Object;</code></li>
+</ul>
+<h2 id="8-4-字段属性"><a href="#8-4-字段属性" class="headerlink" title="8.4 字段属性"></a>8.4 字段属性</h2><p>字段可以携带以下属性：</p>
+<ul>
+<li><strong>ConstantValue</strong>：对应 <code>static final</code> 常量字段（编译时常量）。例如 <code>static final int MAX = 100</code>，ConstantValue 属性存储该 int 值。JVM 在准备阶段（Preparation）使用该值初始化静态字段。只有基本类型和 String 可以拥有 ConstantValue 属性。</li>
+<li><strong>Signature</strong>：保存泛型类型签名，供反射 API（<code>Field.getGenericType()</code>）使用。</li>
+<li><strong>RuntimeVisibleAnnotations</strong>：<code>@Retention(RUNTIME)</code> 的注解，运行时可见。</li>
+<li><strong>RuntimeInvisibleAnnotations</strong>：<code>@Retention(CLASS)</code> 的注解，仅编译期可见。</li>
+<li><strong>Deprecated</strong>：标记该字段已废弃（<code>@Deprecated</code> 注解）。</li>
+<li><strong>Synthetic</strong>：标记该字段为编译器合成（非源码显式声明）。</li>
+</ul>
+<h1 id="九、方法表（Methods）"><a href="#九、方法表（Methods）" class="headerlink" title="九、方法表（Methods）"></a>九、方法表（Methods）</h1><h2 id="9-1-method-info-结构"><a href="#9-1-method-info-结构" class="headerlink" title="9.1 method_info 结构"></a>9.1 method_info 结构</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">method_info &#123;</span><br><span class="line">    u2                 access_flags;        <span class="comment">// 方法访问标记</span></span><br><span class="line">    u2                 name_index;          <span class="comment">// 方法名，指向 CONSTANT_Utf8</span></span><br><span class="line">    u2                 descriptor_index;    <span class="comment">// 描述符，指向 CONSTANT_Utf8</span></span><br><span class="line">    u2                 attributes_count;    <span class="comment">// 属性数量</span></span><br><span class="line">    attribute_info     attributes[attributes_count];  <span class="comment">// 属性表</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="9-2-方法访问标记"><a href="#9-2-方法访问标记" class="headerlink" title="9.2 方法访问标记"></a>9.2 方法访问标记</h2><table>
+<thead>
+<tr>
+<th>标志名</th>
+<th>值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ACC_PUBLIC</td>
+<td>0x0001</td>
+<td>公有</td>
+</tr>
+<tr>
+<td>ACC_PRIVATE</td>
+<td>0x0002</td>
+<td>私有</td>
+</tr>
+<tr>
+<td>ACC_PROTECTED</td>
+<td>0x0004</td>
+<td>受保护</td>
+</tr>
+<tr>
+<td>ACC_STATIC</td>
+<td>0x0008</td>
+<td>静态</td>
+</tr>
+<tr>
+<td>ACC_FINAL</td>
+<td>0x0010</td>
+<td>不可覆盖（final）</td>
+</tr>
+<tr>
+<td>ACC_SYNCHRONIZED</td>
+<td>0x0020</td>
+<td>同步方法（JVM 自动获取&#x2F;释放 this 的监视器）</td>
+</tr>
+<tr>
+<td>ACC_BRIDGE</td>
+<td>0x0040</td>
+<td>桥方法（编译器为泛型类型擦除生成）</td>
+</tr>
+<tr>
+<td>ACC_VARARGS</td>
+<td>0x0080</td>
+<td>可变参数方法</td>
+</tr>
+<tr>
+<td>ACC_NATIVE</td>
+<td>0x0100</td>
+<td>本地方法（非 Java 实现）</td>
+</tr>
+<tr>
+<td>ACC_ABSTRACT</td>
+<td>0x0400</td>
+<td>抽象方法（无方法体）</td>
+</tr>
+<tr>
+<td>ACC_STRICT</td>
+<td>0x0800</td>
+<td>严格浮点计算（strictfp）</td>
+</tr>
+<tr>
+<td>ACC_SYNTHETIC</td>
+<td>0x1000</td>
+<td>编译器合成方法</td>
+</tr>
+</tbody></table>
+<h2 id="9-3-方法描述符（Method-Descriptor）"><a href="#9-3-方法描述符（Method-Descriptor）" class="headerlink" title="9.3 方法描述符（Method Descriptor）"></a>9.3 方法描述符（Method Descriptor）</h2><p>方法描述符的语法为：<code>( ParameterDescriptor* ) ReturnDescriptor</code></p>
+<p>其中 ReturnDescriptor 可以是 V（void）或有效类型的描述符。示例：</p>
+<table>
+<thead>
+<tr>
+<th>Java 方法签名</th>
+<th>描述符</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>void run()</code></td>
+<td><code>()V</code></td>
+</tr>
+<tr>
+<td><code>int add(int, int)</code></td>
+<td><code>(II)I</code></td>
+</tr>
+<tr>
+<td><code>String toString()</code></td>
+<td><code>()Ljava/lang/String;</code></td>
+</tr>
+<tr>
+<td><code>void set(int, String)</code></td>
+<td><code>(ILjava/lang/String;)V</code></td>
+</tr>
+<tr>
+<td><code>Object[] getArray(int, boolean)</code></td>
+<td><code>(IZ)[Ljava/lang/Object;</code></td>
+</tr>
+<tr>
+<td><code>long compute(int[], long, double)</code></td>
+<td><code>([IJD)J</code></td>
+</tr>
+</tbody></table>
+<p><strong>注意：</strong> 名称和描述符中<strong>不使用 ‘.’ 而使用 ‘&#x2F;‘</strong> 分隔包名。如 <code>java.lang.String</code> 表示为 <code>Ljava/lang/String;</code>。内部类的名称使用 <code>$</code> 分隔（如 <code>Outer$Inner</code>）。</p>
+<h2 id="9-4-Code-属性：方法体的核心"><a href="#9-4-Code-属性：方法体的核心" class="headerlink" title="9.4 Code 属性：方法体的核心"></a>9.4 Code 属性：方法体的核心</h2><p>Code 属性是 method_info 的属性表中最重要的属性，包含方法的实际字节码指令、异常处理表以及调试信息。其结构如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Code_attribute &#123;</span><br><span class="line">    u2                 attribute_name_index;    <span class="comment">// 指向 CONSTANT_Utf8 &quot;Code&quot;</span></span><br><span class="line">    u4                 attribute_length;        <span class="comment">// 属性长度</span></span><br><span class="line">    u2                 max_stack;               <span class="comment">// 操作数栈最大深度</span></span><br><span class="line">    u2                 max_locals;              <span class="comment">// 局部变量表槽位数</span></span><br><span class="line">    u4                 code_length;             <span class="comment">// 字节码指令长度</span></span><br><span class="line">    u1                 code[code_length];       <span class="comment">// 字节码指令数组</span></span><br><span class="line">    u2                 exception_table_length;  <span class="comment">// 异常处理器数量</span></span><br><span class="line">    exception_info     exception_table[exception_table_length];  <span class="comment">// 异常表</span></span><br><span class="line">    u2                 attributes_count;        <span class="comment">// Code 内部属性数量</span></span><br><span class="line">    attribute_info     attributes[attributes_count];  <span class="comment">// Code 内部属性</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>关键字段说明：</strong></p>
+<ul>
+<li><p><strong>max_stack</strong>：方法执行时操作数栈的最大深度（以字为单位，long&#x2F;double 占 2 个字）。由编译器在生成字节码时通过栈映射分析确定，用于 class 文件验证阶段确保栈不会溢出。如果有 <code>max_stack=3</code>，表示操作数栈上同时最多有 3 个 32 位数或 1 个 64 位数加 1 个 32 位数。</p>
+</li>
+<li><p><strong>max_locals</strong>：局部变量表的槽位数量。实例方法中槽位 0 被 <code>this</code> 引用占用；静态方法中槽位 0 是第一个参数。long 和 double 类型占用两个连续槽位（如一个 long 变量使用槽位 n 和 n+1）。</p>
+</li>
+<li><p>**code[]**：实际的 JVM 字节码指令序列。每条指令由一个操作码字节（opcode）和可选的操作数字节组成。指令集的完整讲解见【深入理解JVM字节码】第二篇。</p>
+</li>
+<li><p>**exception_table[]**：每个异常处理器包含四个字段：</p>
+<ul>
+<li><code>start_pc</code> (u2)：异常处理器生效的起始字节码偏移</li>
+<li><code>end_pc</code> (u2)：异常处理器生效的结束字节码偏移（不含）</li>
+<li><code>handler_pc</code> (u2)：异常发生时的跳转目标偏移</li>
+<li><code>catch_type</code> (u2)：捕获的异常类型在常量池中的索引（0 表示 catch-all，即 finally）</li>
+</ul>
+</li>
+</ul>
+<p><strong>Code 属性内部的子属性：</strong></p>
+<ul>
+<li><p><strong>LocalVariableTable</strong>：局部变量调试信息。每个局部变量包含：start_pc、length（生效范围）、name_index（变量名）、descriptor_index（类型描述符）、index（槽位号）。IDE 和调试器依赖此信息在断点时显示变量名和值。</p>
+</li>
+<li><p><strong>LineNumberTable</strong>：字节码偏移到源码行号的映射。每条记录包含 start_pc 和 line_number。堆栈轨迹（stack trace）使用此信息将字节码位置翻译回源代码行号。</p>
+</li>
+<li><p><strong>StackMapTable</strong>：验证类型信息。自 Java 6 引入（class 文件版本 50.0），JVM 使用 StackMapTable 进行类型检查（Type Checking）验证以替代旧式的类型推导（Type Inference）验证。这是 Java 字节码验证机制的一次重大升级。更多细节见【深入理解JVM字节码】第二篇。</p>
+</li>
+<li><p><strong>RuntimeVisibleParameterAnnotations &#x2F; RuntimeInvisibleParameterAnnotations</strong>：方法参数的注解信息。</p>
+</li>
+</ul>
+<h2 id="9-5-异常处理器实例"><a href="#9-5-异常处理器实例" class="headerlink" title="9.5 异常处理器实例"></a>9.5 异常处理器实例</h2><p>以一段 try-catch-finally 代码为例：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">readFile</span><span class="params">(String path)</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="type">FileInputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(path);</span><br><span class="line">        fis.read();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;IO Error&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Cleanup&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译后的异常表（Exception table）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Exception table:</span><br><span class="line">   from    to  target type</span><br><span class="line">      0    13     16  Class java/io/IOException</span><br><span class="line">      0    13     28  any</span><br><span class="line">     16    22     28  any</span><br></pre></td></tr></table></figure>
+
+<p>这里有三条记录：</p>
+<ol>
+<li>偏移 0-13（try 块）内若发生 IOException，跳转到 16（catch 块）。</li>
+<li>偏移 0-13 内任何异常（any），跳转到 28（finally 块）。</li>
+<li>偏移 16-22（catch 块）内任何异常，跳转到 28（finally 块）。这是因为即使 catch 块内部也可能抛出异常，finally 必须保证执行。</li>
+</ol>
+<p>finally 的实现并非一个独立的字节码指令，而是由编译器在每个可能的退出路径上复制 finally 代码块，并通过异常表覆盖所有异常路径。这正是 “编译期展开”（compile-time inlining of finally）的策略。</p>
+<h1 id="十、属性表（Attributes）"><a href="#十、属性表（Attributes）" class="headerlink" title="十、属性表（Attributes）"></a>十、属性表（Attributes）</h1><p>属性表是 class 文件中最具扩展性的设计。JVM 规范定义了大量的标准属性，同时允许自定义属性（JVM 应静默忽略无法识别的属性）。</p>
+<h2 id="10-1-类级属性（Class-level-Attributes）"><a href="#10-1-类级属性（Class-level-Attributes）" class="headerlink" title="10.1 类级属性（Class-level Attributes）"></a>10.1 类级属性（Class-level Attributes）</h2><table>
+<thead>
+<tr>
+<th>属性名</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SourceFile</td>
+<td>源文件名（如 “HelloWorld.java”），仅用于调试</td>
+</tr>
+<tr>
+<td>Signature</td>
+<td>泛型类型签名，保留完整的泛型参数信息</td>
+</tr>
+<tr>
+<td>RuntimeVisibleAnnotations</td>
+<td>类上的运行时注解（如 @Deprecated, @SuppressWarnings）</td>
+</tr>
+<tr>
+<td>RuntimeInvisibleAnnotations</td>
+<td>类上的编译期注解</td>
+</tr>
+<tr>
+<td>InnerClasses</td>
+<td>内部类列表，记录每个内部类与外部类的映射关系</td>
+</tr>
+<tr>
+<td>EnclosingMethod</td>
+<td>匿名类&#x2F;局部类的封闭方法</td>
+</tr>
+<tr>
+<td>BootstrapMethods</td>
+<td>invokedynamic 引导方法表（Lambda 表达式的核心依赖）</td>
+</tr>
+<tr>
+<td>Module</td>
+<td>模块描述（module-info.class 中使用）</td>
+</tr>
+<tr>
+<td>ModulePackages</td>
+<td>模块导出的包列表</td>
+</tr>
+<tr>
+<td>ModuleMainClass</td>
+<td>模块的主类</td>
+</tr>
+<tr>
+<td>NestHost</td>
+<td>嵌套类宿主（Java 11 引入，支持私有成员跨类访问）</td>
+</tr>
+<tr>
+<td>NestMembers</td>
+<td>嵌套类成员列表</td>
+</tr>
+<tr>
+<td>Record</td>
+<td>Record 类的组件描述（Java 14 引入）</td>
+</tr>
+<tr>
+<td>PermittedSubclasses</td>
+<td>密封类的允许子类列表（Java 15 预览，17 正式）</td>
+</tr>
+<tr>
+<td>Deprecated</td>
+<td>标记该类已废弃</td>
+</tr>
+<tr>
+<td>SourceDebugExtension</td>
+<td>附加的调试信息（如 SMAP：源码到字节码的行号映射，常用于 JSP&#x2F;模板引擎）</td>
+</tr>
+</tbody></table>
+<h2 id="10-2-方法级属性（Method-level-Attributes）"><a href="#10-2-方法级属性（Method-level-Attributes）" class="headerlink" title="10.2 方法级属性（Method-level Attributes）"></a>10.2 方法级属性（Method-level Attributes）</h2><table>
+<thead>
+<tr>
+<th>属性名</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Code</td>
+<td>方法体字节码（见前文 9.4 节）</td>
+</tr>
+<tr>
+<td>Exceptions</td>
+<td>方法声明的受检异常（throws 子句）列表</td>
+</tr>
+<tr>
+<td>Signature</td>
+<td>泛型方法签名</td>
+</tr>
+<tr>
+<td>RuntimeVisibleParameterAnnotations</td>
+<td>运行时可见的形参注解</td>
+</tr>
+<tr>
+<td>RuntimeInvisibleParameterAnnotations</td>
+<td>编译期可见的形参注解</td>
+</tr>
+<tr>
+<td>AnnotationDefault</td>
+<td>注解类型元素的默认值</td>
+</tr>
+<tr>
+<td>MethodParameters</td>
+<td>方法参数名称信息（Java 8 引入，<code>-parameters</code> 编译选项）</td>
+</tr>
+</tbody></table>
+<h1 id="十一、实战：完整-class-文件的逐字节解读"><a href="#十一、实战：完整-class-文件的逐字节解读" class="headerlink" title="十一、实战：完整 class 文件的逐字节解读"></a>十一、实战：完整 class 文件的逐字节解读</h1><p>以下以一个最简单的 Java 类 <code>HelloWorld.java</code> 为例，逐字节解读其 class 文件：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HelloWorld</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Hello, JVM!&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译生成的 class 文件的完整十六进制转储（共约 430 字节）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Offset  Hex Dump                                           Annotation</span><br><span class="line">------  ------------------------------------------------  ------------------------------------------</span><br><span class="line">000000  CA FE BA BE 00 00 00 3D  00 22 0A 00 06 00 12 09  magic=CAFEBABE minor=0 major=61(JDK17)</span><br><span class="line">000010  00 13 00 14 08 00 15 0A  00 16 00 17 07 00 18 07</span><br><span class="line">000020  00 19 01 00 06 3C 69 6E  69 74 3E 01 00 03 28 29  #1: Utf8 &quot;&lt;init&gt;&quot;</span><br><span class="line">000030  56 01 00 04 43 6F 64 65  01 00 0F 4C 69 6E 65 4E  V   #2: Utf8 &quot;Code&quot;</span><br><span class="line">000040  75 6D 62 65 72 54 61 62  6C 65 01 00 12 4C 6F 63  umberTable</span><br><span class="line">000050  61 6C 56 61 72 69 61 62  6C 65 54 61 62 6C 65 01  LocalVariableTable</span><br><span class="line">000060  00 04 74 68 69 73 01 00  1A 4C 48 65 6C 6C 6F 57  #3: Utf8 &quot;this&quot;</span><br><span class="line">000070  6F 72 6C 64 3B 01 00 04  6D 61 69 6E 01 00 16 28  orld; #4: Utf8 &quot;main&quot;</span><br><span class="line">000080  5B 4C 6A 61 76 61 2F 6C  61 6E 67 2F 53 74 72 69  [Ljava/lang/Stri</span><br><span class="line">000090  6E 67 3B 29 56 01 00 04  61 72 67 73 01 00 13 5B  ng;)V #5: Utf8 &quot;args&quot;</span><br><span class="line">0000A0  4C 6A 61 76 61 2F 6C 61  6E 67 2F 53 74 72 69 6E  Ljava/lang/Strin</span><br><span class="line">0000B0  67 3B 01 00 0A 53 6F 75  72 63 65 46 69 6C 65 01  g; #6: Utf8 &quot;SourceFile&quot;</span><br><span class="line">0000C0  00 0F 48 65 6C 6C 6F 57  6F 72 6C 64 2E 6A 61 76  HelloWorld.jav</span><br><span class="line">0000D0  61 0C 00 07 00 08 07 00  1A 0C 00 1B 00 1C 01 00  a #7-#8: NameAndType &lt;init&gt;()V</span><br><span class="line">0000E0  0C 48 65 6C 6C 6F 2C 20  4A 56 4D 21 07 00 1D 0C  Hello, JVM!</span><br><span class="line">0000F0  00 1E 00 1F 01 00 0A 48  65 6C 6C 6F 57 6F 72 6C  HelloWorld</span><br><span class="line">...</span><br><span class="line">0001A0  00 00 00 00 00 00                                ......</span><br></pre></td></tr></table></figure>
+
+<p><strong>逐段解析（配合 javap -v 常量池输出）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#1 = Methodref          #6.#12         // java/lang/Object.&quot;&lt;init&gt;&quot;:()V</span><br><span class="line">#2 = Fieldref           #13.#14        // java/lang/System.out:Ljava/io/PrintStream;</span><br><span class="line">#3 = String             #15            // &quot;Hello, JVM!&quot;</span><br><span class="line">#4 = Methodref          #16.#17        // java/io/PrintStream.println:(Ljava/lang/String;)V</span><br><span class="line">#5 = Class              #18            // HelloWorld</span><br><span class="line">#6 = Class              #19            // java/lang/Object</span><br><span class="line">#7 = Utf8               &lt;init&gt;</span><br><span class="line">#8 = Utf8               ()V</span><br><span class="line">#9 = Utf8               Code</span><br><span class="line">#10 = Utf8               LineNumberTable</span><br><span class="line">#11 = Utf8               LocalVariableTable</span><br><span class="line">#12 = NameAndType        #7:#8         // &quot;&lt;init&gt;&quot;:()V</span><br><span class="line">#13 = Class              #20            // java/lang/System</span><br><span class="line">#14 = NameAndType        #21:#22        // out:Ljava/io/PrintStream;</span><br><span class="line">#15 = Utf8               Hello, JVM!</span><br><span class="line">#16 = Class              #23            // java/io/PrintStream</span><br><span class="line">#17 = NameAndType        #24:#25        // println:(Ljava/lang/String;)V</span><br><span class="line">#18 = Utf8               HelloWorld</span><br><span class="line">#19 = Utf8               java/lang/Object</span><br><span class="line">#20 = Utf8               java/lang/System</span><br><span class="line">#21 = Utf8               out</span><br><span class="line">#22 = Utf8               Ljava/io/PrintStream;</span><br><span class="line">#23 = Utf8               java/io/PrintStream</span><br><span class="line">#24 = Utf8               println</span><br><span class="line">#25 = Utf8               (Ljava/lang/String;)V</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p><strong>字节码指令部分（main 方法）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public static void main(java.lang.String[]);</span><br><span class="line">    descriptor: ([Ljava/lang/String;)V</span><br><span class="line">    flags: (0x0009) ACC_PUBLIC, ACC_STATIC</span><br><span class="line">    Code:</span><br><span class="line">      stack=2, locals=1, args_size=1</span><br><span class="line">         0: getstatic     #2  // Field java/lang/System.out:Ljava/io/PrintStream;</span><br><span class="line">         3: ldc           #3  // String Hello, JVM!</span><br><span class="line">         5: invokevirtual #4  // Method java/io/PrintStream.println:(Ljava/lang/String;)V</span><br><span class="line">         8: return</span><br><span class="line">      LineNumberTable:</span><br><span class="line">        line 3: 0</span><br><span class="line">        line 4: 8</span><br></pre></td></tr></table></figure>
+
+<p>逐条指令分析：</p>
+<ol>
+<li><code>getstatic #2</code>（偏移 0）：将静态字段 <code>System.out</code>（类型为 PrintStream）压入操作数栈。</li>
+<li><code>ldc #3</code>（偏移 3）：将常量池中 #3 号常量（字符串 “Hello, JVM!”）压入操作数栈。</li>
+<li><code>invokevirtual #4</code>（偏移 5）：调用 PrintStream.println(String) 方法。弹出栈顶的两个值（参数和接收者），执行方法，返回值 void 不压栈。</li>
+<li><code>return</code>（偏移 8）：方法返回。</li>
+</ol>
+<h1 id="十二、class-文件-vs-DEX-文件结构对比"><a href="#十二、class-文件-vs-DEX-文件结构对比" class="headerlink" title="十二、class 文件 vs DEX 文件结构对比"></a>十二、class 文件 vs DEX 文件结构对比</h1><p>Android 平台不使用 class 文件作为运行时格式，而是使用 DEX（Dalvik Executable）格式。DEX 的设计目标是减少内存占用和 I&#x2F;O 开销。两者在结构上有本质差异：</p>
+<h2 id="12-1-常量管理方式"><a href="#12-1-常量管理方式" class="headerlink" title="12.1 常量管理方式"></a>12.1 常量管理方式</h2><p><strong>class 文件</strong>使用分散的常量池（Constant Pool），每个 class 文件独立维护一个常量池。这导致多个 class 文件之间存在大量重复的字符串常量（如 <code>java/lang/Object</code>、<code>&lt;init&gt;</code>、<code>()V</code> 等在几乎每个 class 文件中都会出现）。</p>
+<p><strong>DEX 文件</strong>使用全局统一索引。所有类、字符串、类型、方法等都被提取到全局表格中：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">DEX 文件结构：</span><br><span class="line">  header</span><br><span class="line">  string_ids[]        —— 全局字符串表（所有字符串在此唯一存储）</span><br><span class="line">  type_ids[]          —— 全局类型表（指向 string_ids 的索引）</span><br><span class="line">  proto_ids[]         —— 方法原型表（参数列表 + 返回类型）</span><br><span class="line">  field_ids[]         —— 全局字段表（类 + 类型 + 名称）</span><br><span class="line">  method_ids[]        —— 全局方法表（类 + 原型 + 名称）</span><br><span class="line">  class_defs[]        —— 类定义表</span><br><span class="line">  data                —— 实际数据区</span><br><span class="line">  link_data           —— 链接数据</span><br></pre></td></tr></table></figure>
+
+<p><strong>关键优势：</strong> 字符串 <code>&quot;java/lang/Object&quot;</code> 在 DEX 文件的 <code>string_ids[]</code> 中只出现一次，所有引用它的 <code>type_ids</code>、<code>field_ids</code>、<code>method_ids</code> 都使用 2 字节或 4 字节的索引。这大幅减少了重复信息的存储，使得 DEX 文件通常比对应的 jar 包（包含多个 class 文件）小 30-50%。</p>
+<h2 id="12-2-类定义方式"><a href="#12-2-类定义方式" class="headerlink" title="12.2 类定义方式"></a>12.2 类定义方式</h2><p><strong>class 文件</strong>：每个 class 文件独立包含一个类，通过 this_class、super_class、interfaces[] 三个独立字段描述类型关系。</p>
+<p><strong>DEX 文件</strong>：所有类统一定义在 <code>class_defs[]</code> 数组中，每个 class_def 包含：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">class_def_item &#123;</span><br><span class="line">    uint class_idx;              // 指向 type_ids 的本类索引</span><br><span class="line">    uint access_flags;           // 访问标志</span><br><span class="line">    uint superclass_idx;         // 指向 type_ids 的父类索引</span><br><span class="line">    uint interfaces_off;        // 指向接口列表的偏移</span><br><span class="line">    uint source_file_idx;       // 源文件字符串索引</span><br><span class="line">    uint annotations_off;       // 注解偏移</span><br><span class="line">    uint class_data_off;        // 类数据（字段和方法）偏移</span><br><span class="line">    uint static_values_off;     // 静态字段初始值偏移</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="12-3-指令集差异"><a href="#12-3-指令集差异" class="headerlink" title="12.3 指令集差异"></a>12.3 指令集差异</h2><ul>
+<li><strong>class 文件</strong>使用高效的栈式指令集，约 205 条指令。</li>
+<li><strong>DEX 文件</strong>使用基于寄存器的指令集，指令数量更多（约 230+ 条指令），但执行时需要的指令条数更少（因为寄存器架构通常比栈式架构需要更少的指令来完成同一计算）。寄存器式指令也更适合移动设备的性能特性——减少了内存访问次数。</li>
+</ul>
+<h2 id="12-4-在-ART-中的加载逻辑"><a href="#12-4-在-ART-中的加载逻辑" class="headerlink" title="12.4 在 ART 中的加载逻辑"></a>12.4 在 ART 中的加载逻辑</h2><p>ART 加载 class&#x2F;DEX 文件的核心路径在 <code>art/runtime/class_linker.cc</code>：</p>
+<ol>
+<li><strong>OpenDexFilesFromOat</strong>：从 APK&#x2F;JAR 中读取 DEX 文件。如果存在对应的 .vdex 或 .oat 文件（AOT 编译产物），则优先使用验证和编译缓存。</li>
+<li><strong>DefineClass</strong>：根据类名在 DEX 文件的 class_defs 中查找类定义项（二进制搜索 type_ids），解析 class_def 结构，分配内存中的 <code>mirror::Class</code> 对象。</li>
+<li><strong>LoadClass</strong>：递归加载父类和接口类。</li>
+<li><strong>LinkClass</strong>：构建虚方法表（vtable）、接口方法表（iftable），计算字段偏移量。</li>
+<li><strong>EnsureInitialized</strong>：如果尚未初始化，执行 <code>&lt;clinit&gt;</code> 方法（类的静态初始化）。</li>
+</ol>
+<h1 id="十三、Modified-UTF-8-编码"><a href="#十三、Modified-UTF-8-编码" class="headerlink" title="十三、Modified UTF-8 编码"></a>十三、Modified UTF-8 编码</h1><h2 id="13-1-UTF-8-标准编码原理回顾"><a href="#13-1-UTF-8-标准编码原理回顾" class="headerlink" title="13.1 UTF-8 标准编码原理回顾"></a>13.1 UTF-8 标准编码原理回顾</h2><p>UTF-8 是一种变长编码方式，使用 1~4 个字节表示一个 Unicode 字符。规则如下：</p>
+<ul>
+<li><strong>单字节（U+0000 ~ U+007F）</strong>：<code>0xxxxxxx</code>。ASCII 字符直接用一个字节表示。</li>
+<li><strong>双字节（U+0080 ~ U+07FF）</strong>：<code>110xxxxx 10xxxxxx</code>。去掉 110 和 10 前缀后的 11 位用于编码。</li>
+<li><strong>三字节（U+0800 ~ U+FFFF）</strong>：<code>1110xxxx 10xxxxxx 10xxxxxx</code>。去掉前缀后的 16 位用于编码。</li>
+<li><strong>四字节（U+010000 ~ U+10FFFF）</strong>：<code>11110xxx 10xxxxxx 10xxxxxx 10xxxxxx</code>。去掉前缀后的 21 位用于编码。</li>
+</ul>
+<h2 id="13-2-MUTF-8-与标准-UTF-8-的区别"><a href="#13-2-MUTF-8-与标准-UTF-8-的区别" class="headerlink" title="13.2 MUTF-8 与标准 UTF-8 的区别"></a>13.2 MUTF-8 与标准 UTF-8 的区别</h2><p>Java 在 class 文件的 CONSTANT_Utf8 中使用的是 **Modified UTF-8 (MUTF-8)**，而非标准 UTF-8。两者的关键区别有二：</p>
+<p><strong>区别一：空字符（U+0000）的编码</strong></p>
+<p>标准 UTF-8 用一个字节 <code>0x00</code> 表示空字符。MUTF-8 用两个字节 <code>0xC0 0x80</code> 表示空字符。</p>
+<p>原因：在其他语言（如 C 语言）中，<code>0x00</code> 字节被用作字符串的结束标志（null terminator）。如果 class 文件中字符串的编码使用了 <code>0x00</code>，可能导致 C 语言实现的 JVM 在解析时意外截断字符串。MUTF-8 使用 <code>0xC080</code> 替代，避免了这个问题，因为 <code>0xC080</code> 永远不会在正常的 C 字符串中出现。其二进制表示为 <code>11000000 10000000</code>，解码时按双字节格式处理得到的码点为 0。</p>
+<p><strong>区别二：不使用四字节编码</strong></p>
+<p>MUTF-8 只使用 1、2、3 字节的编码形式，不使用标准 UTF-8 的 4 字节编码。</p>
+<p>对于 U+FFFF 以上的补充字符（Supplementary Characters，如 emoji、罕见汉字等），MUTF-8 不使用 UTF-8 的 4 字节形式，而是先用 UTF-16 的代理对（Surrogate Pair）拆分为两个 UTF-16 编码单元，然后将这两个编码单元<strong>分别按三字节格式编码</strong>，最终占用 6 个字节。</p>
+<p><strong>实例：emoji 字符 “😀”（U+1F600）的编码</strong></p>
+<ul>
+<li>Unicode 码点：U+1F600</li>
+<li>UTF-16 代理对：<code>D83D DE00</code>（高代理 <code>\uD83D</code> + 低代理 <code>\uDE00</code>）</li>
+<li>UTF-8 标准编码（4 字节）：<code>F0 9F 98 80</code></li>
+<li>MUTF-8 编码（6 字节）：<code>ED A0 BD ED B8 80</code><ul>
+<li>高代理 U+D83D 按三字节 UTF-8 编码：<code>1110 1101 10 100000 10 111101</code> → <code>ED A0 BD</code></li>
+<li>低代理 U+DE00 按三字节 UTF-8 编码：<code>1110 1101 10 111000 10 000000</code> → <code>ED B8 80</code></li>
+</ul>
+</li>
+</ul>
+<p><strong>为什么 MUTF-8 这样设计？</strong> 这是为了兼容 Java 早期的 Unicode 实现。Java 在 JDK 1.0 时期使用的是 UCS-2（每个字符固定 2 字节），后来在 JDK 5.0 迁移到 UTF-16。class 文件格式为兼容这一历史，采用了将代理对分别编码为三字节 MUTF-8 的策略。</p>
+<p>在实际开发中，如果你手动解析 class 文件并遇到 6 字节序列 <code>ED A0 80 ~ ED BF BF</code> 范围内的模式，那就是 MUTF-8 编码的代理对。使用 Java 的 <code>DataInputStream.readUTF()</code> 可以正确解码 MUTF-8。</p>
+<h1 id="十四、ART-中的-class-加载与文件解析"><a href="#十四、ART-中的-class-加载与文件解析" class="headerlink" title="十四、ART 中的 class 加载与文件解析"></a>十四、ART 中的 class 加载与文件解析</h1><p>本节从 ART 源码视角梳理 class&#x2F;DEX 文件的加载和解析过程。</p>
+<h2 id="14-1-加载入口"><a href="#14-1-加载入口" class="headerlink" title="14.1 加载入口"></a>14.1 加载入口</h2><ul>
+<li>Java 层入口：<code>libcore/ojluni/src/main/java/java/lang/ClassLoader.java</code> → <code>loadClass(String name)</code> → 委派给父加载器 → <code>findClass(String name)</code>。</li>
+<li>Android 中：<code>dalvik.system.BaseDexClassLoader</code> → <code>DexPathList.findClass()</code> → 遍历 dex elements，调用 <code>DexFile.loadClassBinaryName()</code> → 进入 Native 方法。</li>
+</ul>
+<h2 id="14-2-Native-层-DefineClass"><a href="#14-2-Native-层-DefineClass" class="headerlink" title="14.2 Native 层 DefineClass"></a>14.2 Native 层 DefineClass</h2><p><code>art/runtime/native/dalvik_system_DexFile.cc</code> 中的 Native 方法 <code>DefineClass</code> 负责实际的类定义操作：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 简化逻辑</span></span><br><span class="line"><span class="function"><span class="type">static</span> jclass <span class="title">DexFile_defineClassNative</span><span class="params">(JNIEnv* env, jclass, jstring javaName, ...)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 将 java 类名转换为内部格式（如 &quot;com.example.Foo&quot; → &quot;Lcom/example/Foo;&quot;）</span></span><br><span class="line">    <span class="comment">// 2. 在 DEX 文件中查找类定义</span></span><br><span class="line">    <span class="type">const</span> DexFile::ClassDef* class_def = dex_file.<span class="built_in">FindClassDef</span>(descriptor, ...);</span><br><span class="line">    <span class="comment">// 3. 调用 ClassLinker::DefineClass 创建 Class 对象</span></span><br><span class="line">    ObjPtr&lt;mirror::Class&gt; klass = class_linker-&gt;<span class="built_in">DefineClass</span>(self, descriptor, ...);</span><br><span class="line">    <span class="comment">// 4. 返回 Java 层 Class 对象</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="14-3-ClassLinker-的角色"><a href="#14-3-ClassLinker-的角色" class="headerlink" title="14.3 ClassLinker 的角色"></a>14.3 ClassLinker 的角色</h2><p><code>art/runtime/class_linker.cc</code> 是整个类加载系统的中枢，其核心函数包括：</p>
+<ul>
+<li><strong>FindClass</strong>：在已加载的类和 ClassLoader 委托链中定位类。先在 ClassTable 中查找（使用 descriptor 作为键），未找到则委派给 ClassLoader 的 <code>loadClass</code>。</li>
+<li><strong>DefineClass</strong>：从 DEX 文件中解析类定义（class_def_item），在堆上分配 <code>mirror::Class</code> 对象，设置 class 指针、access_flags 等基本元数据。</li>
+<li><strong>LoadClass</strong>：确保父类和所有接口类已被加载（递归调用 LoadClass）。</li>
+<li><strong>LinkClass</strong>：构建 vtable（虚方法表）和 iftable（接口方法表），计算字段偏移（field offset），执行方法重写的链接。</li>
+<li><strong>EnsureInitialized</strong>：如果类尚未完成 <code>&lt;clinit&gt;</code>，在当前线程中执行类的静态初始化方法。</li>
+</ul>
+<h2 id="14-4-vtable-和-iftable-的构建"><a href="#14-4-vtable-和-iftable-的构建" class="headerlink" title="14.4 vtable 和 iftable 的构建"></a>14.4 vtable 和 iftable 的构建</h2><p>vtable（虚方法表）是 Java 多态性的核心机制。在 <code>LinkClass</code> 期间，ART 为每个类构建一份 vtable：</p>
+<ol>
+<li>如果父类已有 vtable，复制父类的 vtable 作为基础。</li>
+<li>遍历当前类定义的方法，如果某个方法与 vtable 中已有的某个方法同名同描述符（即 override），则用新的 <code>ArtMethod*</code> 替换 vtable 中的对应槽位。</li>
+<li>如果是新增的方法（父类中没有），追加到 vtable 末尾。</li>
+</ol>
+<p>iftable（接口方法表）用于 <code>invokeinterface</code> 指令的分派。构建过程需要确定每个已实现的接口方法在 itable 中的位置。<code>art/runtime/class_linker.cc</code> 中的 <code>LinkInterfaceMethods</code> 和 <code>LinkVirtualMethods</code> 分别完成 iftable 和 vtable 的构建。</p>
+<h1 id="十五、实战：使用-javap-工具解读-class-文件"><a href="#十五、实战：使用-javap-工具解读-class-文件" class="headerlink" title="十五、实战：使用 javap 工具解读 class 文件"></a>十五、实战：使用 javap 工具解读 class 文件</h1><p><code>javap</code> 是 JDK 自带的 class 文件反编译工具，是学习字节码最重要的工具之一。</p>
+<p><strong>常用选项：</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">javap -c HelloWorld.class          <span class="comment"># 反编译方法体（显示字节码助记符）</span></span><br><span class="line">javap -v HelloWorld.class          <span class="comment"># 详细模式（常量池、属性、字节码、行号表等）</span></span><br><span class="line">javap -p HelloWorld.class          <span class="comment"># 显示所有方法和字段（包括私有）</span></span><br><span class="line">javap -s HelloWorld.class          <span class="comment"># 显示内部类型签名</span></span><br><span class="line">javap -l HelloWorld.class          <span class="comment"># 显示行号和局部变量表</span></span><br><span class="line">javap -constants HelloWorld.class  <span class="comment"># 显示静态常量值</span></span><br><span class="line">javap --module MODULE_NAME         <span class="comment"># 显示模块描述</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>关键标志位解读（来自 javap -v 输出）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">flags: (0x0001) ACC_PUBLIC       → public</span><br><span class="line">flags: (0x0009) ACC_PUBLIC, ACC_STATIC → public static</span><br><span class="line">flags: (0x1041) ACC_PUBLIC, ACC_BRIDGE, ACC_SYNTHETIC → 桥方法（泛型擦除生成）</span><br><span class="line">flags: (0x0021) ACC_PUBLIC, ACC_SYNCHRONIZED → 同步方法</span><br></pre></td></tr></table></figure>
+
+<h1 id="十六、设计启示与深层思考"><a href="#十六、设计启示与深层思考" class="headerlink" title="十六、设计启示与深层思考"></a>十六、设计启示与深层思考</h1><h2 id="16-1-class-文件格式为何如此设计"><a href="#16-1-class-文件格式为何如此设计" class="headerlink" title="16.1 class 文件格式为何如此设计"></a>16.1 class 文件格式为何如此设计</h2><p><strong>紧凑性优先</strong>：class 文件使用 u1&#x2F;u2&#x2F;u4 变长编码，配合常量池的符号引用机制，避免了字符串的重复存储。指令操作数通常只需要 1-2 字节的常量池索引，而非完整的字符串。</p>
+<p><strong>可扩展性</strong>：通过属性表（attribute_info）机制，JVM 规范可以在不破坏向后兼容性的前提下添加新的元数据。旧的 JVM 实现可以安全地忽略未知属性。</p>
+<p><strong>静态安全性</strong>：所有类型信息（max_stack、StackMapTable）在编译期确定并写入 class 文件，使得 JVM 在运行时不需要进行复杂的数据流分析即可验证字节码的安全性。</p>
+<h2 id="16-2-从-class-文件到平台无关执行"><a href="#16-2-从-class-文件到平台无关执行" class="headerlink" title="16.2 从 class 文件到平台无关执行"></a>16.2 从 class 文件到平台无关执行</h2><p>class 文件的平台无关性体现在：它包含的是抽象的字节码指令和符号引用，不包含任何具体平台的机器码或内存布局信息。具体来说：</p>
+<ul>
+<li>操作数栈是抽象概念，不映射到特定 CPU 的寄存器。</li>
+<li>类型描述符（如 <code>I</code> 表示 int）是平台无关的，JVM 负责将其映射到目标平台的实际类型宽度（在 64 位系统上，int 仍然是 32 位）。</li>
+<li>常量池中的符号引用在运行时才被解析为直接引用（内存地址），而解析的结果依赖于目标 JVM 的具体实现。</li>
+</ul>
+<p>这些设计使得同一个 class 文件可以在 x86 架构的 Windows JVM、ARM 架构的 Linux JVM、以及 Android 的 ART 上无修改地运行——这正是”Write Once, Run Anywhere”的技术根基。</p>
+<hr>
+<h2 id="面试问答"><a href="#面试问答" class="headerlink" title="面试问答"></a>面试问答</h2><p><strong>Q1：class 文件的魔数是什么？如果魔数校验失败，JVM 会怎么做？</strong></p>
+<p>A：class 文件的魔数是 0xCAFEBABE（咖啡宝贝），占文件开头 4 个字节（大端序）。JVM 在加载一个类之前首先读取并校验这 4 个字节。如果不匹配，JVM 会立即抛出 <code>java.lang.ClassFormatError</code> 并停止加载该 class 文件。这个错误与 <code>ClassNotFoundException</code> 不同——后者说明类文件未找到，前者说明文件存在但格式不合法。DEX 文件也有类似的魔数校验机制，其魔数是 <code>dex\n035</code> 或 <code>dex\n037</code>（DEX 格式版本号不同）。校验逻辑等价于 class 文件的魔数检查。ART 中校验入口在 <code>art/runtime/class_linker.cc</code> 的 DEX 文件打开函数中。</p>
+<p><strong>Q2：为什么常量池索引从 1 而非 0 开始？CONSTANT_Long 和 CONSTANT_Double 为什么占用两个索引？</strong></p>
+<p>A：常量池索引从 1 开始是为了将索引 0 预留给”无效引用”语义。在异常表的 catch_type 字段（0 表示 catch-all）、BootstrapMethods 的 method_handle 引用等场景中需要表达”无”。CONSTANT_Long 和 CONSTANT_Double 占据两个索引槽位是出于历史设计原因——这两种常量值占用 8 字节，在 32 位架构的早期 JVM 中，常量池项按 32 位对齐，一个 64 位值必须占用两个槽位。为保持规范的一致性，即使在 64 位 JVM 中，这一规则依然保留。在实际编码中，如果 #5 是 CONSTANT_Double，则 #6 在常量池中不可用（被标记为 unusable）。</p>
+<p><strong>Q3：class 文件中的 Signature 属性的作用是什么？如果被去除了会有什么影响？</strong></p>
+<p>A：Signature 属性存储在 class 文件、field_info 或 method_info 的属性表中，用于保留泛型类型信息。由于 Java 泛型基于类型擦除，字节码层面的方法签名和字段描述符已经失去泛型参数。Signature 属性通过特殊的字符串编码（如 <code>&lt;T:Ljava/lang/Object;&gt;Ljava/util/List&lt;TT;&gt;;</code>）完整保存了原始泛型类型。它有两个关键用途：(1) Java 反射 API 通过读取 Signature 属性提供 <code>Method.getGenericReturnType()</code>、<code>Field.getGenericType()</code> 等泛型感知方法；(2) javac 编译下游代码时需要读取依赖类中的 Signature 属性来进行泛型类型检查。如果使用 ProGuard&#x2F;R8 且未配置 <code>-keepattributes Signature</code>，Signature 属性会被剥离，导致 Gson、Jackson 等库无法正确反序列化泛型类型，Retrofit 无法解析返回类型的泛型参数。</p>
+<p><strong>Q4：MUTF-8 和标准 UTF-8 有什么区别？为什么 class 文件使用 MUTF-8？</strong></p>
+<p>A：MUTF-8（Modified UTF-8）是 UTF-8 在 Java class 文件中的变体，主要有两个区别：(1) U+0000（空字符）使用双字节 <code>0xC080</code> 而非单字节 <code>0x00</code> 表示，这是为了避免 C 语言中以 <code>0x00</code> 结尾的字符串处理逻辑意外截断 class 文件中的字符串数据；(2) U+FFFF 以上的补充字符不使用 UTF-8 四字节编码，而是先分解为 UTF-16 代理对（高代理 + 低代理），再对每个代理字符分别使用三字节编码，共占用 6 个字节。例如 emoji “😀”（U+1F600）标准 UTF-8 编码为 <code>F0 9F 98 80</code>（4 字节），而 MUTF-8 编码为 <code>ED A0 BD ED B8 80</code>（6 字节）。这是为了兼容 Java 早期（JDK 1.0）的 UCS-2 字符模型。</p>
+<p><strong>Q5：class 文件和 DEX 文件在结构上有哪些核心差异？这种差异的设计动机是什么？</strong></p>
+<p>A：核心差异有四点。(1) 常量管理：class 文件每个文件内置独立的常量池，多个 class 文件间存在大量重复；DEX 文件使用全局统一的 string_ids&#x2F;type_ids&#x2F;proto_ids&#x2F;field_ids&#x2F;method_ids，所有信息只存储一次。(2) 类定义：class 文件通过 this_class&#x2F;super_class&#x2F;interfaces[] 三个独立字段描述类型关系；DEX 文件将所有类统一定义在 class_defs[] 数组中。(3) 指令集：class 文件使用栈式指令集（约 205 条指令），DEX 文件使用基于寄存器的指令集（约 230+ 条指令），寄存器式指令在移动设备上需要的指令执行次数更少。(4) DEX 文件大小比等效的 class 文件 jar 包小 30-50%，主要得益于全局字符串去重和更紧凑的编码。设计动机是在移动设备的存储和内存受限环境中最大化空间效率，同时保持足够的运行时性能。</p>
+<p><strong>Q6：Code 属性中的 max_stack 和 max_locals 是如何确定的？为什么需要在 class 文件中存储这些值？</strong></p>
+<p>A：max_stack 和 max_locals 由 Java 编译器在代码生成阶段通过栈映射分析（Stack Map Analysis）确定。编译器遍历所有可能的控制流路径，跟踪每条路径上的操作数栈深度和局部变量使用情况，取最大值。譬如 <code>javac</code> 源码中 <code>com.sun.tools.javac.jvm.Gen</code> 类负责这一分析。这些值存储在 class 文件中供 JVM 验证器使用——验证器在类加载时检查每条字节码指令前后的栈深度是否一致、局部变量槽位访问是否越界。如果未在 class 文件中预先声明这些最大值，JVM 就需要在加载时进行完整的数据流分析来确定，这将显著增加类加载时间。预先计算并存储这些值是编译期优化类加载性能的设计。</p>
+<p><strong>Q7：ACC_SUPER 标志在现代 Java 中还有什么用？为什么标准 javac 总是设置它？</strong></p>
+<p>A：ACC_SUPER 标志的历史背景是 Java 1.0.2 时期 <code>invokespecial</code> 指令在处理父类方法调用时存在两种不同的语义模式。设置 ACC_SUPER 标志后 JVM 使用修正后的语义——即 <code>invokespecial</code> 对父类方法的调用严格在编译期确定的父类中进行，不执行虚方法分派。未设置该标志时，某些旧的 JVM 实现可能采用不同的行为。自 Java 1.0.2 之后的版本开始，JVM 规范要求所有新编译的 class 文件必须设置此标志。现代 javac 总是设置 ACC_SUPER，所以它在当代 Java 开发中主要是一个”历史遗留标志”——你几乎不会看到 class 文件不包含此标志，除非处理非常古老的遗留 class 文件（JDK 1.0.2 时代编译）。</p>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%AD%97%E8%8A%82%E7%A0%81/">字节码    </a><a class="post-meta__tags" href="/tags/JVM/">JVM    </a><a class="post-meta__tags" href="/tags/%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F/">文件格式    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/247.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/03/05/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E4%BA%8C%E7%AF%87%E3%80%81%E5%AD%97%E8%8A%82%E7%A0%81%E5%9F%BA%E7%A1%80/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/240.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【深入理解JVM字节码】第二篇、字节码基础</span></div></a></div><div class="next-post pull_right"><a href="/2021/02/25/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91%E7%B3%BB%E7%BB%9F%E6%98%A0%E5%83%8F%E6%96%87%E4%BB%B6/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286979.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【深入内核篇】系统映像文件</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2021/06/01/高级Android-【逆向安全技术-基础篇】dex文件格式解析/" title="【逆向安全技术-基础篇】dex文件格式解析"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【逆向安全技术-基础篇】dex文件格式解析</div></a></div><div class="relatedPosts_item"><a href="/2021/04/05/重拾Android-【深入理解JVM字节码】第八篇、Kotlin字节码原理/" title="【深入理解JVM字节码】第八篇、Kotlin字节码原理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/265.jpg"><div class="relatedPosts_title">【深入理解JVM字节码】第八篇、Kotlin字节码原理</div></a></div><div class="relatedPosts_item"><a href="/2022/07/05/重拾Android-【全埋点方案系列】AppClick全埋点之ASM处理/" title="【全埋点方案系列】AppClick全埋点之ASM处理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【全埋点方案系列】AppClick全埋点之ASM处理</div></a></div><div class="relatedPosts_item"><a href="/2021/05/01/重拾Android-【深入理解JVM字节码】第十三篇、应用破解Vs防破解/" title="【深入理解JVM字节码】第十三篇、应用破解Vs防破解"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/253.jpg"><div class="relatedPosts_title">【深入理解JVM字节码】第十三篇、应用破解Vs防破解</div></a></div><div class="relatedPosts_item"><a href="/2021/04/20/重拾Android-【深入理解JVM字节码】第十一篇、JSR-269插件化注解处理原理/" title="【深入理解JVM字节码】第十一篇、JSR-269插件化注解处理原理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/261.jpg"><div class="relatedPosts_title">【深入理解JVM字节码】第十一篇、JSR-269插件化注解处理原理</div></a></div><div class="relatedPosts_item"><a href="/2021/03/25/重拾Android-【深入理解JVM字节码】第六篇、反射实现原理/" title="【深入理解JVM字节码】第六篇、反射实现原理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/270.jpg"><div class="relatedPosts_title">【深入理解JVM字节码】第六篇、反射实现原理</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/247.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

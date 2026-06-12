@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【论文笔记】A Tutorial on Support Vector Machines for Pattern Recognition | ONE·PIECE</title><meta name="description" content="用于模式识别的支持向量机教程"><meta name="keywords" content="Pattern Recognition,SVMs,Statistical Learning Theory,VC Dimension"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【论文笔记】A Tutorial on Support Vector Machines for Pattern Recognition"><meta name="twitter:description" content="用于模式识别的支持向量机教程"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/kevin-ku-w7ZyuGYNpRQ-unsplash.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【论文笔记】A Tutorial on Support Vector Machines for Pattern Recognition"><meta property="og:url" content="http://tufusi.com/2019/12/08/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91A-Tutorial-on-Support-Vector-Machines-for-Pattern-Recognition/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="用于模式识别的支持向量机教程"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/kevin-ku-w7ZyuGYNpRQ-unsplash.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【论文笔记】A Tutorial on Support Vector Machines for Pattern Recognition | ONE·PIECE</title><meta name="description" content="用于模式识别的支持向量机教程"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【论文笔记】A Tutorial on Support Vector Machines for Pattern Recognition"><meta name="twitter:description" content="用于模式识别的支持向量机教程"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/kevin-ku-w7ZyuGYNpRQ-unsplash.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【论文笔记】A Tutorial on Support Vector Machines for Pattern Recognition"><meta property="og:url" content="http://tufusi.com/2019/12/08/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91A-Tutorial-on-Support-Vector-Machines-for-Pattern-Recognition/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="用于模式识别的支持向量机教程"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/kevin-ku-w7ZyuGYNpRQ-unsplash.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
 var t = Cookies.get("theme");
 if (autoChangeMode == '1'){
 const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -43,7 +43,7 @@ function activateLightMode(){
   if (document.querySelector('meta[name="theme-color"]') !== null){
   document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
   }
-}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2019/12/08/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91A-Tutorial-on-Support-Vector-Machines-for-Pattern-Recognition/"><link rel="prev" title="【统计学习方法死磕系列】写在19年尾巴" href="http://tufusi.com/2019/12/19/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E5%86%99%E5%9C%A819%E5%B9%B4%E5%B0%BE%E5%B7%B4/"><link rel="next" title="【机器学习模型】决策树学习（二）" href="http://tufusi.com/2019/12/02/%E3%80%90%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B%E3%80%91%E5%86%B3%E7%AD%96%E6%A0%91%E5%AD%A6%E4%B9%A0%EF%BC%88%E4%BA%8C%EF%BC%89/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2019/12/08/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91A-Tutorial-on-Support-Vector-Machines-for-Pattern-Recognition/"><link rel="prev" title="【论文笔记】Kernel Logistic Regression and the Import Vector Machine" href="http://tufusi.com/2019/12/10/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91Kernel-Logistic-Regression-and-the-Import-Vector-Machine/"><link rel="next" title="【机器学习模型】决策树学习（二）" href="http://tufusi.com/2019/12/02/%E3%80%90%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B%E3%80%91%E5%86%B3%E7%AD%96%E6%A0%91%E5%AD%A6%E4%B9%A0%EF%BC%88%E4%BA%8C%EF%BC%89/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
   root: '/',
   algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
   localSearch: undefined,
@@ -68,10 +68,12 @@ function activateLightMode(){
   medium_zoom: 'true',
   Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
   
-}</script></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> 重拾Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">63</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">65</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">7</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> 重拾Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#摘要"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">摘要</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#简介"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">简介</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#有关研究工作"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">有关研究工作</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#SVM学习模型"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">SVM学习模型</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#线性可分支持向量机"><span class="toc_mobile_items-number">3.1.1.</span> <span class="toc_mobile_items-text">线性可分支持向量机</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#线性支持向量机"><span class="toc_mobile_items-number">3.1.2.</span> <span class="toc_mobile_items-text">线性支持向量机</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#非线性支持向量机"><span class="toc_mobile_items-number">3.1.3.</span> <span class="toc_mobile_items-text">非线性支持向量机</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#模式识别与机器学习的泛化性能边界"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">模式识别与机器学习的泛化性能边界</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#支持向量机的VC维"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">支持向量机的VC维</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#SVMs的泛化性能"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">SVMs的泛化性能</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#LinearSVC"><span class="toc_mobile_items-number">3.4.1.</span> <span class="toc_mobile_items-text">LinearSVC</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#对于非线性数据的分类"><span class="toc_mobile_items-number">3.4.2.</span> <span class="toc_mobile_items-text">对于非线性数据的分类</span></a></li></ol></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#总结"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">总结</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#摘要"><span class="toc-number">1.</span> <span class="toc-text">摘要</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#简介"><span class="toc-number">2.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#有关研究工作"><span class="toc-number">3.</span> <span class="toc-text">有关研究工作</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#SVM学习模型"><span class="toc-number">3.1.</span> <span class="toc-text">SVM学习模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#线性可分支持向量机"><span class="toc-number">3.1.1.</span> <span class="toc-text">线性可分支持向量机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#线性支持向量机"><span class="toc-number">3.1.2.</span> <span class="toc-text">线性支持向量机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#非线性支持向量机"><span class="toc-number">3.1.3.</span> <span class="toc-text">非线性支持向量机</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#模式识别与机器学习的泛化性能边界"><span class="toc-number">3.2.</span> <span class="toc-text">模式识别与机器学习的泛化性能边界</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#支持向量机的VC维"><span class="toc-number">3.3.</span> <span class="toc-text">支持向量机的VC维</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SVMs的泛化性能"><span class="toc-number">3.4.</span> <span class="toc-text">SVMs的泛化性能</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#LinearSVC"><span class="toc-number">3.4.1.</span> <span class="toc-text">LinearSVC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#对于非线性数据的分类"><span class="toc-number">3.4.2.</span> <span class="toc-text">对于非线性数据的分类</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#总结"><span class="toc-number">4.</span> <span class="toc-text">总结</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/kevin-ku-w7ZyuGYNpRQ-unsplash.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【论文笔记】A Tutorial on Support Vector Machines for Pattern Recognition</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2019-12-08<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2019-12-10</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">4.2k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 14 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>这周的论文笔记是『A Tutorial on Support Vector Machines for Pattern Recognition』，说是这周，其实是贪心导师一个月前步骤的作业了(捂脸ing)，由于双十一前后公司各种上线，导致每天只能看看录播课程，不过接下来到年前应该都有时间，所以赶紧充（装）实（bi）起来！</p>
-<a id="more"></a>
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E6%91%98%E8%A6%81"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">摘要</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">简介</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E6%9C%89%E5%85%B3%E7%A0%94%E7%A9%B6%E5%B7%A5%E4%BD%9C"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">有关研究工作</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#SVM%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">SVM学习模型</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%BA%BF%E6%80%A7%E5%8F%AF%E5%88%86%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA"><span class="toc_mobile_items-number">3.1.1.</span> <span class="toc_mobile_items-text">线性可分支持向量机</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%BA%BF%E6%80%A7%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA"><span class="toc_mobile_items-number">3.1.2.</span> <span class="toc_mobile_items-text">线性支持向量机</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA"><span class="toc_mobile_items-number">3.1.3.</span> <span class="toc_mobile_items-text">非线性支持向量机</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB%E4%B8%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84%E6%B3%9B%E5%8C%96%E6%80%A7%E8%83%BD%E8%BE%B9%E7%95%8C"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">模式识别与机器学习的泛化性能边界</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA%E7%9A%84VC%E7%BB%B4"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">支持向量机的VC维</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#SVMs%E7%9A%84%E6%B3%9B%E5%8C%96%E6%80%A7%E8%83%BD"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">SVMs的泛化性能</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#LinearSVC"><span class="toc_mobile_items-number">3.4.1.</span> <span class="toc_mobile_items-text">LinearSVC</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%AF%B9%E4%BA%8E%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%95%B0%E6%8D%AE%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc_mobile_items-number">3.4.2.</span> <span class="toc_mobile_items-text">对于非线性数据的分类</span></a></li></ol></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#SVM-%E5%AF%B9%E5%81%B6%E9%97%AE%E9%A2%98%E6%8E%A8%E5%AF%BC%EF%BC%88Dual-Problem-Derivation%EF%BC%89"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">SVM 对偶问题推导（Dual Problem Derivation）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BB%8E%E5%8E%9F%E5%A7%8B%E9%97%AE%E9%A2%98%E5%88%B0%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E5%87%BD%E6%95%B0"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">从原始问题到拉格朗日函数</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E6%B1%82%E8%A7%A3-min-w-b-L-w-b-alpha"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">求解 $\min_{w,b} L(w, b, \alpha)$</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#KKT%E6%9D%A1%E4%BB%B6%E4%B8%8E%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E8%AF%86%E5%88%AB"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">KKT条件与支持向量识别</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#SMO-%E7%AE%97%E6%B3%95%EF%BC%88Sequential-Minimal-Optimization%EF%BC%89"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">SMO 算法（Sequential Minimal Optimization）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E7%AE%97%E6%B3%95%E5%8A%A8%E6%9C%BA"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">算法动机</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%A4%E5%8F%98%E9%87%8F%E4%BC%98%E5%8C%96%E5%AD%90%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">两变量优化子问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8F%98%E9%87%8F%E9%80%89%E6%8B%A9%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">变量选择策略</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%98%88%E5%80%BC-b-%E7%9A%84%E6%9B%B4%E6%96%B0"><span class="toc_mobile_items-number">5.4.</span> <span class="toc_mobile_items-text">阈值 $b$ 的更新</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E6%94%B6%E6%95%9B%E6%9D%A1%E4%BB%B6"><span class="toc_mobile_items-number">5.5.</span> <span class="toc_mobile_items-text">收敛条件</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E7%AE%97%E6%B3%95%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="toc_mobile_items-number">5.6.</span> <span class="toc_mobile_items-text">算法复杂度</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E6%A0%B8%E6%96%B9%E6%B3%95%E6%B7%B1%E5%BA%A6%E5%89%96%E6%9E%90%EF%BC%88Kernel-Methods-Deep-Dive%EF%BC%89"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">核方法深度剖析（Kernel Methods Deep Dive）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#Mercer-%E6%9D%A1%E4%BB%B6"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">Mercer 条件</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#RBF-%E6%A0%B8%E5%8F%82%E6%95%B0%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">RBF 核参数分析</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%A4%9A%E9%A1%B9%E5%BC%8F%E6%A0%B8%E5%8F%82%E6%95%B0%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">多项式核参数分析</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%A6%82%E4%BD%95%E9%80%89%E6%8B%A9%E6%A0%B8%E5%87%BD%E6%95%B0"><span class="toc_mobile_items-number">6.4.</span> <span class="toc_mobile_items-text">如何选择核函数</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%B8%B8%E7%94%A8%E6%A0%B8%E5%87%BD%E6%95%B0%E9%80%9F%E6%9F%A5%E8%A1%A8"><span class="toc_mobile_items-number">6.5.</span> <span class="toc_mobile_items-text">常用核函数速查表</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%A4%9A%E5%88%86%E7%B1%BB-SVM-%E7%AD%96%E7%95%A5%EF%BC%88Multi-class-SVM-Strategies%EF%BC%89"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">多分类 SVM 策略（Multi-class SVM Strategies）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E5%AF%B9%E5%85%B6%E4%BD%99%EF%BC%88One-vs-Rest-OvR%EF%BC%89"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">一对其余（One-vs-Rest, OvR）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E5%AF%B9%E4%B8%80%EF%BC%88One-vs-One-OvO%EF%BC%89"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">一对一（One-vs-One, OvO）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#DAG-SVM%EF%BC%88%E6%9C%89%E5%90%91%E6%97%A0%E7%8E%AF%E5%9B%BESVM%EF%BC%89"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">DAG-SVM（有向无环图SVM）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#Crammer-Singer-%E5%A4%9A%E5%88%86%E7%B1%BBSVM"><span class="toc_mobile_items-number">7.4.</span> <span class="toc_mobile_items-text">Crammer-Singer 多分类SVM</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%90%84%E7%AD%96%E7%95%A5%E5%A4%8D%E6%9D%82%E5%BA%A6%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">7.5.</span> <span class="toc_mobile_items-text">各策略复杂度对比</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%AE%8C%E6%95%B4-sklearn-%E5%AE%9E%E6%88%98%E6%B5%81%E7%A8%8B%EF%BC%88Practical-sklearn-Workflow%EF%BC%89"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">完整 sklearn 实战流程（Practical sklearn Workflow）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%AE%8C%E6%95%B4-Pipeline-%E7%A4%BA%E4%BE%8B"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">完整 Pipeline 示例</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E7%89%B9%E5%BE%81%E7%BC%A9%E6%94%BE%E5%AF%B9SVM%E8%87%B3%E5%85%B3%E9%87%8D%E8%A6%81"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">为什么特征缩放对SVM至关重要</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E8%B6%85%E5%8F%82%E6%95%B0%E8%B0%83%E4%BC%98%E5%BB%BA%E8%AE%AE"><span class="toc_mobile_items-number">8.3.</span> <span class="toc_mobile_items-text">超参数调优建议</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#SVM-%E4%B8%8E%E5%85%B6%E4%BB%96%E5%88%86%E7%B1%BB%E5%99%A8%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">SVM 与其他分类器的对比</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94%E8%A1%A8"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">详细对比表</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BD%95%E6%97%B6SVM%E4%BC%98%E4%BA%8E%E5%85%B6%E4%BB%96%E6%A8%A1%E5%9E%8B"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">何时SVM优于其他模型</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BD%95%E6%97%B6SVM%E4%B8%8D%E5%A6%82%E5%85%B6%E4%BB%96%E6%A8%A1%E5%9E%8B"><span class="toc_mobile_items-number">9.3.</span> <span class="toc_mobile_items-text">何时SVM不如其他模型</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#SVM-%E5%9C%A8%E7%8E%B0%E4%BB%A3%E5%9C%BA%E6%99%AF%E4%B8%AD%E7%9A%84%E5%8F%91%E5%B1%95%EF%BC%88SVM-in-Modern-Context%EF%BC%89"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">SVM 在现代场景中的发展（SVM in Modern Context）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%A4%A7%E8%A7%84%E6%A8%A1%E7%BA%BF%E6%80%A7SVM%EF%BC%9ALibLinear"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">大规模线性SVM：LibLinear</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E8%BF%91%E4%BC%BC%E6%A0%B8%E6%96%B9%E6%B3%95"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">近似核方法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#SVM-vs-Deep-Learning%EF%BC%9A%E4%BB%80%E4%B9%88%E5%9C%BA%E6%99%AF%E4%B8%8BSVM%E4%BE%9D%E7%84%B6%E6%9B%B4%E4%BC%98%EF%BC%9F"><span class="toc_mobile_items-number">10.3.</span> <span class="toc_mobile_items-text">SVM vs Deep Learning：什么场景下SVM依然更优？</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E6%80%BB%E7%BB%93"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">总结</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%EF%BC%88Interview-Q-A%EF%BC%89"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">面试常见问题（Interview Q&amp;A）</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%91%98%E8%A6%81"><span class="toc-number">1.</span> <span class="toc-text">摘要</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-number">2.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9C%89%E5%85%B3%E7%A0%94%E7%A9%B6%E5%B7%A5%E4%BD%9C"><span class="toc-number">3.</span> <span class="toc-text">有关研究工作</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#SVM%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B"><span class="toc-number">3.1.</span> <span class="toc-text">SVM学习模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E6%80%A7%E5%8F%AF%E5%88%86%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA"><span class="toc-number">3.1.1.</span> <span class="toc-text">线性可分支持向量机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E6%80%A7%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA"><span class="toc-number">3.1.2.</span> <span class="toc-text">线性支持向量机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA"><span class="toc-number">3.1.3.</span> <span class="toc-text">非线性支持向量机</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB%E4%B8%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84%E6%B3%9B%E5%8C%96%E6%80%A7%E8%83%BD%E8%BE%B9%E7%95%8C"><span class="toc-number">3.2.</span> <span class="toc-text">模式识别与机器学习的泛化性能边界</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA%E7%9A%84VC%E7%BB%B4"><span class="toc-number">3.3.</span> <span class="toc-text">支持向量机的VC维</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SVMs%E7%9A%84%E6%B3%9B%E5%8C%96%E6%80%A7%E8%83%BD"><span class="toc-number">3.4.</span> <span class="toc-text">SVMs的泛化性能</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#LinearSVC"><span class="toc-number">3.4.1.</span> <span class="toc-text">LinearSVC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E4%BA%8E%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%95%B0%E6%8D%AE%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-number">3.4.2.</span> <span class="toc-text">对于非线性数据的分类</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#SVM-%E5%AF%B9%E5%81%B6%E9%97%AE%E9%A2%98%E6%8E%A8%E5%AF%BC%EF%BC%88Dual-Problem-Derivation%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">SVM 对偶问题推导（Dual Problem Derivation）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E%E5%8E%9F%E5%A7%8B%E9%97%AE%E9%A2%98%E5%88%B0%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E5%87%BD%E6%95%B0"><span class="toc-number">4.1.</span> <span class="toc-text">从原始问题到拉格朗日函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B1%82%E8%A7%A3-min-w-b-L-w-b-alpha"><span class="toc-number">4.2.</span> <span class="toc-text">求解 $\min_{w,b} L(w, b, \alpha)$</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#KKT%E6%9D%A1%E4%BB%B6%E4%B8%8E%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E8%AF%86%E5%88%AB"><span class="toc-number">4.3.</span> <span class="toc-text">KKT条件与支持向量识别</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#SMO-%E7%AE%97%E6%B3%95%EF%BC%88Sequential-Minimal-Optimization%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">SMO 算法（Sequential Minimal Optimization）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%97%E6%B3%95%E5%8A%A8%E6%9C%BA"><span class="toc-number">5.1.</span> <span class="toc-text">算法动机</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A4%E5%8F%98%E9%87%8F%E4%BC%98%E5%8C%96%E5%AD%90%E9%97%AE%E9%A2%98"><span class="toc-number">5.2.</span> <span class="toc-text">两变量优化子问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%98%E9%87%8F%E9%80%89%E6%8B%A9%E7%AD%96%E7%95%A5"><span class="toc-number">5.3.</span> <span class="toc-text">变量选择策略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%98%88%E5%80%BC-b-%E7%9A%84%E6%9B%B4%E6%96%B0"><span class="toc-number">5.4.</span> <span class="toc-text">阈值 $b$ 的更新</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%94%B6%E6%95%9B%E6%9D%A1%E4%BB%B6"><span class="toc-number">5.5.</span> <span class="toc-text">收敛条件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%97%E6%B3%95%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="toc-number">5.6.</span> <span class="toc-text">算法复杂度</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A0%B8%E6%96%B9%E6%B3%95%E6%B7%B1%E5%BA%A6%E5%89%96%E6%9E%90%EF%BC%88Kernel-Methods-Deep-Dive%EF%BC%89"><span class="toc-number">6.</span> <span class="toc-text">核方法深度剖析（Kernel Methods Deep Dive）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Mercer-%E6%9D%A1%E4%BB%B6"><span class="toc-number">6.1.</span> <span class="toc-text">Mercer 条件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RBF-%E6%A0%B8%E5%8F%82%E6%95%B0%E5%88%86%E6%9E%90"><span class="toc-number">6.2.</span> <span class="toc-text">RBF 核参数分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E9%A1%B9%E5%BC%8F%E6%A0%B8%E5%8F%82%E6%95%B0%E5%88%86%E6%9E%90"><span class="toc-number">6.3.</span> <span class="toc-text">多项式核参数分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E9%80%89%E6%8B%A9%E6%A0%B8%E5%87%BD%E6%95%B0"><span class="toc-number">6.4.</span> <span class="toc-text">如何选择核函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E6%A0%B8%E5%87%BD%E6%95%B0%E9%80%9F%E6%9F%A5%E8%A1%A8"><span class="toc-number">6.5.</span> <span class="toc-text">常用核函数速查表</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A4%9A%E5%88%86%E7%B1%BB-SVM-%E7%AD%96%E7%95%A5%EF%BC%88Multi-class-SVM-Strategies%EF%BC%89"><span class="toc-number">7.</span> <span class="toc-text">多分类 SVM 策略（Multi-class SVM Strategies）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E5%AF%B9%E5%85%B6%E4%BD%99%EF%BC%88One-vs-Rest-OvR%EF%BC%89"><span class="toc-number">7.1.</span> <span class="toc-text">一对其余（One-vs-Rest, OvR）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E5%AF%B9%E4%B8%80%EF%BC%88One-vs-One-OvO%EF%BC%89"><span class="toc-number">7.2.</span> <span class="toc-text">一对一（One-vs-One, OvO）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DAG-SVM%EF%BC%88%E6%9C%89%E5%90%91%E6%97%A0%E7%8E%AF%E5%9B%BESVM%EF%BC%89"><span class="toc-number">7.3.</span> <span class="toc-text">DAG-SVM（有向无环图SVM）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Crammer-Singer-%E5%A4%9A%E5%88%86%E7%B1%BBSVM"><span class="toc-number">7.4.</span> <span class="toc-text">Crammer-Singer 多分类SVM</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%84%E7%AD%96%E7%95%A5%E5%A4%8D%E6%9D%82%E5%BA%A6%E5%AF%B9%E6%AF%94"><span class="toc-number">7.5.</span> <span class="toc-text">各策略复杂度对比</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4-sklearn-%E5%AE%9E%E6%88%98%E6%B5%81%E7%A8%8B%EF%BC%88Practical-sklearn-Workflow%EF%BC%89"><span class="toc-number">8.</span> <span class="toc-text">完整 sklearn 实战流程（Practical sklearn Workflow）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4-Pipeline-%E7%A4%BA%E4%BE%8B"><span class="toc-number">8.1.</span> <span class="toc-text">完整 Pipeline 示例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E7%89%B9%E5%BE%81%E7%BC%A9%E6%94%BE%E5%AF%B9SVM%E8%87%B3%E5%85%B3%E9%87%8D%E8%A6%81"><span class="toc-number">8.2.</span> <span class="toc-text">为什么特征缩放对SVM至关重要</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B6%85%E5%8F%82%E6%95%B0%E8%B0%83%E4%BC%98%E5%BB%BA%E8%AE%AE"><span class="toc-number">8.3.</span> <span class="toc-text">超参数调优建议</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#SVM-%E4%B8%8E%E5%85%B6%E4%BB%96%E5%88%86%E7%B1%BB%E5%99%A8%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc-number">9.</span> <span class="toc-text">SVM 与其他分类器的对比</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94%E8%A1%A8"><span class="toc-number">9.1.</span> <span class="toc-text">详细对比表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%95%E6%97%B6SVM%E4%BC%98%E4%BA%8E%E5%85%B6%E4%BB%96%E6%A8%A1%E5%9E%8B"><span class="toc-number">9.2.</span> <span class="toc-text">何时SVM优于其他模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%95%E6%97%B6SVM%E4%B8%8D%E5%A6%82%E5%85%B6%E4%BB%96%E6%A8%A1%E5%9E%8B"><span class="toc-number">9.3.</span> <span class="toc-text">何时SVM不如其他模型</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#SVM-%E5%9C%A8%E7%8E%B0%E4%BB%A3%E5%9C%BA%E6%99%AF%E4%B8%AD%E7%9A%84%E5%8F%91%E5%B1%95%EF%BC%88SVM-in-Modern-Context%EF%BC%89"><span class="toc-number">10.</span> <span class="toc-text">SVM 在现代场景中的发展（SVM in Modern Context）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7%E8%A7%84%E6%A8%A1%E7%BA%BF%E6%80%A7SVM%EF%BC%9ALibLinear"><span class="toc-number">10.1.</span> <span class="toc-text">大规模线性SVM：LibLinear</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%91%E4%BC%BC%E6%A0%B8%E6%96%B9%E6%B3%95"><span class="toc-number">10.2.</span> <span class="toc-text">近似核方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SVM-vs-Deep-Learning%EF%BC%9A%E4%BB%80%E4%B9%88%E5%9C%BA%E6%99%AF%E4%B8%8BSVM%E4%BE%9D%E7%84%B6%E6%9B%B4%E4%BC%98%EF%BC%9F"><span class="toc-number">10.3.</span> <span class="toc-text">SVM vs Deep Learning：什么场景下SVM依然更优？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">11.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%EF%BC%88Interview-Q-A%EF%BC%89"><span class="toc-number">12.</span> <span class="toc-text">面试常见问题（Interview Q&amp;A）</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/kevin-ku-w7ZyuGYNpRQ-unsplash.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【论文笔记】A Tutorial on Support Vector Machines for Pattern Recognition</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2019-12-08<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-11</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/">论文笔记</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">10.5k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 37 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>这周的论文笔记是『A Tutorial on Support Vector Machines for Pattern Recognition』，说是这周，其实是贪心导师一个月前步骤的作业了(捂脸ing)，由于双十一前后公司各种上线，导致每天只能看看录播课程，不过接下来到年前应该都有时间，所以赶紧充（装）实（bi）起来！</p>
+<span id="more"></span>
+
 <h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h1><p>关于这篇论文，堪称SVM最佳，而之所以最佳，在于它不同于一般论文直接从SVM概念入手，开篇即谈分类模型，而是先从VC维和结构风险化概述开始，通过这两个概念来阐述用于可分离和不可分离数据的线性支持向量机（SVMs），接下来通过一个<strong>机械类比</strong>（将两个或两类性质根本不同、仅有某些表面相似的对象进行类比的逻辑错误），讨论SVM在何时会是全局唯一解。然后讲解如何进行支持向量训练。再然后最重要的来了，详细的讨论了用于构造数据中非线性支持向量机解的核映射技术，后面还介绍SVMs如何支持超高VC维（甚至是无穷维），通过计算齐次多项式和高斯函数的VC维的径向基函数核等等。也正因此，支持向量机方法是建立在统计学习理论的VC维理论和结构风险最小原理基础之上的。</p>
 <!-- more -->
+
 <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>支持向量机（SVM）是一种二分类模型。它的基本模型是定义在特征空间上的间隔最大的线性分类器，间隔最大使它有别于感知机；支持向量机也包括核技巧，这使它成为实质上的非线性分类器。<strong>支持向量机的学习策略就是间隔最大化</strong>，即可转化成一个求解凸二次规划问题，亦可等价于一个正则化的合页损失函数的最小化问题。<strong>支持向量机的学习算法是求解凸二次规划的最优化算法</strong>。</p>
 <ul>
 <li><p>核函数</p>
@@ -97,22 +99,22 @@ function activateLightMode(){
 <h3 id="线性可分支持向量机"><a href="#线性可分支持向量机" class="headerlink" title="线性可分支持向量机"></a>线性可分支持向量机</h3><p>线性可分支持向量机处理的是严格线性可分的数据集</p>
 <blockquote>
 <p>   给定线性可分训练集，通过间隔最大化或者等价地求解相应的凸二次规划问题学习得到的分离超平面为</p>
-<p>&emsp;&emsp;$w^{*}·x + b^{*} = 0$</p>
+<p>&emsp;&emsp;$w^{*}·x + b^{*} &#x3D; 0$</p>
 <p>以及相应的分类决策函数</p>
-<p>&emsp;&emsp;$f(x) = sign(w^{*}·x + b^{*})$</p>
+<p>&emsp;&emsp;$f(x) &#x3D; sign(w^{*}·x + b^{*})$</p>
 <p>或者</p>
-<p>&emsp;&emsp;$f(x) = sign(\sum_{i=1}^{N} \alpha ^{*} y ^{*}&lt; x_i, x &gt;  + b ^{*})$</p>
+<p>&emsp;&emsp;$f(x) &#x3D; sign(\sum_{i&#x3D;1}^{N} \alpha ^{*} y ^{*}&lt; x_i, x &gt;  + b ^{*})$</p>
 <p>称为线性可分支持向量机</p>
 <p>其学习的优化问题如下：</p>
 <p>&ensp;&emsp;&emsp;&emsp;$\min_{w,b}$ &emsp;$\frac{1}{2}\left | w \right |^{2}$</p>
-<p>&emsp;s.t.&emsp; $y_i(w·x_i) - 1 \geq 0，i = 1,2,…,N$</p>
+<p>&emsp;s.t.&emsp; $y_i(w·x_i) - 1 \geq 0，i &#x3D; 1,2,…,N$</p>
 </blockquote>
 <h3 id="线性支持向量机"><a href="#线性支持向量机" class="headerlink" title="线性支持向量机"></a>线性支持向量机</h3><p>线性支持向量机处理的是线性不可分的数据集。对于线性支持向量机的优化问题，就是在线性可分支持向量机的基础上加一个松弛变量。</p>
 <blockquote>
 <p>其学习的优化问题如下：</p>
-<p>&ensp;&emsp;&emsp;&emsp;$\min_{w,b,\xi}$ &emsp;$\frac{1}{2}\left | w \right |^{2} + C\sum_{i=1}^{N}\xi_i$</p>
-<p>&emsp;s.t.&emsp; $y_i(w_i + b) \geq 1，i = 1,2,…,N$</p>
-<p>&ensp;&emsp;&emsp;&emsp;$\xi_i \geq 0，i = 1,2,…,N$</p>
+<p>&ensp;&emsp;&emsp;&emsp;$\min_{w,b,\xi}$ &emsp;$\frac{1}{2}\left | w \right |^{2} + C\sum_{i&#x3D;1}^{N}\xi_i$</p>
+<p>&emsp;s.t.&emsp; $y_i(w_i + b) \geq 1，i &#x3D; 1,2,…,N$</p>
+<p>&ensp;&emsp;&emsp;&emsp;$\xi_i \geq 0，i &#x3D; 1,2,…,N$</p>
 <p>所求的分类超平面和决策函数与线性可分支持向量机相同</p>
 </blockquote>
 <p>这里要简单介绍一下<strong>KKT条件</strong>（Karush-Kuhn-Tucker Conditions）和 <strong>拉格朗日乘子法</strong>，这个在SVM推导中需要用到</p>
@@ -124,13 +126,12 @@ function activateLightMode(){
 <li>什么是KKT条件</li>
 </ul>
 <blockquote>
-<p>&emsp; 对于具有等式和不等式约束的一般优化问题</p>
-<script type="math/tex; mode=display">\left\{\begin{matrix}
+<p>&emsp; 对于具有等式和不等式约束的一般优化问题<br>$$\left\{\begin{matrix}
 \min f(x) & 最值问题\\ 
 s.t. g_j(x) \leq 0 (j = 1,2,3,...,m); & 不等式约束\\ 
 h_k(x) = 0 (k = 1,2,3,...,l) & 等式约束
-\end{matrix}\right.</script><p>&emsp; KKT条件给出了判断 $\mathbf{x}^{*}$是否为最优解的必要条件，即：</p>
-<script type="math/tex; mode=display">\left\{\begin{matrix}
+\end{matrix}\right.$$</p>
+<p>&emsp; KKT条件给出了判断 $\mathbf{x}^{*}$是否为最优解的必要条件，即：<br>$$\left\{\begin{matrix}
 \frac{\partial f}{\partial x_i} + \sum_{j=1}^{m}\mu _j\frac{\partial g_i}{\partial x_i} +  \sum_{k=1}^{l}\lambda _k \frac{\partial h_k}{\partial x_i} = 0\\ 
 \\ 
 h_k(x) = 0, (k = 1,2,3,...,l)\\ 
@@ -138,7 +139,8 @@ h_k(x) = 0, (k = 1,2,3,...,l)\\
 \mu_jg_j(x) = 0, (j = 1,2,3,...,m)\\ 
 \\ 
 \mu_j \geq 0
-\end{matrix}\right.</script><ul>
+\end{matrix}\right.$$</p>
+<ul>
 <li>1、关于等式约束优化问题，这里其实就是<strong>拉格朗日乘子法</strong></li>
 <li>2、关于不等式优化问题，就是<strong>将不等式约束条件转换为等式约束条件</strong>（做法：引入松弛变量）</li>
 </ul>
@@ -152,25 +154,25 @@ h_k(x) = 0, (k = 1,2,3,...,l)\\
 <h3 id="非线性支持向量机"><a href="#非线性支持向量机" class="headerlink" title="非线性支持向量机"></a>非线性支持向量机</h3><p>非线性支持向量机引入了核函数。</p>
 <blockquote>
 <p>分类决策函数如下：</p>
-<p>&emsp;&emsp;$f(x) = sign(\sum_{i=1}^{N}\alpha ^{*} _i y_i \kappa (x_i, x) + b^ *)$</p>
+<p>&emsp;&emsp;$f(x) &#x3D; sign(\sum_{i&#x3D;1}^{N}\alpha ^{*} _i y_i \kappa (x_i, x) + b^ *)$</p>
 </blockquote>
-<h2 id="模式识别与机器学习的泛化性能边界"><a href="#模式识别与机器学习的泛化性能边界" class="headerlink" title="模式识别与机器学习的泛化性能边界"></a>模式识别与机器学习的泛化性能边界</h2><p>假设有$\varphi$个样本，每个样本包含如下一对数据$(x_i, y_i)$，其中，向量$\vec{x}_i \in R^n$，i=1，2，…，$\varphi$，$y_i$为给定的标签。</p>
-<p>以树的识别问题来说，$\vec{x}_i$表示的是一个像素灰度值的向量，则 $y_i$ = 1（若图中有树）和 $y_i$ = -1（若图中无树）；</p>
+<h2 id="模式识别与机器学习的泛化性能边界"><a href="#模式识别与机器学习的泛化性能边界" class="headerlink" title="模式识别与机器学习的泛化性能边界"></a>模式识别与机器学习的泛化性能边界</h2><p>假设有$\varphi$个样本，每个样本包含如下一对数据$(x_i, y_i)$，其中，向量$\vec{x}_i \in R^n$，i&#x3D;1，2，…，$\varphi$，$y_i$为给定的标签。</p>
+<p>以树的识别问题来说，$\vec{x}_i$表示的是一个像素灰度值的向量，则 $y_i$ &#x3D; 1（若图中有树）和 $y_i$ &#x3D; -1（若图中无树）；</p>
 <p>假设这些数据中存在未知的概率分布$P(\vec{x}, y)$，并且数据满足独立同分布（Independently Identically Distribution, IID）。【注】$P$代表累积概率分布，$p$代表密度分布。</p>
 <p>这个假设相比于对每个$\vec{x}$给定一个标签$y$更加一般化：它允许对于给定的$\vec{x}$都有一个$y$的分布，在这种情况下，可靠源将会依照由$\vec{x}_i$而产生的固定分布对$y_i$进行赋值。即这将对每个给定的$\vec{x}$赋予一个固定的$y$。</p>
-<p>现在假设我们有一个机器的任务：学习将$\vec{x}_i$映射到$y_i$上。这个机器实际上是通过一系列可能的映射$\vec{x}_i$ → $f(\vec{x}, \alpha)$来定义的。其中，函数$f(\vec{x}, \alpha)$通过可以调节的参数$\alpha$来标示的。$\alpha$的一个特别的选择生成了我们所谓的“训练机”。因此，一个有着固定的结构和确定权重偏量的神经网络被称为“学习机”。</p>
+<p>现在假设我们有一个机器的任务：学习将$\vec{x}_i$映射到$y_i$上。这个机器实际上是通过一系列可能的映射$\vec{x}_i$ → $f(\vec{x}, \alpha)$来定义的。其中，函数$f(\vec{x}, \alpha)$通过可以调节的参数$\alpha$来标示的。$\alpha$的一个特别的选择生成了我们所谓的”训练机”。因此，一个有着固定的结构和确定权重偏量的神经网络被称为”学习机”。</p>
 <blockquote>
 <p>&emsp;故一个训练机的测试误差的期望值如下：</p>
-<p>&emsp;&emsp;&emsp;&emsp;$R(\alpha) = \int \frac{1}{2}\left | y - f(\vec{x}, \alpha) \right |dP(\vec{x}, y)$</p>
-<p>&emsp;当概率密度函数$p(\vec{x},y)$有值时，$dP(\vec{x}, y) = p(\vec{x}, y)\mathrm{d} x\mathrm{d} y$</p>
+<p>&emsp;&emsp;&emsp;&emsp;$R(\alpha) &#x3D; \int \frac{1}{2}\left | y - f(\vec{x}, \alpha) \right |dP(\vec{x}, y)$</p>
+<p>&emsp;当概率密度函数$p(\vec{x},y)$有值时，$dP(\vec{x}, y) &#x3D; p(\vec{x}, y)\mathrm{d} x\mathrm{d} y$</p>
 <p>&emsp;&emsp;&emsp;&emsp;<strong>$R(\alpha)$被称为期望风险</strong>。</p>
 <p>&emsp;&emsp;&emsp;&emsp;<strong>$R_{emp}(\alpha)$则被称为经验风险：训练集测量的平均误差率</strong>（针对固定且有限的观测样本）</p>
-<p>&emsp;&emsp;&emsp;&emsp;$R_{emp}(\alpha) = \int \frac{1}{2\varphi}\sum_{i=1}^{\varphi}\left | y_i - f(\vec{x}, \alpha) \right |$</p>
-<p>&emsp;$R_{emp}$是一个针对特定 $\alpha$ 的选择 和 一个特定训练集 $\{x_i, y_i\}$ 的固定数值。</p>
+<p>&emsp;&emsp;&emsp;&emsp;$R_{emp}(\alpha) &#x3D; \int \frac{1}{2\varphi}\sum_{i&#x3D;1}^{\varphi}\left | y_i - f(\vec{x}, \alpha) \right |$</p>
+<p>&emsp;$R_{emp}$是一个针对特定 $\alpha$ 的选择 和 一个特定训练集 ${x_i, y_i}$ 的固定数值。</p>
 <p>&emsp;而$\frac{1}{2\varphi}\left | y_i - f(\vec{x}, \alpha) \right |$则被称为损失。对于此种情形，这里的损失只可以取值0和1。</p>
 <p>&emsp;现在选择一些 $\eta$ 满足 $0\leq \eta\leq1$，对于选取这些值的损失，有概率 $1-\eta$，将会有如下所示边界：</p>
 <p>&emsp;&emsp;&emsp;&emsp;<strong>$R(\alpha) \leq R_{emp}(\alpha) + \sqrt{\frac{h(\log(\frac{2\varphi}{h} + 1)) - \log (\frac{\eta}{4})}{\varphi}}$</strong></p>
-<p>&emsp;其中，h是一个非负整数，即Vapnik Chervonenkis（VC）维数，上式右边称为“<strong>Risk Bound风险边界</strong>”，$\sqrt{\frac{h(\log(\frac{2\varphi}{h} + 1)) - \log (\frac{\eta}{4})}{\varphi}}$<strong>称为“VC置信”</strong>。</p>
+<p>&emsp;其中，h是一个非负整数，即Vapnik Chervonenkis（VC）维数，上式右边称为”<strong>Risk Bound风险边界</strong>“，$\sqrt{\frac{h(\log(\frac{2\varphi}{h} + 1)) - \log (\frac{\eta}{4})}{\varphi}}$**称为”VC置信”**。</p>
 </blockquote>
 <p>关于风险边界有三个特征：</p>
 <ul>
@@ -184,7 +186,7 @@ h_k(x) = 0, (k = 1,2,3,...,l)\\
 <p>这样给定几个不同的学习机，选择一个固定的且相当小的 $\eta$ ，就可以选择能最小化右边式子的机器（函数），我们就可以给出实际风险最小边界的机器（函数）了。</p>
 <h2 id="支持向量机的VC维"><a href="#支持向量机的VC维" class="headerlink" title="支持向量机的VC维"></a>支持向量机的VC维</h2><p>在讲SVM的VC维之前，首先介绍一下影响置信风险的因素，这其中有：训练样本数目和分类函数的VC维。</p>
 <p>因为训练样本数目，即样本越多，那么得到的误差又可以越小（置信风险就可以很小）；VC维越大，问题的解的种类就越多，推广泛化能力就越差，置信风险也就越大。因此增加样本数，降低VC维，才能降低置信风险。而一般的分类函数却需要提高VC维（即样本的特征数量），来降低经验风险，如多项式风雷函数。</p>
-<p>结构风险最小化SRM就是同时兼顾经验风险和结构风险。在小样本情况下，能取得比较好的分类效果。<strong><font color=#FF0000>保证分类精度（经验风险）的同时，降低学习机器的VC维</font></strong>。正因如此，SVM就是这样一种努力最小化结构风险的算法。</p>
+<p>结构风险最小化SRM就是同时兼顾经验风险和结构风险。在小样本情况下，能取得比较好的分类效果。**<font color=#FF0000>保证分类精度（经验风险）的同时，降低学习机器的VC维</font>**。正因如此，SVM就是这样一种努力最小化结构风险的算法。</p>
 <h2 id="SVMs的泛化性能"><a href="#SVMs的泛化性能" class="headerlink" title="SVMs的泛化性能"></a>SVMs的泛化性能</h2><p>这里引用一下维基百科介绍：在机器学习中，SVMs是具有相关学习算法的监督学习模型。它是用于分析分类和回归分析的数据的。而SVM的分类模型却可大致分成这四种：</p>
 <ul>
 <li><p>最大边界分类器</p>
@@ -201,36 +203,395 @@ h_k(x) = 0, (k = 1,2,3,...,l)\\
 <p>下面介绍SVM一些实现方法</p>
 <h3 id="LinearSVC"><a href="#LinearSVC" class="headerlink" title="LinearSVC"></a>LinearSVC</h3><p>线性分类支持向量机，优点：简单  缺点：不支持核函数 复杂度：$O(m*n)$</p>
 <p>最经典的就是手写体识别和鸢尾花识别</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> sklearn <span class="keyword">import</span> datasets</span><br><span class="line"><span class="keyword">from</span> sklearn.pipeline <span class="keyword">import</span> Pipeline</span><br><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> StandardScaler</span><br><span class="line"><span class="keyword">from</span> sklearn.svm <span class="keyword">import</span> LinearSVC</span><br><span class="line"></span><br><span class="line">iris = datasets.load_iris()</span><br><span class="line">X = iris[<span class="string">"data"</span>][:,(<span class="number">2</span>,<span class="number">3</span>)]</span><br><span class="line">y = (iris[<span class="string">"target"</span>]==<span class="number">2</span>).astype(np.float64)</span><br><span class="line">svm_clf = Pipeline((</span><br><span class="line">    (<span class="string">"scaler"</span>,StandardScaler()),</span><br><span class="line">    (<span class="string">"Linear_svc"</span>,LinearSVC(C=<span class="number">1</span>,loss=<span class="string">"hinge"</span>)),</span><br><span class="line">    ))</span><br><span class="line">svm_clf.fit(X,y)</span><br><span class="line">print(svm_clf.predit([[<span class="number">5.5</span>,<span class="number">1.7</span>]]))</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> sklearn <span class="keyword">import</span> datasets</span><br><span class="line"><span class="keyword">from</span> sklearn.pipeline <span class="keyword">import</span> Pipeline</span><br><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> StandardScaler</span><br><span class="line"><span class="keyword">from</span> sklearn.svm <span class="keyword">import</span> LinearSVC</span><br><span class="line"></span><br><span class="line">iris = datasets.load_iris()</span><br><span class="line">X = iris[<span class="string">&quot;data&quot;</span>][:,(<span class="number">2</span>,<span class="number">3</span>)]</span><br><span class="line">y = (iris[<span class="string">&quot;target&quot;</span>]==<span class="number">2</span>).astype(np.float64)</span><br><span class="line">svm_clf = Pipeline((</span><br><span class="line">    (<span class="string">&quot;scaler&quot;</span>,StandardScaler()),</span><br><span class="line">    (<span class="string">&quot;Linear_svc&quot;</span>,LinearSVC(C=<span class="number">1</span>,loss=<span class="string">&quot;hinge&quot;</span>)),</span><br><span class="line">    ))</span><br><span class="line">svm_clf.fit(X,y)</span><br><span class="line"><span class="built_in">print</span>(svm_clf.predit([[<span class="number">5.5</span>,<span class="number">1.7</span>]]))</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
 <h3 id="对于非线性数据的分类"><a href="#对于非线性数据的分类" class="headerlink" title="对于非线性数据的分类"></a>对于非线性数据的分类</h3><p>无非两种处理方法：<strong>构造高维特征</strong> 和 <strong>构造相似度特征</strong></p>
 <ul>
 <li><font color="36CCFF">使用高维空间特征</font>：即映射高维空间上，利用Kernel思想</li>
 </ul>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> PolynomialFeatures</span><br><span class="line">polynomial_svm_clf = Pipeline((</span><br><span class="line">     (<span class="string">"poly_features"</span>, PolynomialFeatures(degree=<span class="number">3</span>)),</span><br><span class="line">     (<span class="string">"scaler"</span>, StandardScaler()),</span><br><span class="line">     (<span class="string">"svm_clf"</span>, LinearSVC(C=<span class="number">10</span>, loss=<span class="string">"hinge"</span>))</span><br><span class="line">   ))</span><br><span class="line">polynomial_svm_clf.fit(X, y)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> PolynomialFeatures</span><br><span class="line">polynomial_svm_clf = Pipeline((</span><br><span class="line">     (<span class="string">&quot;poly_features&quot;</span>, PolynomialFeatures(degree=<span class="number">3</span>)),</span><br><span class="line">     (<span class="string">&quot;scaler&quot;</span>, StandardScaler()),</span><br><span class="line">     (<span class="string">&quot;svm_clf&quot;</span>, LinearSVC(C=<span class="number">10</span>, loss=<span class="string">&quot;hinge&quot;</span>))</span><br><span class="line">   ))</span><br><span class="line">polynomial_svm_clf.fit(X, y)</span><br></pre></td></tr></table></figure>
 <p>这种核技巧可以极大地简化模型，不需要显式的处理高维特征，并且可以计算出较复杂的情况。但是模型越复杂，过拟合风险就越大，泛化性能就越差。</p>
-<p>这里使用SVC（基于libsvm库，支持核函数，但是缺点是不能使用大规模数据，复杂度：<script type="math/tex">O(m^2*n) - O(m^3*n)</script>）</p>
+<p>这里使用SVC（基于libsvm库，支持核函数，但是缺点是不能使用大规模数据，复杂度：$$O(m^2*n) - O(m^3*n)$$）</p>
 <p>其中coef0参数表示：高次与低次权重</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.svm <span class="keyword">import</span> SVC</span><br><span class="line">poly_kernel_svm_clf = Pipeline((</span><br><span class="line">      (<span class="string">"scaler"</span>, StandardScaler()),</span><br><span class="line">      (<span class="string">"svm_clf"</span>, SVC(kernel=<span class="string">"poly"</span>, degree=<span class="number">3</span>, coef0=<span class="number">1</span>, C=<span class="number">5</span>))</span><br><span class="line">    ))</span><br><span class="line">poly_kernel_svm_clf.fit(X, y)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.svm <span class="keyword">import</span> SVC</span><br><span class="line">poly_kernel_svm_clf = Pipeline((</span><br><span class="line">      (<span class="string">&quot;scaler&quot;</span>, StandardScaler()),</span><br><span class="line">      (<span class="string">&quot;svm_clf&quot;</span>, SVC(kernel=<span class="string">&quot;poly&quot;</span>, degree=<span class="number">3</span>, coef0=<span class="number">1</span>, C=<span class="number">5</span>))</span><br><span class="line">    ))</span><br><span class="line">poly_kernel_svm_clf.fit(X, y)</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li><font color="36CCFF">构造相似度特征</font>：计算高斯距离（Gaussian RBF Kernel径向基函数）</li>
 </ul>
 <p>高斯距离定义：</p>
 <blockquote>
-<p>Gaussian RBF等式<br>&emsp;&emsp;$\phi \gamma (\mathbf{X},\iota )=exp(-\gamma \left || \mathbf{X},\iota |\right | ^2)$</p>
+<p>Gaussian RBF等式<br>&emsp;&emsp;$\phi \gamma (\mathbf{X},\iota )&#x3D;exp(-\gamma \left || \mathbf{X},\iota |\right | ^2)$</p>
 <p>$\gamma$是用来控制高斯曲线形状的，对于数据点之间的距离才会发挥它应有的作用。</p>
 </blockquote>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">rbf_kernel_svm_clf = Pipeline((</span><br><span class="line">      (<span class="string">"scaler"</span>, StandardScaler()),</span><br><span class="line">      (<span class="string">"svm_clf"</span>, SVC(kernel=<span class="string">"rbf"</span>, gamma=<span class="number">5</span>, C=<span class="number">0.001</span>))</span><br><span class="line">   ))</span><br><span class="line">rbf_kernel_svm_clf.fit(X, y)</span><br></pre></td></tr></table></figure>
-<p>… …</p>
-<p>这里真的还能细挖出好多好多知识点，后面学习sklean框架时再补上吧。</p>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>要说SVM的这篇论文阐述的知识，确实可以称得上是“细致入微”，而SVM的优势就在于解决<strong>小样本、非线性、以及高维</strong>的回归和二分类问题。在与问题复杂度上，SVM要求的样本是相对较少的；而在样本数据线性不可分上，SVM也是比较擅长的，通过<strong>核函数和松弛变量</strong>来实现；即使在样本维度很高情况下，SVM依然保持着优势，它产生的分类器简洁，用到样本信息还少，几乎可以有效的避免过拟合问题。基于种种，接下来还是需要结合实战，再配备这篇教程，好好体验一下SVM的强大。</p>
-</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Pattern-Recognition/">Pattern Recognition    </a><a class="post-meta__tags" href="/tags/SVMs/">SVMs    </a><a class="post-meta__tags" href="/tags/Statistical-Learning-Theory/">Statistical Learning Theory    </a><a class="post-meta__tags" href="/tags/VC-Dimension/">VC Dimension    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/kevin-ku-w7ZyuGYNpRQ-unsplash.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2019/12/19/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91%E5%86%99%E5%9C%A819%E5%B9%B4%E5%B0%BE%E5%B7%B4/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nicolas-j-leclercq-YG20AZCeklo-unsplash.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【统计学习方法死磕系列】写在19年尾巴</span></div></a></div><div class="next-post pull_right"><a href="/2019/12/02/%E3%80%90%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B%E3%80%91%E5%86%B3%E7%AD%96%E6%A0%91%E5%AD%A6%E4%B9%A0%EF%BC%88%E4%BA%8C%EF%BC%89/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/page/article_number_lot.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【机器学习模型】决策树学习（二）</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">rbf_kernel_svm_clf = Pipeline((</span><br><span class="line">      (<span class="string">&quot;scaler&quot;</span>, StandardScaler()),</span><br><span class="line">      (<span class="string">&quot;svm_clf&quot;</span>, SVC(kernel=<span class="string">&quot;rbf&quot;</span>, gamma=<span class="number">5</span>, C=<span class="number">0.001</span>))</span><br><span class="line">   ))</span><br><span class="line">rbf_kernel_svm_clf.fit(X, y)</span><br></pre></td></tr></table></figure>
+
+<p>上面分别展示了线性SVM、多项式核SVM、以及RBF核SVM的sklearn基本用法。但要真正理解SVM的内部机制并能在实际项目中灵活调参，还需要深入掌握以下核心知识点。</p>
+<hr>
+<h1 id="SVM-对偶问题推导（Dual-Problem-Derivation）"><a href="#SVM-对偶问题推导（Dual-Problem-Derivation）" class="headerlink" title="SVM 对偶问题推导（Dual Problem Derivation）"></a>SVM 对偶问题推导（Dual Problem Derivation）</h1><p>SVM的原始优化问题（Primal Problem）是一个带约束的凸优化问题。为了高效求解并引入核技巧，需要将其转化为对偶问题。</p>
+<h2 id="从原始问题到拉格朗日函数"><a href="#从原始问题到拉格朗日函数" class="headerlink" title="从原始问题到拉格朗日函数"></a>从原始问题到拉格朗日函数</h2><p>对于线性可分SVM，原始问题为：</p>
+<p>$$\min_{w,b} \frac{1}{2}\|w\|^2$$</p>
+<p>$$\text{s.t. } y_i(w \cdot x_i + b) \geq 1, \quad i = 1,2,...,N$$</p>
+<p>引入拉格朗日乘子 $\alpha_i \geq 0$，构造拉格朗日函数：</p>
+<p>$$L(w, b, \alpha) = \frac{1}{2}\|w\|^2 - \sum_{i=1}^{N}\alpha_i[y_i(w \cdot x_i + b) - 1]$$</p>
+<p>根据拉格朗日对偶性，原始问题的对偶问题是极大极小问题：</p>
+<p>$$\max_{\alpha} \min_{w,b} L(w, b, \alpha)$$</p>
+<h2 id="求解-min-w-b-L-w-b-alpha"><a href="#求解-min-w-b-L-w-b-alpha" class="headerlink" title="求解 $\min_{w,b} L(w, b, \alpha)$"></a>求解 $\min_{w,b} L(w, b, \alpha)$</h2><p>对 $w$ 和 $b$ 求偏导并令其为 0：</p>
+<p>$$\frac{\partial L}{\partial w} = w - \sum_{i=1}^{N}\alpha_i y_i x_i = 0 \quad \Rightarrow \quad w = \sum_{i=1}^{N}\alpha_i y_i x_i$$</p>
+<p>$$\frac{\partial L}{\partial b} = -\sum_{i=1}^{N}\alpha_i y_i = 0 \quad \Rightarrow \quad \sum_{i=1}^{N}\alpha_i y_i = 0$$</p>
+<p>将 $w$ 代入拉格朗日函数，得到对偶问题：</p>
+<p>$$\max_{\alpha} \sum_{i=1}^{N}\alpha_i - \frac{1}{2}\sum_{i=1}^{N}\sum_{j=1}^{N}\alpha_i \alpha_j y_i y_j (x_i \cdot x_j)$$</p>
+<p>$$\text{s.t. } \sum_{i=1}^{N}\alpha_i y_i = 0, \quad \alpha_i \geq 0, \quad i = 1,2,...,N$$</p>
+<h2 id="KKT条件与支持向量识别"><a href="#KKT条件与支持向量识别" class="headerlink" title="KKT条件与支持向量识别"></a>KKT条件与支持向量识别</h2><p>对偶问题的解必须满足KKT条件。对于原始问题，KKT条件为：</p>
+<ol>
+<li><strong>Stationarity（平稳性）</strong>: $\nabla_w L &#x3D; 0$, $\nabla_b L &#x3D; 0$</li>
+<li><strong>Primal feasibility（原始可行性）</strong>: $y_i(w \cdot x_i + b) \geq 1$</li>
+<li><strong>Dual feasibility（对偶可行性）</strong>: $\alpha_i \geq 0$</li>
+<li><strong>Complementary slackness（互补松弛性）</strong>: $\alpha_i[y_i(w \cdot x_i + b) - 1] &#x3D; 0$</li>
+</ol>
+<p>其中互补松弛条件是最关键的：当 $\alpha_i &gt; 0$ 时，必须有 $y_i(w \cdot x_i + b) &#x3D; 1$，即该样本点正好落在间隔边界上。这些样本点就是<strong>支持向量（Support Vectors）</strong>。绝大多数 $\alpha_i &#x3D; 0$ 的样本点对决策边界没有贡献。</p>
+<p>最终的决策函数可以只用支持向量表示：</p>
+<p>$$f(x) = sign\left(\sum_{i \in SV}\alpha_i y_i (x_i \cdot x) + b\right)$$</p>
+<p>对于软间隔SVM（引入松弛变量 $\xi_i$），对偶问题的唯一变化是约束条件变为 $0 \leq \alpha_i \leq C$，其中 $C$ 是惩罚参数。</p>
+<hr>
+<h1 id="SMO-算法（Sequential-Minimal-Optimization）"><a href="#SMO-算法（Sequential-Minimal-Optimization）" class="headerlink" title="SMO 算法（Sequential Minimal Optimization）"></a>SMO 算法（Sequential Minimal Optimization）</h1><p>求解SVM对偶问题的最经典算法是SMO（序列最小最优化），由John Platt于1998年提出。其核心思想是：将大的二次规划（QP）问题分解为一系列最小的QP子问题（每次只优化两个变量），从而可以解析求解，避免了数值QP求解器的高昂开销。</p>
+<h2 id="算法动机"><a href="#算法动机" class="headerlink" title="算法动机"></a>算法动机</h2><p>对偶问题有 $N$ 个变量 $\alpha_i$，且受等式约束 $\sum \alpha_i y_i &#x3D; 0$。如果每次只优化一个变量，等式约束会迫使该变量无法改变。因此SMO每次选择<strong>两个</strong>变量 $\alpha_i$ 和 $\alpha_j$ 进行优化，固定其余所有变量。</p>
+<h2 id="两变量优化子问题"><a href="#两变量优化子问题" class="headerlink" title="两变量优化子问题"></a>两变量优化子问题</h2><p>假设选定 $\alpha_1$ 和 $\alpha_2$ 进行优化，其余 $\alpha_k (k \geq 3)$ 固定。约束条件：</p>
+<p>$$\alpha_1 y_1 + \alpha_2 y_2 = -\sum_{k=3}^{N}\alpha_k y_k = \zeta \quad \text{(常数)}$$</p>
+<p>$$0 \leq \alpha_i \leq C \quad (i = 1,2)$$</p>
+<p>由此可将 $\alpha_1$ 用 $\alpha_2$ 表示：$\alpha_1 &#x3D; y_1(\zeta - \alpha_2 y_2)$。代入目标函数后，转化为关于 $\alpha_2$ 的单变量二次函数，可直接求解析解并裁剪到 $[L, H]$ 区间内。</p>
+<p><strong>裁剪边界求解</strong>：</p>
+<p>若 $y_1 \neq y_2$：</p>
+<ul>
+<li>$L &#x3D; \max(0, \alpha_2^{old} - \alpha_1^{old})$</li>
+<li>$H &#x3D; \min(C, C + \alpha_2^{old} - \alpha_1^{old})$</li>
+</ul>
+<p>若 $y_1 &#x3D; y_2$：</p>
+<ul>
+<li>$L &#x3D; \max(0, \alpha_2^{old} + \alpha_1^{old} - C)$</li>
+<li>$H &#x3D; \min(C, \alpha_2^{old} + \alpha_1^{old})$</li>
+</ul>
+<p><strong>未裁剪的 $\alpha_2$ 更新公式</strong>：</p>
+<p>$$\alpha_2^{new,unc} = \alpha_2^{old} + \frac{y_2(E_1 - E_2)}{\eta}$$</p>
+<p>其中 $E_i &#x3D; f(x_i) - y_i$ 是第 $i$ 个样本的预测误差，$\eta &#x3D; K_{11} + K_{22} - 2K_{12}$（$K_{ij} &#x3D; \kappa(x_i, x_j)$ 是核函数值）。</p>
+<h2 id="变量选择策略"><a href="#变量选择策略" class="headerlink" title="变量选择策略"></a>变量选择策略</h2><p>SMO的性能高度依赖于变量选择策略：</p>
+<ul>
+<li><p>**第一个变量 $\alpha_1$**：在所有违反KKT条件的样本中选择。KKT条件违反判据：$\alpha_i &#x3D; 0$ 时 $y_i f(x_i) \geq 1$；$0 &lt; \alpha_i &lt; C$ 时 $y_i f(x_i) &#x3D; 1$；$\alpha_i &#x3D; C$ 时 $y_i f(x_i) \leq 1$。通常遍历所有支持向量候选（$0 &lt; \alpha_i &lt; C$）来找违反者。</p>
+</li>
+<li><p>**第二个变量 $\alpha_2$**：选择能使 $|E_1 - E_2|$ 最大化的变量，因为更新步长与误差差值的绝对值成正比。实践中维护一个误差缓存（Error Cache），从中选取使步长最大的 $\alpha_2$。</p>
+</li>
+</ul>
+<h2 id="阈值-b-的更新"><a href="#阈值-b-的更新" class="headerlink" title="阈值 $b$ 的更新"></a>阈值 $b$ 的更新</h2><p>优化 $\alpha_1, \alpha_2$ 后需更新阈值 $b$：</p>
+<p>若 $0 &lt; \alpha_1^{new} &lt; C$：<br>$$b^{new} = b^{old} - E_1 - y_1(\alpha_1^{new} - \alpha_1^{old})K_{11} - y_2(\alpha_2^{new} - \alpha_2^{old})K_{12}$$</p>
+<p>若 $0 &lt; \alpha_2^{new} &lt; C$，则使用对称公式。若两者都在边界上，则取两者的平均值。</p>
+<h2 id="收敛条件"><a href="#收敛条件" class="headerlink" title="收敛条件"></a>收敛条件</h2><p>SMO算法的收敛条件是所有 $\alpha_i$ 在给定容忍度 $\epsilon$（通常 $10^{-3}$）内满足KKT条件。即对任意 $i$：</p>
+<ul>
+<li>$\alpha_i &lt; C \Rightarrow y_i f(x_i) \geq 1 - \epsilon$</li>
+<li>$\alpha_i &gt; 0 \Rightarrow y_i f(x_i) \leq 1 + \epsilon$</li>
+</ul>
+<h2 id="算法复杂度"><a href="#算法复杂度" class="headerlink" title="算法复杂度"></a>算法复杂度</h2><p>SMO每次迭代的计算代价主要在于更新误差缓存，复杂度为 $O(N)$。实际运行中，SMO的迭代次数通常介于此间，总体经验复杂度约为 $O(N^2)$，远优于通用QP求解器的 $O(N^3)$。</p>
+<hr>
+<h1 id="核方法深度剖析（Kernel-Methods-Deep-Dive）"><a href="#核方法深度剖析（Kernel-Methods-Deep-Dive）" class="headerlink" title="核方法深度剖析（Kernel Methods Deep Dive）"></a>核方法深度剖析（Kernel Methods Deep Dive）</h1><p>核方法是SVM能够处理非线性问题的核心武器。其数学基础是Mercer定理：任何半正定核函数都对应某个特征空间中的内积。</p>
+<h2 id="Mercer-条件"><a href="#Mercer-条件" class="headerlink" title="Mercer 条件"></a>Mercer 条件</h2><p>对于对称函数 $\kappa: \mathcal{X} \times \mathcal{X} \to \mathbb{R}$，它是有效核函数的充要条件是：对任意有限样本集 ${x_1,…,x_n}$，其Gram矩阵 $\mathbf{K}_{ij} &#x3D; \kappa(x_i, x_j)$ 是半正定的。满足Mercer条件的核函数隐含地定义了一个再生核希尔伯特空间（RKHS），其中 $\kappa(x_i, x_j) &#x3D; \langle \phi(x_i), \phi(x_j) \rangle$。</p>
+<h2 id="RBF-核参数分析"><a href="#RBF-核参数分析" class="headerlink" title="RBF 核参数分析"></a>RBF 核参数分析</h2><p>RBF（径向基函数）核是最常用的核函数：</p>
+<p>$$\kappa(x_i, x_j) = \exp(-\gamma \|x_i - x_j\|^2)$$</p>
+<p><strong>$\gamma$ 参数对决策边界的影响</strong>：</p>
+<ul>
+<li><strong>$\gamma$ 很大（如 $\gamma &#x3D; 100$）</strong>：每个支持向量的影响范围极小，决策边界会高度弯曲以紧密拟合每个训练点 → <strong>过拟合风险极高</strong>。此时RBF核近似于1-NN分类器。</li>
+<li><strong>$\gamma$ 很小（如 $\gamma &#x3D; 0.01$）</strong>：每个支持向量的影响范围极大，决策边界趋近于线性 → <strong>欠拟合风险</strong>。极端情况下RBF-SVM退化为线性SVM。</li>
+<li><strong>$\gamma$ 适中</strong>：在拟合能力和泛化能力之间取得平衡。</li>
+</ul>
+<p><strong>$\gamma$ 的经验选择</strong>：通常设置 $\gamma &#x3D; 1&#x2F;d$（$d$ 为特征维度），或通过GridSearch从 ${10^{-3}, 10^{-2}, …, 10^{3}}$ 中对数均匀采样。</p>
+<p><strong>RBF核的VC维</strong>：RBF核对应无穷维特征空间，其VC维理论上可以无穷大。但实际中通过最大化间隔（相当于最小化 $|w|^2$）实现了正则化，使得有效VC维被控制。</p>
+<h2 id="多项式核参数分析"><a href="#多项式核参数分析" class="headerlink" title="多项式核参数分析"></a>多项式核参数分析</h2><p>$$\kappa(x_i, x_j) = (\gamma x_i^T x_j + r)^d$$</p>
+<ul>
+<li>**degree $d$**：控制决策边界的复杂度。$d&#x3D;1$ 退化为线性核；$d&#x3D;2$ 可拟合二次曲面；$d$ 过高会剧烈过拟合。</li>
+<li>**coef0 $r$**：控制高阶项与低阶项的相对权重。$r$ 越大，低阶项权重越大，模型倾向于更平滑。</li>
+<li>**$\gamma$**：缩放因子，控制内积的尺度。</li>
+</ul>
+<p><strong>多项式核的劣势</strong>：当 $d$ 较大或特征维度较高时，数值计算容易溢出或出现极端值（因为内积的 $d$ 次幂）。与RBF核相比，多项式核在大多数实际场景中表现不如RBF核，因为RBF核具有局部性好、数值稳定性高的优势。</p>
+<h2 id="如何选择核函数"><a href="#如何选择核函数" class="headerlink" title="如何选择核函数"></a>如何选择核函数</h2><p>一个实用的决策流程：</p>
+<ol>
+<li><strong>特征数远大于样本数</strong>（如文本分类，n_features &gt;&gt; n_samples）：使用线性核。此时数据在高维空间中很可能线性可分，使用非线性核容易过拟合。</li>
+<li><strong>特征数和样本数都适中</strong>（如典型的表格数据）：优先尝试RBF核。RBF核是最通用、表现最稳健的非线性核。</li>
+<li><strong>样本数远大于特征数</strong>：可以考虑RBF核，但需要注意训练复杂度 $O(N^2)$ 对大规模数据的压力。可以先尝试线性SVM作为baseline。</li>
+<li><strong>特征具有特殊结构</strong>（如字符串、图、序列）：使用对应的专用核——string kernel、graph kernel、Fisher kernel等。</li>
+</ol>
+<p><strong>经验法则</strong>：永远先试线性核（快、可解释），再用RBF核作为非线性baseline。多项式核和sigmoid核很少在实际中超越RBF核。</p>
+<h2 id="常用核函数速查表"><a href="#常用核函数速查表" class="headerlink" title="常用核函数速查表"></a>常用核函数速查表</h2><table>
+<thead>
+<tr>
+<th>核函数</th>
+<th>数学形式</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Linear</td>
+<td>$x_i^T x_j$</td>
+<td>高维稀疏数据（文本）、线性可分</td>
+</tr>
+<tr>
+<td>RBF</td>
+<td>$\exp(-\gamma|x_i-x_j|^2)$</td>
+<td>通用非线性（首选）</td>
+</tr>
+<tr>
+<td>Polynomial</td>
+<td>$(\gamma x_i^T x_j + r)^d$</td>
+<td>图像（有时）、低维多项式关系</td>
+</tr>
+<tr>
+<td>Sigmoid</td>
+<td>$\tanh(\gamma x_i^T x_j + r)$</td>
+<td>历史遗留，实际很少用</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="多分类-SVM-策略（Multi-class-SVM-Strategies）"><a href="#多分类-SVM-策略（Multi-class-SVM-Strategies）" class="headerlink" title="多分类 SVM 策略（Multi-class SVM Strategies）"></a>多分类 SVM 策略（Multi-class SVM Strategies）</h1><p>SVM原生是二分类器。将SVM扩展到多分类有以下几种策略：</p>
+<h2 id="一对其余（One-vs-Rest-OvR）"><a href="#一对其余（One-vs-Rest-OvR）" class="headerlink" title="一对其余（One-vs-Rest, OvR）"></a>一对其余（One-vs-Rest, OvR）</h2><p>训练 $K$ 个二分类器（$K$ 为类别数），第 $k$ 个分类器将第 $k$ 类视为正类，其余视为负类。预测时选择决策函数值最大的类别：</p>
+<p>$$\hat{y} = \arg\max_k (w_k^T x + b_k)$$</p>
+<ul>
+<li><strong>训练复杂度</strong>：$K$ 个二分类器，每个使用全部 $N$ 个样本</li>
+<li><strong>优点</strong>：实现简单，分类器数量线性增长</li>
+<li><strong>缺点</strong>：每个分类器面临严重类别不平衡（正类约 $N&#x2F;K$，负类约 $N(K-1)&#x2F;K$），可能影响边界的准确性</li>
+</ul>
+<h2 id="一对一（One-vs-One-OvO）"><a href="#一对一（One-vs-One-OvO）" class="headerlink" title="一对一（One-vs-One, OvO）"></a>一对一（One-vs-One, OvO）</h2><p>为每对类别 $(i, j)$ 训练一个二分类器，共 $K(K-1)&#x2F;2$ 个。预测时采用投票机制：每个分类器对样本投票给 $i$ 类或 $j$ 类，最终得票最多的类别胜出。</p>
+<ul>
+<li><strong>训练复杂度</strong>：$K(K-1)&#x2F;2$ 个分类器，但每个只使用两个类的样本（约 $2N&#x2F;K$）</li>
+<li><strong>优点</strong>：单个分类器规模小、训练快；scikit-learn 的 <code>SVC</code> 默认使用此策略</li>
+<li><strong>缺点</strong>：分类器数量随 $K$ 二次增长，$K$ 大时不可行；存在平票情况</li>
+</ul>
+<h2 id="DAG-SVM（有向无环图SVM）"><a href="#DAG-SVM（有向无环图SVM）" class="headerlink" title="DAG-SVM（有向无环图SVM）"></a>DAG-SVM（有向无环图SVM）</h2><p>Platt等人提出。训练阶段与OvO相同，共 $K(K-1)&#x2F;2$ 个分类器。预测阶段使用一个有向无环图：从根节点开始，每次排除一个类别，经过 $K-1$ 次比较后到达叶子节点。</p>
+<ul>
+<li><strong>预测速度</strong>：只需 $K-1$ 次分类器评估（OvO需要 $K(K-1)&#x2F;2$ 次）</li>
+<li><strong>缺点</strong>：预测结果依赖DAG的节点排列顺序，存在误差累积风险</li>
+</ul>
+<h2 id="Crammer-Singer-多分类SVM"><a href="#Crammer-Singer-多分类SVM" class="headerlink" title="Crammer-Singer 多分类SVM"></a>Crammer-Singer 多分类SVM</h2><p>Crammer和Singer（2001）提出了原生多分类SVM公式，同时学习 $K$ 个超平面 ${w_1, …, w_K}$：</p>
+<p>$$\min_{w,\xi} \frac{1}{2}\sum_{k=1}^{K}\|w_k\|^2 + C\sum_{i=1}^{N}\xi_i$$</p>
+<p>$$\text{s.t. } w_{y_i}^T x_i - w_k^T x_i \geq 1 - \delta_{y_i,k} - \xi_i, \quad \forall i,k$$</p>
+<ul>
+<li><strong>训练复杂度</strong>：$O(K \cdot N^2)$，一个QP问题包含所有类别</li>
+<li><strong>优点</strong>：理论上更优雅，单一优化目标</li>
+<li><strong>缺点</strong>：实现复杂度高，大规模不可行</li>
+</ul>
+<h2 id="各策略复杂度对比"><a href="#各策略复杂度对比" class="headerlink" title="各策略复杂度对比"></a>各策略复杂度对比</h2><table>
+<thead>
+<tr>
+<th>策略</th>
+<th>分类器数量</th>
+<th>训练样本&#x2F;分类器</th>
+<th>预测评估次数</th>
+<th>scikit-learn</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>OvR</td>
+<td>$K$</td>
+<td>$N$</td>
+<td>$K$</td>
+<td><code>OneVsRestClassifier(SVC())</code></td>
+</tr>
+<tr>
+<td>OvO</td>
+<td>$K(K-1)&#x2F;2$</td>
+<td>$\approx 2N&#x2F;K$</td>
+<td>$K(K-1)&#x2F;2$</td>
+<td><code>SVC(decision_function_shape=&#39;ovo&#39;)</code></td>
+</tr>
+<tr>
+<td>DAG-SVM</td>
+<td>$K(K-1)&#x2F;2$</td>
+<td>$\approx 2N&#x2F;K$</td>
+<td>$K-1$</td>
+<td>需自行实现</td>
+</tr>
+<tr>
+<td>Crammer-Singer</td>
+<td>1（联合）</td>
+<td>$N$</td>
+<td>$K$</td>
+<td>需自行实现</td>
+</tr>
+</tbody></table>
+<p><strong>实际建议</strong>：对于大多数中小规模多分类任务，scikit-learn 默认的 OvO 表现稳定。当 $K &gt; 10$ 时，OvR 更优先（因为 OvO 的分类器数量会爆炸到 45+ 个）。</p>
+<hr>
+<h1 id="完整-sklearn-实战流程（Practical-sklearn-Workflow）"><a href="#完整-sklearn-实战流程（Practical-sklearn-Workflow）" class="headerlink" title="完整 sklearn 实战流程（Practical sklearn Workflow）"></a>完整 sklearn 实战流程（Practical sklearn Workflow）</h1><p>以下展示一个完整的SVM分类器构建流程，包括数据预处理、特征缩放、超参数调优和模型评估。</p>
+<h2 id="完整-Pipeline-示例"><a href="#完整-Pipeline-示例" class="headerlink" title="完整 Pipeline 示例"></a>完整 Pipeline 示例</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> load_breast_cancer</span><br><span class="line"><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> train_test_split, GridSearchCV, StratifiedKFold</span><br><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> StandardScaler</span><br><span class="line"><span class="keyword">from</span> sklearn.svm <span class="keyword">import</span> SVC</span><br><span class="line"><span class="keyword">from</span> sklearn.pipeline <span class="keyword">import</span> Pipeline</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> classification_report, confusion_matrix, roc_auc_score</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. 加载数据</span></span><br><span class="line">data = load_breast_cancer()</span><br><span class="line">X, y = data.data, data.target</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 划分训练/测试集（分层抽样保持类别比例）</span></span><br><span class="line">X_train, X_test, y_train, y_test = train_test_split(</span><br><span class="line">    X, y, test_size=<span class="number">0.2</span>, stratify=y, random_state=<span class="number">42</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 构建Pipeline（务必包含特征缩放！）</span></span><br><span class="line">pipeline = Pipeline([</span><br><span class="line">    (<span class="string">&#x27;scaler&#x27;</span>, StandardScaler()),   <span class="comment"># SVM对特征尺度极其敏感</span></span><br><span class="line">    (<span class="string">&#x27;svm&#x27;</span>, SVC(probability=<span class="literal">True</span>, random_state=<span class="number">42</span>))</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 定义超参数搜索空间</span></span><br><span class="line">param_grid = &#123;</span><br><span class="line">    <span class="string">&#x27;svm__C&#x27;</span>: [<span class="number">0.01</span>, <span class="number">0.1</span>, <span class="number">1</span>, <span class="number">10</span>, <span class="number">100</span>],</span><br><span class="line">    <span class="string">&#x27;svm__gamma&#x27;</span>: [<span class="number">0.001</span>, <span class="number">0.01</span>, <span class="number">0.1</span>, <span class="number">1</span>, <span class="number">10</span>, <span class="string">&#x27;scale&#x27;</span>, <span class="string">&#x27;auto&#x27;</span>],</span><br><span class="line">    <span class="string">&#x27;svm__kernel&#x27;</span>: [<span class="string">&#x27;rbf&#x27;</span>, <span class="string">&#x27;poly&#x27;</span>, <span class="string">&#x27;linear&#x27;</span>],</span><br><span class="line">    <span class="string">&#x27;svm__degree&#x27;</span>: [<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>],              <span class="comment"># 仅对 poly 核生效</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. GridSearchCV 交叉验证</span></span><br><span class="line">cv = StratifiedKFold(n_splits=<span class="number">5</span>, shuffle=<span class="literal">True</span>, random_state=<span class="number">42</span>)</span><br><span class="line">grid_search = GridSearchCV(</span><br><span class="line">    pipeline, param_grid, cv=cv,</span><br><span class="line">    scoring=<span class="string">&#x27;roc_auc&#x27;</span>,        <span class="comment"># 使用 AUC 作为评估指标</span></span><br><span class="line">    n_jobs=-<span class="number">1</span>,                <span class="comment"># 并行计算</span></span><br><span class="line">    verbose=<span class="number">1</span>,</span><br><span class="line">    refit=<span class="literal">True</span>                <span class="comment"># 用最优参数在全量训练集上重新训练</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">grid_search.fit(X_train, y_train)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6. 查看最佳参数和分数</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Best parameters: <span class="subst">&#123;grid_search.best_params_&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Best CV AUC: <span class="subst">&#123;grid_search.best_score_:<span class="number">.4</span>f&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 7. 在测试集上评估</span></span><br><span class="line">y_pred = grid_search.predict(X_test)</span><br><span class="line">y_prob = grid_search.predict_proba(X_test)[:, <span class="number">1</span>]</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(classification_report(y_test, y_pred,</span><br><span class="line">      target_names=data.target_names))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Test AUC: <span class="subst">&#123;roc_auc_score(y_test, y_prob):<span class="number">.4</span>f&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="为什么特征缩放对SVM至关重要"><a href="#为什么特征缩放对SVM至关重要" class="headerlink" title="为什么特征缩放对SVM至关重要"></a>为什么特征缩放对SVM至关重要</h2><p>SVM的优化目标是最小化 $|w|^2$，这对特征尺度高度敏感。如果特征 $x_1$ 的范围是 $[0, 1]$ 而 $x_2$ 是 $[0, 10000]$，则 $x_2$ 将主导 $|w|$ 的计算，导致决策边界被少数特征劫持。StandardScaler 将每个特征标准化为 $\mu&#x3D;0, \sigma&#x3D;1$，确保所有特征在优化过程中被平等对待。</p>
+<h2 id="超参数调优建议"><a href="#超参数调优建议" class="headerlink" title="超参数调优建议"></a>超参数调优建议</h2><ul>
+<li><strong>C 参数</strong>：控制对误分类的惩罚。$C$ 越小 → 间隔越大 → 模型越简单（正则化更强）。典型的搜索范围：${10^{-3}, 10^{-2}, …, 10^{3}}$。</li>
+<li><strong>$\gamma$ 参数（RBF核）</strong>：控制单个样本的影响半径。$\gamma$ 越大 → 决策边界越复杂。与 $C$ 存在交互效应：大 $C$ + 大 $\gamma$ 极易过拟合。</li>
+<li><strong>GridSearch 策略</strong>：建议先做粗粒度搜索（如 ${0.01, 1, 100}$）定位大致范围，再做细粒度搜索。对大规模数据优先使用 <code>RandomizedSearchCV</code>。</li>
+<li><strong>交叉验证</strong>：对于类别不均衡数据，使用 <code>StratifiedKFold</code> 确保每折的类别比例与原始数据一致。</li>
+</ul>
+<hr>
+<h1 id="SVM-与其他分类器的对比"><a href="#SVM-与其他分类器的对比" class="headerlink" title="SVM 与其他分类器的对比"></a>SVM 与其他分类器的对比</h1><h2 id="详细对比表"><a href="#详细对比表" class="headerlink" title="详细对比表"></a>详细对比表</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>SVM</th>
+<th>Logistic Regression</th>
+<th>Random Forest</th>
+<th>Neural Networks</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>决策边界</strong></td>
+<td>最大间隔超平面（可非线性）</td>
+<td>线性决策边界</td>
+<td>分段常数（轴平行）</td>
+<td>任意复杂曲面</td>
+</tr>
+<tr>
+<td><strong>可解释性</strong></td>
+<td>中等（支持向量）</td>
+<td>高（特征系数即odds比）</td>
+<td>中高（特征重要性）</td>
+<td>低（黑箱）</td>
+</tr>
+<tr>
+<td><strong>小样本表现</strong></td>
+<td>优秀（SRM原理）</td>
+<td>一般</td>
+<td>较差</td>
+<td>差</td>
+</tr>
+<tr>
+<td><strong>高维数据</strong></td>
+<td>优秀（核技巧+最大化间隔）</td>
+<td>一般（需要正则化）</td>
+<td>一般（维度诅咒）</td>
+<td>好（需要大量数据）</td>
+</tr>
+<tr>
+<td><strong>训练速度</strong></td>
+<td>慢（$O(N^2) - O(N^3)$）</td>
+<td>快（$O(ND)$）</td>
+<td>中等</td>
+<td>极慢（GPU加速后快）</td>
+</tr>
+<tr>
+<td><strong>预测速度</strong></td>
+<td>中等（取决于支持向量数）</td>
+<td>极快</td>
+<td>中等</td>
+<td>快</td>
+</tr>
+<tr>
+<td><strong>超参数调优</strong></td>
+<td>中等（C, $\gamma$, 核选择）</td>
+<td>少</td>
+<td>中等</td>
+<td>多（架构+优化器）</td>
+</tr>
+<tr>
+<td><strong>处理缺失值</strong></td>
+<td>需预处理</td>
+<td>需预处理</td>
+<td>天然支持</td>
+<td>需预处理</td>
+</tr>
+<tr>
+<td><strong>类别不平衡</strong></td>
+<td>可用类别权重</td>
+<td>可用类别权重</td>
+<td>可用类别权重</td>
+<td>可用类别权重</td>
+</tr>
+<tr>
+<td><strong>概率输出</strong></td>
+<td>Platt scaling</td>
+<td>原生</td>
+<td>投票比例</td>
+<td>原生（softmax）</td>
+</tr>
+<tr>
+<td><strong>最优场景</strong></td>
+<td>小到中型、高维、需要强泛化</td>
+<td>需要概率+可解释的baseline</td>
+<td>表格数据、特征工程有限</td>
+<td>海量数据、图像&#x2F;语音&#x2F;文本</td>
+</tr>
+</tbody></table>
+<h2 id="何时SVM优于其他模型"><a href="#何时SVM优于其他模型" class="headerlink" title="何时SVM优于其他模型"></a>何时SVM优于其他模型</h2><ol>
+<li><strong>小样本高维数据</strong>：如基因表达分类（n_samples &lt; 1000, n_features &gt; 10000），SVM的间隔最大化和SRM原则效果显著。</li>
+<li><strong>需要强理论保证</strong>：SVM的凸优化保证全局最优解（神经网络只有局部最优）。</li>
+<li><strong>非线性边界但数据量中等</strong>：RBF核SVM在几千到几万样本的场景下表现优异，且调参比神经网络简单。</li>
+<li><strong>文本分类</strong>：线性SVM在TF-IDF特征上长期是文本分类的SOTA baseline。</li>
+</ol>
+<h2 id="何时SVM不如其他模型"><a href="#何时SVM不如其他模型" class="headerlink" title="何时SVM不如其他模型"></a>何时SVM不如其他模型</h2><ol>
+<li><strong>超大规模数据</strong>（$N &gt; 10^5$）：训练复杂度 $O(N^2)$ 变得不可接受，此时随机森林或线性模型（如LibLinear）更合适。</li>
+<li><strong>需要概率校准</strong>：虽然可以通过Platt scaling获取概率，但不如logistic regression原生。</li>
+<li><strong>在线学习&#x2F;增量更新</strong>：SVM不支持增量学习（需要重新训练），此时用SGDClassifier更合适。</li>
+</ol>
+<hr>
+<h1 id="SVM-在现代场景中的发展（SVM-in-Modern-Context）"><a href="#SVM-在现代场景中的发展（SVM-in-Modern-Context）" class="headerlink" title="SVM 在现代场景中的发展（SVM in Modern Context）"></a>SVM 在现代场景中的发展（SVM in Modern Context）</h1><h2 id="大规模线性SVM：LibLinear"><a href="#大规模线性SVM：LibLinear" class="headerlink" title="大规模线性SVM：LibLinear"></a>大规模线性SVM：LibLinear</h2><p>Fan等人（2008）提出的LibLinear专门针对大规模线性分类优化，其核心是坐标下降法（Coordinate Descent），每次只优化一个 $\alpha_i$（对线性SVM而言，不需要保证等式约束的两个变量联动）。配合L1&#x2F;L2正则化和dual&#x2F;primal求解器的自适应选择，LibLinear可以在百万级样本上秒级完成训练。scikit-learn中的 <code>LinearSVC</code> 底层即基于LibLinear。</p>
+<h2 id="近似核方法"><a href="#近似核方法" class="headerlink" title="近似核方法"></a>近似核方法</h2><p>对于非线性SVM，传统核矩阵计算和存储为 $O(N^2)$，这在大规模场景下不可接受。两类重要的近似方法：</p>
+<p><strong>Nystrom 方法</strong>：随机采样 $m \ll N$ 个样本，计算 $m \times m$ 的核矩阵和 $N \times m$ 的交叉核矩阵，用低秩近似逼近完整的 $N \times N$ 核矩阵：$\mathbf{K} \approx \mathbf{K}<em>{nm} \mathbf{K}</em>{mm}^{-1} \mathbf{K}_{mn}$。复杂度降为 $O(Nm^2)$。</p>
+<p><strong>随机傅里叶特征（Random Fourier Features, RFF）</strong>：Rahimi和Recht（2007）基于Bochner定理，将RBF核近似为显式的随机傅里叶特征映射：</p>
+<p>$$\kappa_{RBF}(x_i, x_j) \approx \frac{1}{D}\sum_{d=1}^{D}\cos(\omega_d^T x_i + b_d)\cos(\omega_d^T x_j + b_d)$$</p>
+<p>其中 $\omega_d \sim \mathcal{N}(0, 2\gamma I)$，$b_d \sim \mathcal{U}[0, 2\pi]$，$D$ 为傅里叶特征维度（通常 $D &#x3D; 500 \sim 2000$）。这等价于先在 $D$ 维的随即空间中做显式映射，再训练线性SVM，完美避开了核矩阵计算。</p>
+<h2 id="SVM-vs-Deep-Learning：什么场景下SVM依然更优？"><a href="#SVM-vs-Deep-Learning：什么场景下SVM依然更优？" class="headerlink" title="SVM vs Deep Learning：什么场景下SVM依然更优？"></a>SVM vs Deep Learning：什么场景下SVM依然更优？</h2><ol>
+<li><strong>数据量有限（$N &lt; 10000$）</strong>：深度学习需要大量数据才能展现优势，SVM在小样本下有理论保证。</li>
+<li><strong>特征已手工提取</strong>：当使用SIFT、TF-IDF等经过验证的手工特征时，SVM往往优于端到端的深度学习。</li>
+<li><strong>可解释性要求高</strong>：SVM的支持向量和决策边界可以被几何解释。</li>
+<li><strong>满足于凸优化保证</strong>：在某些安全关键领域（医疗、金融），凸优化带来的全局最优保证比深度学习的黑箱更受青睐。</li>
+<li><strong>计算资源受限</strong>：在边缘设备上进行离线训练时，SVM的算力需求远低于深度学习。</li>
+</ol>
+<hr>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>要说SVM的这篇论文阐述的知识，确实可以称得上是”细致入微”，而SVM的优势就在于解决<strong>小样本、非线性、以及高维</strong>的回归和二分类问题。在与问题复杂度上，SVM要求的样本是相对较少的；而在样本数据线性不可分上，SVM也是比较擅长的，通过<strong>核函数和松弛变量</strong>来实现；即使在样本维度很高情况下，SVM依然保持着优势，它产生的分类器简洁，用到样本信息还少，几乎可以有效的避免过拟合问题。基于种种，接下来还是需要结合实战，再配备这篇教程，好好体验一下SVM的强大。</p>
+<hr>
+<h1 id="面试常见问题（Interview-Q-A）"><a href="#面试常见问题（Interview-Q-A）" class="headerlink" title="面试常见问题（Interview Q&amp;A）"></a>面试常见问题（Interview Q&amp;A）</h1><p><strong>Q1: 为什么SVM要最大化间隔？间隔最大化与泛化能力之间有什么关系？</strong></p>
+<p><strong>答</strong>：最大化间隔（Margin Maximization）是SVM最核心的设计思想。根据统计学习理论中的泛化误差界，对于一个能够以间隔 $\rho$ 正确分类所有训练样本的分类器，其期望泛化误差上界与 $\sqrt{h&#x2F;\rho^2}$ 成正比（$h$ 为VC维）。因此，更大的间隔等价于更紧的泛化误差界，即更好的泛化能力。</p>
+<p>几何直觉：间隔是决策边界到最近样本点的距离。间隔越大，意味着允许更多的噪声&#x2F;扰动出现在样本中而不会导致误分类。极端情况下，一个间距为零的分类器（如过拟合的多项式边界），数据点稍有扰动就可能被分错。</p>
+<p>从优化角度看，最小化 $|w|^2$ 等价于最大化间隔 $2&#x2F;|w|$，这天然构建了结构风险最小化的框架——在保证经验风险为零（或很小）的前提下，最小化模型容量（限制VC维）。</p>
+<p><strong>Q2: 为什么SVM对偶问题中的 $\alpha$ 大多是0？只有支持向量才有 $\alpha &gt; 0$？</strong></p>
+<p><strong>答</strong>：这由KKT条件的互补松弛性（Complementary Slackness）解释：$\alpha_i[y_i(w \cdot x_i + b) - 1] &#x3D; 0$。</p>
+<p>对于非支持向量，$y_i(w \cdot x_i + b) &gt; 1$（样本落在间隔之外），要满足等式，必须 $\alpha_i &#x3D; 0$。只有恰好落在间隔边界上的样本（$y_i(w \cdot x_i + b) &#x3D; 1$）才允许 $\alpha_i &gt; 0$。对于软间隔SVM，$\alpha_i &#x3D; C$ 的样本是误分类或在间隔内的点。</p>
+<p>这个性质有重要的实际意义：SVM的解是<strong>稀疏的</strong>——预测时只需要计算与支持向量的核函数值，不需要使用全部训练样本。通常支持向量只占总训练样本的一小部分（5%～20%），大大加速了预测。同时，这也意味着SVM天然进行了一种样本选择。</p>
+<p><strong>Q3: RBF核的 $\gamma$ 参数和正则化参数 $C$ 分别控制什么？两者如何交互影响模型？</strong></p>
+<p><strong>答</strong>：</p>
+<ul>
+<li><strong>$C$（正则化参数倒数）</strong>：控制模型对误分类的容忍度。$C$ 越大，惩罚越重 → 模型越复杂 → 过拟合风险越高。$C$ 越小，允许更多误分类 → 模型越简单（更大间隔）→ 可能欠拟合。</li>
+<li><strong>$\gamma$（RBF核宽度倒数）</strong>：控制每个训练样本的影响范围。$\gamma$ 越大 → 影响范围越小（高斯曲线越窄）→ 决策边界越复杂 → 过拟合。$\gamma$ 越小 → 影响范围越大 → 决策边界越平滑 → 欠拟合。</li>
+</ul>
+<p><strong>交互效应</strong>：$C$ 和 $\gamma$ 有倍增效应。大 $C$ + 大 $\gamma$ &#x3D; 极度过拟合（每个样本都有自己的小岛）。小 $C$ + 小 $\gamma$ &#x3D; 极度欠拟合（近似线性）。正确的调参策略是联合搜索（如GridSearchCV中的笛卡尔积搜索），因为最优的 $C$ 通常与 $\gamma$ 强相关。</p>
+<p><strong>Q4: 线性可分SVM的对偶问题中的等式约束 $\sum_{i&#x3D;1}^{N}\alpha_i y_i &#x3D; 0$ 的物理含义是什么？</strong></p>
+<p><strong>答</strong>：这个等式约束来源于拉格朗日函数对偏置 $b$ 求偏导并令其为0的结果：</p>
+<p>$$\frac{\partial L}{\partial b} = -\sum_{i=1}^{N}\alpha_i y_i = 0$$</p>
+<p>物理上，这个约束确保了正负类支持向量的总权重相等，即决策边界不会向某一类偏移。它是SVM解的对称性保证。没有了这个约束，对偶问题的最优解将不对应于原始问题的最优解。在SMO算法中，这个约束是每次必须选择两个变量同时更新的根本原因——如果只更新一个 $\alpha_i$，等式约束将被破坏。</p>
+<p><strong>Q5: 如何处理SVM中的类别不平衡问题？</strong></p>
+<p><strong>答</strong>：有多种策略：</p>
+<ol>
+<li><p><strong>类别权重（class_weight）</strong>：scikit-learn中设置 <code>class_weight=&#39;balanced&#39;</code>，自动按类别样本数反比设置不同的 $C$ 值：少数类的 $C_{minor} &#x3D; C \times \frac{N_{total}}{K \times N_{minor}}$。这使得少数类的误分类惩罚更大，从而拉回决策边界。</p>
+</li>
+<li><p><strong>重采样</strong>：对少数类进行SMOTE过采样或对多数类进行欠采样。</p>
+</li>
+<li><p><strong>调整决策阈值</strong>：训练后在预测时调低少数类的决策阈值。</p>
+</li>
+<li><p><strong>评估指标选择</strong>：不使用准确率（Accuracy），而使用F1-score、AUC-ROC、Precision-Recall曲线。</p>
+</li>
+</ol>
+<p><strong>Q6: 为什么在文本分类中，即使特征维度很高，线性SVM也能取得很好的效果？</strong></p>
+<p><strong>答</strong>：文本分类经TF-IDF或词袋模型编码后，特征维度通常达到 $10^4 \sim 10^6$ 级别，远超样本数。在这种”高维稀疏”场景下：</p>
+<ol>
+<li>数据在高维空间中天然趋向于线性可分——Cover定理表明，将数据非线性投影到更高维空间后会变得更可分。</li>
+<li>虽然维度极高，但有效特征（非零特征）很少，每篇文档通常只有几十到几百个词出现。</li>
+<li>线性SVM复杂度为 $O(N \times d)$（$d$ 为特征维度），对于稀疏矩阵的优化已高度成熟（LibLinear的坐标下降法可秒级处理百万维特征）。</li>
+<li>额外使用非线性核（如RBF）反而可能在高维稀疏空间过拟合，且计算成本不值得。</li>
+</ol>
+<p>事实上，在BERT等预训练模型出现之前，线性SVM + TF-IDF 一直是文本分类的工业标准baseline。</p>
+<p><strong>Q7: SMO算法为什么每次必须选择两个变量进行优化？</strong></p>
+<p><strong>答</strong>：因为对偶问题中的等式约束 $\sum \alpha_i y_i &#x3D; 0$。如果只选一个变量 $\alpha_i$ 更新，要保持等式约束成立，则 $\alpha_i^{new} y_i &#x3D; \alpha_i^{old} y_i$，即 $\alpha_i^{new} &#x3D; \alpha_i^{old}$（因为 $y_i \in {\pm 1}$）。这意味着只优化一个变量时它根本无法改变，算法将停滞。选择两个变量后，可以通过一个变量补偿另一个的变化来满足等式约束：$\alpha_1^{new}y_1 + \alpha_2^{new}y_2 &#x3D; \alpha_1^{old}y_1 + \alpha_2^{old}y_2$。这正是”最小优化”——两个是可以优化的最少变量数。</p>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/kevin-ku-w7ZyuGYNpRQ-unsplash.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2019/12/10/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91Kernel-Logistic-Regression-and-the-Import-Vector-Machine/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/kelly-sikkema-cXkrqY2wFyc-unsplash.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【论文笔记】Kernel Logistic Regression and the Import Vector Machine</span></div></a></div><div class="next-post pull_right"><a href="/2019/12/02/%E3%80%90%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B%E3%80%91%E5%86%B3%E7%AD%96%E6%A0%91%E5%AD%A6%E4%B9%A0%EF%BC%88%E4%BA%8C%EF%BC%89/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/page/article_number_lot.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【机器学习模型】决策树学习（二）</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
     var j, e = d.getElementsByTagName(s)[0];
     if (typeof LivereTower === 'function') { return; }
     j = d.createElement(s);
     j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
     j.async = true;
     e.parentNode.insertBefore(j, e);
-})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/kevin-ku-w7ZyuGYNpRQ-unsplash.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2020 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action" target="_blank" rel="noopener"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/kevin-ku-w7ZyuGYNpRQ-unsplash.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
   tex2jax: {
     inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
     processEscapes: true,
@@ -279,4 +640,47 @@ h_k(x) = 0, (k = 1,2,3,...,l)\\
     aplayer.style.boxShadow = 'none';
     aplayer.style.marginTop = '10px';
     $('.aplayer-list-light').css('background','#d8e2eb69');
-})</script></div></body></html>
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

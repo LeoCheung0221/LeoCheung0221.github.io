@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【机器学习模型】决策树学习（二） | ONE·PIECE</title><meta name="description" content="【机器学习模型】决策树学习（二）"><meta name="keywords" content="决策树,集成学习模型,ID3、C4.5、CART"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【机器学习模型】决策树学习（二）"><meta name="twitter:description" content="【机器学习模型】决策树学习（二）"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/page/article_number_lot.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【机器学习模型】决策树学习（二）"><meta property="og:url" content="http://tufusi.com/2019/12/02/%E3%80%90%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B%E3%80%91%E5%86%B3%E7%AD%96%E6%A0%91%E5%AD%A6%E4%B9%A0%EF%BC%88%E4%BA%8C%EF%BC%89/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【机器学习模型】决策树学习（二）"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/page/article_number_lot.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【机器学习模型】决策树学习（二） | ONE·PIECE</title><meta name="description" content="【机器学习模型】决策树学习（二）"><meta name="keywords" content="决策树,CART"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【机器学习模型】决策树学习（二）"><meta name="twitter:description" content="【机器学习模型】决策树学习（二）"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/page/article_number_lot.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【机器学习模型】决策树学习（二）"><meta property="og:url" content="http://tufusi.com/2019/12/02/%E3%80%90%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B%E3%80%91%E5%86%B3%E7%AD%96%E6%A0%91%E5%AD%A6%E4%B9%A0%EF%BC%88%E4%BA%8C%EF%BC%89/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【机器学习模型】决策树学习（二）"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/page/article_number_lot.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
 var t = Cookies.get("theme");
 if (autoChangeMode == '1'){
 const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -43,7 +43,7 @@ function activateLightMode(){
   if (document.querySelector('meta[name="theme-color"]') !== null){
   document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
   }
-}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2019/12/02/%E3%80%90%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B%E3%80%91%E5%86%B3%E7%AD%96%E6%A0%91%E5%AD%A6%E4%B9%A0%EF%BC%88%E4%BA%8C%EF%BC%89/"><link rel="prev" title="【论文笔记】A Tutorial on Support Vector Machines for Pattern Recognition" href="http://tufusi.com/2019/12/08/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91A-Tutorial-on-Support-Vector-Machines-for-Pattern-Recognition/"><link rel="next" title="【机器学习模型】决策树学习（一）" href="http://tufusi.com/2019/11/30/%E3%80%90%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B%E3%80%91%E5%86%B3%E7%AD%96%E6%A0%91%E5%AD%A6%E4%B9%A0%EF%BC%88%E4%B8%80%EF%BC%89/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2019/12/02/%E3%80%90%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B%E3%80%91%E5%86%B3%E7%AD%96%E6%A0%91%E5%AD%A6%E4%B9%A0%EF%BC%88%E4%BA%8C%EF%BC%89/"><link rel="prev" title="【论文笔记】A Tutorial on Support Vector Machines for Pattern Recognition" href="http://tufusi.com/2019/12/08/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91A-Tutorial-on-Support-Vector-Machines-for-Pattern-Recognition/"><link rel="next" title="【论文笔记】XGBoost: A Scalable Tree Boosting System" href="http://tufusi.com/2019/12/01/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91XGBoost-A-Scalable-Tree-Boosting-System/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
   root: '/',
   algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
   localSearch: undefined,
@@ -68,58 +68,63 @@ function activateLightMode(){
   medium_zoom: 'true',
   Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
   
-}</script></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> 重拾Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">63</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">65</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">7</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> 重拾Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#基础概念"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">基础概念</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#a、信息熵（Information-Entropy）"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">a、信息熵（Information Entropy）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#b、条件熵（Conditional-Entropy）"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">b、条件熵（Conditional Entropy）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#c、信息增益（Information-Gain）"><span class="toc_mobile_items-number">1.3.</span> <span class="toc_mobile_items-text">c、信息增益（Information Gain）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#决策树算法"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">决策树算法</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#ID3算法"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">ID3算法</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#核心思想："><span class="toc_mobile_items-number">2.1.1.</span> <span class="toc_mobile_items-text">核心思想：</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#决策树的生成"><span class="toc_mobile_items-number">2.1.2.</span> <span class="toc_mobile_items-text">决策树的生成</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#特征属性划分"><span class="toc_mobile_items-number">2.1.3.</span> <span class="toc_mobile_items-text">特征属性划分</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#不足之处"><span class="toc_mobile_items-number">2.1.4.</span> <span class="toc_mobile_items-text">不足之处</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#C4-5算法"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">C4.5算法</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#算法改进"><span class="toc_mobile_items-number">2.2.1.</span> <span class="toc_mobile_items-text">算法改进</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#案例说明"><span class="toc_mobile_items-number">2.2.2.</span> <span class="toc_mobile_items-text">案例说明</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#代码实现"><span class="toc_mobile_items-number">2.2.3.</span> <span class="toc_mobile_items-text">代码实现</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#优缺点"><span class="toc_mobile_items-number">2.2.4.</span> <span class="toc_mobile_items-text">优缺点</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#CART算法"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">CART算法</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#核心思想"><span class="toc_mobile_items-number">2.3.1.</span> <span class="toc_mobile_items-text">核心思想</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#算法释义"><span class="toc_mobile_items-number">2.3.2.</span> <span class="toc_mobile_items-text">算法释义</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#最优特征选择"><span class="toc_mobile_items-number">2.3.2.1.</span> <span class="toc_mobile_items-text">最优特征选择</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#连续特征-vs-离散特征"><span class="toc_mobile_items-number">2.3.2.2.</span> <span class="toc_mobile_items-text">连续特征 vs 离散特征</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#算法流程"><span class="toc_mobile_items-number">2.3.2.3.</span> <span class="toc_mobile_items-text">算法流程</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#关于剪枝"><span class="toc_mobile_items-number">2.3.2.4.</span> <span class="toc_mobile_items-text">关于剪枝</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#算法不足"><span class="toc_mobile_items-number">2.3.3.</span> <span class="toc_mobile_items-text">算法不足</span></a></li></ol></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#总结"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">总结</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#基础概念"><span class="toc-number">1.</span> <span class="toc-text">基础概念</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#a、信息熵（Information-Entropy）"><span class="toc-number">1.1.</span> <span class="toc-text">a、信息熵（Information Entropy）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#b、条件熵（Conditional-Entropy）"><span class="toc-number">1.2.</span> <span class="toc-text">b、条件熵（Conditional Entropy）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#c、信息增益（Information-Gain）"><span class="toc-number">1.3.</span> <span class="toc-text">c、信息增益（Information Gain）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#决策树算法"><span class="toc-number">2.</span> <span class="toc-text">决策树算法</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ID3算法"><span class="toc-number">2.1.</span> <span class="toc-text">ID3算法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#核心思想："><span class="toc-number">2.1.1.</span> <span class="toc-text">核心思想：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#决策树的生成"><span class="toc-number">2.1.2.</span> <span class="toc-text">决策树的生成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#特征属性划分"><span class="toc-number">2.1.3.</span> <span class="toc-text">特征属性划分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#不足之处"><span class="toc-number">2.1.4.</span> <span class="toc-text">不足之处</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#C4-5算法"><span class="toc-number">2.2.</span> <span class="toc-text">C4.5算法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#算法改进"><span class="toc-number">2.2.1.</span> <span class="toc-text">算法改进</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#案例说明"><span class="toc-number">2.2.2.</span> <span class="toc-text">案例说明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#代码实现"><span class="toc-number">2.2.3.</span> <span class="toc-text">代码实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#优缺点"><span class="toc-number">2.2.4.</span> <span class="toc-text">优缺点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CART算法"><span class="toc-number">2.3.</span> <span class="toc-text">CART算法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#核心思想"><span class="toc-number">2.3.1.</span> <span class="toc-text">核心思想</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#算法释义"><span class="toc-number">2.3.2.</span> <span class="toc-text">算法释义</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#最优特征选择"><span class="toc-number">2.3.2.1.</span> <span class="toc-text">最优特征选择</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#连续特征-vs-离散特征"><span class="toc-number">2.3.2.2.</span> <span class="toc-text">连续特征 vs 离散特征</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#算法流程"><span class="toc-number">2.3.2.3.</span> <span class="toc-text">算法流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#关于剪枝"><span class="toc-number">2.3.2.4.</span> <span class="toc-text">关于剪枝</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#算法不足"><span class="toc-number">2.3.3.</span> <span class="toc-text">算法不足</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#总结"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/page/article_number_lot.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【机器学习模型】决策树学习（二）</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2019-12-02<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2019-12-13</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">7k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 25 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>在上一篇，主要是学习周志华教授的西瓜书之后做的一些笔记，本篇开始转战算法及实际应用上面，希望能通过更深层次的探索，加深对决策树集成学习模型的理解。</p>
-<a id="more"></a>
-<h1 id="基础概念"><a href="#基础概念" class="headerlink" title="基础概念"></a>基础概念</h1><h2 id="a、信息熵（Information-Entropy）"><a href="#a、信息熵（Information-Entropy）" class="headerlink" title="a、信息熵（Information Entropy）"></a>a、信息熵（Information Entropy）</h2><p>假设X是一个有限值的离散随机变量，其概率分布满足：$p_i=P(X=x_i)，i=1,2,3…,n$</p>
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">基础概念</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#a%E3%80%81%E4%BF%A1%E6%81%AF%E7%86%B5%EF%BC%88Information-Entropy%EF%BC%89"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">a、信息熵（Information Entropy）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#b%E3%80%81%E6%9D%A1%E4%BB%B6%E7%86%B5%EF%BC%88Conditional-Entropy%EF%BC%89"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">b、条件熵（Conditional Entropy）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#c%E3%80%81%E4%BF%A1%E6%81%AF%E5%A2%9E%E7%9B%8A%EF%BC%88Information-Gain%EF%BC%89"><span class="toc_mobile_items-number">1.3.</span> <span class="toc_mobile_items-text">c、信息增益（Information Gain）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%86%B3%E7%AD%96%E6%A0%91%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">决策树算法</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#ID3%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">ID3算法</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3%EF%BC%9A"><span class="toc_mobile_items-number">2.1.1.</span> <span class="toc_mobile_items-text">核心思想：</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%86%B3%E7%AD%96%E6%A0%91%E7%9A%84%E7%94%9F%E6%88%90"><span class="toc_mobile_items-number">2.1.2.</span> <span class="toc_mobile_items-text">决策树的生成</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%89%B9%E5%BE%81%E5%B1%9E%E6%80%A7%E5%88%92%E5%88%86"><span class="toc_mobile_items-number">2.1.3.</span> <span class="toc_mobile_items-text">特征属性划分</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E4%B8%8D%E8%B6%B3%E4%B9%8B%E5%A4%84"><span class="toc_mobile_items-number">2.1.4.</span> <span class="toc_mobile_items-text">不足之处</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#C4-5%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">C4.5算法</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%AE%97%E6%B3%95%E6%94%B9%E8%BF%9B"><span class="toc_mobile_items-number">2.2.1.</span> <span class="toc_mobile_items-text">算法改进</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%A1%88%E4%BE%8B%E8%AF%B4%E6%98%8E"><span class="toc_mobile_items-number">2.2.2.</span> <span class="toc_mobile_items-text">案例说明</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">2.2.3.</span> <span class="toc_mobile_items-text">代码实现</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc_mobile_items-number">2.2.4.</span> <span class="toc_mobile_items-text">优缺点</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#CART%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">CART算法</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc_mobile_items-number">2.3.1.</span> <span class="toc_mobile_items-text">核心思想</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%AE%97%E6%B3%95%E9%87%8A%E4%B9%89"><span class="toc_mobile_items-number">2.3.2.</span> <span class="toc_mobile_items-text">算法释义</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%E6%9C%80%E4%BC%98%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9"><span class="toc_mobile_items-number">2.3.2.1.</span> <span class="toc_mobile_items-text">最优特征选择</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%E8%BF%9E%E7%BB%AD%E7%89%B9%E5%BE%81-vs-%E7%A6%BB%E6%95%A3%E7%89%B9%E5%BE%81"><span class="toc_mobile_items-number">2.3.2.2.</span> <span class="toc_mobile_items-text">连续特征 vs 离散特征</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B"><span class="toc_mobile_items-number">2.3.2.3.</span> <span class="toc_mobile_items-text">算法流程</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#%E5%85%B3%E4%BA%8E%E5%89%AA%E6%9E%9D"><span class="toc_mobile_items-number">2.3.2.4.</span> <span class="toc_mobile_items-text">关于剪枝</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%AE%97%E6%B3%95%E4%B8%8D%E8%B6%B3"><span class="toc_mobile_items-number">2.3.3.</span> <span class="toc_mobile_items-text">算法不足</span></a></li></ol></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E6%80%BB%E7%BB%93"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">总结</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5"><span class="toc-number">1.</span> <span class="toc-text">基础概念</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#a%E3%80%81%E4%BF%A1%E6%81%AF%E7%86%B5%EF%BC%88Information-Entropy%EF%BC%89"><span class="toc-number">1.1.</span> <span class="toc-text">a、信息熵（Information Entropy）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#b%E3%80%81%E6%9D%A1%E4%BB%B6%E7%86%B5%EF%BC%88Conditional-Entropy%EF%BC%89"><span class="toc-number">1.2.</span> <span class="toc-text">b、条件熵（Conditional Entropy）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#c%E3%80%81%E4%BF%A1%E6%81%AF%E5%A2%9E%E7%9B%8A%EF%BC%88Information-Gain%EF%BC%89"><span class="toc-number">1.3.</span> <span class="toc-text">c、信息增益（Information Gain）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%B3%E7%AD%96%E6%A0%91%E7%AE%97%E6%B3%95"><span class="toc-number">2.</span> <span class="toc-text">决策树算法</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ID3%E7%AE%97%E6%B3%95"><span class="toc-number">2.1.</span> <span class="toc-text">ID3算法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3%EF%BC%9A"><span class="toc-number">2.1.1.</span> <span class="toc-text">核心思想：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%B3%E7%AD%96%E6%A0%91%E7%9A%84%E7%94%9F%E6%88%90"><span class="toc-number">2.1.2.</span> <span class="toc-text">决策树的生成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%B9%E5%BE%81%E5%B1%9E%E6%80%A7%E5%88%92%E5%88%86"><span class="toc-number">2.1.3.</span> <span class="toc-text">特征属性划分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8D%E8%B6%B3%E4%B9%8B%E5%A4%84"><span class="toc-number">2.1.4.</span> <span class="toc-text">不足之处</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#C4-5%E7%AE%97%E6%B3%95"><span class="toc-number">2.2.</span> <span class="toc-text">C4.5算法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%97%E6%B3%95%E6%94%B9%E8%BF%9B"><span class="toc-number">2.2.1.</span> <span class="toc-text">算法改进</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A1%88%E4%BE%8B%E8%AF%B4%E6%98%8E"><span class="toc-number">2.2.2.</span> <span class="toc-text">案例说明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.2.3.</span> <span class="toc-text">代码实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc-number">2.2.4.</span> <span class="toc-text">优缺点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CART%E7%AE%97%E6%B3%95"><span class="toc-number">2.3.</span> <span class="toc-text">CART算法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">2.3.1.</span> <span class="toc-text">核心思想</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%97%E6%B3%95%E9%87%8A%E4%B9%89"><span class="toc-number">2.3.2.</span> <span class="toc-text">算法释义</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9C%80%E4%BC%98%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9"><span class="toc-number">2.3.2.1.</span> <span class="toc-text">最优特征选择</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%9E%E7%BB%AD%E7%89%B9%E5%BE%81-vs-%E7%A6%BB%E6%95%A3%E7%89%B9%E5%BE%81"><span class="toc-number">2.3.2.2.</span> <span class="toc-text">连续特征 vs 离散特征</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B"><span class="toc-number">2.3.2.3.</span> <span class="toc-text">算法流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%B3%E4%BA%8E%E5%89%AA%E6%9E%9D"><span class="toc-number">2.3.2.4.</span> <span class="toc-text">关于剪枝</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%97%E6%B3%95%E4%B8%8D%E8%B6%B3"><span class="toc-number">2.3.3.</span> <span class="toc-text">算法不足</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/page/article_number_lot.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【机器学习模型】决策树学习（二）</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2019-12-02<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-11</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">7.2k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 26 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>在上一篇，主要是学习周志华教授的西瓜书之后做的一些笔记，本篇开始转战算法及实际应用上面，希望能通过更深层次的探索，加深对决策树集成学习模型的理解。</p>
+<span id="more"></span>
+
+<h1 id="基础概念"><a href="#基础概念" class="headerlink" title="基础概念"></a>基础概念</h1><h2 id="a、信息熵（Information-Entropy）"><a href="#a、信息熵（Information-Entropy）" class="headerlink" title="a、信息熵（Information Entropy）"></a>a、信息熵（Information Entropy）</h2><p>假设X是一个有限值的离散随机变量，其概率分布满足：$p_i&#x3D;P(X&#x3D;x_i)，i&#x3D;1,2,3…,n$</p>
 <p>则随机变量X的熵等于：</p>
-<p>$Ent(X) = -\sum_{i=1}^{n}p_i\log_{2}{p_i}$</p>
+<p>$Ent(X) &#x3D; -\sum_{i&#x3D;1}^{n}p_i\log_{2}{p_i}$</p>
 <p>信息熵Ent(X)就是随机变量x的熵，<strong>表示随机变量不确定的度量</strong>，是对所有可能发生的事件产生的信息量的度量。</p>
 <p>从公式可知，<strong>随机变量的个数越多，状态数就越多，信息熵就越大，信息就越混乱。且当随机变量均匀分布时，熵最大。</strong></p>
 <p><strong>注意点：</strong> 熵只依赖于随机变量概率分布，与随机变量的取值无任何关系。</p>
-<p>示例讲解：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">考虑一个随机变量，可以有4种状态取值，并且每个状态值取得概率均等。那么:</span><br></pre></td></tr></table></figure><br><img alt="decision_tree_01.png" data-src="https://i.loli.net/2019/12/04/ypgPBwI4Uhj8bl6.png" class="lazyload"><br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">如果仍然具有4种可能状态的&#123;A,B,C,D&#125;4个随机变量，每个状态的各自概率为&#123;0.5,0.25,0.125,0.125&#125;，此时熵为：</span><br></pre></td></tr></table></figure><br><img alt="decision_tree_02.png" data-src="https://i.loli.net/2019/12/04/hpweXmu1aWKjD5U.png" class="lazyload"></p>
-<p>可以看到：<strong><em>非均匀分布比均匀分布的熵值要小</em></strong>。</p>
+<p>示例讲解：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">考虑一个随机变量，可以有4种状态取值，并且每个状态值取得概率均等。那么:</span><br></pre></td></tr></table></figure>
+<p><img alt="decision_tree_01.png" data-src="https://i.loli.net/2019/12/04/ypgPBwI4Uhj8bl6.png" class="lazyload"></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">如果仍然具有4种可能状态的&#123;A,B,C,D&#125;4个随机变量，每个状态的各自概率为&#123;0.5,0.25,0.125,0.125&#125;，此时熵为：</span><br></pre></td></tr></table></figure>
+<p><img alt="decision_tree_02.png" data-src="https://i.loli.net/2019/12/04/hpweXmu1aWKjD5U.png" class="lazyload"></p>
+<p>可以看到：<em><strong>非均匀分布比均匀分布的熵值要小</strong></em>。</p>
 <p><strong>证明0 ≤ Ent(X) ≤ logn</strong></p>
 <p>利用拉格朗日乘子法证明：</p>
-<p>因为 $p_1+p_2+…+p_n=1$</p>
+<p>因为 $p_1+p_2+…+p_n&#x3D;1$</p>
 <p>所以有</p>
-<p><strong>objective：</strong> $f(p_1,p_2,…,p_n)=-(p_1\log p_1+p_2\log p_2+⋯+p_n\log p_n)$</p>
-<p><strong>subject to：</strong> $g(p_1,p_2,…,p_n,λ)=p_1+p_2+…+p_n-1=0$</p>
+<p><strong>objective：</strong> $f(p_1,p_2,…,p_n)&#x3D;-(p_1\log p_1+p_2\log p_2+⋯+p_n\log p_n)$</p>
+<p><strong>subject to：</strong> $g(p_1,p_2,…,p_n,λ)&#x3D;p_1+p_2+…+p_n-1&#x3D;0$</p>
 <p>证明如下：</p>
 <p>&emsp;&emsp; 1、定义拉格朗日函数：</p>
-<p>$L(p_1,p_2,…p_n,λ)=-(p_1\log p_1+p_2\log p_2+⋯+p_n\log p_n)+λ(p_1+p_2+⋯+p_n-1)$</p>
+<p>$L(p_1,p_2,…p_n,λ)&#x3D;-(p_1\log p_1+p_2\log p_2+⋯+p_n\log p_n)+λ(p_1+p_2+⋯+p_n-1)$</p>
 <p>&emsp;&emsp; 2、$L(p_1,p_2,…p_n,λ)$ 分别对 $p_1,p_2,⋯,p_n,λ$求偏导数，并令偏导数等于0（求出极值）：</p>
-<p>$-(\log p_1+\log e) + λ = 0$</p>
-<p>$-(\log p_2+\log e) + λ = 0$</p>
+<p>$-(\log p_1+\log e) + λ &#x3D; 0$</p>
+<p>$-(\log p_2+\log e) + λ &#x3D; 0$</p>
 <p>……</p>
-<p>$-(\log p_n+\log e) + λ = 0$</p>
+<p>$-(\log p_n+\log e) + λ &#x3D; 0$</p>
 <p>&emsp;&emsp; 3、求出 $p_1,p_2,⋯,p_n$的值</p>
-<p>因为 $p_1+p_2+…+p_n-1=0$</p>
-<p>而上面n个式子均相等于0，只有：$p_1=p_2=…=p_n=\frac{1}{n}$</p>
+<p>因为 $p_1+p_2+…+p_n-1&#x3D;0$</p>
+<p>而上面n个式子均相等于0，只有：$p_1&#x3D;p_2&#x3D;…&#x3D;p_n&#x3D;\frac{1}{n}$</p>
 <p>代入目标函数得到：</p>
-<p>$f(\frac{1}{n},\frac{1}{n},…,\frac{1}{n})=-(\frac{1}{n}\log \frac{1}{n}+\frac{1}{n}\log \frac{1}{n}+⋯+\frac{1}{n}\log \frac{1}{n})=-\log(\frac{1}{n})=\log n$</p>
+<p>$f(\frac{1}{n},\frac{1}{n},…,\frac{1}{n})&#x3D;-(\frac{1}{n}\log \frac{1}{n}+\frac{1}{n}\log \frac{1}{n}+⋯+\frac{1}{n}\log \frac{1}{n})&#x3D;-\log(\frac{1}{n})&#x3D;\log n$</p>
 <p><strong>由此可证明</strong></p>
 <h2 id="b、条件熵（Conditional-Entropy）"><a href="#b、条件熵（Conditional-Entropy）" class="headerlink" title="b、条件熵（Conditional Entropy）"></a>b、条件熵（Conditional Entropy）</h2><p>假设Ent(Y|X)表示在随机变量X条件下的随机变量Y的不确定性，则</p>
-<p>$Ent(Y|X) = \sum_{i=1}^{n}p_iEnt(Y|X=x_i)，其中 p_i=P(X=x_i)$</p>
+<p>$Ent(Y|X) &#x3D; \sum_{i&#x3D;1}^{n}p_iEnt(Y|X&#x3D;x_i)，其中 p_i&#x3D;P(X&#x3D;x_i)$</p>
 <p>公式变形</p>
-<p>$Ent(Y|X) = -\sum_{i=1}^{n}p_i \sum_{j=1}^{m}P(Y=y_j|X=x_i)\log P(Y=y_j|X=x_i)$</p>
-<p>&emsp;&emsp;&emsp;&emsp;&ensp; $=-\sum_{i=1}^{n} \sum_{j=1}^{m}P(X,Y)\log P(Y=y_j|X=x_i)$</p>
-<p>&emsp;&emsp;&emsp;&emsp;&ensp; $=-\sum_{i,j=1}^{nm} P(X,Y)\log P(Y=y_j|X=x_i)，其中P(X,Y)是联合概率分布$</p>
-<p><strong>条件熵Ent(Y|X) = 联合熵Ent(X,Y) - 对应熵Ent(X)</strong> 证明如下：</p>
-<p>$Ent(X,Y) = -\sum_{i,j=1}^{nm} P(X,Y)\log P(X,Y)$</p>
-<p>&emsp;&emsp;&emsp;&emsp;&ensp;&ensp;$=-\sum_{i,j=1}^{nm} P(X,Y)\log P(Y=y_j|X=x_i)P(X=x_i)$</p>
-<p>&emsp;&emsp;&emsp;&emsp;&ensp;&ensp;$=-\sum_{i,j=1}^{nm} P(X,Y)\log P(Y=y_j|X=x_i)-\sum_{i,j=1}^{nm} P(X,Y)P(X=x_i)$</p>
-<p>&emsp;&emsp;&emsp;&emsp;&ensp;&ensp;$=Ent(Y|X)-\sum_{i,j=1}^{nm} P(X,Y)\log P(X=x_i)$</p>
-<p>&emsp;&emsp;&emsp;&emsp;&ensp;&ensp;$=Ent(Y|X)-\sum_{i=1}^{n}\sum_{j=1}^{m} P(X,Y)\log P(X=x_i)$</p>
-<p>&emsp;&emsp;&emsp;&emsp;&ensp;&ensp;$=Ent(Y|X)-\sum_{i=1}^{n}\log P(X=x_i)\sum_{j=1}^{m} P(X,Y)$</p>
-<p>&emsp;&emsp;&emsp;&emsp;&ensp;&ensp;$=Ent(Y|X)-\sum_{i=1}^{n}(\log P(X=x_i))P(X=x_i)$</p>
-<p>&emsp;&emsp;&emsp;&emsp;&ensp;&ensp;$=Ent(Y|X)-\sum_{i=1}^{n}P(X=x_i)\log P(X=x_i)$</p>
-<p>&emsp;&emsp;&emsp;&emsp;&ensp;&ensp;$=Ent(Y|X)+Ent(X)$</p>
+<p>$Ent(Y|X) &#x3D; -\sum_{i&#x3D;1}^{n}p_i \sum_{j&#x3D;1}^{m}P(Y&#x3D;y_j|X&#x3D;x_i)\log P(Y&#x3D;y_j|X&#x3D;x_i)$</p>
+<p>&emsp;&emsp;&emsp;&emsp;&ensp; $&#x3D;-\sum_{i&#x3D;1}^{n} \sum_{j&#x3D;1}^{m}P(X,Y)\log P(Y&#x3D;y_j|X&#x3D;x_i)$</p>
+<p>&emsp;&emsp;&emsp;&emsp;&ensp; $&#x3D;-\sum_{i,j&#x3D;1}^{nm} P(X,Y)\log P(Y&#x3D;y_j|X&#x3D;x_i)，其中P(X,Y)是联合概率分布$</p>
+<p><strong>条件熵Ent(Y|X) &#x3D; 联合熵Ent(X,Y) - 对应熵Ent(X)</strong> 证明如下：</p>
+<p>$Ent(X,Y) &#x3D; -\sum_{i,j&#x3D;1}^{nm} P(X,Y)\log P(X,Y)$</p>
+<p>&emsp;&emsp;&emsp;&emsp;&ensp;&ensp;$&#x3D;-\sum_{i,j&#x3D;1}^{nm} P(X,Y)\log P(Y&#x3D;y_j|X&#x3D;x_i)P(X&#x3D;x_i)$</p>
+<p>&emsp;&emsp;&emsp;&emsp;&ensp;&ensp;$&#x3D;-\sum_{i,j&#x3D;1}^{nm} P(X,Y)\log P(Y&#x3D;y_j|X&#x3D;x_i)-\sum_{i,j&#x3D;1}^{nm} P(X,Y)P(X&#x3D;x_i)$</p>
+<p>&emsp;&emsp;&emsp;&emsp;&ensp;&ensp;$&#x3D;Ent(Y|X)-\sum_{i,j&#x3D;1}^{nm} P(X,Y)\log P(X&#x3D;x_i)$</p>
+<p>&emsp;&emsp;&emsp;&emsp;&ensp;&ensp;$&#x3D;Ent(Y|X)-\sum_{i&#x3D;1}^{n}\sum_{j&#x3D;1}^{m} P(X,Y)\log P(X&#x3D;x_i)$</p>
+<p>&emsp;&emsp;&emsp;&emsp;&ensp;&ensp;$&#x3D;Ent(Y|X)-\sum_{i&#x3D;1}^{n}\log P(X&#x3D;x_i)\sum_{j&#x3D;1}^{m} P(X,Y)$</p>
+<p>&emsp;&emsp;&emsp;&emsp;&ensp;&ensp;$&#x3D;Ent(Y|X)-\sum_{i&#x3D;1}^{n}(\log P(X&#x3D;x_i))P(X&#x3D;x_i)$</p>
+<p>&emsp;&emsp;&emsp;&emsp;&ensp;&ensp;$&#x3D;Ent(Y|X)-\sum_{i&#x3D;1}^{n}P(X&#x3D;x_i)\log P(X&#x3D;x_i)$</p>
+<p>&emsp;&emsp;&emsp;&emsp;&ensp;&ensp;$&#x3D;Ent(Y|X)+Ent(X)$</p>
 <p>得到证明</p>
 <h2 id="c、信息增益（Information-Gain）"><a href="#c、信息增益（Information-Gain）" class="headerlink" title="c、信息增益（Information Gain）"></a>c、信息增益（Information Gain）</h2><p><strong>又称相对熵（Relative Entropy）</strong></p>
 <p>百度百科中介绍，在概率论和信息论中，信息增益是非对称的，它是度量两个概率分布P和Q两者之间的差异性的。</p>
-<p>假设$p_i = P(X=x_i), q_i = Q(X=x_i)$ 是离散随机变量X中两个概率分布，则p对q的信息增益为：</p>
-<p>$D_{KL}(p||q) = \sum_{i=1}^{n}p_i\log\frac{p_i}{q_i}$</p>
-<p>&emsp;&emsp;&emsp;&emsp;&ensp; $=Ent_{p_i}\log\frac{p_i}{q_i}$</p>
+<p>假设$p_i &#x3D; P(X&#x3D;x_i), q_i &#x3D; Q(X&#x3D;x_i)$ 是离散随机变量X中两个概率分布，则p对q的信息增益为：</p>
+<p>$D_{KL}(p||q) &#x3D; \sum_{i&#x3D;1}^{n}p_i\log\frac{p_i}{q_i}$</p>
+<p>&emsp;&emsp;&emsp;&emsp;&ensp; $&#x3D;Ent_{p_i}\log\frac{p_i}{q_i}$</p>
 <p><strong>性质：</strong></p>
 <ul>
 <li><p>如果P、Q分布概率相等，则相对熵为0</p>
@@ -141,18 +146,19 @@ function activateLightMode(){
 3、对划分的子结点按照步骤一反复迭代获得树的所有内部结点
 
 4、根据根结点、内部结点以及叶结点关系构造决策树
-</code></pre><h3 id="特征属性划分"><a href="#特征属性划分" class="headerlink" title="特征属性划分"></a>特征属性划分</h3><p>如果一个特征属性A，它包含的信息越混乱，那么这个作为特征划分就越不稳定，也就是<strong>信息增益越大，那么特征A的信息就越稳定，其代表的“纯度提升”也就越大，越能作为划分标准</strong>。</p>
+</code></pre>
+<h3 id="特征属性划分"><a href="#特征属性划分" class="headerlink" title="特征属性划分"></a>特征属性划分</h3><p>如果一个特征属性A，它包含的信息越混乱，那么这个作为特征划分就越不稳定，也就是<strong>信息增益越大，那么特征A的信息就越稳定，其代表的“纯度提升”也就越大，越能作为划分标准</strong>。</p>
 <p>简单写下</p>
 <blockquote>
 <p>&emsp;数据集 $D$ 的信息熵表示如下（其中 $C_k$ 表示集合 $D$ 中属于第 k 类分类样本的子集）</p>
-<p>&emsp;&emsp;&emsp;&emsp;$E(D) = -\sum_{k=1}^{K}\frac{|C_k|}{|D|} \log_2 \frac{|C_k|}{|D|}$</p>
+<p>&emsp;&emsp;&emsp;&emsp;$E(D) &#x3D; -\sum_{k&#x3D;1}^{K}\frac{|C_k|}{|D|} \log_2 \frac{|C_k|}{|D|}$</p>
 <p>&emsp;对于某特征A，数据集 $D$ 的条件熵 $E(D|A)$为：</p>
-<p>&emsp;&emsp;&emsp;&emsp;$E(D|A) = \sum_{i=1}^{N}\frac{|D_i|}{|D|} E(D_i)$</p>
-<p>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;$=\sum_{i=1}^{N}\frac{|D_i|}{|D|} (\sum_{k=1}^{K}\frac{|D_{ik}|}{|D_i|} \log_2 \frac{|D_{ik}|}{|D_i|})$</p>
+<p>&emsp;&emsp;&emsp;&emsp;$E(D|A) &#x3D; \sum_{i&#x3D;1}^{N}\frac{|D_i|}{|D|} E(D_i)$</p>
+<p>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;$&#x3D;\sum_{i&#x3D;1}^{N}\frac{|D_i|}{|D|} (\sum_{k&#x3D;1}^{K}\frac{|D_{ik}|}{|D_i|} \log_2 \frac{|D_{ik}|}{|D_i|})$</p>
 <p>&emsp;其中：$D_i$ 表示数据集 $D$ 中特征 $A$ 取第 i 值的样本子集</p>
 <p>&emsp;&emsp;&emsp;&emsp;$D_{ik}$ 表示样本子集 $D_i$ 中属于第 k 类分类的样本子集</p>
-<p>&emsp;那么：信息增益 = 信息熵 - 条件熵</p>
-<p>&emsp;&emsp;&emsp;&emsp; $Gain(D, A) = E(D) - E(D|A)$</p>
+<p>&emsp;那么：信息增益 &#x3D; 信息熵 - 条件熵</p>
+<p>&emsp;&emsp;&emsp;&emsp; $Gain(D, A) &#x3D; E(D) - E(D|A)$</p>
 </blockquote>
 <h3 id="不足之处"><a href="#不足之处" class="headerlink" title="不足之处"></a>不足之处</h3><ul>
 <li>没有剪枝算法，因此特别容易overfit（主要由噪声和缺乏代表性样本导致）</li>
@@ -178,16 +184,16 @@ function activateLightMode(){
 <p>&emsp;&emsp;&emsp;&emsp;&emsp;$n_i(t)$ 为某结点 $t$ 中类别 $i$ 的所有样本数</p>
 <p>&emsp;&emsp;&emsp;&emsp;&emsp;$e(t)$ 为某结点 $t$ 中不属于该结点 $t$ 所标识类别的样本数（用来计算错误率）</p>
 <p>&emsp;开始剪枝</p>
-<p>&emsp;&emsp;&emsp;&emsp;&emsp;当前结点被剪枝后在训练集上的错误率 $r(t) = \frac{e(t)}{n(t)}$</p>
+<p>&emsp;&emsp;&emsp;&emsp;&emsp;当前结点被剪枝后在训练集上的错误率 $r(t) &#x3D; \frac{e(t)}{n(t)}$</p>
 <p>&emsp;更进一步，把错误分布当成二项分布，可得</p>
-<p>&emsp;&emsp;&emsp;&emsp;&emsp;<font size="5px">$\color{Red}{r(T_t) = \frac{\sum_{c \in \zeta _{T_t} }^{}e(c)}{\sum_{c \in \zeta _{T_t} }^{}n(c)}}$</font>&emsp;其中 $c$ 为 $t$ 结点的叶子结点 &emsp; $\zeta _{T_t}$ 为 $t$ 的所有叶子结点数目</p>
+<p>&emsp;&emsp;&emsp;&emsp;&emsp;<font size="5px">$\color{Red}{r(T_t) &#x3D; \frac{\sum_{c \in \zeta <em>{T_t} }^{}e(c)}{\sum</em>{c \in \zeta _{T_t} }^{}n(c)}}$</font>&emsp;其中 $c$ 为 $t$ 结点的叶子结点 &emsp; $\zeta _{T_t}$ 为 $t$ 的所有叶子结点数目</p>
 <p>但是上面这个二项分布式子是有偏差的。这里面需要知道二项分布的正态逼近概念，为了修正这个概率偏差，我们用连续概率分布近似离散概率分布，在计算概率之前我们把每一个错误的结点样本数据都增加0.5，值0.5就是称为二项概率分布近似的连续性修正因子。</p>
 <p>&emsp;于是有</p>
 <p>&emsp;&emsp;&emsp;&emsp;&emsp;$r’(t) \approx \frac{e(t) + \frac{1}{2}}{n(t)}$</p>
-<p>&emsp;&emsp;&emsp;&emsp;&emsp;<font size="5px">$\color{Red}{r’(T_t) \approx \frac{\sum_{c \in \zeta_{T_t}}[e(c) + \frac{1}{2}]}{\sum_{c \in \zeta _{T_t} }n(c)} = \frac{\sum_{c \in \zeta_{T_t}}e(c) + \frac{|\zeta_{T_t}|}{2}}{\sum_{c \in \zeta _{T_t} }^{}n(c)}}$</font></p>
-<p>&emsp;考虑 $r’(T_t)$ 的标准差，由于偏差近似看成二项式分布，根据 $\mu = np，\sigma ^2= np(1-p)$&emsp;其中 $p$ = 每次试验成功的概率</p>
+<p>&emsp;&emsp;&emsp;&emsp;&emsp;<font size="5px">$\color{Red}{r’(T_t) \approx \frac{\sum_{c \in \zeta_{T_t}}[e(c) + \frac{1}{2}]}{\sum_{c \in \zeta <em>{T_t} }n(c)} &#x3D; \frac{\sum</em>{c \in \zeta_{T_t}}e(c) + \frac{|\zeta_{T_t}|}{2}}{\sum_{c \in \zeta _{T_t} }^{}n(c)}}$</font></p>
+<p>&emsp;考虑 $r’(T_t)$ 的标准差，由于偏差近似看成二项式分布，根据 $\mu &#x3D; np，\sigma ^2&#x3D; np(1-p)$&emsp;其中 $p$ &#x3D; 每次试验成功的概率</p>
 <p>&emsp;这里基于分母一定，可以简化只求分子错误数的偏导，可得</p>
-<p>&emsp;&emsp;&emsp;&emsp;&emsp;$SE(e’(T_t)) = [\frac{e’(T_t) \cdot (n(t) - e’(T_t))}{n(t)}] ^{\frac{1}{2}}$</p>
+<p>&emsp;&emsp;&emsp;&emsp;&emsp;$SE(e’(T_t)) &#x3D; [\frac{e’(T_t) \cdot (n(t) - e’(T_t))}{n(t)}] ^{\frac{1}{2}}$</p>
 <p>&emsp;因此，只要结点满足：</p>
 <p>&emsp;&emsp;&emsp;&emsp;&emsp;<strong>$e’(t) \leq e’(T_t) + SE(e’(T_t))$</strong></p>
 <p>&emsp;$T_t$ 结点就可以被剪枝</p>
@@ -201,8 +207,7 @@ function activateLightMode(){
 <li><p>这种剪枝有可能会出现剪枝失败的情况</p>
 </li>
 </ul>
-<h3 id="案例说明"><a href="#案例说明" class="headerlink" title="案例说明"></a>案例说明</h3><p>接下来展示一组数据集及其标签，该数据集包含四个属性，$A = \{天气，温度，湿度，风速\}$，类别标签包含两个，$L = \{进行，取消\}$</p>
-<div class="table-container">
+<h3 id="案例说明"><a href="#案例说明" class="headerlink" title="案例说明"></a>案例说明</h3><p>接下来展示一组数据集及其标签，该数据集包含四个属性，$A &#x3D; {天气，温度，湿度，风速}$，类别标签包含两个，$L &#x3D; {进行，取消}$</p>
 <table>
 <thead>
 <tr>
@@ -213,8 +218,7 @@ function activateLightMode(){
 <th>活动</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>晴</td>
 <td>炎热</td>
 <td>高</td>
@@ -312,13 +316,10 @@ function activateLightMode(){
 <td>强</td>
 <td>取消</td>
 </tr>
-</tbody>
-</table>
-</div>
-<p>根据天气的三种状态 $\{晴，阴，雨\}$，汇总后划分成如下三个子表格，同样根据温度、湿度、风速的属性状态，也可以划分（考虑页面空间不再划分）。</p>
+</tbody></table>
+<p>根据天气的三种状态 ${晴，阴，雨}$，汇总后划分成如下三个子表格，同样根据温度、湿度、风速的属性状态，也可以划分（考虑页面空间不再划分）。</p>
 <blockquote>
 <p>表格1 —— 晴                      </p>
-<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -328,8 +329,7 @@ function activateLightMode(){
 <th>活动</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>炎热</td>
 <td>高</td>
 <td>弱</td>
@@ -359,11 +359,8 @@ function activateLightMode(){
 <td>强</td>
 <td>进行</td>
 </tr>
-</tbody>
-</table>
-</div>
+</tbody></table>
 <p>表格2 —— 阴  </p>
-<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -373,8 +370,7 @@ function activateLightMode(){
 <th>活动</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>炎热</td>
 <td>高</td>
 <td>弱</td>
@@ -398,11 +394,8 @@ function activateLightMode(){
 <td>弱</td>
 <td>进行</td>
 </tr>
-</tbody>
-</table>
-</div>
+</tbody></table>
 <p>表格3 —— 雨                      </p>
-<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -412,8 +405,7 @@ function activateLightMode(){
 <th>活动</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>适中</td>
 <td>高</td>
 <td>弱</td>
@@ -443,51 +435,52 @@ function activateLightMode(){
 <td>强</td>
 <td>取消</td>
 </tr>
-</tbody>
-</table>
-</div>
+</tbody></table>
 </blockquote>
 <p>步骤一 计算类别信息熵</p>
 <p>类别（进行 &amp; 取消）信息熵：表示所有样本中各种类别出现的不确定性之和。</p>
 <blockquote>
-<p>&emsp;$Info(D) = -(\frac{9}{14}\log_2 \frac{9}{14} + \frac{5}{14}\log_2 \frac{5}{14}) = 0.940$</p>
+<p>&emsp;$Info(D) &#x3D; -(\frac{9}{14}\log_2 \frac{9}{14} + \frac{5}{14}\log_2 \frac{5}{14}) &#x3D; 0.940$</p>
 </blockquote>
 <p>步骤二 计算每个属性的信息熵</p>
 <p>每种属性的信息熵相当于一个条件熵，表示的是在某种属性条件下，各种类别出现的不确定性之和。属性的信息熵越大，表示这个属性中拥有的样本类别越不纯（该属性类别可取值越多）。</p>
 <blockquote>
-<p>&emsp;$Info(天气) = \frac{5}{14}(-\frac{2}{5}\log_2 \frac{2}{5} - \frac{3}{5}\log_2 \frac{3}{5}) + \frac{4}{14}(-\frac{4}{4}\log_2 \frac{4}{4} - \frac{0}{4}\log_2 \frac{0}{4}) + \frac{5}{14}(-\frac{3}{5}\log_2 \frac{3}{5} - \frac{2}{5}\log_2 \frac{2}{5}) = 0.694$</p>
-<p>&emsp;$Info(温度) = \frac{4}{14}(-\frac{2}{4}\log_2 \frac{2}{4} - \frac{2}{4}\log_2 \frac{2}{4}) + \frac{6}{14}(-\frac{4}{6}\log_2 \frac{4}{6} - \frac{2}{6}\log_2 \frac{2}{6}) + \frac{4}{14}(-\frac{3}{4}\log_2 \frac{3}{4} - \frac{1}{4}\log_2 \frac{1}{4}) = 0.911$</p>
-<p>&emsp;$Info(湿度) = \frac{7}{14}(-\frac{3}{7}\log_2 \frac{3}{7} - \frac{4}{7}\log_2 \frac{4}{7}) + \frac{7}{14}(-\frac{6}{7}\log_2 \frac{6}{7} - \frac{1}{7}\log_2 \frac{1}{7}) = 0.789$</p>
-<p>&emsp;$Info(风速) = \frac{8}{14}(-\frac{6}{8}\log_2 \frac{6}{8} - \frac{2}{8}\log_2 \frac{2}{8}) + \frac{6}{14}(-\frac{3}{6}\log_2 \frac{3}{6} - \frac{3}{6}\log_2 \frac{3}{6}) = 0.892$</p>
+<p>&emsp;$Info(天气) &#x3D; \frac{5}{14}(-\frac{2}{5}\log_2 \frac{2}{5} - \frac{3}{5}\log_2 \frac{3}{5}) + \frac{4}{14}(-\frac{4}{4}\log_2 \frac{4}{4} - \frac{0}{4}\log_2 \frac{0}{4}) + \frac{5}{14}(-\frac{3}{5}\log_2 \frac{3}{5} - \frac{2}{5}\log_2 \frac{2}{5}) &#x3D; 0.694$</p>
+<p>&emsp;$Info(温度) &#x3D; \frac{4}{14}(-\frac{2}{4}\log_2 \frac{2}{4} - \frac{2}{4}\log_2 \frac{2}{4}) + \frac{6}{14}(-\frac{4}{6}\log_2 \frac{4}{6} - \frac{2}{6}\log_2 \frac{2}{6}) + \frac{4}{14}(-\frac{3}{4}\log_2 \frac{3}{4} - \frac{1}{4}\log_2 \frac{1}{4}) &#x3D; 0.911$</p>
+<p>&emsp;$Info(湿度) &#x3D; \frac{7}{14}(-\frac{3}{7}\log_2 \frac{3}{7} - \frac{4}{7}\log_2 \frac{4}{7}) + \frac{7}{14}(-\frac{6}{7}\log_2 \frac{6}{7} - \frac{1}{7}\log_2 \frac{1}{7}) &#x3D; 0.789$</p>
+<p>&emsp;$Info(风速) &#x3D; \frac{8}{14}(-\frac{6}{8}\log_2 \frac{6}{8} - \frac{2}{8}\log_2 \frac{2}{8}) + \frac{6}{14}(-\frac{3}{6}\log_2 \frac{3}{6} - \frac{3}{6}\log_2 \frac{3}{6}) &#x3D; 0.892$</p>
 </blockquote>
 <p>步骤三 计算信息增益</p>
-<p>信息增益（Infomation Gain）= 信息熵 - 条件熵，表示信息不确定性减少程度，如果一个属性的信息增益越大，那么信息不确定性减少程度就越大，就表示用这个属性进行样本划分可以更好的减少划分后样本的不确定性。简单讲，选择该属性可以更快更好的完成目标分类任务。（这一步其实ID3算法的特征选择）</p>
+<p>信息增益（Infomation Gain）&#x3D; 信息熵 - 条件熵，表示信息不确定性减少程度，如果一个属性的信息增益越大，那么信息不确定性减少程度就越大，就表示用这个属性进行样本划分可以更好的减少划分后样本的不确定性。简单讲，选择该属性可以更快更好的完成目标分类任务。（这一步其实ID3算法的特征选择）</p>
 <blockquote>
-<p>&emsp;$Gain(天气) = Info(D) - Info(天气) = 0.940 - 0.694 = 0.246$</p>
-<p>&emsp;$Gain(温度) = Info(D) - Info(温度) = 0.940 - 0.911 = 0.029$</p>
-<p>&emsp;$Gain(湿度) = Info(D) - Info(湿度) = 0.940 - 0.789 = 0.151$</p>
-<p>&emsp;$Gain(风速) = Info(D) - Info(风速) = 0.940 - 0.892 = 0.048$</p>
+<p>&emsp;$Gain(天气) &#x3D; Info(D) - Info(天气) &#x3D; 0.940 - 0.694 &#x3D; 0.246$</p>
+<p>&emsp;$Gain(温度) &#x3D; Info(D) - Info(温度) &#x3D; 0.940 - 0.911 &#x3D; 0.029$</p>
+<p>&emsp;$Gain(湿度) &#x3D; Info(D) - Info(湿度) &#x3D; 0.940 - 0.789 &#x3D; 0.151$</p>
+<p>&emsp;$Gain(风速) &#x3D; Info(D) - Info(风速) &#x3D; 0.940 - 0.892 &#x3D; 0.048$</p>
 </blockquote>
 <p>步骤四 计算属性分裂信息度量</p>
-<p>用分裂信息度量来考虑某种属性进行分裂时分支的数量信息和尺寸信息，这也称为属性的内在信息（Intrinsic information ），而信息增益率（Information Gain Ratio） = 信息增益 / 内在信息。因此，属性的重要性反而随着内在信息量的增大而变得不那么重要。（这一步是C4.5在ID3算法的基础上进行了改造，其实就是信息增益权重熵）</p>
+<p>用分裂信息度量来考虑某种属性进行分裂时分支的数量信息和尺寸信息，这也称为属性的内在信息（Intrinsic information ），而信息增益率（Information Gain Ratio） &#x3D; 信息增益 &#x2F; 内在信息。因此，属性的重要性反而随着内在信息量的增大而变得不那么重要。（这一步是C4.5在ID3算法的基础上进行了改造，其实就是信息增益权重熵）</p>
 <blockquote>
-<p>&emsp;$Intri(天气) = -\frac{5}{14}\log_2 \frac{5}{14} -\frac{5}{14}\log_2 \frac{5}{14} -\frac{4}{14}\log_2 \frac{4}{14} = 1.577$ &emsp;//天气3种状态取值</p>
-<p>&emsp;$Intri(温度) = -\frac{4}{14}\log_2 \frac{4}{14} -\frac{6}{14}\log_2 \frac{6}{14} -\frac{4}{14}\log_2 \frac{4}{14} = 1.556$ &emsp;//温度3种状态取值</p>
-<p>&emsp;$Intri(湿度) = -\frac{7}{14}\log_2 \frac{7}{14} -\frac{7}{14}\log_2 \frac{7}{14} = 1.000$ &emsp;//湿度2种状态取值</p>
-<p>&emsp;$Intri(风速) = -\frac{8}{14}\log_2 \frac{8}{14} -\frac{6}{14}\log_2 \frac{6}{14} = 0.985$ &emsp;//风速2种状态取值</p>
+<p>&emsp;$Intri(天气) &#x3D; -\frac{5}{14}\log_2 \frac{5}{14} -\frac{5}{14}\log_2 \frac{5}{14} -\frac{4}{14}\log_2 \frac{4}{14} &#x3D; 1.577$ &emsp;&#x2F;&#x2F;天气3种状态取值</p>
+<p>&emsp;$Intri(温度) &#x3D; -\frac{4}{14}\log_2 \frac{4}{14} -\frac{6}{14}\log_2 \frac{6}{14} -\frac{4}{14}\log_2 \frac{4}{14} &#x3D; 1.556$ &emsp;&#x2F;&#x2F;温度3种状态取值</p>
+<p>&emsp;$Intri(湿度) &#x3D; -\frac{7}{14}\log_2 \frac{7}{14} -\frac{7}{14}\log_2 \frac{7}{14} &#x3D; 1.000$ &emsp;&#x2F;&#x2F;湿度2种状态取值</p>
+<p>&emsp;$Intri(风速) &#x3D; -\frac{8}{14}\log_2 \frac{8}{14} -\frac{6}{14}\log_2 \frac{6}{14} &#x3D; 0.985$ &emsp;&#x2F;&#x2F;风速2种状态取值</p>
 </blockquote>
-<p>步骤五 计算信息增益率（Information Gain Ratio， IGR）&emsp;$IGR = Gain / Intri$</p>
+<p>步骤五 计算信息增益率（Information Gain Ratio， IGR）&emsp;$IGR &#x3D; Gain &#x2F; Intri$</p>
 <blockquote>
-<p>&emsp;$IGR(天气) = Gain(天气) / Intri(天气) = \frac{0.246}{1.577} = 0.155$</p>
-<p>&emsp;$IGR(温度) = Gain(温度) / Intri(温度) = \frac{0.029}{1.556} = 0.0186$</p>
-<p>&emsp;$IGR(湿度) = Gain(湿度) / Intri(湿度) = \frac{0.151}{1.000} = 0.151$</p>
-<p>&emsp;$IGR(风速) = Gain(风速) / Intri(风速) = \frac{0.048}{0.985} = 0.048$</p>
+<p>&emsp;$IGR(天气) &#x3D; Gain(天气) &#x2F; Intri(天气) &#x3D; \frac{0.246}{1.577} &#x3D; 0.155$</p>
+<p>&emsp;$IGR(温度) &#x3D; Gain(温度) &#x2F; Intri(温度) &#x3D; \frac{0.029}{1.556} &#x3D; 0.0186$</p>
+<p>&emsp;$IGR(湿度) &#x3D; Gain(湿度) &#x2F; Intri(湿度) &#x3D; \frac{0.151}{1.000} &#x3D; 0.151$</p>
+<p>&emsp;$IGR(风速) &#x3D; Gain(风速) &#x2F; Intri(风速) &#x3D; \frac{0.048}{0.985} &#x3D; 0.048$</p>
 </blockquote>
 <p><strong>结论</strong></p>
-<p>因为天气的信息增益率最大，因此选天气作为划分属性。划分之后，当 天气 = “阴”，类别标签只有一种情况（最纯），所以把 天气 =“阴” 这一分枝结点定义为叶子结点，继续重复上述1~5步骤，选择不“纯”的结点划分。至此，C4.5算法的计算过程就完成了，一棵树也就构建出来了。</p>
-<p>写一下伪代码大致流程<br><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">while</span> (当前结点可划分)</span><br><span class="line">    (<span class="number">1</span>) 计算当前结点的类别信息熵 Info(D) （以类别取值计算）</span><br><span class="line">    (<span class="number">2</span>) 计算当前结点的各个属性信息熵 Info(X) （以属性取值下各类别取值计算）</span><br><span class="line">    (<span class="number">3</span>) 计算各个属性的信息增益 Gain(X) = Info(D) - Info(X) </span><br><span class="line">    (<span class="number">4</span>) 计算各个属性的分类信息度量 Intri(X) （以属性取值计算）</span><br><span class="line">    (<span class="number">5</span>) 计算各个属性的信息增益率 IGR(X) = Gain(X) / Intri(X)</span><br><span class="line">end <span class="keyword">while</span></span><br><span class="line">设置当前结点为叶子结点</span><br></pre></td></tr></table></figure></p>
+<p>因为天气的信息增益率最大，因此选天气作为划分属性。划分之后，当 天气 &#x3D; “阴”，类别标签只有一种情况（最纯），所以把 天气 &#x3D;“阴” 这一分枝结点定义为叶子结点，继续重复上述1~5步骤，选择不“纯”的结点划分。至此，C4.5算法的计算过程就完成了，一棵树也就构建出来了。</p>
+<p>写一下伪代码大致流程</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">while</span> (当前结点可划分)</span><br><span class="line">    (<span class="number">1</span>) 计算当前结点的类别信息熵 Info(D) （以类别取值计算）</span><br><span class="line">    (<span class="number">2</span>) 计算当前结点的各个属性信息熵 Info(X) （以属性取值下各类别取值计算）</span><br><span class="line">    (<span class="number">3</span>) 计算各个属性的信息增益 Gain(X) = Info(D) - Info(X) </span><br><span class="line">    (<span class="number">4</span>) 计算各个属性的分类信息度量 Intri(X) （以属性取值计算）</span><br><span class="line">    (<span class="number">5</span>) 计算各个属性的信息增益率 IGR(X) = Gain(X) / Intri(X)</span><br><span class="line">end <span class="keyword">while</span></span><br><span class="line">设置当前结点为叶子结点</span><br></pre></td></tr></table></figure>
+
 <h3 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h3><p>【备注】后面抽空补上</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></figure>
+
 <h3 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h3><ul>
 <li><p>优点</p>
 <p>分类规则易于理解，划分准确度高。</p>
@@ -502,23 +495,24 @@ function activateLightMode(){
 <p>CART分类树算法使用了<strong>基尼系数来代替增益率</strong>，而基尼系数则代表了模型的不纯度，<font color="#A55858">基尼系数越大，纯度就越低，特征越不能代表划分标准。这和ID3里的信息增益以及C4.5里的增益率是相反的</font>。</p>
 <p>CART算法主要有以下两步</p>
 <ul>
-<li><strong>1、决策树生成：</strong> 基于训练数据集生成决策树，生成的决策树尽可能覆盖各种情形。</li>
-</ul>
-<ul>
-<li><strong>2、决策树剪枝：</strong> 用验证集对已生成的决策树进行剪枝，选择最优子树，而剪枝的标准就是损失函数达到最小。</li>
+<li><p><strong>1、决策树生成：</strong> 基于训练数据集生成决策树，生成的决策树尽可能覆盖各种情形。</p>
+</li>
+<li><p><strong>2、决策树剪枝：</strong> 用验证集对已生成的决策树进行剪枝，选择最优子树，而剪枝的标准就是损失函数达到最小。</p>
+</li>
 </ul>
 <h3 id="算法释义"><a href="#算法释义" class="headerlink" title="算法释义"></a>算法释义</h3><h4 id="最优特征选择"><a href="#最优特征选择" class="headerlink" title="最优特征选择"></a>最优特征选择</h4><blockquote>
 <p>假设一数据集有 $k$ 个类别，第 $k$ 个类别的概率为 $p_k$ ，那么概率分布的基尼系数为：</p>
-<p>&emsp;&emsp;&emsp;$Gini(p) = \sum_{k=1}^{K} p_k(1-p_k) = 1-\sum_{k=1}^{K} p_k ^2$</p>
+<p>&emsp;&emsp;&emsp;$Gini(p) &#x3D; \sum_{k&#x3D;1}^{K} p_k(1-p_k) &#x3D; 1-\sum_{k&#x3D;1}^{K} p_k ^2$</p>
 <p>如果是二分类问题，假设第一个样本的输出概率为 $p$，那么概率分布的基尼系数为：</p>
-<p>&emsp;&emsp;&emsp;$Gini(p) = 2p(1-p)$</p>
+<p>&emsp;&emsp;&emsp;$Gini(p) &#x3D; 2p(1-p)$</p>
 <p>现在有一样本 $D$，样本数为 $|D|$，假设有 $K$ 个类别，第 $k$ 个类别样本数为 $C_k$，则样本 $D$ 的基尼系数为：</p>
-<p>&emsp;&emsp;&emsp;$Gini(D) = 1-\sum_{k=1}^{K} (\frac{|C_k|}{|D|})^2$</p>
+<p>&emsp;&emsp;&emsp;$Gini(D) &#x3D; 1-\sum_{k&#x3D;1}^{K} (\frac{|C_k|}{|D|})^2$</p>
 <p>对于样本 $D$，根据特征A的某个值a，把样本 $D$ 分成 $D_1$ 和 $D_2$，则在特征A的条件下，样本 $D$ 的基尼系数为：</p>
-<p>&emsp;&emsp;&emsp;$Gini(D, A) = \frac{D_1}{D} Gini(D_1) + \frac{D_2}{D} Gini(D_2)$</p>
+<p>&emsp;&emsp;&emsp;$Gini(D, A) &#x3D; \frac{D_1}{D} Gini(D_1) + \frac{D_2}{D} Gini(D_2)$</p>
 </blockquote>
 <p>这里面需要借助matplotlib绘制一下基尼指数、熵之半以及分类误差率之间的关系，见下</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> matplotlib <span class="keyword">import</span> pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> matplotlib <span class="keyword">as</span> mpl</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置字体编码</span></span><br><span class="line">mpl.rcParams[<span class="string">'font.sans-serif'</span>] = [<span class="string">'simHei'</span>]</span><br><span class="line">mpl.rcParams[<span class="string">'axes.unicode_minus'</span>] = <span class="literal">False</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 返回100个均匀样本</span></span><br><span class="line">p = np.linspace(<span class="number">0.0001</span>, <span class="number">0.9999</span>, <span class="number">100</span>)</span><br><span class="line">Gini = <span class="number">2</span>*p*(<span class="number">1</span>-p) <span class="comment"># Gini指数</span></span><br><span class="line"></span><br><span class="line">H = (-p * np.log2(p) - (<span class="number">1</span>-p) * np.log2(<span class="number">1</span>-p))/<span class="number">2.0</span> <span class="comment">#半熵</span></span><br><span class="line">x1 = np.linspace(<span class="number">0</span>,<span class="number">0.5</span>,<span class="number">100</span>)</span><br><span class="line">y1 = x1</span><br><span class="line">x2 = np.linspace(<span class="number">0.5</span>,<span class="number">1</span>,<span class="number">100</span>)</span><br><span class="line">y2 = <span class="number">1</span>-x2</span><br><span class="line"></span><br><span class="line"><span class="comment"># 绘图</span></span><br><span class="line">plt.figure(figsize=(<span class="number">12</span>,<span class="number">6</span>)) <span class="comment"># 设置尺寸</span></span><br><span class="line">plt.plot(p, Gini, <span class="string">'red'</span>, label=<span class="string">'基尼指数'</span>)</span><br><span class="line">plt.plot(p, H, <span class="string">'yellow'</span>, label = <span class="string">'半熵'</span>)</span><br><span class="line">plt.plot(x1, y1, <span class="string">'blue'</span>, label=<span class="string">'分类误差率'</span>)</span><br><span class="line">plt.plot(x2, y2, <span class="string">'blue'</span>)</span><br><span class="line">plt.legend() <span class="comment"># 显示标签</span></span><br><span class="line">plt.xlim(<span class="number">-0.01</span>, <span class="number">1.01</span>) <span class="comment"># x轴起终点</span></span><br><span class="line">plt.ylim(<span class="number">0</span>, <span class="number">0.51</span>) <span class="comment"># y轴起终点</span></span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> matplotlib <span class="keyword">import</span> pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> matplotlib <span class="keyword">as</span> mpl</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置字体编码</span></span><br><span class="line">mpl.rcParams[<span class="string">&#x27;font.sans-serif&#x27;</span>] = [<span class="string">&#x27;simHei&#x27;</span>]</span><br><span class="line">mpl.rcParams[<span class="string">&#x27;axes.unicode_minus&#x27;</span>] = <span class="literal">False</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 返回100个均匀样本</span></span><br><span class="line">p = np.linspace(<span class="number">0.0001</span>, <span class="number">0.9999</span>, <span class="number">100</span>)</span><br><span class="line">Gini = <span class="number">2</span>*p*(<span class="number">1</span>-p) <span class="comment"># Gini指数</span></span><br><span class="line"></span><br><span class="line">H = (-p * np.log2(p) - (<span class="number">1</span>-p) * np.log2(<span class="number">1</span>-p))/<span class="number">2.0</span> <span class="comment">#半熵</span></span><br><span class="line">x1 = np.linspace(<span class="number">0</span>,<span class="number">0.5</span>,<span class="number">100</span>)</span><br><span class="line">y1 = x1</span><br><span class="line">x2 = np.linspace(<span class="number">0.5</span>,<span class="number">1</span>,<span class="number">100</span>)</span><br><span class="line">y2 = <span class="number">1</span>-x2</span><br><span class="line"></span><br><span class="line"><span class="comment"># 绘图</span></span><br><span class="line">plt.figure(figsize=(<span class="number">12</span>,<span class="number">6</span>)) <span class="comment"># 设置尺寸</span></span><br><span class="line">plt.plot(p, Gini, <span class="string">&#x27;red&#x27;</span>, label=<span class="string">&#x27;基尼指数&#x27;</span>)</span><br><span class="line">plt.plot(p, H, <span class="string">&#x27;yellow&#x27;</span>, label = <span class="string">&#x27;半熵&#x27;</span>)</span><br><span class="line">plt.plot(x1, y1, <span class="string">&#x27;blue&#x27;</span>, label=<span class="string">&#x27;分类误差率&#x27;</span>)</span><br><span class="line">plt.plot(x2, y2, <span class="string">&#x27;blue&#x27;</span>)</span><br><span class="line">plt.legend() <span class="comment"># 显示标签</span></span><br><span class="line">plt.xlim(-<span class="number">0.01</span>, <span class="number">1.01</span>) <span class="comment"># x轴起终点</span></span><br><span class="line">plt.ylim(<span class="number">0</span>, <span class="number">0.51</span>) <span class="comment"># y轴起终点</span></span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+
 <p>个人习惯用Anaconda，运行得到如下绘图</p>
 <p><img alt="gini_index_img.png" data-src="https://i.loli.net/2019/12/13/p3nLmNfKeMkQxXl.png" class="lazyload"></p>
 <p>可以看到</p>
@@ -526,11 +520,11 @@ function activateLightMode(){
 <h4 id="连续特征-vs-离散特征"><a href="#连续特征-vs-离散特征" class="headerlink" title="连续特征 vs 离散特征"></a>连续特征 vs 离散特征</h4><ul>
 <li><p><strong>CART分类树宣发对连续值的处理</strong></p>
 <p>处理方法类似于C4.5，都是采用连续特征离散化方式，区别在于前者使用信息增益率划分特征，而后者则是通过基尼系数。</p>
-<p><strong>思路：</strong> $n$个样本的连续特征$A$有$n$个，由小及大顺序排列 $\{a_1, a_2, … , a_n\}$，则CART取<font color="#002FFD">相邻两样本值的平均数作为划分点</font>，一共取 $n$-1 个，其中第 $i$ 个划分点 $T_i$ 表示为： $T_i = \frac{a_i + a_{i+1}}{2}$。<font color="#002FFD">分别计算这 $n$-1 个点作为二元分类时的基尼系数。</font>，选择基尼系数最小的点作为该连续特征的二元离散分类点。比如：基尼系数最小的点为 $a_x$，则小于 $a_x$ 的值为类别1，大于 $a_x$ 的值为类别2，这样就做到了连续特征的离散化。</p>
+<p><strong>思路：</strong> $n$个样本的连续特征$A$有$n$个，由小及大顺序排列 ${a_1, a_2, … , a_n}$，则CART取<font color="#002FFD">相邻两样本值的平均数作为划分点</font>，一共取 $n$-1 个，其中第 $i$ 个划分点 $T_i$ 表示为： $T_i &#x3D; \frac{a_i + a_{i+1}}{2}$。<font color="#002FFD">分别计算这 $n$-1 个点作为二元分类时的基尼系数。</font>，选择基尼系数最小的点作为该连续特征的二元离散分类点。比如：基尼系数最小的点为 $a_x$，则小于 $a_x$ 的值为类别1，大于 $a_x$ 的值为类别2，这样就做到了连续特征的离散化。</p>
 </li>
 <li><p><strong>CART分类树宣发对离散值的处理</strong></p>
 <p>处理方法是不断遍历二分离散特征。</p>
-<p><strong>思路：</strong> 如果特征 $L$ 有3个类别 $\{L_1, L_2, L_3\}$，那么在决策树上先建立一个三叉点，接下来考虑把特征 $L$ 分成 $\{L_1\}$ 和 $\{L_2, L_3\}$、$\{L_2\}$ 和 $\{L_1, L_3\}$、$\{L_3\}$ 和 $\{L_1, L_2\}$ 这三种情况，找到基尼系数最小的组合，比如 $\{L_2\}$ 和 $\{L_1, L_3\}$，然后建立二叉树结点，一个结点是 $L_2$ 对应的样本集，另一边是 $\{L_1, L_3\}$ 对应的样本。对于子结点存在多特征未完全划分开，则继续针对 $\{L_1, L_3\}$ 二分，这和ID3、C4.5算法不同，在这两个算法中，子树中的离散特征只会参与一次结点建立。</p>
+<p><strong>思路：</strong> 如果特征 $L$ 有3个类别 ${L_1, L_2, L_3}$，那么在决策树上先建立一个三叉点，接下来考虑把特征 $L$ 分成 ${L_1}$ 和 ${L_2, L_3}$、${L_2}$ 和 ${L_1, L_3}$、${L_3}$ 和 ${L_1, L_2}$ 这三种情况，找到基尼系数最小的组合，比如 ${L_2}$ 和 ${L_1, L_3}$，然后建立二叉树结点，一个结点是 $L_2$ 对应的样本集，另一边是 ${L_1, L_3}$ 对应的样本。对于子结点存在多特征未完全划分开，则继续针对 ${L_1, L_3}$ 二分，这和ID3、C4.5算法不同，在这两个算法中，子树中的离散特征只会参与一次结点建立。</p>
 </li>
 </ul>
 <h4 id="算法流程"><a href="#算法流程" class="headerlink" title="算法流程"></a>算法流程</h4><ul>
@@ -550,68 +544,65 @@ function activateLightMode(){
 <p>【注】测试集预测决策树时，加入测试集中的某样本被划分到了某个叶子结点里，然而此时这个结点里有多个训练集样本，那么对于该样本而言，该样本的类别预测采用这个叶子结点里概率最大的类别</p>
 <ul>
 <li><p><strong>回归树算法</strong></p>
-<p>CART回归树同分类树的构建类似，然而不同点在于<br>&gt;</p>
+<p>CART回归树同分类树的构建类似，然而不同点在于</p>
+</li>
+</ul>
 <blockquote>
 <p>&emsp;&ensp;(1) 样本的输出不同（分类树输出的是样本的类别，回归树输出的是一个实数）</p>
 <p>&emsp;&ensp;(2) 连续值处理方式不同</p>
 <p>&emsp;&ensp;(3) 决策树构建之后对于预测的方式不同</p>
 </blockquote>
-</li>
-</ul>
-<h4 id="关于剪枝"><a href="#关于剪枝" class="headerlink" title="关于剪枝"></a>关于剪枝</h4><p><strong>CART分类树</strong>的剪枝策略在度量损失的时候使用 <strong><em>基尼系数</em></strong></p>
-<p><strong>CART回归树</strong>的剪枝策略在度量损失的时候使用 <strong><em>均方差</em></strong></p>
+<h4 id="关于剪枝"><a href="#关于剪枝" class="headerlink" title="关于剪枝"></a>关于剪枝</h4><p><strong>CART分类树</strong>的剪枝策略在度量损失的时候使用 <em><strong>基尼系数</strong></em></p>
+<p><strong>CART回归树</strong>的剪枝策略在度量损失的时候使用 <em><strong>均方差</strong></em></p>
 <p>这里只讲一下剪枝的思路，具体可以自行上网查找资料。</p>
 <p><strong>思路：</strong>由于决策树很容易overfit，所以需要对CART树进行剪枝，即类似线性回归的正则化。CART所采用的是后剪枝技术，先生成决策树，然后再生成所有可能的剪枝后的CART树，再使用交叉验证检验剪枝的效果，从而选择泛化能力最好的剪枝策略。</p>
 <h3 id="算法不足"><a href="#算法不足" class="headerlink" title="算法不足"></a>算法不足</h3><ul>
-<li>无论是ID3、C4.5、亦或是CART，它们都只是选择一个最优的特征来进行分类决策的，但大多数情况下，分类决策并不是由某个特征来决定，而是一组特征。（这里进一步引出<strong>多变量决策树，代表算法比如<a href="https://arxiv.org/pdf/cs/9408103.pdf" target="_blank" rel="noopener">斜决策树OC1</a></strong>）</li>
+<li>无论是ID3、C4.5、亦或是CART，它们都只是选择一个最优的特征来进行分类决策的，但大多数情况下，分类决策并不是由某个特征来决定，而是一组特征。（这里进一步引出**多变量决策树，代表算法比如<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/cs/9408103.pdf">斜决策树OC1</a>**）</li>
 <li>牵一发而动全身，有时样本数据集的一点点变动，或者某个噪声值影响，都可能导致树结构的剧烈波动。（解决方法：随机森林算法解决）</li>
 </ul>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><div class="table-container">
-<table>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><table>
 <thead>
 <tr>
-<th style="text-align:center">算法</th>
-<th style="text-align:center">支持模型</th>
-<th style="text-align:center">树结构</th>
-<th style="text-align:center">特征选择</th>
-<th style="text-align:center">连续值处理</th>
-<th style="text-align:center">缺失值处理</th>
-<th style="text-align:center">剪枝</th>
+<th align="center">算法</th>
+<th align="center">支持模型</th>
+<th align="center">树结构</th>
+<th align="center">特征选择</th>
+<th align="center">连续值处理</th>
+<th align="center">缺失值处理</th>
+<th align="center">剪枝</th>
 </tr>
 </thead>
-<tbody>
-<tr>
-<td style="text-align:center">ID3</td>
-<td style="text-align:center">分类</td>
-<td style="text-align:center">多叉树</td>
-<td style="text-align:center">信息增益</td>
-<td style="text-align:center">不支持</td>
-<td style="text-align:center">不支持</td>
-<td style="text-align:center">不支持</td>
+<tbody><tr>
+<td align="center">ID3</td>
+<td align="center">分类</td>
+<td align="center">多叉树</td>
+<td align="center">信息增益</td>
+<td align="center">不支持</td>
+<td align="center">不支持</td>
+<td align="center">不支持</td>
 </tr>
 <tr>
-<td style="text-align:center">C4.5</td>
-<td style="text-align:center">分类</td>
-<td style="text-align:center">多叉树</td>
-<td style="text-align:center">信息增益比</td>
-<td style="text-align:center">支持</td>
-<td style="text-align:center">支持</td>
-<td style="text-align:center">支持</td>
+<td align="center">C4.5</td>
+<td align="center">分类</td>
+<td align="center">多叉树</td>
+<td align="center">信息增益比</td>
+<td align="center">支持</td>
+<td align="center">支持</td>
+<td align="center">支持</td>
 </tr>
 <tr>
-<td style="text-align:center">CART</td>
-<td style="text-align:center">分类<br>回归</td>
-<td style="text-align:center">二叉树</td>
-<td style="text-align:center">基尼系数<br>均方差</td>
-<td style="text-align:center">支持</td>
-<td style="text-align:center">支持</td>
-<td style="text-align:center">支持</td>
+<td align="center">CART</td>
+<td align="center">分类<br>回归</td>
+<td align="center">二叉树</td>
+<td align="center">基尼系数<br>均方差</td>
+<td align="center">支持</td>
+<td align="center">支持</td>
+<td align="center">支持</td>
 </tr>
-</tbody>
-</table>
-</div>
-<p><br></p>
-<p>以下引用sklearn官网关于三种算法的一些总结，想看原文<a href="https://scikit-learn.org/stable/modules/tree.html" target="_blank" rel="noopener">请戳这里</a></p>
+</tbody></table>
+<br>
+
+<p>以下引用sklearn官网关于三种算法的一些总结，想看原文<a target="_blank" rel="noopener" href="https://scikit-learn.org/stable/modules/tree.html">请戳这里</a></p>
 <ul>
 <li><p><strong>优势</strong></p>
 <p>  1、生成的决策树简单直观</p>
@@ -631,14 +622,14 @@ function activateLightMode(){
 <p>  5、如果某些特征的样本比例过大，那么生成的决策树就会比较容易偏向这些特征。一般可以通过调节样本权重来改善</p>
 </li>
 </ul>
-</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%86%B3%E7%AD%96%E6%A0%91/">决策树    </a><a class="post-meta__tags" href="/tags/%E9%9B%86%E6%88%90%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B/">集成学习模型    </a><a class="post-meta__tags" href="/tags/ID3%E3%80%81C4-5%E3%80%81CART/">ID3、C4.5、CART    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/page/article_number_lot.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2019/12/08/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91A-Tutorial-on-Support-Vector-Machines-for-Pattern-Recognition/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/kevin-ku-w7ZyuGYNpRQ-unsplash.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【论文笔记】A Tutorial on Support Vector Machines for Pattern Recognition</span></div></a></div><div class="next-post pull_right"><a href="/2019/11/30/%E3%80%90%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B%E3%80%91%E5%86%B3%E7%AD%96%E6%A0%91%E5%AD%A6%E4%B9%A0%EF%BC%88%E4%B8%80%EF%BC%89/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/niko-photos-tGTVxeOr_Rs-unsplash.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【机器学习模型】决策树学习（一）</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2019/11/30/【机器学习模型】决策树学习（一）/" title="【机器学习模型】决策树学习（一）"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/niko-photos-tGTVxeOr_Rs-unsplash.jpg"><div class="relatedPosts_title">【机器学习模型】决策树学习（一）</div></a></div><div class="relatedPosts_item"><a href="/2019/12/19/【统计学习方法死磕系列】决策树/" title="【统计学习方法死磕系列】决策树"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nareeta-martin-wM59pRQYbhs-unsplash.jpg"><div class="relatedPosts_title">【统计学习方法死磕系列】决策树</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%86%B3%E7%AD%96%E6%A0%91/">决策树    </a><a class="post-meta__tags" href="/tags/CART/">CART    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/page/article_number_lot.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2019/12/08/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91A-Tutorial-on-Support-Vector-Machines-for-Pattern-Recognition/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/kevin-ku-w7ZyuGYNpRQ-unsplash.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【论文笔记】A Tutorial on Support Vector Machines for Pattern Recognition</span></div></a></div><div class="next-post pull_right"><a href="/2019/12/01/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91XGBoost-A-Scalable-Tree-Boosting-System/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【论文笔记】XGBoost: A Scalable Tree Boosting System</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2020/04/15/【统计学习方法死磕系列】决策树/" title="【统计学习方法死磕系列】决策树"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nareeta-martin-wM59pRQYbhs-unsplash.jpg"><div class="relatedPosts_title">【统计学习方法死磕系列】决策树</div></a></div><div class="relatedPosts_item"><a href="/2019/11/30/【机器学习模型】决策树学习（一）/" title="【机器学习模型】决策树学习（一）"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/niko-photos-tGTVxeOr_Rs-unsplash.jpg"><div class="relatedPosts_title">【机器学习模型】决策树学习（一）</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
     var j, e = d.getElementsByTagName(s)[0];
     if (typeof LivereTower === 'function') { return; }
     j = d.createElement(s);
     j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
     j.async = true;
     e.parentNode.insertBefore(j, e);
-})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/page/article_number_lot.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2020 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action" target="_blank" rel="noopener"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/page/article_number_lot.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
   tex2jax: {
     inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
     processEscapes: true,
@@ -687,4 +678,47 @@ function activateLightMode(){
     aplayer.style.boxShadow = 'none';
     aplayer.style.marginTop = '10px';
     $('.aplayer-list-light').css('background','#d8e2eb69');
-})</script></div></body></html>
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

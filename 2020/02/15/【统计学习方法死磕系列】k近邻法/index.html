@@ -1,0 +1,659 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【统计学习方法死磕系列】k近邻法 | ONE·PIECE</title><meta name="description" content="【统计学习方法死磕系列】k近邻法"><meta name="keywords" content="读书笔记"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【统计学习方法死磕系列】k近邻法"><meta name="twitter:description" content="【统计学习方法死磕系列】k近邻法"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nicolas-j-leclercq-cmV9xe6sqfQ-unsplash.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【统计学习方法死磕系列】k近邻法"><meta property="og:url" content="http://tufusi.com/2020/02/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91k%E8%BF%91%E9%82%BB%E6%B3%95/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【统计学习方法死磕系列】k近邻法"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nicolas-j-leclercq-cmV9xe6sqfQ-unsplash.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2020/02/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91k%E8%BF%91%E9%82%BB%E6%B3%95/"><link rel="prev" title="【Python系列】常用标准库" href="http://tufusi.com/2020/02/15/%E3%80%90Python%E7%B3%BB%E5%88%97%E3%80%91%E5%B8%B8%E7%94%A8%E6%A0%87%E5%87%86%E5%BA%93/"><link rel="next" title="【Python系列】Pandas权威指南" href="http://tufusi.com/2020/02/10/%E3%80%90Python%E7%B3%BB%E5%88%97%E3%80%91Pandas%E6%9D%83%E5%A8%81%E6%8C%87%E5%8D%97/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81k-%E8%BF%91%E9%82%BB%E6%B3%95%E6%A6%82%E8%BF%B0"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、k 近邻法概述</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">1.1 核心思想</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-2-%E7%AE%97%E6%B3%95%E7%89%B9%E6%80%A7%E9%80%9F%E8%A7%88"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">1.2 算法特性速览</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-3-%E4%B8%80%E8%88%AC%E6%B5%81%E7%A8%8B"><span class="toc_mobile_items-number">1.3.</span> <span class="toc_mobile_items-text">1.3 一般流程</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81k-%E8%BF%91%E9%82%BB%E6%A8%A1%E5%9E%8B%E7%9A%84%E4%B8%89%E8%A6%81%E7%B4%A0"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、k 近邻模型的三要素</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E8%B7%9D%E7%A6%BB%E5%BA%A6%E9%87%8F"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 距离度量</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#2-1-1-%E9%97%B5%E5%8F%AF%E5%A4%AB%E6%96%AF%E5%9F%BA%E8%B7%9D%E7%A6%BB%EF%BC%88Minkowski-Distance%EF%BC%89"><span class="toc_mobile_items-number">2.1.1.</span> <span class="toc_mobile_items-text">2.1.1 闵可夫斯基距离（Minkowski Distance）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#2-1-2-%E5%85%B6%E4%BB%96%E9%87%8D%E8%A6%81%E8%B7%9D%E7%A6%BB%E5%BA%A6%E9%87%8F"><span class="toc_mobile_items-number">2.1.2.</span> <span class="toc_mobile_items-text">2.1.2 其他重要距离度量</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#2-1-3-%E8%B7%9D%E7%A6%BB%E5%BA%A6%E9%87%8F%E7%9A%84%E9%80%89%E6%8B%A9%E6%8C%87%E5%8D%97"><span class="toc_mobile_items-number">2.1.3.</span> <span class="toc_mobile_items-text">2.1.3 距离度量的选择指南</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-k-%E5%80%BC%E7%9A%84%E9%80%89%E6%8B%A9"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 k 值的选择</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#2-2-1-k-%E5%80%BC%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="toc_mobile_items-number">2.2.1.</span> <span class="toc_mobile_items-text">2.2.1 k 值的影响</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#2-2-2-k-%E5%80%BC%E9%80%89%E6%8B%A9%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">2.2.2.</span> <span class="toc_mobile_items-text">2.2.2 k 值选择策略</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#2-2-3-%E5%8F%AF%E8%A7%86%E5%8C%96-k-%E5%80%BC%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="toc_mobile_items-number">2.2.3.</span> <span class="toc_mobile_items-text">2.2.3 可视化 k 值的影响</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-%E5%88%86%E7%B1%BB%E5%86%B3%E7%AD%96%E8%A7%84%E5%88%99"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 分类决策规则</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#2-3-1-%E5%8A%A0%E6%9D%83%E6%8A%95%E7%A5%A8"><span class="toc_mobile_items-number">2.3.1.</span> <span class="toc_mobile_items-text">2.3.1 加权投票</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#2-3-2-k-NN-%E5%9B%9E%E5%BD%92"><span class="toc_mobile_items-number">2.3.2.</span> <span class="toc_mobile_items-text">2.3.2 k-NN 回归</span></a></li></ol></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81%E9%AB%98%E7%BB%B4%E7%81%BE%E9%9A%BE%E4%B8%8E-k-NN-%E7%9A%84%E5%9B%B0%E5%A2%83"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、高维灾难与 k-NN 的困境</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E7%BB%B4%E5%BA%A6%E7%9A%84%E8%AF%85%E5%92%92%EF%BC%88Curse-of-Dimensionality%EF%BC%89"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 维度的诅咒（Curse of Dimensionality）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E6%95%B0%E5%AD%A6%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 数学分析</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-%E5%BA%94%E5%AF%B9%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 应对策略</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81k-d-%E6%A0%91%EF%BC%9A%E5%8A%A0%E9%80%9F%E8%BF%91%E9%82%BB%E6%90%9C%E7%B4%A2"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、k-d 树：加速近邻搜索</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-k-d-%E6%A0%91%E7%9A%84%E6%9E%84%E9%80%A0"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 k-d 树的构造</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-k-d-%E6%A0%91%E7%9A%84%E6%9C%80%E8%BF%91%E9%82%BB%E6%90%9C%E7%B4%A2"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 k-d 树的最近邻搜索</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-k-d-%E6%A0%91%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 k-d 树的局限性</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81%E7%90%83%E6%A0%91%EF%BC%88Ball-Tree%EF%BC%89"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、球树（Ball Tree）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E6%9E%84%E9%80%A0%E5%8E%9F%E7%90%86"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 构造原理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-%E6%90%9C%E7%B4%A2%E4%BC%98%E5%8A%BF"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 搜索优势</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-k-d-%E6%A0%91-vs-%E7%90%83%E6%A0%91-vs-%E6%9A%B4%E5%8A%9B%E6%90%9C%E7%B4%A2"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 k-d 树 vs 球树 vs 暴力搜索</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E5%B1%80%E9%83%A8%E6%95%8F%E6%84%9F%E5%93%88%E5%B8%8C%EF%BC%88LSH%EF%BC%89"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、局部敏感哈希（LSH）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E5%BD%A2%E5%BC%8F%E5%8C%96%E5%AE%9A%E4%B9%89"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 形式化定义</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-%E5%B8%B8%E8%A7%81-LSH-%E6%96%B9%E6%B3%95"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 常见 LSH 方法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-%E6%94%BE%E5%A4%A7%E6%8A%80%E6%9C%AF"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">6.3 放大技术</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81k-NN-%E7%9A%84%E4%BC%98%E5%8C%96%E6%8A%80%E5%B7%A7"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、k-NN 的优化技巧</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-%E7%89%B9%E5%BE%81%E5%BD%92%E4%B8%80%E5%8C%96"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">7.1 特征归一化</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-%E5%8E%8B%E7%BC%A9%E8%BF%91%E9%82%BB%EF%BC%88Condensed-Nearest-Neighbor%EF%BC%89"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">7.2 压缩近邻（Condensed Nearest Neighbor）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-3-%E7%BC%96%E8%BE%91%E8%BF%91%E9%82%BB%EF%BC%88Edited-Nearest-Neighbor%EF%BC%89"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">7.3 编辑近邻（Edited Nearest Neighbor）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81k-NN-%E4%B8%8E%E5%85%B6%E4%BB%96%E7%AE%97%E6%B3%95%E7%9A%84%E6%AF%94%E8%BE%83"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、k-NN 与其他算法的比较</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-k-NN-vs-k-means"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">8.1 k-NN vs k-means</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-k-NN-vs-SVM"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">8.2 k-NN vs SVM</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-3-k-NN-vs-%E5%86%B3%E7%AD%96%E6%A0%91"><span class="toc_mobile_items-number">8.3.</span> <span class="toc_mobile_items-text">8.3 k-NN vs 决策树</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81Python-%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、Python 实现</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-1-%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-k-NN-%E5%88%86%E7%B1%BB%E5%99%A8"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">9.1 从零实现 k-NN 分类器</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-2-%E4%BD%BF%E7%94%A8-sklearn-%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">9.2 使用 sklearn 的实现</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">十、面试高频问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">十一、总结</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81k-%E8%BF%91%E9%82%BB%E6%B3%95%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">一、k 近邻法概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 核心思想</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E7%AE%97%E6%B3%95%E7%89%B9%E6%80%A7%E9%80%9F%E8%A7%88"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 算法特性速览</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E4%B8%80%E8%88%AC%E6%B5%81%E7%A8%8B"><span class="toc-number">1.3.</span> <span class="toc-text">1.3 一般流程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81k-%E8%BF%91%E9%82%BB%E6%A8%A1%E5%9E%8B%E7%9A%84%E4%B8%89%E8%A6%81%E7%B4%A0"><span class="toc-number">2.</span> <span class="toc-text">二、k 近邻模型的三要素</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E8%B7%9D%E7%A6%BB%E5%BA%A6%E9%87%8F"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 距离度量</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-1-%E9%97%B5%E5%8F%AF%E5%A4%AB%E6%96%AF%E5%9F%BA%E8%B7%9D%E7%A6%BB%EF%BC%88Minkowski-Distance%EF%BC%89"><span class="toc-number">2.1.1.</span> <span class="toc-text">2.1.1 闵可夫斯基距离（Minkowski Distance）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-2-%E5%85%B6%E4%BB%96%E9%87%8D%E8%A6%81%E8%B7%9D%E7%A6%BB%E5%BA%A6%E9%87%8F"><span class="toc-number">2.1.2.</span> <span class="toc-text">2.1.2 其他重要距离度量</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-3-%E8%B7%9D%E7%A6%BB%E5%BA%A6%E9%87%8F%E7%9A%84%E9%80%89%E6%8B%A9%E6%8C%87%E5%8D%97"><span class="toc-number">2.1.3.</span> <span class="toc-text">2.1.3 距离度量的选择指南</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-k-%E5%80%BC%E7%9A%84%E9%80%89%E6%8B%A9"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 k 值的选择</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-1-k-%E5%80%BC%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="toc-number">2.2.1.</span> <span class="toc-text">2.2.1 k 值的影响</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-2-k-%E5%80%BC%E9%80%89%E6%8B%A9%E7%AD%96%E7%95%A5"><span class="toc-number">2.2.2.</span> <span class="toc-text">2.2.2 k 值选择策略</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-3-%E5%8F%AF%E8%A7%86%E5%8C%96-k-%E5%80%BC%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="toc-number">2.2.3.</span> <span class="toc-text">2.2.3 可视化 k 值的影响</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E5%88%86%E7%B1%BB%E5%86%B3%E7%AD%96%E8%A7%84%E5%88%99"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 分类决策规则</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-1-%E5%8A%A0%E6%9D%83%E6%8A%95%E7%A5%A8"><span class="toc-number">2.3.1.</span> <span class="toc-text">2.3.1 加权投票</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-2-k-NN-%E5%9B%9E%E5%BD%92"><span class="toc-number">2.3.2.</span> <span class="toc-text">2.3.2 k-NN 回归</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E9%AB%98%E7%BB%B4%E7%81%BE%E9%9A%BE%E4%B8%8E-k-NN-%E7%9A%84%E5%9B%B0%E5%A2%83"><span class="toc-number">3.</span> <span class="toc-text">三、高维灾难与 k-NN 的困境</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%BB%B4%E5%BA%A6%E7%9A%84%E8%AF%85%E5%92%92%EF%BC%88Curse-of-Dimensionality%EF%BC%89"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 维度的诅咒（Curse of Dimensionality）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%95%B0%E5%AD%A6%E5%88%86%E6%9E%90"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 数学分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%BA%94%E5%AF%B9%E7%AD%96%E7%95%A5"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 应对策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81k-d-%E6%A0%91%EF%BC%9A%E5%8A%A0%E9%80%9F%E8%BF%91%E9%82%BB%E6%90%9C%E7%B4%A2"><span class="toc-number">4.</span> <span class="toc-text">四、k-d 树：加速近邻搜索</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-k-d-%E6%A0%91%E7%9A%84%E6%9E%84%E9%80%A0"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 k-d 树的构造</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-k-d-%E6%A0%91%E7%9A%84%E6%9C%80%E8%BF%91%E9%82%BB%E6%90%9C%E7%B4%A2"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 k-d 树的最近邻搜索</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-k-d-%E6%A0%91%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 k-d 树的局限性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E7%90%83%E6%A0%91%EF%BC%88Ball-Tree%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">五、球树（Ball Tree）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%9E%84%E9%80%A0%E5%8E%9F%E7%90%86"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 构造原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E6%90%9C%E7%B4%A2%E4%BC%98%E5%8A%BF"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 搜索优势</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-k-d-%E6%A0%91-vs-%E7%90%83%E6%A0%91-vs-%E6%9A%B4%E5%8A%9B%E6%90%9C%E7%B4%A2"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 k-d 树 vs 球树 vs 暴力搜索</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%B1%80%E9%83%A8%E6%95%8F%E6%84%9F%E5%93%88%E5%B8%8C%EF%BC%88LSH%EF%BC%89"><span class="toc-number">6.</span> <span class="toc-text">六、局部敏感哈希（LSH）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%BD%A2%E5%BC%8F%E5%8C%96%E5%AE%9A%E4%B9%89"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 形式化定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%B8%B8%E8%A7%81-LSH-%E6%96%B9%E6%B3%95"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 常见 LSH 方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E6%94%BE%E5%A4%A7%E6%8A%80%E6%9C%AF"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 放大技术</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81k-NN-%E7%9A%84%E4%BC%98%E5%8C%96%E6%8A%80%E5%B7%A7"><span class="toc-number">7.</span> <span class="toc-text">七、k-NN 的优化技巧</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E7%89%B9%E5%BE%81%E5%BD%92%E4%B8%80%E5%8C%96"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 特征归一化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E5%8E%8B%E7%BC%A9%E8%BF%91%E9%82%BB%EF%BC%88Condensed-Nearest-Neighbor%EF%BC%89"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 压缩近邻（Condensed Nearest Neighbor）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E7%BC%96%E8%BE%91%E8%BF%91%E9%82%BB%EF%BC%88Edited-Nearest-Neighbor%EF%BC%89"><span class="toc-number">7.3.</span> <span class="toc-text">7.3 编辑近邻（Edited Nearest Neighbor）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81k-NN-%E4%B8%8E%E5%85%B6%E4%BB%96%E7%AE%97%E6%B3%95%E7%9A%84%E6%AF%94%E8%BE%83"><span class="toc-number">8.</span> <span class="toc-text">八、k-NN 与其他算法的比较</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-k-NN-vs-k-means"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 k-NN vs k-means</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-k-NN-vs-SVM"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 k-NN vs SVM</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-k-NN-vs-%E5%86%B3%E7%AD%96%E6%A0%91"><span class="toc-number">8.3.</span> <span class="toc-text">8.3 k-NN vs 决策树</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81Python-%E5%AE%9E%E7%8E%B0"><span class="toc-number">9.</span> <span class="toc-text">九、Python 实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-k-NN-%E5%88%86%E7%B1%BB%E5%99%A8"><span class="toc-number">9.1.</span> <span class="toc-text">9.1 从零实现 k-NN 分类器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E4%BD%BF%E7%94%A8-sklearn-%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-number">9.2.</span> <span class="toc-text">9.2 使用 sklearn 的实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E9%A2%98"><span class="toc-number">10.</span> <span class="toc-text">十、面试高频问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-number">11.</span> <span class="toc-text">十一、总结</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nicolas-j-leclercq-cmV9xe6sqfQ-unsplash.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【统计学习方法死磕系列】k近邻法</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2020-02-15<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0/">统计学习</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">5.7k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 20 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>众所周知，音乐可以按风格来分类，然而风格本身是由什么来定义的呢？由谁来判定某首音乐属于那种风格？也就是说同一种风格的音乐又会具有哪些公共的特征呢？正因此也没有哪一位歌手会主动标榜自己的歌和以前的某首歌类似，但我们却实实在在的知道每一首歌在风格上的确有可能会和同风格的歌曲相近。类似于处理这样的分类问题，我们就可以使用k-近邻算法，来自动划分歌曲的风格类型。</p>
+<h2 id="一、k-近邻法概述"><a href="#一、k-近邻法概述" class="headerlink" title="一、k 近邻法概述"></a>一、k 近邻法概述</h2><p>k 近邻法（k-Nearest Neighbors, k-NN）是机器学习中最简单、最直观的算法之一。它是一种<strong>非参数</strong>（non-parametric）、<strong>惰性学习</strong>（lazy learning）方法，由 Cover 和 Hart 于 1968 年提出。</p>
+<h3 id="1-1-核心思想"><a href="#1-1-核心思想" class="headerlink" title="1.1 核心思想"></a>1.1 核心思想</h3><blockquote>
+<p>物以类聚，人以群分。</p>
+</blockquote>
+<p>k-NN 的基本假设是：<strong>特征空间中距离相近的样本倾向于属于同一类别</strong>。因此，对于一个新样本，我们只需在训练集中找到它的 k 个最近邻居，然后根据这些邻居的标签做出预测。</p>
+<h3 id="1-2-算法特性速览"><a href="#1-2-算法特性速览" class="headerlink" title="1.2 算法特性速览"></a>1.2 算法特性速览</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>训练方式</td>
+<td>惰性学习（lazy learning）——无显式训练过程，直接存储数据</td>
+</tr>
+<tr>
+<td>参数形式</td>
+<td>非参数模型——模型容量随数据量增长</td>
+</tr>
+<tr>
+<td>适用任务</td>
+<td>分类、回归</td>
+</tr>
+<tr>
+<td>优点</td>
+<td>精度高，对异常值不敏感，无需数据分布假设，实现简单</td>
+</tr>
+<tr>
+<td>缺点</td>
+<td>计算复杂度高、空间复杂度高、对高维数据效果差</td>
+</tr>
+<tr>
+<td>适用范围</td>
+<td>数值型和标称型（只在有限目标集中取值）</td>
+</tr>
+</tbody></table>
+<h3 id="1-3-一般流程"><a href="#1-3-一般流程" class="headerlink" title="1.3 一般流程"></a>1.3 一般流程</h3><blockquote>
+<p><strong>k-近邻算法流程</strong></p>
+<ol>
+<li>计算已知标签的训练集中每个点与待分类点之间的距离</li>
+<li>按照距离递增排序</li>
+<li>选取与当前点距离最近的 k 个点</li>
+<li>确定前 k 个点所属标签的出现频率</li>
+<li>返回前 k 个点出现频率最高的标签作为当前点的预测类别</li>
+</ol>
+</blockquote>
+<h2 id="二、k-近邻模型的三要素"><a href="#二、k-近邻模型的三要素" class="headerlink" title="二、k 近邻模型的三要素"></a>二、k 近邻模型的三要素</h2><p>k 近邻模型的核心由三个要素决定：<strong>距离度量</strong>、<strong>k 值选择</strong>和<strong>分类决策规则</strong>。</p>
+<h3 id="2-1-距离度量"><a href="#2-1-距离度量" class="headerlink" title="2.1 距离度量"></a>2.1 距离度量</h3><p>特征空间中两个样本点 $x_i &#x3D; (x_i^{(1)}, x_i^{(2)}, \dots, x_i^{(n)})$ 和 $x_j &#x3D; (x_j^{(1)}, x_j^{(2)}, \dots, x_j^{(n)})$ 之间的距离定义了”近邻”的含义。常用的距离度量如下。</p>
+<h4 id="2-1-1-闵可夫斯基距离（Minkowski-Distance）"><a href="#2-1-1-闵可夫斯基距离（Minkowski-Distance）" class="headerlink" title="2.1.1 闵可夫斯基距离（Minkowski Distance）"></a>2.1.1 闵可夫斯基距离（Minkowski Distance）</h4><p>闵可夫斯基距离是距离度量的统一形式：</p>
+<p>$$
+L_p(x_i, x_j) = \left( \sum_{l=1}^{n} |x_i^{(l)} - x_j^{(l)}|^p \right)^{\frac{1}{p}}
+$$</p>
+<p>其中 $p$ 是一个可变参数。</p>
+<p><strong>当 $p &#x3D; 1$ 时——曼哈顿距离（Manhattan Distance）</strong>：</p>
+<p>$$
+L_1(x_i, x_j) = \sum_{l=1}^{n} |x_i^{(l)} - x_j^{(l)}|
+$$</p>
+<p>也称为城市街区距离（City Block Distance）。想象在曼哈顿的网格状街道上行走，你只能沿水平和垂直方向移动，不能沿对角线穿越街区。</p>
+<p><strong>当 $p &#x3D; 2$ 时——欧氏距离（Euclidean Distance）</strong>：</p>
+<p>$$
+L_2(x_i, x_j) = \sqrt{\sum_{l=1}^{n} (x_i^{(l)} - x_j^{(l)})^2}
+$$</p>
+<p>这是我们最直观的”直线距离”，也是最常用的距离度量。</p>
+<p><strong>当 $p \to \infty$ 时——切比雪夫距离（Chebyshev Distance）</strong>：</p>
+<p>$$
+L_{\infty}(x_i, x_j) = \max_{l} |x_i^{(l)} - x_j^{(l)}|
+$$</p>
+<p>在国际象棋中，国王从 $(x_1, y_1)$ 到 $(x_2, y_2)$ 所需的最少步数就是 $\max(|x_2-x_1|, |y_2-y_1|)$。</p>
+<h4 id="2-1-2-其他重要距离度量"><a href="#2-1-2-其他重要距离度量" class="headerlink" title="2.1.2 其他重要距离度量"></a>2.1.2 其他重要距离度量</h4><p><strong>余弦相似度（Cosine Similarity）</strong>：常用于文本分类和高维稀疏数据：</p>
+<p>$$
+\cos(x_i, x_j) = \frac{x_i \cdot x_j}{\|x_i\| \cdot \|x_j\|}
+$$</p>
+<p>关注的是向量方向的相似性而非绝对量级。对应的距离为 $1 - \cos(x_i, x_j)$。</p>
+<p><strong>马氏距离（Mahalanobis Distance）</strong>：考虑了特征间的相关性：</p>
+<p>$$
+D_M(x_i, x_j) = \sqrt{(x_i - x_j)^T \Sigma^{-1} (x_i - x_j)}
+$$</p>
+<p>其中 $\Sigma$ 是特征的协方差矩阵。马氏距离是<strong>尺度无关</strong>的（scale-invariant），克服了欧氏距离中将各特征”等权”看待的缺点。</p>
+<p><strong>汉明距离（Hamming Distance）</strong>：用于离散&#x2F;二值特征：</p>
+<p>$$
+D_H(x_i, x_j) = \sum_{l=1}^{n} \mathbb{I}(x_i^{(l)} \neq x_j^{(l)})
+$$</p>
+<p>即两个字符串对应位置不同字符的个数。</p>
+<p><strong>杰卡德距离（Jaccard Distance）</strong>：用于集合相似度：</p>
+<p>$$
+D_J(A, B) = 1 - \frac{|A \cap B|}{|A \cup B|}
+$$</p>
+<h4 id="2-1-3-距离度量的选择指南"><a href="#2-1-3-距离度量的选择指南" class="headerlink" title="2.1.3 距离度量的选择指南"></a>2.1.3 距离度量的选择指南</h4><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>推荐度量</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>低维连续特征</td>
+<td>欧氏距离</td>
+</tr>
+<tr>
+<td>高维稀疏（如文本 TF-IDF）</td>
+<td>余弦相似度</td>
+</tr>
+<tr>
+<td>特征尺度差异大</td>
+<td>马氏距离</td>
+</tr>
+<tr>
+<td>网格&#x2F;离散数据</td>
+<td>曼哈顿距离</td>
+</tr>
+<tr>
+<td>二值特征</td>
+<td>汉明距离</td>
+</tr>
+<tr>
+<td>集合比较</td>
+<td>杰卡德距离</td>
+</tr>
+</tbody></table>
+<p><strong>重要提醒</strong>：距离度量依赖于特征的尺度。如果特征 $x_1$ 范围是 $[0, 1]$ 而 $x_2$ 范围是 $[0, 10000]$，$x_2$ 将主导欧氏距离的计算。因此使用 k-NN 前<strong>必须进行特征归一化</strong>。</p>
+<h3 id="2-2-k-值的选择"><a href="#2-2-k-值的选择" class="headerlink" title="2.2 k 值的选择"></a>2.2 k 值的选择</h3><p>k 值的选择对 k-NN 的结果有决定性影响。</p>
+<h4 id="2-2-1-k-值的影响"><a href="#2-2-1-k-值的影响" class="headerlink" title="2.2.1 k 值的影响"></a>2.2.1 k 值的影响</h4><p><strong>k 过小（如 k &#x3D; 1）</strong>：</p>
+<ul>
+<li>模型复杂度高，容易过拟合</li>
+<li>分类边界曲折而不光滑，对噪声数据非常敏感</li>
+<li>在极限情况（k &#x3D; 1），训练误差为零但不代表泛化性能好</li>
+<li>决策面呈现 Voronoi 分割</li>
+</ul>
+<p><strong>k 过大（如 k &#x3D; N）</strong>：</p>
+<ul>
+<li>模型过于简单，容易欠拟合</li>
+<li>决策边界过于平滑</li>
+<li>极限情况（k &#x3D; N），对所有样本都预测训练集的多数类，完全忽略数据的局部结构</li>
+</ul>
+<p><strong>k 适中</strong>：</p>
+<ul>
+<li>在偏差（bias）和方差（variance）之间取得平衡</li>
+<li>可以用交叉验证来选择</li>
+</ul>
+<h4 id="2-2-2-k-值选择策略"><a href="#2-2-2-k-值选择策略" class="headerlink" title="2.2.2 k 值选择策略"></a>2.2.2 k 值选择策略</h4><p>通常选择小于训练样本数平方根的奇数（避免平票）：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> cross_val_score</span><br><span class="line"><span class="keyword">from</span> sklearn.neighbors <span class="keyword">import</span> KNeighborsClassifier</span><br><span class="line"></span><br><span class="line"><span class="comment"># 通过交叉验证选择最佳 k</span></span><br><span class="line">best_k = <span class="number">1</span></span><br><span class="line">best_score = <span class="number">0</span></span><br><span class="line"><span class="keyword">for</span> k <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, <span class="built_in">int</span>(np.sqrt(N)) + <span class="number">2</span>, <span class="number">2</span>):  <span class="comment"># 奇数</span></span><br><span class="line">    knn = KNeighborsClassifier(n_neighbors=k)</span><br><span class="line">    scores = cross_val_score(knn, X, y, cv=<span class="number">5</span>)</span><br><span class="line">    <span class="keyword">if</span> scores.mean() &gt; best_score:</span><br><span class="line">        best_score = scores.mean()</span><br><span class="line">        best_k = k</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-2-3-可视化-k-值的影响"><a href="#2-2-3-可视化-k-值的影响" class="headerlink" title="2.2.3 可视化 k 值的影响"></a>2.2.3 可视化 k 值的影响</h4><p>以一个二维二分类问题为例：</p>
+<ul>
+<li>k &#x3D; 1：决策边界紧贴数据点，产生许多”孤岛”</li>
+<li>k &#x3D; 5：决策边界更平滑但仍能捕捉局部特征</li>
+<li>k &#x3D; 15：决策边界非常平滑，但可能丢失重要的类别细节</li>
+<li>k &#x3D; 50：决策边界接近线性，严重欠拟合</li>
+</ul>
+<h3 id="2-3-分类决策规则"><a href="#2-3-分类决策规则" class="headerlink" title="2.3 分类决策规则"></a>2.3 分类决策规则</h3><p>k-NN 的分类决策规则通常是<strong>多数表决</strong>（majority voting）：</p>
+<p>$$
+\hat{y} = \arg\max_{c \in \mathcal{Y}} \sum_{x_i \in N_k(x)} \mathbb{I}(y_i = c)
+$$</p>
+<p>其中 $N_k(x)$ 是样本 $x$ 的 $k$ 个最近邻的集合。</p>
+<h4 id="2-3-1-加权投票"><a href="#2-3-1-加权投票" class="headerlink" title="2.3.1 加权投票"></a>2.3.1 加权投票</h4><p>当不同距离的邻居应当具有不同的重要性时，可以引入距离加权：</p>
+<p>$$
+\hat{y} = \arg\max_{c \in \mathcal{Y}} \sum_{x_i \in N_k(x)} w_i \cdot \mathbb{I}(y_i = c)
+$$</p>
+<p>其中权重常见的形式有：</p>
+<ul>
+<li><strong>反距离权重</strong>：$w_i &#x3D; \frac{1}{d(x, x_i)}$ 或 $w_i &#x3D; \frac{1}{d(x, x_i)^2}$</li>
+<li><strong>高斯核权重</strong>：$w_i &#x3D; \exp\left(-\frac{d(x, x_i)^2}{2\sigma^2}\right)$</li>
+<li><strong>均匀权重</strong>：$w_i &#x3D; 1$（即标准多数表决）</li>
+</ul>
+<p>加权 k-NN 对邻居的贡献进行差异化对待，在实践中通常比均匀权重表现更好，尤其当 k 较大时。</p>
+<h4 id="2-3-2-k-NN-回归"><a href="#2-3-2-k-NN-回归" class="headerlink" title="2.3.2 k-NN 回归"></a>2.3.2 k-NN 回归</h4><p>对于回归任务，预测值为 k 个近邻标签的（加权）平均：</p>
+<p>$$
+\hat{y} = \frac{1}{k} \sum_{x_i \in N_k(x)} y_i
+$$</p>
+<p>加权回归：</p>
+<p>$$
+\hat{y} = \frac{\sum_{x_i \in N_k(x)} w_i y_i}{\sum_{x_i \in N_k(x)} w_i}
+$$</p>
+<h2 id="三、高维灾难与-k-NN-的困境"><a href="#三、高维灾难与-k-NN-的困境" class="headerlink" title="三、高维灾难与 k-NN 的困境"></a>三、高维灾难与 k-NN 的困境</h2><h3 id="3-1-维度的诅咒（Curse-of-Dimensionality）"><a href="#3-1-维度的诅咒（Curse-of-Dimensionality）" class="headerlink" title="3.1 维度的诅咒（Curse of Dimensionality）"></a>3.1 维度的诅咒（Curse of Dimensionality）</h3><p>k-NN 在高维空间中会遇到严重问题。当特征维数 $d$ 增大时：</p>
+<ol>
+<li><strong>距离度量失效</strong>：在高维空间中，最近邻和最远邻之间的距离差越来越小，所有点之间的距离趋于相等，距离的概念丧失了判别力。</li>
+<li><strong>数据稀疏</strong>：要维持相同的密度，所需数据量随维数指数增长。</li>
+<li><strong>最近邻不稳定</strong>：微小的噪声扰动就可能改变最近邻集合。</li>
+</ol>
+<h3 id="3-2-数学分析"><a href="#3-2-数学分析" class="headerlink" title="3.2 数学分析"></a>3.2 数学分析</h3><p>考虑 $d$ 维单位超立方体中的均匀分布。某样本到其最近邻的期望距离为：</p>
+<p>$$
+\mathbb{E}[d_{\min}] \approx \left(\frac{\Gamma(1 + d/2)}{N}\right)^{1/d} \frac{1}{\sqrt{\pi}}
+$$</p>
+<p>当 $d$ 很大时，该距离将接近超立方体的对角线长度，说明”近”的概念已经模糊。</p>
+<h3 id="3-3-应对策略"><a href="#3-3-应对策略" class="headerlink" title="3.3 应对策略"></a>3.3 应对策略</h3><ul>
+<li><strong>特征选择</strong>：使用互信息、卡方检验等方法降维</li>
+<li><strong>特征提取</strong>：PCA、LDA 等降维技术</li>
+<li><strong>距离度量学习</strong>（Metric Learning）：学习一个马氏距离矩阵</li>
+<li><strong>哈希方法</strong>：LSH（局部敏感哈希）用于近似最近邻</li>
+<li><strong>放弃 k-NN</strong>：在高维场景下转向更适合的模型</li>
+</ul>
+<h2 id="四、k-d-树：加速近邻搜索"><a href="#四、k-d-树：加速近邻搜索" class="headerlink" title="四、k-d 树：加速近邻搜索"></a>四、k-d 树：加速近邻搜索</h2><p>当训练集很大时，暴力搜索（线性扫描）每次查询需要 $O(Nd)$ 的时间，这对于实时应用是不可接受的。k-d 树（k-dimensional tree）是一种加速 k-NN 搜索的数据结构。</p>
+<h3 id="4-1-k-d-树的构造"><a href="#4-1-k-d-树的构造" class="headerlink" title="4.1 k-d 树的构造"></a>4.1 k-d 树的构造</h3><p>k-d 树是一种对 k 维空间进行划分的二叉树，每个节点对应一个超矩形区域。</p>
+<p><strong>构造算法（递归）</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">function build_kd_tree(points, depth):</span><br><span class="line">    if points is empty:</span><br><span class="line">        return None</span><br><span class="line">    </span><br><span class="line">    // 选择划分维度（轮流选择）</span><br><span class="line">    axis = depth mod k</span><br><span class="line">    </span><br><span class="line">    // 按当前维度排序，取中位数点作为分割点</span><br><span class="line">    sort points by axis-th coordinate</span><br><span class="line">    median_index = len(points) // 2</span><br><span class="line">    </span><br><span class="line">    node = new Node()</span><br><span class="line">    node.point = points[median_index]</span><br><span class="line">    node.axis = axis</span><br><span class="line">    </span><br><span class="line">    // 左右子树</span><br><span class="line">    node.left = build_kd_tree(points[0:median_index], depth + 1)</span><br><span class="line">    node.right = build_kd_tree(points[median_index+1:], depth + 1)</span><br><span class="line">    </span><br><span class="line">    return node</span><br></pre></td></tr></table></figure>
+
+<p>时间复杂度：$O(N \log N)$。</p>
+<h3 id="4-2-k-d-树的最近邻搜索"><a href="#4-2-k-d-树的最近邻搜索" class="headerlink" title="4.2 k-d 树的最近邻搜索"></a>4.2 k-d 树的最近邻搜索</h3><p><strong>搜索算法</strong>：</p>
+<ol>
+<li>从根节点出发，递归向下移动，按比较结果走左子树或右子树，直到到达叶节点。将此叶节点作为当前的”最佳点”。</li>
+<li>回溯展开递归：<ul>
+<li>检查当前节点是否比”最佳点”更近，如果是则更新最佳点</li>
+<li>检查当前节点的另一子树所在区域是否有更近的可能性（即超球是否与超矩形相交）。如果相交，则进入另一子树搜索</li>
+</ul>
+</li>
+<li>最终回到根节点时，最佳点即为最近邻</li>
+</ol>
+<p><strong>平均时间复杂度</strong>：$O(\log N)$（低维情况下）。</p>
+<p><strong>最坏时间复杂度</strong>：$O(N)$（高维时退化为暴力搜索，实际中当 $d &gt; 20$ 时 k-d 树优势大幅减弱）。</p>
+<h3 id="4-3-k-d-树的局限性"><a href="#4-3-k-d-树的局限性" class="headerlink" title="4.3 k-d 树的局限性"></a>4.3 k-d 树的局限性</h3><ul>
+<li>当维数较高（一般认为 $d &gt; 20$）时效率显著下降</li>
+<li>对频繁插入&#x2F;删除的操作需要重新平衡</li>
+<li>只适用于欧氏距离和闵可夫斯基距离族</li>
+</ul>
+<h2 id="五、球树（Ball-Tree）"><a href="#五、球树（Ball-Tree）" class="headerlink" title="五、球树（Ball Tree）"></a>五、球树（Ball Tree）</h2><p>球树是 k-d 树的一种改进，用超球体（hypersphere）而非超矩形划分空间。</p>
+<h3 id="5-1-构造原理"><a href="#5-1-构造原理" class="headerlink" title="5.1 构造原理"></a>5.1 构造原理</h3><p>球树的每个节点对应一个超球，包含该节点中所有数据点。构造方式：</p>
+<ol>
+<li>选择一个节点内最远的点作为第一中心</li>
+<li>选择离第一中心最远的点作为第二中心</li>
+<li>将所有数据点分配到离其最近的中心</li>
+<li>为两个子集分别计算最小包围球</li>
+<li>递归构造</li>
+</ol>
+<h3 id="5-2-搜索优势"><a href="#5-2-搜索优势" class="headerlink" title="5.2 搜索优势"></a>5.2 搜索优势</h3><p>球树在搜索时使用三角形不等式剪枝：</p>
+<p>$$
+d(q, p) \geq |d(q, c) - r|
+$$</p>
+<p>其中 $q$ 是查询点，$c$ 是球心，$r$ 是球半径。如果 $|d(q, c) - r|$ 已经大于当前最佳距离，则整个球可以被安全剪枝。</p>
+<p>球树在高维空间中通常优于 k-d 树。</p>
+<h3 id="5-3-k-d-树-vs-球树-vs-暴力搜索"><a href="#5-3-k-d-树-vs-球树-vs-暴力搜索" class="headerlink" title="5.3 k-d 树 vs 球树 vs 暴力搜索"></a>5.3 k-d 树 vs 球树 vs 暴力搜索</h3><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>构造时间</th>
+<th>查询时间</th>
+<th>适用维度</th>
+<th>距离支持</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>暴力搜索</td>
+<td>O(1)</td>
+<td>O(Nd)</td>
+<td>任意</td>
+<td>任意</td>
+</tr>
+<tr>
+<td>k-d 树</td>
+<td>O(N log N)</td>
+<td>O(log N)*</td>
+<td>d &lt; 20</td>
+<td>闵可夫斯基</td>
+</tr>
+<tr>
+<td>球树</td>
+<td>O(N log N)</td>
+<td>O(log N)*</td>
+<td>d &lt; 100</td>
+<td>任意度量</td>
+</tr>
+<tr>
+<td>VP 树</td>
+<td>O(N log N)</td>
+<td>O(log N)*</td>
+<td>中高维</td>
+<td>任意度量</td>
+</tr>
+</tbody></table>
+<p>*平均情况，最坏可能退化为 O(N)</p>
+<h2 id="六、局部敏感哈希（LSH）"><a href="#六、局部敏感哈希（LSH）" class="headerlink" title="六、局部敏感哈希（LSH）"></a>六、局部敏感哈希（LSH）</h2><p>局部敏感哈希（Locality-Sensitive Hashing, LSH）是另一种处理大规模高维数据近邻搜索的技术，核心思想是：<strong>将高维空间中相近的点以高概率映射到相同的哈希桶中</strong>。</p>
+<h3 id="6-1-形式化定义"><a href="#6-1-形式化定义" class="headerlink" title="6.1 形式化定义"></a>6.1 形式化定义</h3><p>一个哈希函数族 $\mathcal{H}$ 是 $(d_1, d_2, p_1, p_2)$-敏感的，如果对于任意两点 $p, q$：</p>
+<ul>
+<li>若 $d(p, q) \leq d_1$，则 $P_{h \in \mathcal{H}}[h(p) &#x3D; h(q)] \geq p_1$</li>
+<li>若 $d(p, q) \geq d_2$，则 $P_{h \in \mathcal{H}}[h(p) &#x3D; h(q)] \leq p_2$</li>
+</ul>
+<p>且 $d_1 &lt; d_2$，$p_1 &gt; p_2$。</p>
+<h3 id="6-2-常见-LSH-方法"><a href="#6-2-常见-LSH-方法" class="headerlink" title="6.2 常见 LSH 方法"></a>6.2 常见 LSH 方法</h3><p><strong>用于余弦距离的 SimHash</strong>：</p>
+<p>$$
+h(p) = \text{sign}(p \cdot r)
+$$</p>
+<p>其中 $r$ 是随机超平面的法向量。相似的向量倾向于落在超平面的同侧。</p>
+<p><strong>用于欧氏距离的 p-stable LSH</strong>：</p>
+<p>$$
+h(p) = \left\lfloor \frac{a \cdot p + b}{w} \right\rfloor
+$$</p>
+<p>其中 $a$ 是服从 p-stable 分布的随机向量，$b$ 是 $[0, w]$ 上的均匀随机数。</p>
+<p><strong>用于汉明距离</strong>：直接随机选择比特位。</p>
+<h3 id="6-3-放大技术"><a href="#6-3-放大技术" class="headerlink" title="6.3 放大技术"></a>6.3 放大技术</h3><p>使用 AND-OR 组合来放大 LSH 的精度和召回率：</p>
+<ul>
+<li><strong>AND 组合</strong>：$g(p) &#x3D; (h_1(p), h_2(p), \dots, h_k(p))$，两点的所有 k 个哈希值都相同时才碰撞——提高精度</li>
+<li><strong>OR 组合</strong>：建立 L 个 AND 组合的哈希表，任意一个碰撞即可——提高召回率</li>
+</ul>
+<h2 id="七、k-NN-的优化技巧"><a href="#七、k-NN-的优化技巧" class="headerlink" title="七、k-NN 的优化技巧"></a>七、k-NN 的优化技巧</h2><h3 id="7-1-特征归一化"><a href="#7-1-特征归一化" class="headerlink" title="7.1 特征归一化"></a>7.1 特征归一化</h3><p>k-NN 对特征尺度敏感，必须做归一化。常用方法：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Min-Max 归一化</span></span><br><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> MinMaxScaler</span><br><span class="line">X_scaled = MinMaxScaler().fit_transform(X)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Z-score 标准化</span></span><br><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> StandardScaler</span><br><span class="line">X_scaled = StandardScaler().fit_transform(X)</span><br></pre></td></tr></table></figure>
+
+<p><strong>何时用 Min-Max，何时用 Z-score？</strong></p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>推荐方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>特征边界已知且稳定</td>
+<td>Min-Max</td>
+</tr>
+<tr>
+<td>需要保持稀疏特征</td>
+<td>Min-Max</td>
+</tr>
+<tr>
+<td>特征有离群点</td>
+<td>RobustScaler（中位数 + IQR）</td>
+</tr>
+<tr>
+<td>假设特征近似正态分布</td>
+<td>StandardScaler（Z-score）</td>
+</tr>
+</tbody></table>
+<h3 id="7-2-压缩近邻（Condensed-Nearest-Neighbor）"><a href="#7-2-压缩近邻（Condensed-Nearest-Neighbor）" class="headerlink" title="7.2 压缩近邻（Condensed Nearest Neighbor）"></a>7.2 压缩近邻（Condensed Nearest Neighbor）</h3><p>为了减少存储和计算开销，可以通过只保留”分类边界附近”的样本来压缩数据集。CNN 算法：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. 初始化：随机选一个样本加入压缩集 S</span><br><span class="line">2. 用 S 中的样本对剩余样本分类</span><br><span class="line">3. 将所有被错误分类的样本加入 S</span><br><span class="line">4. 重复步骤 2-3 直到 S 不再变化</span><br></pre></td></tr></table></figure>
+
+<p>CNN 可以大幅减少训练样本数，但对噪声敏感。</p>
+<h3 id="7-3-编辑近邻（Edited-Nearest-Neighbor）"><a href="#7-3-编辑近邻（Edited-Nearest-Neighbor）" class="headerlink" title="7.3 编辑近邻（Edited Nearest Neighbor）"></a>7.3 编辑近邻（Edited Nearest Neighbor）</h3><p>通过移除被其邻居”投票否决”的样本来清理噪声：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. 用整个训练集对每个样本做 k-NN 分类（留一法）</span><br><span class="line">2. 移除所有被分错的样本</span><br><span class="line">3. 用清理后的数据集进行预测</span><br></pre></td></tr></table></figure>
+
+<p>ENN 可以平滑决策边界并减少噪声的影响。</p>
+<h2 id="八、k-NN-与其他算法的比较"><a href="#八、k-NN-与其他算法的比较" class="headerlink" title="八、k-NN 与其他算法的比较"></a>八、k-NN 与其他算法的比较</h2><h3 id="8-1-k-NN-vs-k-means"><a href="#8-1-k-NN-vs-k-means" class="headerlink" title="8.1 k-NN vs k-means"></a>8.1 k-NN vs k-means</h3><p>尽管名字相似，但两者完全不同：</p>
+<table>
+<thead>
+<tr>
+<th>方面</th>
+<th>k-NN</th>
+<th>k-means</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>任务类型</td>
+<td>监督学习（分类&#x2F;回归）</td>
+<td>无监督学习（聚类）</td>
+</tr>
+<tr>
+<td>输入</td>
+<td>需要带标签的训练数据</td>
+<td>无标签数据</td>
+</tr>
+<tr>
+<td>训练过程</td>
+<td>无（惰性学习）</td>
+<td>迭代优化簇中心</td>
+</tr>
+<tr>
+<td>参数 k</td>
+<td>近邻数量</td>
+<td>簇的数量</td>
+</tr>
+<tr>
+<td>预测</td>
+<td>查询邻居投票</td>
+<td>分配到最近的簇中心</td>
+</tr>
+</tbody></table>
+<h3 id="8-2-k-NN-vs-SVM"><a href="#8-2-k-NN-vs-SVM" class="headerlink" title="8.2 k-NN vs SVM"></a>8.2 k-NN vs SVM</h3><table>
+<thead>
+<tr>
+<th>方面</th>
+<th>k-NN</th>
+<th>SVM</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>训练复杂度</td>
+<td>O(1)（无训练）</td>
+<td>O(N^2) 到 O(N^3)</td>
+</tr>
+<tr>
+<td>预测复杂度</td>
+<td>O(Nd) 暴力</td>
+<td>O(Sd)（S 为支持向量数）</td>
+</tr>
+<tr>
+<td>对高维数据</td>
+<td>差（维度灾难）</td>
+<td>好（核技巧）</td>
+</tr>
+<tr>
+<td>非线性决策面</td>
+<td>自然支持</td>
+<td>需要核函数</td>
+</tr>
+<tr>
+<td>概率输出</td>
+<td>可按比例输出</td>
+<td>需要 Platt scaling</td>
+</tr>
+<tr>
+<td>缺失标签处理</td>
+<td>自然</td>
+<td>需专门方法</td>
+</tr>
+</tbody></table>
+<h3 id="8-3-k-NN-vs-决策树"><a href="#8-3-k-NN-vs-决策树" class="headerlink" title="8.3 k-NN vs 决策树"></a>8.3 k-NN vs 决策树</h3><table>
+<thead>
+<tr>
+<th>方面</th>
+<th>k-NN</th>
+<th>决策树</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>可解释性</td>
+<td>低（基于实例）</td>
+<td>高（规则可读）</td>
+</tr>
+<tr>
+<td>对噪声</td>
+<td>对 k 小则很敏感</td>
+<td>容易过拟合</td>
+</tr>
+<tr>
+<td>特征重要度</td>
+<td>不直接提供</td>
+<td>基于信息增益</td>
+</tr>
+<tr>
+<td>增量学习</td>
+<td>自然支持</td>
+<td>需重建树</td>
+</tr>
+<tr>
+<td>缺失值</td>
+<td>需要填入</td>
+<td>可通过代理分裂处理</td>
+</tr>
+</tbody></table>
+<h2 id="九、Python-实现"><a href="#九、Python-实现" class="headerlink" title="九、Python 实现"></a>九、Python 实现</h2><h3 id="9-1-从零实现-k-NN-分类器"><a href="#9-1-从零实现-k-NN-分类器" class="headerlink" title="9.1 从零实现 k-NN 分类器"></a>9.1 从零实现 k-NN 分类器</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> Counter</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">KNNClassifier</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, k=<span class="number">3</span>, metric=<span class="string">&#x27;euclidean&#x27;</span>, weights=<span class="string">&#x27;uniform&#x27;</span></span>):</span><br><span class="line">        <span class="variable language_">self</span>.k = k</span><br><span class="line">        <span class="variable language_">self</span>.metric = metric</span><br><span class="line">        <span class="variable language_">self</span>.weights = weights</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">fit</span>(<span class="params">self, X, y</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;惰性学习：仅存储数据&quot;&quot;&quot;</span></span><br><span class="line">        <span class="variable language_">self</span>.X_train = np.array(X)</span><br><span class="line">        <span class="variable language_">self</span>.y_train = np.array(y)</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">self</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_distance</span>(<span class="params">self, x1, x2</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;计算两点之间的距离&quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">if</span> <span class="variable language_">self</span>.metric == <span class="string">&#x27;euclidean&#x27;</span>:</span><br><span class="line">            <span class="keyword">return</span> np.sqrt(np.<span class="built_in">sum</span>((x1 - x2) ** <span class="number">2</span>))</span><br><span class="line">        <span class="keyword">elif</span> <span class="variable language_">self</span>.metric == <span class="string">&#x27;manhattan&#x27;</span>:</span><br><span class="line">            <span class="keyword">return</span> np.<span class="built_in">sum</span>(np.<span class="built_in">abs</span>(x1 - x2))</span><br><span class="line">        <span class="keyword">elif</span> <span class="variable language_">self</span>.metric == <span class="string">&#x27;cosine&#x27;</span>:</span><br><span class="line">            dot = np.dot(x1, x2)</span><br><span class="line">            norm = np.linalg.norm(x1) * np.linalg.norm(x2)</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span> - dot / (norm + <span class="number">1e-10</span>)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">f&quot;Unknown metric: <span class="subst">&#123;self.metric&#125;</span>&quot;</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">predict_one</span>(<span class="params">self, x</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;预测单个样本&quot;&quot;&quot;</span></span><br><span class="line">        <span class="comment"># 计算到所有训练样本的距离</span></span><br><span class="line">        distances = np.array([</span><br><span class="line">            <span class="variable language_">self</span>._distance(x, x_train) <span class="keyword">for</span> x_train <span class="keyword">in</span> <span class="variable language_">self</span>.X_train</span><br><span class="line">        ])</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 获取 k 个最近邻的索引</span></span><br><span class="line">        k_indices = np.argsort(distances)[:<span class="variable language_">self</span>.k]</span><br><span class="line">        k_distances = distances[k_indices]</span><br><span class="line">        k_labels = <span class="variable language_">self</span>.y_train[k_indices]</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> <span class="variable language_">self</span>.weights == <span class="string">&#x27;uniform&#x27;</span>:</span><br><span class="line">            <span class="comment"># 多数投票</span></span><br><span class="line">            counter = Counter(k_labels)</span><br><span class="line">            <span class="keyword">return</span> counter.most_common(<span class="number">1</span>)[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">elif</span> <span class="variable language_">self</span>.weights == <span class="string">&#x27;distance&#x27;</span>:</span><br><span class="line">            <span class="comment"># 距离加权投票</span></span><br><span class="line">            weight_sum = &#123;&#125;</span><br><span class="line">            <span class="keyword">for</span> label, dist <span class="keyword">in</span> <span class="built_in">zip</span>(k_labels, k_distances):</span><br><span class="line">                w = <span class="number">1.0</span> / (dist + <span class="number">1e-10</span>)  <span class="comment"># 避免除零</span></span><br><span class="line">                weight_sum[label] = weight_sum.get(label, <span class="number">0</span>) + w</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">max</span>(weight_sum, key=weight_sum.get)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">predict</span>(<span class="params">self, X</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;批量预测&quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">return</span> np.array([<span class="variable language_">self</span>.predict_one(x) <span class="keyword">for</span> x <span class="keyword">in</span> X])</span><br></pre></td></tr></table></figure>
+
+<h3 id="9-2-使用-sklearn-的实现"><a href="#9-2-使用-sklearn-的实现" class="headerlink" title="9.2 使用 sklearn 的实现"></a>9.2 使用 sklearn 的实现</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.neighbors <span class="keyword">import</span> KNeighborsClassifier</span><br><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> StandardScaler</span><br><span class="line"><span class="keyword">from</span> sklearn.pipeline <span class="keyword">import</span> Pipeline</span><br><span class="line"><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> GridSearchCV</span><br><span class="line"></span><br><span class="line"><span class="comment"># 构建 pipeline</span></span><br><span class="line">pipeline = Pipeline([</span><br><span class="line">    (<span class="string">&#x27;scaler&#x27;</span>, StandardScaler()),</span><br><span class="line">    (<span class="string">&#x27;knn&#x27;</span>, KNeighborsClassifier())</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 网格搜索</span></span><br><span class="line">param_grid = &#123;</span><br><span class="line">    <span class="string">&#x27;knn__n_neighbors&#x27;</span>: [<span class="number">3</span>, <span class="number">5</span>, <span class="number">7</span>, <span class="number">9</span>, <span class="number">11</span>],</span><br><span class="line">    <span class="string">&#x27;knn__weights&#x27;</span>: [<span class="string">&#x27;uniform&#x27;</span>, <span class="string">&#x27;distance&#x27;</span>],</span><br><span class="line">    <span class="string">&#x27;knn__metric&#x27;</span>: [<span class="string">&#x27;euclidean&#x27;</span>, <span class="string">&#x27;manhattan&#x27;</span>, <span class="string">&#x27;cosine&#x27;</span>]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">grid_search = GridSearchCV(</span><br><span class="line">    pipeline, param_grid, cv=<span class="number">5</span>, scoring=<span class="string">&#x27;accuracy&#x27;</span></span><br><span class="line">)</span><br><span class="line">grid_search.fit(X_train, y_train)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Best params: <span class="subst">&#123;grid_search.best_params_&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Best score: <span class="subst">&#123;grid_search.best_score_:<span class="number">.4</span>f&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="十、面试高频问题"><a href="#十、面试高频问题" class="headerlink" title="十、面试高频问题"></a>十、面试高频问题</h2><p><strong>Q1：k-NN 是惰性学习，这意味着什么？与急切学习（eager learning）有何区别？</strong></p>
+<p>惰性学习（lazy learning）意味着 k-NN 在”训练”阶段不做任何计算，仅简单地存储所有训练样本。实际的”工作”——计算距离、排序、投票——全部延迟到预测时才进行。</p>
+<p>对比：</p>
+<ul>
+<li><strong>惰性学习</strong>（k-NN、局部加权回归）：训练 O(1)，预测 O(Nd)，适合需要快速适应新数据的场景</li>
+<li><strong>急切学习</strong>（线性回归、决策树、神经网络）：训练可能需要较长时间，但预测很快</li>
+</ul>
+<p>在需要频繁更新的在线系统中（新数据不断到达），惰性学习有其优势：不需要重新训练模型，只需将新数据加入存储。但代价是每次预测都可能非常慢。</p>
+<p><strong>Q2：为什么要将特征归一化？如果忘记归一化会有什么后果？</strong></p>
+<p>k-NN 依赖距离度量，而距离度量对特征尺度敏感。举个具体例子：</p>
+<p>假设有两个特征：<code>年龄</code>（范围 0-100）和<code>年收入</code>（范围 0-1000000）。欧氏距离计算时，年收入差 10000 元对距离的贡献远大于年龄差 20 岁（$10000^2$ vs $20^2$），导致”年龄”这个特征实际上被忽略了。</p>
+<p>正确的做法是在计算距离前将各特征缩放到可比范围，如 $[0, 1]$ 或均值为 0 方差为 1。</p>
+<p><strong>Q3：k-d 树和球树在什么条件下会退化为 O(N) 搜索？为什么？</strong></p>
+<p>k-d 树在以下情况会退化：</p>
+<ol>
+<li><strong>维度过高</strong>（$d &gt; 20$）：高维空间中超矩形剪枝很难生效，大量节点需要回溯</li>
+<li><strong>数据分布极端</strong>：当数据几乎都在某个方向聚集时，维度划分不均匀</li>
+</ol>
+<p>球树退化条件类似但比 k-d 树稍好，因为它用超球而非轴对齐超矩形，对高维数据的适应性更强，但本质上仍受维度灾难的制约。</p>
+<p>原因：高维空间中，两点间距离趋于相等，任何划分策略都无法有效地区分”远”和”近”，因此几乎所有剪枝条件都判定为”可能更近”，导致必须访问大量节点。</p>
+<p><strong>Q4：加权 k-NN 中的权重如何选择？反距离权重和高斯核权重各有什么优缺点？</strong></p>
+<ul>
+<li><strong>反距离权重</strong> $w &#x3D; 1&#x2F;d$：简单直接，但 $d \to 0$ 时权重趋向无穷，需要加 epsilon 防止除零。对非常近的点极其敏感。</li>
+<li><strong>反距离平方</strong> $w &#x3D; 1&#x2F;d^2$：更强调近邻的影响，对噪声更敏感。</li>
+<li><strong>高斯核</strong> $w &#x3D; \exp(-d^2&#x2F;2\sigma^2)$：权重上限为 1，比较稳定。但需要额外调节带宽参数 $\sigma$。</li>
+</ul>
+<p>实践中最常用的是反距离权重（$1&#x2F;d$），效果通常足够好且无需调参。如果使用高斯核，可将 $\sigma$ 设为 k 个邻居中距离的中位数。</p>
+<p><strong>Q5：如何处理样本不平衡问题在 k-NN 中的影响？</strong></p>
+<p>k-NN 对类别不平衡比较敏感：多数类的样本更容易出现在 k 个最近邻中。解决方法：</p>
+<ol>
+<li><strong>距离加权</strong>：让每个邻居的投票权重与其距离成反比，这样即使多数类邻居多，如果它们的距离很远，权重也会被稀释</li>
+<li><strong>调整 k 值</strong>：增大 k 有助于平滑，但可能过度平滑少数类信号；需要通过交叉验证选择</li>
+<li><strong>过采样&#x2F;欠采样</strong>：使用 SMOTE 等合成少数类样本，或随机欠采样多数类</li>
+<li><strong>加权投票</strong>：给少数类更高的先验投票权重</li>
+<li><strong>使用距离剪裁</strong>：限定只考虑固定半径内的邻居，而非固定 k 个邻居</li>
+</ol>
+<h2 id="十一、总结"><a href="#十一、总结" class="headerlink" title="十一、总结"></a>十一、总结</h2><p>k 近邻法是最基础的机器学习算法之一。它直观、无需训练、理论简单，并且在许多实际问题上表现不俗。本文从 k-NN 的三要素（距离度量、k 值选择、分类决策规则）出发，系统讨论了其原理、实现细节和优化方法。</p>
+<p>k-NN 的核心思想——“相似的样本落在相近的位置”——看似朴素，却蕴含着非参数统计推断的深刻洞见。虽然在高维数据和大型数据集上 k-NN 暴露出效率问题，但通过 k-d 树、球树、LSH 等数据结构和技术，它在许多实际场景中仍然是一个有力且可靠的工具。</p>
+<p>在学习更复杂的机器学习算法之前，透彻理解 k-NN 能帮助我们建立对”距离”、”近邻”、”偏差-方差权衡”等基本概念的直觉。这些概念将贯穿我们后续所有的统计学习旅程。</p>
+<p><strong>参考文献</strong>：</p>
+<ol>
+<li>Cover, T., &amp; Hart, P. (1967). Nearest neighbor pattern classification. <em>IEEE Transactions on Information Theory</em>, 13(1), 21-27.</li>
+<li>李航. (2019). 《统计学习方法》（第2版）. 第3章.</li>
+<li>Bentley, J. L. (1975). Multidimensional binary search trees used for associative searching. <em>Communications of the ACM</em>, 18(9), 509-517.</li>
+<li>Omohundro, S. M. (1989). Five balltree construction algorithms.</li>
+<li>Indyk, P., &amp; Motwani, R. (1998). Approximate nearest neighbors: towards removing the curse of dimensionality. <em>STOC ‘98</em>.</li>
+</ol>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2020/02/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91k%E8%BF%91%E9%82%BB%E6%B3%95/">http://tufusi.com/2020/02/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91k%E8%BF%91%E9%82%BB%E6%B3%95/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">读书笔记    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nicolas-j-leclercq-cmV9xe6sqfQ-unsplash.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2020/02/15/%E3%80%90Python%E7%B3%BB%E5%88%97%E3%80%91%E5%B8%B8%E7%94%A8%E6%A0%87%E5%87%86%E5%BA%93/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_python_book.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【Python系列】常用标准库</span></div></a></div><div class="next-post pull_right"><a href="/2020/02/10/%E3%80%90Python%E7%B3%BB%E5%88%97%E3%80%91Pandas%E6%9D%83%E5%A8%81%E6%8C%87%E5%8D%97/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_python.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【Python系列】Pandas权威指南</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2020/04/15/【统计学习方法死磕系列】决策树/" title="【统计学习方法死磕系列】决策树"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nareeta-martin-wM59pRQYbhs-unsplash.jpg"><div class="relatedPosts_title">【统计学习方法死磕系列】决策树</div></a></div><div class="relatedPosts_item"><a href="/2020/01/15/【统计学习方法死磕系列】感知机/" title="【统计学习方法死磕系列】感知机"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nareeta-martin-wM59pRQYbhs-unsplash.jpg"><div class="relatedPosts_title">【统计学习方法死磕系列】感知机</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/nicolas-j-leclercq-cmV9xe6sqfQ-unsplash.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

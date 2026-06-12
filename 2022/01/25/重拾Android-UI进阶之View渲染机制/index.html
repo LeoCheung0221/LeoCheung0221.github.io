@@ -1,0 +1,493 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>UI进阶之View渲染机制 | ONE·PIECE</title><meta name="description" content="UI进阶之View渲染机制"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="UI进阶之View渲染机制"><meta name="twitter:description" content="UI进阶之View渲染机制"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/uploadbeta26.com.jpeg"><meta property="og:type" content="article"><meta property="og:title" content="UI进阶之View渲染机制"><meta property="og:url" content="http://tufusi.com/2022/01/25/%E9%87%8D%E6%8B%BEAndroid-UI%E8%BF%9B%E9%98%B6%E4%B9%8BView%E6%B8%B2%E6%9F%93%E6%9C%BA%E5%88%B6/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="UI进阶之View渲染机制"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/uploadbeta26.com.jpeg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2022/01/25/%E9%87%8D%E6%8B%BEAndroid-UI%E8%BF%9B%E9%98%B6%E4%B9%8BView%E6%B8%B2%E6%9F%93%E6%9C%BA%E5%88%B6/"><link rel="prev" title="UI进阶之自定义View" href="http://tufusi.com/2022/01/30/%E9%87%8D%E6%8B%BEAndroid-UI%E8%BF%9B%E9%98%B6%E4%B9%8B%E8%87%AA%E5%AE%9A%E4%B9%89View/"><link rel="next" title="UI进阶之触摸事件分发机制" href="http://tufusi.com/2022/01/20/%E9%87%8D%E6%8B%BEAndroid-UI%E8%BF%9B%E9%98%B6%E4%B9%8B%E8%A7%A6%E6%91%B8%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91%E6%9C%BA%E5%88%B6/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">简介</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#View-%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF%E5%85%A8%E6%99%AF"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">View 渲染管线全景</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#16ms-%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">16ms 机制</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E6%B8%B2%E6%9F%93%E5%8E%9F%E7%90%86"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">渲染原理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E7%A1%AC%E4%BB%B6%E5%8A%A0%E9%80%9F%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">硬件加速深度解析</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E7%A1%AC%E4%BB%B6%E5%8A%A0%E9%80%9F"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">什么是硬件加速</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#DisplayList%EF%BC%88RenderNode%EF%BC%89%E5%BD%95%E5%88%B6%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">DisplayList（RenderNode）录制机制</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#RenderThread%EF%BC%9A%E6%B8%B2%E6%9F%93%E7%BA%BF%E7%A8%8B%E5%88%86%E7%A6%BB"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">RenderThread：渲染线程分离</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#RenderNode-%E7%9A%84%E5%8F%98%E6%8D%A2%E5%B1%9E%E6%80%A7"><span class="toc_mobile_items-number">5.4.</span> <span class="toc_mobile_items-text">RenderNode 的变换属性</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B8%89%E9%87%8D%E7%BC%93%E5%86%B2%E4%B8%8E-BufferQueue"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">三重缓冲与 BufferQueue</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#BufferQueue-%E6%A8%A1%E5%9E%8B"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">BufferQueue 模型</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E9%87%8D%E7%BC%93%E5%86%B2"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">三重缓冲</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#dumpsys-gfxinfo%EF%BC%9A%E5%B8%A7%E6%80%A7%E8%83%BD%E7%BB%9F%E8%AE%A1"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">dumpsys gfxinfo：帧性能统计</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#framestats-%E8%AF%A6%E7%BB%86%E5%B8%A7%E5%88%86%E8%A7%A3"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">framestats 详细帧分解</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#Profile-GPU-Rendering%EF%BC%88GPU-%E5%91%88%E7%8E%B0%E6%A8%A1%E5%BC%8F%E5%88%86%E6%9E%90%EF%BC%89"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">Profile GPU Rendering（GPU 呈现模式分析）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#FrameMetrics-API%EF%BC%88API-24-%EF%BC%89"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">FrameMetrics API（API 24+）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E8%BF%87%E6%B8%A1%E7%BB%98%E5%88%B6%EF%BC%88Overdraw%EF%BC%89%E6%A3%80%E6%B5%8B"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">过渡绘制（Overdraw）检测</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#Overdraw-%E7%9A%84%E5%A4%84%E7%90%86%E6%96%B9%E6%A1%88"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">Overdraw 的处理方案</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#Overdraw-%E5%A4%84%E7%90%86%E6%96%B9%E6%A1%88%E4%B8%80%EF%BC%9A%E5%8E%BB%E6%8E%89-window-%E7%9A%84%E9%BB%98%E8%AE%A4%E8%83%8C%E6%99%AF"><span class="toc_mobile_items-number">11.1.</span> <span class="toc_mobile_items-text">Overdraw 处理方案一：去掉 window 的默认背景</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#Overdraw-%E5%A4%84%E7%90%86%E6%96%B9%E6%A1%88%E4%BA%8C%EF%BC%9A%E5%8E%BB%E6%8E%89%E5%85%B6%E4%BB%96%E4%B8%8D%E5%BF%85%E8%A6%81%E7%9A%84%E8%83%8C%E6%99%AF"><span class="toc_mobile_items-number">11.2.</span> <span class="toc_mobile_items-text">Overdraw 处理方案二：去掉其他不必要的背景</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#Overdraw-%E5%A4%84%E7%90%86%E6%96%B9%E6%A1%88%E4%B8%89%EF%BC%9AclipRect-%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc_mobile_items-number">11.3.</span> <span class="toc_mobile_items-text">Overdraw 处理方案三：clipRect 的使用</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#Overdraw-%E5%A4%84%E7%90%86%E6%96%B9%E6%A1%88%E5%9B%9B%EF%BC%9A%E8%87%AA%E5%AE%9A%E4%B9%89-ViewGroup-%E8%A3%81%E5%89%AA%E5%AD%90-View"><span class="toc_mobile_items-number">11.4.</span> <span class="toc_mobile_items-text">Overdraw 处理方案四：自定义 ViewGroup 裁剪子 View</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#Overdraw-%E5%A4%84%E7%90%86%E6%96%B9%E6%A1%88%E4%BA%94%EF%BC%9AViewStub"><span class="toc_mobile_items-number">11.5.</span> <span class="toc_mobile_items-text">Overdraw 处理方案五：ViewStub</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#Overdraw-%E5%A4%84%E7%90%86%E6%96%B9%E6%A1%88%E5%85%AD%EF%BC%9AMerge-%E6%A0%87%E7%AD%BE"><span class="toc_mobile_items-number">11.6.</span> <span class="toc_mobile_items-text">Overdraw 处理方案六：Merge 标签</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#Hierarchy-Viewer-%E4%BC%98%E5%8C%96%E5%B8%83%E5%B1%80%E5%B1%82%E6%AC%A1"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">Hierarchy Viewer - 优化布局层次</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#HV-%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc_mobile_items-number">12.1.</span> <span class="toc_mobile_items-text">HV 的使用</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%B8%83%E5%B1%80%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E5%8F%8A%E4%BC%98%E5%8C%96%E5%BB%BA%E8%AE%AE"><span class="toc_mobile_items-number">12.2.</span> <span class="toc_mobile_items-text">布局常见问题及优化建议</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#ConstraintLayout%EF%BC%9A%E6%89%81%E5%B9%B3%E5%8C%96%E5%B8%83%E5%B1%80"><span class="toc_mobile_items-number">13.</span> <span class="toc_mobile_items-text">ConstraintLayout：扁平化布局</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%B8%B8%E8%A7%81%E6%80%A7%E8%83%BD%E9%99%B7%E9%98%B1%E4%B8%8E%E4%BC%98%E5%8C%96%E6%A1%88%E4%BE%8B"><span class="toc_mobile_items-number">14.</span> <span class="toc_mobile_items-text">常见性能陷阱与优化案例</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%99%B7%E9%98%B1%E4%B8%80%EF%BC%9A%E5%9C%A8-onDraw-%E4%B8%AD%E5%88%86%E9%85%8D%E5%AF%B9%E8%B1%A1"><span class="toc_mobile_items-number">14.1.</span> <span class="toc_mobile_items-text">陷阱一：在 onDraw 中分配对象</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%99%B7%E9%98%B1%E4%BA%8C%EF%BC%9A%E9%A2%91%E7%B9%81%E8%A7%A6%E5%8F%91-requestLayout"><span class="toc_mobile_items-number">14.2.</span> <span class="toc_mobile_items-text">陷阱二：频繁触发 requestLayout</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%99%B7%E9%98%B1%E4%B8%89%EF%BC%9A%E6%9C%AA%E5%90%AF%E7%94%A8%E7%A1%AC%E4%BB%B6%E5%B1%82%E4%BC%98%E5%8C%96%E5%8A%A8%E7%94%BB"><span class="toc_mobile_items-number">14.3.</span> <span class="toc_mobile_items-text">陷阱三：未启用硬件层优化动画</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%99%B7%E9%98%B1%E5%9B%9B%EF%BC%9ARecyclerView-%E4%B8%AD%E7%9A%84%E5%A4%8D%E6%9D%82-item"><span class="toc_mobile_items-number">14.4.</span> <span class="toc_mobile_items-text">陷阱四：RecyclerView 中的复杂 item</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%99%B7%E9%98%B1%E4%BA%94%EF%BC%9A%E5%A4%A7%E5%9B%BE%E7%9B%B4%E6%8E%A5%E8%A7%A3%E7%A0%81%E5%9C%A8-UI-%E7%BA%BF%E7%A8%8B"><span class="toc_mobile_items-number">14.5.</span> <span class="toc_mobile_items-text">陷阱五：大图直接解码在 UI 线程</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#Systrace-Perfetto-%E5%B8%A7%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">15.</span> <span class="toc_mobile_items-text">Systrace &#x2F; Perfetto 帧分析</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#Systrace-%E7%AE%80%E4%BB%8B"><span class="toc_mobile_items-number">15.1.</span> <span class="toc_mobile_items-text">Systrace 简介</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9C%A8-trace-%E4%B8%AD%E5%AE%9A%E4%BD%8D%E5%B8%A7%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">15.2.</span> <span class="toc_mobile_items-text">在 trace 中定位帧问题</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E6%80%BB%E7%BB%93"><span class="toc_mobile_items-number">16.</span> <span class="toc_mobile_items-text">总结</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%B3%E9%94%AE%E6%BA%90%E7%A0%81%E6%96%87%E4%BB%B6"><span class="toc_mobile_items-number">16.1.</span> <span class="toc_mobile_items-text">关键源码文件</span></a></li></ol></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-number">1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#View-%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF%E5%85%A8%E6%99%AF"><span class="toc-number">2.</span> <span class="toc-text">View 渲染管线全景</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#16ms-%E6%9C%BA%E5%88%B6"><span class="toc-number">3.</span> <span class="toc-text">16ms 机制</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B8%B2%E6%9F%93%E5%8E%9F%E7%90%86"><span class="toc-number">4.</span> <span class="toc-text">渲染原理</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E5%8A%A0%E9%80%9F%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc-number">5.</span> <span class="toc-text">硬件加速深度解析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E7%A1%AC%E4%BB%B6%E5%8A%A0%E9%80%9F"><span class="toc-number">5.1.</span> <span class="toc-text">什么是硬件加速</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DisplayList%EF%BC%88RenderNode%EF%BC%89%E5%BD%95%E5%88%B6%E6%9C%BA%E5%88%B6"><span class="toc-number">5.2.</span> <span class="toc-text">DisplayList（RenderNode）录制机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RenderThread%EF%BC%9A%E6%B8%B2%E6%9F%93%E7%BA%BF%E7%A8%8B%E5%88%86%E7%A6%BB"><span class="toc-number">5.3.</span> <span class="toc-text">RenderThread：渲染线程分离</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RenderNode-%E7%9A%84%E5%8F%98%E6%8D%A2%E5%B1%9E%E6%80%A7"><span class="toc-number">5.4.</span> <span class="toc-text">RenderNode 的变换属性</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E9%87%8D%E7%BC%93%E5%86%B2%E4%B8%8E-BufferQueue"><span class="toc-number">6.</span> <span class="toc-text">三重缓冲与 BufferQueue</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#BufferQueue-%E6%A8%A1%E5%9E%8B"><span class="toc-number">6.1.</span> <span class="toc-text">BufferQueue 模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E9%87%8D%E7%BC%93%E5%86%B2"><span class="toc-number">6.2.</span> <span class="toc-text">三重缓冲</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#dumpsys-gfxinfo%EF%BC%9A%E5%B8%A7%E6%80%A7%E8%83%BD%E7%BB%9F%E8%AE%A1"><span class="toc-number">7.</span> <span class="toc-text">dumpsys gfxinfo：帧性能统计</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#framestats-%E8%AF%A6%E7%BB%86%E5%B8%A7%E5%88%86%E8%A7%A3"><span class="toc-number">7.1.</span> <span class="toc-text">framestats 详细帧分解</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Profile-GPU-Rendering%EF%BC%88GPU-%E5%91%88%E7%8E%B0%E6%A8%A1%E5%BC%8F%E5%88%86%E6%9E%90%EF%BC%89"><span class="toc-number">8.</span> <span class="toc-text">Profile GPU Rendering（GPU 呈现模式分析）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#FrameMetrics-API%EF%BC%88API-24-%EF%BC%89"><span class="toc-number">9.</span> <span class="toc-text">FrameMetrics API（API 24+）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%BF%87%E6%B8%A1%E7%BB%98%E5%88%B6%EF%BC%88Overdraw%EF%BC%89%E6%A3%80%E6%B5%8B"><span class="toc-number">10.</span> <span class="toc-text">过渡绘制（Overdraw）检测</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Overdraw-%E7%9A%84%E5%A4%84%E7%90%86%E6%96%B9%E6%A1%88"><span class="toc-number">11.</span> <span class="toc-text">Overdraw 的处理方案</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Overdraw-%E5%A4%84%E7%90%86%E6%96%B9%E6%A1%88%E4%B8%80%EF%BC%9A%E5%8E%BB%E6%8E%89-window-%E7%9A%84%E9%BB%98%E8%AE%A4%E8%83%8C%E6%99%AF"><span class="toc-number">11.1.</span> <span class="toc-text">Overdraw 处理方案一：去掉 window 的默认背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Overdraw-%E5%A4%84%E7%90%86%E6%96%B9%E6%A1%88%E4%BA%8C%EF%BC%9A%E5%8E%BB%E6%8E%89%E5%85%B6%E4%BB%96%E4%B8%8D%E5%BF%85%E8%A6%81%E7%9A%84%E8%83%8C%E6%99%AF"><span class="toc-number">11.2.</span> <span class="toc-text">Overdraw 处理方案二：去掉其他不必要的背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Overdraw-%E5%A4%84%E7%90%86%E6%96%B9%E6%A1%88%E4%B8%89%EF%BC%9AclipRect-%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">11.3.</span> <span class="toc-text">Overdraw 处理方案三：clipRect 的使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Overdraw-%E5%A4%84%E7%90%86%E6%96%B9%E6%A1%88%E5%9B%9B%EF%BC%9A%E8%87%AA%E5%AE%9A%E4%B9%89-ViewGroup-%E8%A3%81%E5%89%AA%E5%AD%90-View"><span class="toc-number">11.4.</span> <span class="toc-text">Overdraw 处理方案四：自定义 ViewGroup 裁剪子 View</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Overdraw-%E5%A4%84%E7%90%86%E6%96%B9%E6%A1%88%E4%BA%94%EF%BC%9AViewStub"><span class="toc-number">11.5.</span> <span class="toc-text">Overdraw 处理方案五：ViewStub</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Overdraw-%E5%A4%84%E7%90%86%E6%96%B9%E6%A1%88%E5%85%AD%EF%BC%9AMerge-%E6%A0%87%E7%AD%BE"><span class="toc-number">11.6.</span> <span class="toc-text">Overdraw 处理方案六：Merge 标签</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Hierarchy-Viewer-%E4%BC%98%E5%8C%96%E5%B8%83%E5%B1%80%E5%B1%82%E6%AC%A1"><span class="toc-number">12.</span> <span class="toc-text">Hierarchy Viewer - 优化布局层次</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#HV-%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">12.1.</span> <span class="toc-text">HV 的使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%83%E5%B1%80%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E5%8F%8A%E4%BC%98%E5%8C%96%E5%BB%BA%E8%AE%AE"><span class="toc-number">12.2.</span> <span class="toc-text">布局常见问题及优化建议</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ConstraintLayout%EF%BC%9A%E6%89%81%E5%B9%B3%E5%8C%96%E5%B8%83%E5%B1%80"><span class="toc-number">13.</span> <span class="toc-text">ConstraintLayout：扁平化布局</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E6%80%A7%E8%83%BD%E9%99%B7%E9%98%B1%E4%B8%8E%E4%BC%98%E5%8C%96%E6%A1%88%E4%BE%8B"><span class="toc-number">14.</span> <span class="toc-text">常见性能陷阱与优化案例</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%B7%E9%98%B1%E4%B8%80%EF%BC%9A%E5%9C%A8-onDraw-%E4%B8%AD%E5%88%86%E9%85%8D%E5%AF%B9%E8%B1%A1"><span class="toc-number">14.1.</span> <span class="toc-text">陷阱一：在 onDraw 中分配对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%B7%E9%98%B1%E4%BA%8C%EF%BC%9A%E9%A2%91%E7%B9%81%E8%A7%A6%E5%8F%91-requestLayout"><span class="toc-number">14.2.</span> <span class="toc-text">陷阱二：频繁触发 requestLayout</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%B7%E9%98%B1%E4%B8%89%EF%BC%9A%E6%9C%AA%E5%90%AF%E7%94%A8%E7%A1%AC%E4%BB%B6%E5%B1%82%E4%BC%98%E5%8C%96%E5%8A%A8%E7%94%BB"><span class="toc-number">14.3.</span> <span class="toc-text">陷阱三：未启用硬件层优化动画</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%B7%E9%98%B1%E5%9B%9B%EF%BC%9ARecyclerView-%E4%B8%AD%E7%9A%84%E5%A4%8D%E6%9D%82-item"><span class="toc-number">14.4.</span> <span class="toc-text">陷阱四：RecyclerView 中的复杂 item</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%B7%E9%98%B1%E4%BA%94%EF%BC%9A%E5%A4%A7%E5%9B%BE%E7%9B%B4%E6%8E%A5%E8%A7%A3%E7%A0%81%E5%9C%A8-UI-%E7%BA%BF%E7%A8%8B"><span class="toc-number">14.5.</span> <span class="toc-text">陷阱五：大图直接解码在 UI 线程</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Systrace-Perfetto-%E5%B8%A7%E5%88%86%E6%9E%90"><span class="toc-number">15.</span> <span class="toc-text">Systrace &#x2F; Perfetto 帧分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Systrace-%E7%AE%80%E4%BB%8B"><span class="toc-number">15.1.</span> <span class="toc-text">Systrace 简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8-trace-%E4%B8%AD%E5%AE%9A%E4%BD%8D%E5%B8%A7%E9%97%AE%E9%A2%98"><span class="toc-number">15.2.</span> <span class="toc-text">在 trace 中定位帧问题</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">16.</span> <span class="toc-text">总结</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E6%BA%90%E7%A0%81%E6%96%87%E4%BB%B6"><span class="toc-number">16.1.</span> <span class="toc-text">关键源码文件</span></a></li></ol></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/uploadbeta26.com.jpeg)"><div id="post-info"><div id="post-title"><div class="posttitle">UI进阶之View渲染机制</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2022-01-25<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">5.4k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 19 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>之所以有这一章节内容，主要还是考虑 APP 优化性能这一块。对于优化性能一般从：渲染、运算和内存、电量 这三个方面进行考量的。所以还是有必要要了解一下 Android 的渲染机制。</p>
+<p>我们知道 Android 系统每隔 16ms 就会重新绘制一次页面，也就是说，我们的应用必须要在 16ms 内完成屏幕刷新的全部逻辑操作，即每一帧只能停留 16ms，渲染机制理清楚后再去考虑如何优化 UI 卡顿，才是正确的探索之路。</p>
+<h1 id="View-渲染管线全景"><a href="#View-渲染管线全景" class="headerlink" title="View 渲染管线全景"></a>View 渲染管线全景</h1><p>在深入 16ms 机制之前，先了解从应用层绘制到屏幕显示的完整链路：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">View.onDraw (UI Thread)</span><br><span class="line">    ↓</span><br><span class="line">DisplayList 录制 (硬件加速) 或 直接绘制到 Canvas (软件绘制)</span><br><span class="line">    ↓</span><br><span class="line">RenderThread: syncFrameState → issueDrawCommands (硬件加速)</span><br><span class="line">或</span><br><span class="line">Surface.lockCanvas → unlockCanvasAndPost (软件绘制)</span><br><span class="line">    ↓</span><br><span class="line">BufferQueue: dequeueBuffer → queueBuffer</span><br><span class="line">    ↓</span><br><span class="line">SurfaceFlinger: 合成所有 Layer</span><br><span class="line">    ↓</span><br><span class="line">Hardware Composer (HWC) / GPU 合成</span><br><span class="line">    ↓</span><br><span class="line">Display: 屏幕显示</span><br></pre></td></tr></table></figure>
+
+<p>理解这个管线的每一个阶段，才能精准定位帧率瓶颈。</p>
+<h1 id="16ms-机制"><a href="#16ms-机制" class="headerlink" title="16ms 机制"></a>16ms 机制</h1><p><strong>为什么是 16ms?</strong></p>
+<p>16ms 意味着 1000&#x2F;60Hz &#x3D; 16.6ms，相当于 60fps。这是因为人眼与大脑之间的协作无法感知超过 60fps 的画面更新。12fps 大概类似手动快速翻动书籍的帧率，这明显是可以感知到不够顺滑的。24fps 使得人眼感知的是连续线性的运动，这其实是归功于运动模糊的效果。24fps 是电影胶圈通常使用的帧率，因为这个帧率已经足够支撑大部分电影画面需要表达的内容，同时能够最大的减少费用支出。但是低于 30fps 是无法顺畅表现绚丽的画面内容的，此时就需要用到 60fps 来达到想要的效果，超过 60fps 就没有必要了。如果我们的应用没有在 16ms 内完成屏幕刷新的全部逻辑操作，就会发生卡顿。</p>
+<p>在现代高刷新率设备（90Hz、120Hz）上，这个窗口进一步缩小到约 11ms 或 8.3ms，对性能要求更严格。</p>
+<p><strong>为什么 16ms 未完成绘制会卡顿？</strong></p>
+<p>Android 系统每隔 16ms 就发出一次 <strong><code>VSYNC</code></strong> 信号，触发对 UI 进行渲染。VSYNC 是 Vertical Synchronization（垂直同步）的缩写，是一种在 PC 上很早就广泛使用的技术，可以简单的把它认为是一种定时中断。而在 Android 4.1（JB）中已经开始引入 VSync 机制。</p>
+<p><img alt="Android渲染绘制原理图1.png" data-src="https://i.loli.net/2020/08/15/yfbDkC72cO6JjI9.png" class="lazyload"></p>
+<p>上图所示是 <code>VSync</code> 机制下的绘制流程图。从上图可以看出，CPU 和 GPU 的处理时间都是少于一个 VSync 的间隔的，即 16.6ms。如果每个间隔都有绘制的情形下，当前的 fps 即为 <strong>60 帧</strong>。</p>
+<p>当 CPU 和 GPU 处理时间都比较慢，或者因为其他原因，导致主线程中 do heavy work，那么就会出现如下图所示的状况：</p>
+<p><img alt="Android渲染绘制原理图2.png" data-src="https://i.loli.net/2020/08/15/vbg62urSiop9XQO.png" class="lazyload"></p>
+<p>如上图所示，CPU 和 GPU 的第一个处理时间因为各种原因均大于一个 VSync 间隔（16.6ms），所以在第二个 VSync 还在处理 1 区域的绘制时，就不可能实现理论上的 FPS60，同时也出现了丢帧（SF: Skipped Frame）情况，试想用户盯着同一张图看了 32ms 而非 16ms，当然很容易察觉出卡顿，哪怕是出现仅有的一次，用户也能感觉得到不流畅，因此找出导致没能完成绘制的罪魁祸首就能进行实质性的性能优化工作，做到事半功倍。</p>
+<h1 id="渲染原理"><a href="#渲染原理" class="headerlink" title="渲染原理"></a>渲染原理</h1><p>渲染操作通常依赖于两个核心组件：CPU 和 GPU。CPU 负责包括 <strong>Measure</strong>，<strong>Layout</strong>，<strong>Record</strong>，<strong>Execute</strong> 的计算操作；GPU 负责 <strong>Rasterization（栅格化）</strong> 操作。所谓的栅格化就是绘制那些 Button、Shape、Path、String、Bitmap 等组件最基础的操作。它把那些组件拆分到不同的像素上进行展示，说得通俗一点，就是解决那些复杂的 XML 布局文件和标记语言，使之转化为用户可以看得懂的图像。</p>
+<p>因此，16ms 的时间主要是被两件事所占用，第一：将 UI 对象转换为一系列多边形和纹理操作；第二：CPU 传递处理数据到 GPU。所以很明显，只要缩短这两部分时间即可，也就是说需要尽量减少对象转换次数，以及传递数据的次数。</p>
+<p><img alt="Android渲染绘制原理图3.png" data-src="https://i.loli.net/2020/08/15/ycSNjJuCaxqb31E.png" class="lazyload"></p>
+<p>在 CPU 方面，最常见的性能问题是不必要的布局和失效，这些内容必须在视图层次结构中进行测量、清除并重新创建，引发这种问题通常有两个原因：一是重建显示列表的次数太多，二是花费太多时间作废视图层次并进行不必要的重绘，这两个原因在更新显示列表或者其他缓存 GPU 资源时导致 CPU 工作过度。在 GPU 方面，最常见的问题是我们所说的过度绘制（overdraw），通常是在像素着色过程中，通过其他工具进行后期着色时浪费了 GPU 处理时间。</p>
+<ul>
+<li>CPU 产生的问题：不必要的布局和失效</li>
+<li>GPU 产生的问题：过度绘制（overdraw）</li>
+</ul>
+<h1 id="硬件加速深度解析"><a href="#硬件加速深度解析" class="headerlink" title="硬件加速深度解析"></a>硬件加速深度解析</h1><h2 id="什么是硬件加速"><a href="#什么是硬件加速" class="headerlink" title="什么是硬件加速"></a>什么是硬件加速</h2><p>Android 从 3.0（API 11）开始支持硬件加速，从 4.0（API 14）开始默认开启。硬件加速的核心思想是将 View 的绘制命令录制为 GPU 可执行的指令（DisplayList&#x2F;RenderNode），交给 GPU 执行，而不是由 CPU 直接渲染像素。</p>
+<h2 id="DisplayList（RenderNode）录制机制"><a href="#DisplayList（RenderNode）录制机制" class="headerlink" title="DisplayList（RenderNode）录制机制"></a>DisplayList（RenderNode）录制机制</h2><p>源码位置：<code>frameworks/base/core/java/android/view/View.java</code></p>
+<p>开启硬件加速后，View 的绘制过程变成录制绘制命令而非直接绘制：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">draw</span><span class="params">(Canvas canvas)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (canvas.isHardwareAccelerated()) &#123;</span><br><span class="line">        <span class="comment">// 获取或更新 RenderNode（原 DisplayList）</span></span><br><span class="line">        <span class="type">RenderNode</span> <span class="variable">renderNode</span> <span class="operator">=</span> updateDisplayListIfDirty();</span><br><span class="line">        <span class="keyword">if</span> (renderNode != <span class="literal">null</span>) &#123;</span><br><span class="line">            ((DisplayListCanvas) canvas).drawRenderNode(renderNode);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 软件绘制路径：直接绘制到 Canvas</span></span><br><span class="line">        drawBackground(canvas);</span><br><span class="line">        onDraw(canvas);</span><br><span class="line">        dispatchDraw(canvas);</span><br><span class="line">        onDrawForeground(canvas);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>updateDisplayListIfDirty</code> 只有在 View 内容”脏”了（调用过 invalidate）时才会重新录制 DisplayList：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> RenderNode <span class="title function_">updateDisplayListIfDirty</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">RenderNode</span> <span class="variable">renderNode</span> <span class="operator">=</span> mRenderNode;</span><br><span class="line">    <span class="keyword">if</span> ((mPrivateFlags &amp; PFLAG_DRAWN) != PFLAG_DRAWN</span><br><span class="line">            || !renderNode.isValid()</span><br><span class="line">            || (mPrivateFlags &amp; PFLAG_DRAWING_CACHE_VALID) == <span class="number">0</span>) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> <span class="type">DisplayListCanvas</span> <span class="variable">canvas</span> <span class="operator">=</span> renderNode.start(width, height);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 录制所有绘制命令</span></span><br><span class="line">            drawBackground(canvas);</span><br><span class="line">            <span class="keyword">if</span> ((mPrivateFlags &amp; PFLAG_SKIP_DRAW) == <span class="number">0</span>) &#123;</span><br><span class="line">                onDraw(canvas);</span><br><span class="line">            &#125;</span><br><span class="line">            dispatchDraw(canvas);</span><br><span class="line">            onDrawForeground(canvas);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            renderNode.end(canvas);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> renderNode;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>DisplayList 被录制并缓存后，只要 View 的内容没变，后续帧不需要重新执行 onDraw。View 的平移、缩放、旋转、透明度变化都是通过修改 RenderNode 的变换矩阵来实现的，完全不触发 DisplayList 重录。这就是硬件加速带来巨大性能提升的关键原理。</p>
+<h2 id="RenderThread：渲染线程分离"><a href="#RenderThread：渲染线程分离" class="headerlink" title="RenderThread：渲染线程分离"></a>RenderThread：渲染线程分离</h2><p>Android 5.0 引入了 RenderThread，将渲染管线拆分为 UI 线程和独立渲染线程两个阶段：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">UI Thread (主线程):</span><br><span class="line">    1. 处理输入事件</span><br><span class="line">    2. 执行动画回调</span><br><span class="line">    3. measure → layout</span><br><span class="line">    4. 录制 DisplayList (onDraw)</span><br><span class="line">    5. syncFrameState：将 View 属性同步到 RenderNode 树</span><br><span class="line"></span><br><span class="line">RenderThread (GPU 线程):</span><br><span class="line">    1. 接收 UI 线程同步的 RenderNode 树</span><br><span class="line">    2. 排序和优化绘制命令（减少 GPU 状态切换）</span><br><span class="line">    3. issueDrawCommands：向 GPU 提交绘制命令</span><br><span class="line">    4. swapBuffers：交换显示缓冲区</span><br></pre></td></tr></table></figure>
+
+<p>关键优势：UI 线程的准备工作可以与 GPU 的绘制工作流水线并行。当 GPU 在处理第 N 帧时，UI 线程已经可以开始准备第 N+1 帧。</p>
+<p>源码位置：<code>frameworks/base/libs/hwui/renderthread/RenderThread.cpp</code></p>
+<h2 id="RenderNode-的变换属性"><a href="#RenderNode-的变换属性" class="headerlink" title="RenderNode 的变换属性"></a>RenderNode 的变换属性</h2><p>每个 RenderNode 都支持独立的变换操作，这些操作不触发 DisplayList 重录：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">renderNode.setTranslationX(x);     <span class="comment">// 水平平移</span></span><br><span class="line">renderNode.setTranslationY(y);     <span class="comment">// 垂直平移</span></span><br><span class="line">renderNode.setScaleX(sx);          <span class="comment">// 水平缩放</span></span><br><span class="line">renderNode.setScaleY(sy);          <span class="comment">// 垂直缩放</span></span><br><span class="line">renderNode.setRotation(degrees);   <span class="comment">// 旋转（2D）</span></span><br><span class="line">renderNode.setAlpha(alpha);        <span class="comment">// 透明度</span></span><br><span class="line">renderNode.setOutline(outline);    <span class="comment">// 轮廓裁剪</span></span><br><span class="line">renderNode.setClipToBounds(<span class="literal">true</span>);  <span class="comment">// 裁剪到边界</span></span><br></pre></td></tr></table></figure>
+
+<p>因此，View 的属性动画（如 translationX&#x2F;Y、scaleX&#x2F;Y、alpha 等）在硬件加速下非常高效。</p>
+<h1 id="三重缓冲与-BufferQueue"><a href="#三重缓冲与-BufferQueue" class="headerlink" title="三重缓冲与 BufferQueue"></a>三重缓冲与 BufferQueue</h1><h2 id="BufferQueue-模型"><a href="#BufferQueue-模型" class="headerlink" title="BufferQueue 模型"></a>BufferQueue 模型</h2><p>Android 图形系统使用生产者-消费者模型管理图形缓冲区：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">生产者（应用进程/GPU）：绘制内容到缓冲区</span><br><span class="line">    ↓ queueBuffer</span><br><span class="line">BufferQueue（管理缓冲区队列）</span><br><span class="line">    ↓ acquireBuffer</span><br><span class="line">消费者（SurfaceFlinger）：获取缓冲区并合成</span><br><span class="line">    ↓ releaseBuffer</span><br><span class="line">缓冲区回到空闲队列，供生产者再次使用</span><br></pre></td></tr></table></figure>
+
+<h2 id="三重缓冲"><a href="#三重缓冲" class="headerlink" title="三重缓冲"></a>三重缓冲</h2><p>三重缓冲（Triple Buffering）维护三个 GraphicBuffer：</p>
+<table>
+<thead>
+<tr>
+<th>缓冲区</th>
+<th>状态</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Buffer A</td>
+<td>正在显示</td>
+<td>屏幕当前显示的内容</td>
+</tr>
+<tr>
+<td>Buffer B</td>
+<td>GPU 处理中</td>
+<td>正被渲染的帧</td>
+</tr>
+<tr>
+<td>Buffer C</td>
+<td>空闲</td>
+<td>CPU 可以开始准备下一帧</td>
+</tr>
+</tbody></table>
+<p>三重缓冲的优势：当 GPU 偶尔慢于一个 VSYNC 周期时，CPU 不必等待 GPU 完成即可使用第三个缓冲区继续准备下一帧，避免”流水线空等”导致的连锁丢帧。</p>
+<h1 id="dumpsys-gfxinfo：帧性能统计"><a href="#dumpsys-gfxinfo：帧性能统计" class="headerlink" title="dumpsys gfxinfo：帧性能统计"></a>dumpsys gfxinfo：帧性能统计</h1><p><code>dumpsys gfxinfo</code> 是分析 UI 帧性能最直接的工具：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">adb shell dumpsys gfxinfo com.example.app</span><br></pre></td></tr></table></figure>
+
+<p>输出示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Stats since: 18557448508958ns</span><br><span class="line">Total frames rendered: 12834</span><br><span class="line">Janky frames: 234 (1.82%)</span><br><span class="line">50th percentile: 5ms</span><br><span class="line">90th percentile: 14ms</span><br><span class="line">95th percentile: 18ms</span><br><span class="line">99th percentile: 42ms</span><br><span class="line">Number Missed Vsync: 56</span><br><span class="line">Number High input latency: 12</span><br><span class="line">Number Slow UI thread: 89</span><br><span class="line">Number Slow bitmap uploads: 23</span><br><span class="line">Number Slow issue draw commands: 34</span><br></pre></td></tr></table></figure>
+
+<p>关键指标解读：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>含义</th>
+<th>优化方向</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Janky frames</td>
+<td>超过 16ms 的帧</td>
+<td>整体性能优化衡量指标</td>
+</tr>
+<tr>
+<td>Missed Vsync</td>
+<td>错过 VSYNC 信号的帧数</td>
+<td>检查主线程耗时操作</td>
+</tr>
+<tr>
+<td>High input latency</td>
+<td>输入延迟高的帧</td>
+<td>检查 Input 处理回调</td>
+</tr>
+<tr>
+<td>Slow UI thread</td>
+<td>UI 线程慢的帧</td>
+<td>优化 measure&#x2F;layout&#x2F;draw</td>
+</tr>
+<tr>
+<td>Slow bitmap uploads</td>
+<td>位图上传慢的帧</td>
+<td>检查位图尺寸和解码时机</td>
+</tr>
+<tr>
+<td>Slow issue draw commands</td>
+<td>GPU 命令提交慢的帧</td>
+<td>检查过度绘制和复杂 Shader</td>
+</tr>
+</tbody></table>
+<h2 id="framestats-详细帧分解"><a href="#framestats-详细帧分解" class="headerlink" title="framestats 详细帧分解"></a>framestats 详细帧分解</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">adb shell dumpsys gfxinfo com.example.app framestats</span><br></pre></td></tr></table></figure>
+
+<p>输出的每帧数据包含各阶段耗时（纳秒），列含义：FRAME_TIME, VSYNC, INPUT_HANDLING, ANIMATION, MEASURE_LAYOUT, DRAW, SYNC, COMMAND_ISSUE, SWAP_BUFFERS 等。可以解析这些数据，生成每帧各阶段耗时分布图，精确定位瓶颈。</p>
+<h1 id="Profile-GPU-Rendering（GPU-呈现模式分析）"><a href="#Profile-GPU-Rendering（GPU-呈现模式分析）" class="headerlink" title="Profile GPU Rendering（GPU 呈现模式分析）"></a>Profile GPU Rendering（GPU 呈现模式分析）</h1><p>开发者选项中的”GPU 呈现模式分析”以柱状图形式可视化每帧耗时。</p>
+<p>各颜色段从上到下对应渲染管线的不同阶段：</p>
+<table>
+<thead>
+<tr>
+<th>颜色</th>
+<th>阶段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>紫色</td>
+<td>Input Handling</td>
+<td>处理输入事件</td>
+</tr>
+<tr>
+<td>红色</td>
+<td>Animation</td>
+<td>执行动画回调</td>
+</tr>
+<tr>
+<td>橙色</td>
+<td>Measure&#x2F;Layout</td>
+<td>onMeasure + onLayout</td>
+</tr>
+<tr>
+<td>黄色</td>
+<td>Draw</td>
+<td>创建&#x2F;更新 DisplayList</td>
+</tr>
+<tr>
+<td>浅蓝色</td>
+<td>Sync&#x2F;Upload</td>
+<td>同步 RenderNode、上传 bitmap 纹理</td>
+</tr>
+<tr>
+<td>深绿色</td>
+<td>Issue Commands</td>
+<td>RenderThread 向 GPU 提交绘制命令</td>
+</tr>
+<tr>
+<td>浅红色</td>
+<td>Swap Buffers</td>
+<td>GPU 完成绘制后交换缓冲区</td>
+</tr>
+</tbody></table>
+<p>绿色横线代表 16ms 基准线。解读方法：</p>
+<ul>
+<li><strong>橙色段高</strong>：布局过于复杂，优化布局层级。</li>
+<li><strong>黄色段高</strong>：onDraw 慢，检查过度绘制和复杂路径。</li>
+<li><strong>浅蓝色段高</strong>：可能正在上传大尺寸 bitmap 到 GPU 纹理。</li>
+<li><strong>深绿色段高</strong>：GPU 执行慢，可能有过多的图层或复杂 Shader。</li>
+</ul>
+<h1 id="FrameMetrics-API（API-24-）"><a href="#FrameMetrics-API（API-24-）" class="headerlink" title="FrameMetrics API（API 24+）"></a>FrameMetrics API（API 24+）</h1><p>Android 7.0 引入 FrameMetrics API，可在代码中监听每帧性能数据：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.N) &#123;</span><br><span class="line">    getWindow().addOnFrameMetricsAvailableListener(</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Window</span>.OnFrameMetricsAvailableListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onFrameMetricsAvailable</span><span class="params">(Window window,</span></span><br><span class="line"><span class="params">                    FrameMetrics frameMetrics, <span class="type">int</span> dropCountSinceLastInvocation)</span> &#123;</span><br><span class="line"></span><br><span class="line">                <span class="type">long</span> <span class="variable">totalDuration</span> <span class="operator">=</span> frameMetrics.getMetric(FrameMetrics.TOTAL_DURATION);</span><br><span class="line">                <span class="type">long</span> <span class="variable">inputHandling</span> <span class="operator">=</span> frameMetrics.getMetric(FrameMetrics.INPUT_HANDLING_DURATION);</span><br><span class="line">                <span class="type">long</span> <span class="variable">animationDuration</span> <span class="operator">=</span> frameMetrics.getMetric(FrameMetrics.ANIMATION_DURATION);</span><br><span class="line">                <span class="type">long</span> <span class="variable">layoutMeasure</span> <span class="operator">=</span> frameMetrics.getMetric(FrameMetrics.LAYOUT_MEASURE_DURATION);</span><br><span class="line">                <span class="type">long</span> <span class="variable">drawDuration</span> <span class="operator">=</span> frameMetrics.getMetric(FrameMetrics.DRAW_DURATION);</span><br><span class="line">                <span class="type">long</span> <span class="variable">syncDuration</span> <span class="operator">=</span> frameMetrics.getMetric(FrameMetrics.SYNC_DURATION);</span><br><span class="line">                <span class="type">long</span> <span class="variable">commandIssue</span> <span class="operator">=</span> frameMetrics.getMetric(FrameMetrics.COMMAND_ISSUE_DURATION);</span><br><span class="line">                <span class="type">long</span> <span class="variable">swapBuffers</span> <span class="operator">=</span> frameMetrics.getMetric(FrameMetrics.SWAP_BUFFERS_DURATION);</span><br><span class="line"></span><br><span class="line">                <span class="type">boolean</span> <span class="variable">isJank</span> <span class="operator">=</span> totalDuration &gt; <span class="number">16_000_000</span>;  <span class="comment">// 16ms</span></span><br><span class="line">                <span class="keyword">if</span> (isJank) &#123;</span><br><span class="line">                    Log.w(<span class="string">&quot;FrameMetrics&quot;</span>, String.format(</span><br><span class="line">                        <span class="string">&quot;Jank frame! Total: %dms, Layout: %dms, Draw: %dms, Sync: %dms&quot;</span>,</span><br><span class="line">                        totalDuration / <span class="number">1_000_000</span>,</span><br><span class="line">                        layoutMeasure / <span class="number">1_000_000</span>,</span><br><span class="line">                        drawDuration / <span class="number">1_000_000</span>,</span><br><span class="line">                        syncDuration / <span class="number">1_000_000</span></span><br><span class="line">                    ));</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Handler</span>(Looper.getMainLooper())</span><br><span class="line">    );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>相比 dumpsys gfxinfo 的事后统计，FrameMetrics API 可在线监听并做出实时反应。</p>
+<h1 id="过渡绘制（Overdraw）检测"><a href="#过渡绘制（Overdraw）检测" class="headerlink" title="过渡绘制（Overdraw）检测"></a>过渡绘制（Overdraw）检测</h1><p>Overdraw（过度绘制）描述的是屏幕上的某个像素在同一帧的时间内被绘制了多次。在多层次的 UI 结构里面，如果不可见的 UI 也在做绘制的操作，这就会导致某些像素区域被绘制了多次。这就浪费大量的 CPU 以及 GPU 资源。</p>
+<p>按照以下步骤打开 Show GPU Overdraw 的选项：设置 -&gt; 开发者选项 -&gt; 调试 GPU 过度绘制 -&gt; 显示 GPU 过度绘制。</p>
+<p>颜色含义：</p>
+<ul>
+<li><strong>原色</strong>：无过度绘制（1 次绘制）</li>
+<li><strong>蓝色</strong>：1 次过度绘制（2 次绘制）</li>
+<li><strong>绿色</strong>：2 次过度绘制（3 次绘制）</li>
+<li><strong>浅红色</strong>：3 次过度绘制（4 次绘制）</li>
+<li><strong>深红色</strong>：4 次及以上过度绘制</li>
+</ul>
+<p>优化目标是让大部分区域保持在蓝色到绿色范围内。</p>
+<h1 id="Overdraw-的处理方案"><a href="#Overdraw-的处理方案" class="headerlink" title="Overdraw 的处理方案"></a>Overdraw 的处理方案</h1><h2 id="Overdraw-处理方案一：去掉-window-的默认背景"><a href="#Overdraw-处理方案一：去掉-window-的默认背景" class="headerlink" title="Overdraw 处理方案一：去掉 window 的默认背景"></a>Overdraw 处理方案一：去掉 window 的默认背景</h2><p>当使用 Android 自带某些主题时，window 会被默认添加一个纯色背景，这个背景是被 DecorView 所持有的。</p>
+<p>当我们的自定义布局时又添加了一张背景图或者设置背景色，那么 DecorView 的 background 此时对我们来说是无用的，但是它会产生一次 Overdraw，带来绘制性能损耗。</p>
+<p>处理方法：</p>
+<p>可以在 onCreate() 中 setContentView() 之后调用 <code>getWindow().setBackgroundDrawable(null)</code>;</p>
+<p>或者在 theme 中添加 <code>android:windowBackground=&quot;null&quot;</code>。</p>
+<h2 id="Overdraw-处理方案二：去掉其他不必要的背景"><a href="#Overdraw-处理方案二：去掉其他不必要的背景" class="headerlink" title="Overdraw 处理方案二：去掉其他不必要的背景"></a>Overdraw 处理方案二：去掉其他不必要的背景</h2><p>有时为了方便会先给 layout 设置一个整体的背景，再给子 View 设置背景，这时也会造成重叠绘制，如果子 View 宽度为 match_parent，则会覆盖 layout 的部分，因此这里可以通过分别设置背景来减少重绘；</p>
+<p>再比如如果采用的是 selector 作为背景，将 normal 状态的 color 设置为 <code>&quot;@android:color/transparent&quot;</code>，也可以解决同样问题。</p>
+<h2 id="Overdraw-处理方案三：clipRect-的使用"><a href="#Overdraw-处理方案三：clipRect-的使用" class="headerlink" title="Overdraw 处理方案三：clipRect 的使用"></a>Overdraw 处理方案三：clipRect 的使用</h2><p>通过 canvas.clipRect() 来帮助系统识别可见区域。</p>
+<p>处理方法：指定一块矩形区域，并且只可以在这个区域操作绘制，其他区域忽视。</p>
+<p>方案优势：这个系统 API 可以很好的帮助处理那些有多组重叠组件的自定义 View 来控制显示的区域。同时 clipRect 还可以帮助节约 CPU 和 GPU 的资源开销，在 clipRect 区域之外的绘制指令是不会执行的。</p>
+<h2 id="Overdraw-处理方案四：自定义-ViewGroup-裁剪子-View"><a href="#Overdraw-处理方案四：自定义-ViewGroup-裁剪子-View" class="headerlink" title="Overdraw 处理方案四：自定义 ViewGroup 裁剪子 View"></a>Overdraw 处理方案四：自定义 ViewGroup 裁剪子 View</h2><p>对于已知重叠关系的 ViewGroup，可在 dispatchDraw 中精确裁剪：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">dispatchDraw</span><span class="params">(Canvas canvas)</span> &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">int</span> <span class="variable">childCount</span> <span class="operator">=</span> getChildCount();</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; childCount; i++) &#123;</span><br><span class="line">        <span class="type">View</span> <span class="variable">child</span> <span class="operator">=</span> getChildAt(i);</span><br><span class="line">        <span class="keyword">if</span> (child.getVisibility() == VISIBLE) &#123;</span><br><span class="line">            canvas.save();</span><br><span class="line">            canvas.clipRect(child.getLeft(), child.getTop(),</span><br><span class="line">                    child.getRight(), child.getBottom());</span><br><span class="line">            drawChild(canvas, child, getDrawingTime());</span><br><span class="line">            canvas.restore();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Overdraw-处理方案五：ViewStub"><a href="#Overdraw-处理方案五：ViewStub" class="headerlink" title="Overdraw 处理方案五：ViewStub"></a>Overdraw 处理方案五：ViewStub</h2><p><code>ViewStub</code> 又称为”延迟化加载”，程序无需显示 ViewStub 所指向的布局文件，只有在特定的某些条件下，此时 ViewStub 所指向的布局文件才需要被 inflate，且此布局文件直接将当前 ViewStub 替换掉，具体是通过 <code>viewStub.inflate()</code> 或 <code>viewStub.setVisibility(View.VISIBLE)</code> 来完成；</p>
+<p>示例 xml 如下：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;utf-8&quot;</span>?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">RelativeLayout</span> <span class="attr">xmlns:android</span>=<span class="string">&quot;http://schemas.android.com/apk/res/android&quot;</span></span></span><br><span class="line"><span class="tag">    <span class="attr">xmlns:tools</span>=<span class="string">&quot;http://schemas.android.com/tools&quot;</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:layout_width</span>=<span class="string">&quot;match_parent&quot;</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:layout_height</span>=<span class="string">&quot;match_parent&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">ListView</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:id</span>=<span class="string">&quot;@+id/listview&quot;</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:layout_width</span>=<span class="string">&quot;match_parent&quot;</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:layout_height</span>=<span class="string">&quot;match_parent&quot;</span> /&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">ViewStub</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:id</span>=<span class="string">&quot;@+id/network_error_layout&quot;</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:layout_width</span>=<span class="string">&quot;match_parent&quot;</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:layout_height</span>=<span class="string">&quot;match_parent&quot;</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:layout</span>=<span class="string">&quot;@layout/empty_view&quot;</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">RelativeLayout</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">showNetError</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (networkErrorView != <span class="literal">null</span>) &#123;</span><br><span class="line">        networkErrorView.setVisibility(View.VISIBLE);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">ViewStub</span> <span class="variable">stub</span> <span class="operator">=</span> (ViewStub) findViewById(R.id.network_error_layout);</span><br><span class="line">    networkErrorView = stub.inflate();</span><br><span class="line">    <span class="type">Button</span> <span class="variable">networkSetting</span> <span class="operator">=</span> (Button) networkErrorView.findViewById(R.id.network_setting);</span><br><span class="line">    <span class="type">Button</span> <span class="variable">refresh</span> <span class="operator">=</span> (Button) findViewById(R.id.network_refresh);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">showNormal</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (networkErrorView != <span class="literal">null</span>) &#123;</span><br><span class="line">        networkErrorView.setVisibility(View.GONE);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Overdraw-处理方案六：Merge-标签"><a href="#Overdraw-处理方案六：Merge-标签" class="headerlink" title="Overdraw 处理方案六：Merge 标签"></a>Overdraw 处理方案六：Merge 标签</h2><p>Merge 标签可以干掉一个 view 层级。</p>
+<p>Merge 的作用很明显，但是也有一些使用条件的限制。有两种情况下我们可以使用 Merge 标签来做容器控件：</p>
+<p>使用场景：</p>
+<p>第一种：子视图不需要指定任何针对父视图的布局属性，也就是说父容器仅仅作为容器，子视图只需要直接添加到父视图上用于显示就行。</p>
+<p>第二种：子视图的”根”布局和父布局（视图）一样的，这样就多一层无用的嵌套。</p>
+<p>【注1】 <code>&lt;merge /&gt;</code> 只可以作为 xml layout 的根节点。<br>【注2】 当需要扩充的 xml layout 本身是由 merge 作为根节点的话，需要将被导入的 xml layout 置于 ViewGroup 中，同时需要设置 attachToRoot 为 True。</p>
+<h1 id="Hierarchy-Viewer-优化布局层次"><a href="#Hierarchy-Viewer-优化布局层次" class="headerlink" title="Hierarchy Viewer - 优化布局层次"></a>Hierarchy Viewer - 优化布局层次</h1><h2 id="HV-的使用"><a href="#HV-的使用" class="headerlink" title="HV 的使用"></a>HV 的使用</h2><p>Hierarchy Viewer 接触过 Android 的人估计都用过，如果在真机上可以使用 ViewServer 这个第三方库。</p>
+<p>在 Hierarchy Viewer 窗口中，所有的子 View 上面都有 3 个圈圈（取色范围是红、黄、绿），这三个圈圈分别代表 measure、layout、draw 的速度，并且可以看到实际的运行速度，如果发现某个 View 的圈是红色的，那么说明这个 View 相对其他的 View，其操作运行较慢，当然这只是相对别的 View。</p>
+<h2 id="布局常见问题及优化建议"><a href="#布局常见问题及优化建议" class="headerlink" title="布局常见问题及优化建议"></a>布局常见问题及优化建议</h2><ul>
+<li><p>没有用的父布局是指没有背景绘制或者没有大小限制的父布局，这样的布局不会对 UI 效果产生任何影响。我们可以把没有用的父布局，通过 <code>&lt;merge/&gt;</code> 标签合并来减少 UI 的层次；</p>
+</li>
+<li><p>使用线性布局 LinearLayout 排版导致 UI 层次变深，如果有这类问题，我们就使用相对布局 RelativeLayout 或者 ConstraintLayout 代替 LinearLayout，减少 UI 的层次；</p>
+</li>
+<li><p>不常用的 UI 被设置成 GONE，比如异常的错误页面，如果有这类问题，我们需要用 <code>&lt;ViewStub/&gt;</code> 标签，代替 GONE 提高 UI 性能。</p>
+</li>
+</ul>
+<h1 id="ConstraintLayout：扁平化布局"><a href="#ConstraintLayout：扁平化布局" class="headerlink" title="ConstraintLayout：扁平化布局"></a>ConstraintLayout：扁平化布局</h1><p>ConstraintLayout 通过约束关系替代嵌套布局，大幅减少布局层级。其内部使用 Cassowary 线性约束求解算法，在单次测量中同时计算所有子 View 的位置和尺寸。</p>
+<p>核心优势：</p>
+<ul>
+<li>避免嵌套 LinearLayout 带来的双重测量（weight 场景）。</li>
+<li>单层即可实现复杂的相对位置关系。</li>
+<li>支持 Barrier、Group、Flow 等高级辅助控件。</li>
+<li>支持百分比尺寸（layout_constraintWidth_percent）。</li>
+</ul>
+<h1 id="常见性能陷阱与优化案例"><a href="#常见性能陷阱与优化案例" class="headerlink" title="常见性能陷阱与优化案例"></a>常见性能陷阱与优化案例</h1><h2 id="陷阱一：在-onDraw-中分配对象"><a href="#陷阱一：在-onDraw-中分配对象" class="headerlink" title="陷阱一：在 onDraw 中分配对象"></a>陷阱一：在 onDraw 中分配对象</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 错误做法：每帧分配新对象，触发频繁 GC</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">onDraw</span><span class="params">(Canvas canvas)</span> &#123;</span><br><span class="line">    <span class="type">Paint</span> <span class="variable">paint</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Paint</span>();</span><br><span class="line">    <span class="type">RectF</span> <span class="variable">rect</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RectF</span>();</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 正确做法：对象在构造时创建，onDraw 中只做赋值</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">Paint</span> <span class="variable">mPaint</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Paint</span>(Paint.ANTI_ALIAS_FLAG);</span><br><span class="line"><span class="keyword">private</span> <span class="type">RectF</span> <span class="variable">mRect</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RectF</span>();</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">onDraw</span><span class="params">(Canvas canvas)</span> &#123;</span><br><span class="line">    mPaint.setColor(currentColor);</span><br><span class="line">    mRect.set(<span class="number">0</span>, <span class="number">0</span>, getWidth(), getHeight());</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="陷阱二：频繁触发-requestLayout"><a href="#陷阱二：频繁触发-requestLayout" class="headerlink" title="陷阱二：频繁触发 requestLayout"></a>陷阱二：频繁触发 requestLayout</h2><p>每次 requestLayout 都会沿视图树向上标记，最终触发 ViewRootImpl 的完整 measure + layout + draw 流程。如果只是内容变化（如文字颜色改变），应使用 <code>invalidate()</code> 代替。</p>
+<h2 id="陷阱三：未启用硬件层优化动画"><a href="#陷阱三：未启用硬件层优化动画" class="headerlink" title="陷阱三：未启用硬件层优化动画"></a>陷阱三：未启用硬件层优化动画</h2><p>对于动画过程中内容不变（只有位置、透明度或缩放变化）的 View：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">view.setLayerType(View.LAYER_TYPE_HARDWARE, <span class="literal">null</span>);</span><br><span class="line">view.animate()</span><br><span class="line">    .scaleX(<span class="number">1.5f</span>).scaleY(<span class="number">1.5f</span>)</span><br><span class="line">    .setDuration(<span class="number">300</span>)</span><br><span class="line">    .withEndAction(() -&gt; &#123;</span><br><span class="line">        view.setLayerType(View.LAYER_TYPE_NONE, <span class="literal">null</span>);</span><br><span class="line">    &#125;)</span><br><span class="line">    .start();</span><br></pre></td></tr></table></figure>
+
+<p>硬件层将 View 渲染到 GPU 纹理中，动画期间只需对纹理做矩阵变换，无需每帧重新执行 onDraw。</p>
+<p>注意：不要对大量 View 同时使用硬件层——每个层都是一个 GPU 纹理，消耗显存。通常只在动画持续期间临时启用，动画结束后立即释放。</p>
+<h2 id="陷阱四：RecyclerView-中的复杂-item"><a href="#陷阱四：RecyclerView-中的复杂-item" class="headerlink" title="陷阱四：RecyclerView 中的复杂 item"></a>陷阱四：RecyclerView 中的复杂 item</h2><p>优化手段：</p>
+<ul>
+<li>使用 <code>setHasFixedSize(true)</code> 减少不必要的重新测量。</li>
+<li>使用 <code>setItemViewCacheSize()</code> 增加离屏缓存。</li>
+<li>使用 <code>RecycledViewPool</code> 在多 RecyclerView 间共享 ViewHolder。</li>
+<li>使用 <code>GapWorker</code> 在空闲时提前预加载。</li>
+</ul>
+<h2 id="陷阱五：大图直接解码在-UI-线程"><a href="#陷阱五：大图直接解码在-UI-线程" class="headerlink" title="陷阱五：大图直接解码在 UI 线程"></a>陷阱五：大图直接解码在 UI 线程</h2><p>BitmapFactory.decodeResource 在 UI 线程解码大图可能阻塞数百毫秒。应在后台线程解码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 使用 Glide / Coil 等图片库，它们已做好异步处理</span></span><br><span class="line"><span class="comment">// 或手动使用 AsyncTask / Coroutine</span></span><br><span class="line">viewModelScope.launch(Dispatchers.IO) &#123;</span><br><span class="line">    <span class="type">val</span> <span class="variable">bitmap</span> <span class="operator">=</span> BitmapFactory.decodeResource(resources, R.drawable.large_image)</span><br><span class="line">    withContext(Dispatchers.Main) &#123;</span><br><span class="line">        imageView.setImageBitmap(bitmap)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Systrace-Perfetto-帧分析"><a href="#Systrace-Perfetto-帧分析" class="headerlink" title="Systrace &#x2F; Perfetto 帧分析"></a>Systrace &#x2F; Perfetto 帧分析</h1><h2 id="Systrace-简介"><a href="#Systrace-简介" class="headerlink" title="Systrace 简介"></a>Systrace 简介</h2><p>Systrace 是 Android 平台最强性能分析工具之一，收集内核和 Framework 的时间信息，生成可交互的时间轴。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Android 9 及以下使用 systrace.py</span><br><span class="line">python systrace.py -t 5 -o trace.html gfx input view wm am sched freq</span><br><span class="line"></span><br><span class="line"># Android 10+ 使用 Perfetto</span><br><span class="line">adb shell perfetto -o /data/misc/perfetto-traces/trace -t 5s sched freq idle am wm gfx view input</span><br></pre></td></tr></table></figure>
+
+<h2 id="在-trace-中定位帧问题"><a href="#在-trace-中定位帧问题" class="headerlink" title="在 trace 中定位帧问题"></a>在 trace 中定位帧问题</h2><p>打开 trace 后，关键查找目标：</p>
+<ol>
+<li><strong>F 标记</strong>：代表一帧的开始，出现在 Choreographer#doFrame 行。</li>
+<li><strong>绿色 F 标记</strong>：正常帧（&lt; 16ms）；<strong>红色 F 标记</strong>：卡顿帧。</li>
+<li><strong>SurfaceFlinger 行</strong>：查找 VSYNC-sf 和 VSYNC-app 信号。</li>
+<li><strong>measure&#x2F;layout&#x2F;draw 阶段</strong>：在 ViewRootImpl 行找到 performTraversals，展开可见各阶段耗时。</li>
+</ol>
+<p>常见模式诊断：</p>
+<ul>
+<li><strong>F 标记间距 &gt; 16ms</strong>：主线程有耗时操作，检查此时执行的代码。</li>
+<li><strong>连续的红色 F 标记</strong>：主线程长时间阻塞，可能是 GC 或 IO 操作。</li>
+<li><strong>VSYNC-app 和 VSYNC-sf 间距大</strong>：GPU 处理慢，检查过度绘制。</li>
+</ul>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>Android View 的渲染机制是一条多层协作的精密管线：</p>
+<ol>
+<li><strong>VSYNC 信号触发</strong> Choreographer.doFrame。</li>
+<li><strong>UI Thread</strong> 完成 measure、layout，并录制 DisplayList（硬件加速）或直接绘制到 Canvas（软件绘制）。</li>
+<li><strong>RenderThread</strong>（硬件加速下）将 DisplayList 树提交到 GPU 执行。</li>
+<li><strong>BufferQueue</strong> 管理缓冲区交换，三重缓冲防止流水线停顿。</li>
+<li><strong>SurfaceFlinger</strong> 合成所有应用层的 Surface，通过 HWC 或 GPU 最终输出到显示器。</li>
+</ol>
+<p>性能优化的核心思路：</p>
+<ul>
+<li><strong>减少 CPU 工作</strong>：扁平化布局、避免不必要的 requestLayout、减少 onDraw 开销。</li>
+<li><strong>减少 GPU 工作</strong>：消除过度绘制、合理使用硬件层。</li>
+<li><strong>消除流水线停顿</strong>：确保单帧处理在 16ms 内完成。</li>
+</ul>
+<h2 id="关键源码文件"><a href="#关键源码文件" class="headerlink" title="关键源码文件"></a>关键源码文件</h2><table>
+<thead>
+<tr>
+<th>文件</th>
+<th>路径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>View.java</td>
+<td>frameworks&#x2F;base&#x2F;core&#x2F;java&#x2F;android&#x2F;view&#x2F;View.java</td>
+</tr>
+<tr>
+<td>ViewRootImpl.java</td>
+<td>frameworks&#x2F;base&#x2F;core&#x2F;java&#x2F;android&#x2F;view&#x2F;ViewRootImpl.java</td>
+</tr>
+<tr>
+<td>Choreographer.java</td>
+<td>frameworks&#x2F;base&#x2F;core&#x2F;java&#x2F;android&#x2F;view&#x2F;Choreographer.java</td>
+</tr>
+<tr>
+<td>ThreadedRenderer.java</td>
+<td>frameworks&#x2F;base&#x2F;core&#x2F;java&#x2F;android&#x2F;view&#x2F;ThreadedRenderer.java</td>
+</tr>
+<tr>
+<td>RenderNode.java</td>
+<td>frameworks&#x2F;base&#x2F;graphics&#x2F;java&#x2F;android&#x2F;graphics&#x2F;RenderNode.java</td>
+</tr>
+<tr>
+<td>DisplayListCanvas.cpp</td>
+<td>frameworks&#x2F;base&#x2F;libs&#x2F;hwui&#x2F;DisplayListCanvas.cpp</td>
+</tr>
+<tr>
+<td>RenderThread.cpp</td>
+<td>frameworks&#x2F;base&#x2F;libs&#x2F;hwui&#x2F;renderthread&#x2F;RenderThread.cpp</td>
+</tr>
+<tr>
+<td>SurfaceFlinger</td>
+<td>frameworks&#x2F;native&#x2F;services&#x2F;surfaceflinger&#x2F;</td>
+</tr>
+<tr>
+<td>BufferQueue</td>
+<td>frameworks&#x2F;native&#x2F;libs&#x2F;gui&#x2F;</td>
+</tr>
+</tbody></table>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/uploadbeta26.com.jpeg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2022/01/30/%E9%87%8D%E6%8B%BEAndroid-UI%E8%BF%9B%E9%98%B6%E4%B9%8B%E8%87%AA%E5%AE%9A%E4%B9%89View/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/uploadbeta26.com.jpeg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>UI进阶之自定义View</span></div></a></div><div class="next-post pull_right"><a href="/2022/01/20/%E9%87%8D%E6%8B%BEAndroid-UI%E8%BF%9B%E9%98%B6%E4%B9%8B%E8%A7%A6%E6%91%B8%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91%E6%9C%BA%E5%88%B6/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/uploadbeta26.com.jpeg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>UI进阶之触摸事件分发机制</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/uploadbeta26.com.jpeg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

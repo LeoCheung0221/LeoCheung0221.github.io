@@ -1,0 +1,647 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【Claude Code源码剖析】29-User Hooks 用户钩子系统 | ONE·PIECE</title><meta name="description" content="🔒 此内容需要密码访问"><meta name="keywords" content="源码分析,Claude Code,Agent,LLM"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【Claude Code源码剖析】29-User Hooks 用户钩子系统"><meta name="twitter:description" content="🔒 此内容需要密码访问"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【Claude Code源码剖析】29-User Hooks 用户钩子系统"><meta property="og:url" content="http://tufusi.com/2026/05/25/%E3%80%90Claude%20Code%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E3%80%9129-UserHooks%E7%94%A8%E6%88%B7%E9%92%A9%E5%AD%90%E7%B3%BB%E7%BB%9F/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="🔒 此内容需要密码访问"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2026/05/25/%E3%80%90Claude%20Code%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E3%80%9129-UserHooks%E7%94%A8%E6%88%B7%E9%92%A9%E5%AD%90%E7%B3%BB%E7%BB%9F/"><link rel="next" title="【Claude Code源码剖析】27-VCR 测试基础设施" href="http://tufusi.com/2026/05/18/%E3%80%90Claude%20Code%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E3%80%9127-VCR%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E7%B3%BB%E7%BB%9F%E5%AE%9A%E4%BD%8D"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、系统定位</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%8127-%E4%B8%AA%E9%92%A9%E5%AD%90%E4%BA%8B%E4%BB%B6%EF%BC%88%E5%AE%8C%E6%95%B4%E8%A1%A8%EF%BC%89"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、27 个钩子事件（完整表）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%B7%A5%E5%85%B7%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%884-%E4%B8%AA%EF%BC%89"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">工具生命周期（4 个）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E4%BC%9A%E8%AF%9D%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%884-%E4%B8%AA%EF%BC%89"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">会话生命周期（4 个）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%AD%90-Agent-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%882-%E4%B8%AA%EF%BC%89"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">子 Agent 生命周期（2 个）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%8E%8B%E7%BC%A9%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%882-%E4%B8%AA%EF%BC%89"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">压缩生命周期（2 个）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%94%A8%E6%88%B7%E4%BA%A4%E4%BA%92%EF%BC%883-%E4%B8%AA%EF%BC%89"><span class="toc_mobile_items-number">2.5.</span> <span class="toc_mobile_items-text">用户交互（3 个）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#MCP-Elicitation%EF%BC%882-%E4%B8%AA%EF%BC%89"><span class="toc_mobile_items-number">2.6.</span> <span class="toc_mobile_items-text">MCP Elicitation（2 个）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%EF%BC%883-%E4%B8%AA%EF%BC%89"><span class="toc_mobile_items-number">2.7.</span> <span class="toc_mobile_items-text">文件与目录（3 个）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%A4%9A-Agent-%E4%BB%BB%E5%8A%A1%EF%BC%883-%E4%B8%AA%EF%BC%89"><span class="toc_mobile_items-number">2.8.</span> <span class="toc_mobile_items-text">多 Agent 任务（3 个）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8C%87%E4%BB%A4%EF%BC%882-%E4%B8%AA%EF%BC%89"><span class="toc_mobile_items-number">2.9.</span> <span class="toc_mobile_items-text">配置与指令（2 个）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E4%BB%93%E5%BA%93%E7%BB%B4%E6%8A%A4%EF%BC%881-%E4%B8%AA%EF%BC%89"><span class="toc_mobile_items-number">2.10.</span> <span class="toc_mobile_items-text">仓库维护（1 个）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%815-%E7%A7%8D%E9%92%A9%E5%AD%90%E7%B1%BB%E5%9E%8B"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、5 种钩子类型</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-command%EF%BC%88%E6%9C%80%E5%B8%B8%E7%94%A8%EF%BC%89"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">1. command（最常用）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-prompt%EF%BC%88LLM-%E5%8D%95%E8%BD%AE%EF%BC%89"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">2. prompt（LLM 单轮）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-agent%EF%BC%88LLM-%E5%A4%9A%E8%BD%AE%EF%BC%89"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3. agent（LLM 多轮）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-http%EF%BC%88HTTP-POST%EF%BC%89"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">4. http（HTTP POST）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-function%EF%BC%88TypeScript-%E5%9B%9E%E8%B0%83%EF%BC%8C%E4%BB%85%E4%BC%9A%E8%AF%9D%E4%BD%9C%E7%94%A8%E5%9F%9F%EF%BC%89"><span class="toc_mobile_items-number">3.5.</span> <span class="toc_mobile_items-text">5. function（TypeScript 回调，仅会话作用域）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E9%85%8D%E7%BD%AE%E6%BA%90%E4%B8%8E%E4%BC%98%E5%85%88%E7%BA%A7"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、配置源与优先级</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81SessionHooks%EF%BC%9A%E4%BC%9A%E8%AF%9D%E7%BA%A7%E5%8A%A8%E6%80%81%E9%92%A9%E5%AD%90"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、SessionHooks：会话级动态钩子</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">存储结构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%93%8D%E4%BD%9C-API"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">操作 API</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Function-%E9%92%A9%E5%AD%90-vs-Command-%E9%92%A9%E5%AD%90"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">Function 钩子 vs Command 钩子</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81AsyncHookRegistry%EF%BC%9A%E5%BC%82%E6%AD%A5%E9%92%A9%E5%AD%90%E6%B3%A8%E5%86%8C%E8%A1%A8"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、AsyncHookRegistry：异步钩子注册表</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%BC%82%E6%AD%A5%E5%8D%8F%E8%AE%AE"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">异步协议</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">核心数据结构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E8%BD%AE%E8%AF%A2%E4%B8%8E%E6%B8%85%E7%90%86"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">轮询与清理</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81SSRF-%E9%98%B2%E6%8A%A4%EF%BC%88HTTP-%E9%92%A9%E5%AD%90%E4%B8%93%E7%94%A8%EF%BC%89"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、SSRF 防护（HTTP 钩子专用）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E9%98%BB%E6%96%AD%E7%9A%84-IP-%E8%8C%83%E5%9B%B4"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">阻断的 IP 范围</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E9%98%B2-DNS-%E9%87%8D%E7%BB%91%E5%AE%9A"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">防 DNS 重绑定</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#IPv4-mapped-IPv6-%E9%98%B2%E7%BB%95%E8%BF%87"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">IPv4-mapped IPv6 防绕过</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81Hook-%E4%BA%8B%E4%BB%B6%E5%B9%BF%E6%92%AD%E7%B3%BB%E7%BB%9F"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、Hook 事件广播系统</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E4%BA%8B%E4%BB%B6%E7%B1%BB%E5%9E%8B"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">事件类型</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%B9%BF%E6%92%AD%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">广播策略</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Pending-Buffer"><span class="toc_mobile_items-number">8.3.</span> <span class="toc_mobile_items-text">Pending Buffer</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81Hooks-%E9%85%8D%E7%BD%AE%E5%BF%AB%E7%85%A7%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、Hooks 配置快照机制</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81%E9%9D%A2%E8%AF%95%E5%BF%85%E8%80%83%E7%82%B9"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">十、面试必考点</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Q1%EF%BC%9AClaude-Code-%E7%9A%84%E9%92%A9%E5%AD%90%E7%B3%BB%E7%BB%9F%E5%A6%82%E4%BD%95%E5%B7%A5%E4%BD%9C%EF%BC%9F%E8%83%BD%E5%AE%9E%E7%8E%B0%E5%93%AA%E4%BA%9B%E8%83%BD%E5%8A%9B%EF%BC%9F"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">Q1：Claude Code 的钩子系统如何工作？能实现哪些能力？</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Q2%EF%BC%9Aexit-code-%E5%8D%8F%E8%AE%AE%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">Q2：exit code 协议是什么？</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Q3%EF%BC%9A5-%E7%A7%8D%E9%92%A9%E5%AD%90%E7%B1%BB%E5%9E%8B%E5%90%84%E6%9C%89%E4%BB%80%E4%B9%88%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF%EF%BC%9F"><span class="toc_mobile_items-number">10.3.</span> <span class="toc_mobile_items-text">Q3：5 种钩子类型各有什么适用场景？</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Q4%EF%BC%9ASessionHooks-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8-Map-%E8%80%8C%E4%B8%8D%E6%98%AF-Record%EF%BC%9F"><span class="toc_mobile_items-number">10.4.</span> <span class="toc_mobile_items-text">Q4：SessionHooks 为什么用 Map 而不是 Record？</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Q5%EF%BC%9AHTTP-%E9%92%A9%E5%AD%90%E7%9A%84%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc_mobile_items-number">10.5.</span> <span class="toc_mobile_items-text">Q5：HTTP 钩子的安全机制是什么？</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Q6%EF%BC%9A%E5%BC%82%E6%AD%A5%E9%92%A9%E5%AD%90%E5%A6%82%E4%BD%95%E4%B8%8D%E9%98%BB%E5%A1%9E%E4%B8%BB%E6%B5%81%E7%A8%8B%EF%BC%9F"><span class="toc_mobile_items-number">10.6.</span> <span class="toc_mobile_items-text">Q6：异步钩子如何不阻塞主流程？</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Q7%EF%BC%9A%E4%BC%81%E4%B8%9A%E5%A6%82%E4%BD%95%E9%94%81%E5%AE%9A%E9%92%A9%E5%AD%90%EF%BC%9F"><span class="toc_mobile_items-number">10.7.</span> <span class="toc_mobile_items-text">Q7：企业如何锁定钩子？</span></a></li></ol></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%B3%BB%E7%BB%9F%E5%AE%9A%E4%BD%8D"><span class="toc-number">1.</span> <span class="toc-text">一、系统定位</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%8127-%E4%B8%AA%E9%92%A9%E5%AD%90%E4%BA%8B%E4%BB%B6%EF%BC%88%E5%AE%8C%E6%95%B4%E8%A1%A8%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">二、27 个钩子事件（完整表）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E5%85%B7%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%884-%E4%B8%AA%EF%BC%89"><span class="toc-number">2.1.</span> <span class="toc-text">工具生命周期（4 个）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%9A%E8%AF%9D%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%884-%E4%B8%AA%EF%BC%89"><span class="toc-number">2.2.</span> <span class="toc-text">会话生命周期（4 个）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%90-Agent-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%882-%E4%B8%AA%EF%BC%89"><span class="toc-number">2.3.</span> <span class="toc-text">子 Agent 生命周期（2 个）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%8B%E7%BC%A9%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%882-%E4%B8%AA%EF%BC%89"><span class="toc-number">2.4.</span> <span class="toc-text">压缩生命周期（2 个）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E4%BA%A4%E4%BA%92%EF%BC%883-%E4%B8%AA%EF%BC%89"><span class="toc-number">2.5.</span> <span class="toc-text">用户交互（3 个）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MCP-Elicitation%EF%BC%882-%E4%B8%AA%EF%BC%89"><span class="toc-number">2.6.</span> <span class="toc-text">MCP Elicitation（2 个）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%EF%BC%883-%E4%B8%AA%EF%BC%89"><span class="toc-number">2.7.</span> <span class="toc-text">文件与目录（3 个）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A-Agent-%E4%BB%BB%E5%8A%A1%EF%BC%883-%E4%B8%AA%EF%BC%89"><span class="toc-number">2.8.</span> <span class="toc-text">多 Agent 任务（3 个）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8C%87%E4%BB%A4%EF%BC%882-%E4%B8%AA%EF%BC%89"><span class="toc-number">2.9.</span> <span class="toc-text">配置与指令（2 个）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%93%E5%BA%93%E7%BB%B4%E6%8A%A4%EF%BC%881-%E4%B8%AA%EF%BC%89"><span class="toc-number">2.10.</span> <span class="toc-text">仓库维护（1 个）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%815-%E7%A7%8D%E9%92%A9%E5%AD%90%E7%B1%BB%E5%9E%8B"><span class="toc-number">3.</span> <span class="toc-text">三、5 种钩子类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-command%EF%BC%88%E6%9C%80%E5%B8%B8%E7%94%A8%EF%BC%89"><span class="toc-number">3.1.</span> <span class="toc-text">1. command（最常用）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-prompt%EF%BC%88LLM-%E5%8D%95%E8%BD%AE%EF%BC%89"><span class="toc-number">3.2.</span> <span class="toc-text">2. prompt（LLM 单轮）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-agent%EF%BC%88LLM-%E5%A4%9A%E8%BD%AE%EF%BC%89"><span class="toc-number">3.3.</span> <span class="toc-text">3. agent（LLM 多轮）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-http%EF%BC%88HTTP-POST%EF%BC%89"><span class="toc-number">3.4.</span> <span class="toc-text">4. http（HTTP POST）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-function%EF%BC%88TypeScript-%E5%9B%9E%E8%B0%83%EF%BC%8C%E4%BB%85%E4%BC%9A%E8%AF%9D%E4%BD%9C%E7%94%A8%E5%9F%9F%EF%BC%89"><span class="toc-number">3.5.</span> <span class="toc-text">5. function（TypeScript 回调，仅会话作用域）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E9%85%8D%E7%BD%AE%E6%BA%90%E4%B8%8E%E4%BC%98%E5%85%88%E7%BA%A7"><span class="toc-number">4.</span> <span class="toc-text">四、配置源与优先级</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81SessionHooks%EF%BC%9A%E4%BC%9A%E8%AF%9D%E7%BA%A7%E5%8A%A8%E6%80%81%E9%92%A9%E5%AD%90"><span class="toc-number">5.</span> <span class="toc-text">五、SessionHooks：会话级动态钩子</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84"><span class="toc-number">5.1.</span> <span class="toc-text">存储结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%93%8D%E4%BD%9C-API"><span class="toc-number">5.2.</span> <span class="toc-text">操作 API</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Function-%E9%92%A9%E5%AD%90-vs-Command-%E9%92%A9%E5%AD%90"><span class="toc-number">5.3.</span> <span class="toc-text">Function 钩子 vs Command 钩子</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81AsyncHookRegistry%EF%BC%9A%E5%BC%82%E6%AD%A5%E9%92%A9%E5%AD%90%E6%B3%A8%E5%86%8C%E8%A1%A8"><span class="toc-number">6.</span> <span class="toc-text">六、AsyncHookRegistry：异步钩子注册表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%82%E6%AD%A5%E5%8D%8F%E8%AE%AE"><span class="toc-number">6.1.</span> <span class="toc-text">异步协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-number">6.2.</span> <span class="toc-text">核心数据结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BD%AE%E8%AF%A2%E4%B8%8E%E6%B8%85%E7%90%86"><span class="toc-number">6.3.</span> <span class="toc-text">轮询与清理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81SSRF-%E9%98%B2%E6%8A%A4%EF%BC%88HTTP-%E9%92%A9%E5%AD%90%E4%B8%93%E7%94%A8%EF%BC%89"><span class="toc-number">7.</span> <span class="toc-text">七、SSRF 防护（HTTP 钩子专用）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%BB%E6%96%AD%E7%9A%84-IP-%E8%8C%83%E5%9B%B4"><span class="toc-number">7.1.</span> <span class="toc-text">阻断的 IP 范围</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2-DNS-%E9%87%8D%E7%BB%91%E5%AE%9A"><span class="toc-number">7.2.</span> <span class="toc-text">防 DNS 重绑定</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IPv4-mapped-IPv6-%E9%98%B2%E7%BB%95%E8%BF%87"><span class="toc-number">7.3.</span> <span class="toc-text">IPv4-mapped IPv6 防绕过</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81Hook-%E4%BA%8B%E4%BB%B6%E5%B9%BF%E6%92%AD%E7%B3%BB%E7%BB%9F"><span class="toc-number">8.</span> <span class="toc-text">八、Hook 事件广播系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6%E7%B1%BB%E5%9E%8B"><span class="toc-number">8.1.</span> <span class="toc-text">事件类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B9%BF%E6%92%AD%E7%AD%96%E7%95%A5"><span class="toc-number">8.2.</span> <span class="toc-text">广播策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Pending-Buffer"><span class="toc-number">8.3.</span> <span class="toc-text">Pending Buffer</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81Hooks-%E9%85%8D%E7%BD%AE%E5%BF%AB%E7%85%A7%E6%9C%BA%E5%88%B6"><span class="toc-number">9.</span> <span class="toc-text">九、Hooks 配置快照机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E9%9D%A2%E8%AF%95%E5%BF%85%E8%80%83%E7%82%B9"><span class="toc-number">10.</span> <span class="toc-text">十、面试必考点</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Q1%EF%BC%9AClaude-Code-%E7%9A%84%E9%92%A9%E5%AD%90%E7%B3%BB%E7%BB%9F%E5%A6%82%E4%BD%95%E5%B7%A5%E4%BD%9C%EF%BC%9F%E8%83%BD%E5%AE%9E%E7%8E%B0%E5%93%AA%E4%BA%9B%E8%83%BD%E5%8A%9B%EF%BC%9F"><span class="toc-number">10.1.</span> <span class="toc-text">Q1：Claude Code 的钩子系统如何工作？能实现哪些能力？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Q2%EF%BC%9Aexit-code-%E5%8D%8F%E8%AE%AE%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">10.2.</span> <span class="toc-text">Q2：exit code 协议是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Q3%EF%BC%9A5-%E7%A7%8D%E9%92%A9%E5%AD%90%E7%B1%BB%E5%9E%8B%E5%90%84%E6%9C%89%E4%BB%80%E4%B9%88%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF%EF%BC%9F"><span class="toc-number">10.3.</span> <span class="toc-text">Q3：5 种钩子类型各有什么适用场景？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Q4%EF%BC%9ASessionHooks-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8-Map-%E8%80%8C%E4%B8%8D%E6%98%AF-Record%EF%BC%9F"><span class="toc-number">10.4.</span> <span class="toc-text">Q4：SessionHooks 为什么用 Map 而不是 Record？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Q5%EF%BC%9AHTTP-%E9%92%A9%E5%AD%90%E7%9A%84%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">10.5.</span> <span class="toc-text">Q5：HTTP 钩子的安全机制是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Q6%EF%BC%9A%E5%BC%82%E6%AD%A5%E9%92%A9%E5%AD%90%E5%A6%82%E4%BD%95%E4%B8%8D%E9%98%BB%E5%A1%9E%E4%B8%BB%E6%B5%81%E7%A8%8B%EF%BC%9F"><span class="toc-number">10.6.</span> <span class="toc-text">Q6：异步钩子如何不阻塞主流程？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Q7%EF%BC%9A%E4%BC%81%E4%B8%9A%E5%A6%82%E4%BD%95%E9%94%81%E5%AE%9A%E9%92%A9%E5%AD%90%EF%BC%9F"><span class="toc-number">10.7.</span> <span class="toc-text">Q7：企业如何锁定钩子？</span></a></li></ol></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【Claude Code源码剖析】29-User Hooks 用户钩子系统</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2026-05-25<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/">大模型</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/Harness/">Harness</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">3.4k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 13 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><script>(function(){  if(!sessionStorage.getItem("_hexo_protect_harness")){    location.href="/harness?r="+encodeURIComponent(location.pathname);  }})();</script><blockquote>
+<p>⚠️ <strong>学习声明</strong>：本文档基于 Claude Code 2.1.88 源码分析整理，仅供个人学习研究使用，不做任何商业用途。</p>
+</blockquote>
+<blockquote>
+<p>核心文件：<code>src/utils/hooks/</code>（16 个文件，3721 行）<br>入口：<code>src/utils/hooks.ts</code>（主调度器）</p>
+</blockquote>
+<hr>
+<h2 id="一、系统定位"><a href="#一、系统定位" class="headerlink" title="一、系统定位"></a>一、系统定位</h2><p>Hooks 是 Claude Code <strong>可扩展性的核心机制</strong>：用户（和企业管理员）可以在 Agent 生命周期的任意关键节点注入自定义逻辑，而不需要修改 CC 本身。</p>
+<p>三类用途：</p>
+<ol>
+<li><strong>观察</strong>：记录工具调用日志、发送通知</li>
+<li><strong>拦截</strong>：阻止危险操作（exit 2 blocking）</li>
+<li><strong>增强</strong>：向 Claude 注入额外上下文（exit 0 stdout）</li>
+</ol>
+<hr>
+<h2 id="二、27-个钩子事件（完整表）"><a href="#二、27-个钩子事件（完整表）" class="headerlink" title="二、27 个钩子事件（完整表）"></a>二、27 个钩子事件（完整表）</h2><p>来源：<code>src/utils/hooks/hookEvents.ts</code>（<code>getHookEventMetadata</code> 函数）</p>
+<h3 id="工具生命周期（4-个）"><a href="#工具生命周期（4-个）" class="headerlink" title="工具生命周期（4 个）"></a>工具生命周期（4 个）</h3><table>
+<thead>
+<tr>
+<th>事件</th>
+<th>触发时机</th>
+<th>支持 matcher</th>
+<th>阻断能力</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>PreToolUse</code></td>
+<td>工具调用前</td>
+<td><code>tool_name</code></td>
+<td>✅ exit 2 阻止工具执行</td>
+</tr>
+<tr>
+<td><code>PostToolUse</code></td>
+<td>工具调用后（成功）</td>
+<td><code>tool_name</code></td>
+<td>⚠️ exit 2 向 model 发 stderr</td>
+</tr>
+<tr>
+<td><code>PostToolUseFailure</code></td>
+<td>工具调用失败后</td>
+<td><code>tool_name</code></td>
+<td>⚠️ exit 2 向 model 发 stderr</td>
+</tr>
+<tr>
+<td><code>PermissionDenied</code></td>
+<td>自动模式分类器拒绝工具</td>
+<td><code>tool_name</code></td>
+<td>可输出 <code>retry:true</code> 让 model 重试</td>
+</tr>
+</tbody></table>
+<p><strong>PreToolUse exit 协议</strong>：</p>
+<ul>
+<li>exit 0：静默通过，stdout&#x2F;stderr 不显示</li>
+<li>exit 2：向 model 发 stderr <strong>并阻止</strong> 工具执行</li>
+<li>其他：向用户显示 stderr，<strong>继续</strong>执行工具</li>
+</ul>
+<p><strong>PostToolUse exit 协议</strong>：</p>
+<ul>
+<li>exit 0：stdout 显示在 transcript 模式（Ctrl+O）</li>
+<li>exit 2：立即向 model 发 stderr（可影响下一轮）</li>
+<li>其他：向用户显示 stderr</li>
+</ul>
+<h3 id="会话生命周期（4-个）"><a href="#会话生命周期（4-个）" class="headerlink" title="会话生命周期（4 个）"></a>会话生命周期（4 个）</h3><table>
+<thead>
+<tr>
+<th>事件</th>
+<th>触发时机</th>
+<th>matcher</th>
+<th>特殊行为</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>SessionStart</code></td>
+<td>新会话启动</td>
+<td><code>source</code>（startup&#x2F;resume&#x2F;clear&#x2F;compact）</td>
+<td>exit 0 stdout 注入 Claude；始终广播（SDK always-emit）</td>
+</tr>
+<tr>
+<td><code>SessionEnd</code></td>
+<td>会话结束前</td>
+<td><code>reason</code>（clear&#x2F;logout&#x2F;prompt_input_exit&#x2F;other）</td>
+<td>无阻断</td>
+</tr>
+<tr>
+<td><code>Stop</code></td>
+<td>Claude 准备结束回复前</td>
+<td>无</td>
+<td>exit 2 继续对话（让 Claude 再想想）</td>
+</tr>
+<tr>
+<td><code>StopFailure</code></td>
+<td>API 错误结束 turn</td>
+<td><code>error</code>（rate_limit&#x2F;auth 等）</td>
+<td>Fire-and-forget，输出全忽略</td>
+</tr>
+</tbody></table>
+<h3 id="子-Agent-生命周期（2-个）"><a href="#子-Agent-生命周期（2-个）" class="headerlink" title="子 Agent 生命周期（2 个）"></a>子 Agent 生命周期（2 个）</h3><table>
+<thead>
+<tr>
+<th>事件</th>
+<th>触发时机</th>
+<th>matcher</th>
+<th>exit 0 行为</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>SubagentStart</code></td>
+<td>Agent 工具调用启动</td>
+<td><code>agent_type</code></td>
+<td>stdout 注入子 Agent</td>
+</tr>
+<tr>
+<td><code>SubagentStop</code></td>
+<td>子 Agent 结束前</td>
+<td><code>agent_type</code></td>
+<td>exit 2 让子 Agent 继续运行</td>
+</tr>
+</tbody></table>
+<h3 id="压缩生命周期（2-个）"><a href="#压缩生命周期（2-个）" class="headerlink" title="压缩生命周期（2 个）"></a>压缩生命周期（2 个）</h3><table>
+<thead>
+<tr>
+<th>事件</th>
+<th>触发</th>
+<th>matcher</th>
+<th>阻断</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>PreCompact</code></td>
+<td>上下文压缩前</td>
+<td><code>trigger</code>（manual&#x2F;auto）</td>
+<td>exit 0 stdout 追加自定义压缩指令；exit 2 阻止压缩</td>
+</tr>
+<tr>
+<td><code>PostCompact</code></td>
+<td>压缩后</td>
+<td><code>trigger</code></td>
+<td>无阻断，stdout 显示给用户</td>
+</tr>
+</tbody></table>
+<h3 id="用户交互（3-个）"><a href="#用户交互（3-个）" class="headerlink" title="用户交互（3 个）"></a>用户交互（3 个）</h3><table>
+<thead>
+<tr>
+<th>事件</th>
+<th>触发</th>
+<th>阻断</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>UserPromptSubmit</code></td>
+<td>用户提交 prompt</td>
+<td>exit 2 阻止处理并清除原始 prompt；exit 0 stdout 注入 Claude</td>
+</tr>
+<tr>
+<td><code>Notification</code></td>
+<td>发送通知时</td>
+<td><code>notification_type</code>（permission_prompt&#x2F;idle_prompt 等）</td>
+</tr>
+<tr>
+<td><code>PermissionRequest</code></td>
+<td>权限对话框弹出时</td>
+<td>输出 JSON <code>hookSpecificOutput.decision</code> 可程序化允许&#x2F;拒绝</td>
+</tr>
+</tbody></table>
+<h3 id="MCP-Elicitation（2-个）"><a href="#MCP-Elicitation（2-个）" class="headerlink" title="MCP Elicitation（2 个）"></a>MCP Elicitation（2 个）</h3><table>
+<thead>
+<tr>
+<th>事件</th>
+<th>触发</th>
+<th>特殊输出</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Elicitation</code></td>
+<td>MCP 服务端请求用户输入</td>
+<td>输出 <code>hookSpecificOutput.action</code>（accept&#x2F;decline&#x2F;cancel）可自动响应</td>
+</tr>
+<tr>
+<td><code>ElicitationResult</code></td>
+<td>用户响应 MCP elicitation 后</td>
+<td>exit 2 阻止响应（变为 decline）</td>
+</tr>
+</tbody></table>
+<h3 id="文件与目录（3-个）"><a href="#文件与目录（3-个）" class="headerlink" title="文件与目录（3 个）"></a>文件与目录（3 个）</h3><table>
+<thead>
+<tr>
+<th>事件</th>
+<th>触发</th>
+<th>特殊机制</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>CwdChanged</code></td>
+<td>工作目录变更</td>
+<td><code>CLAUDE_ENV_FILE</code> 注入环境变量；可返回 <code>watchPaths</code> 注册文件监控</td>
+</tr>
+<tr>
+<td><code>FileChanged</code></td>
+<td>被监控文件变化</td>
+<td>matcher 是文件名模式（如 <code>.envrc|.env</code>）；同样支持 <code>CLAUDE_ENV_FILE</code></td>
+</tr>
+<tr>
+<td><code>WorktreeCreate</code> &#x2F; <code>WorktreeRemove</code></td>
+<td>Worktree 创建&#x2F;删除</td>
+<td>stdout 必须是绝对路径（Create）；无阻断（Remove）</td>
+</tr>
+</tbody></table>
+<h3 id="多-Agent-任务（3-个）"><a href="#多-Agent-任务（3-个）" class="headerlink" title="多 Agent 任务（3 个）"></a>多 Agent 任务（3 个）</h3><table>
+<thead>
+<tr>
+<th>事件</th>
+<th>触发</th>
+<th>阻断</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>TeammateIdle</code></td>
+<td>Teammate 即将空闲</td>
+<td>exit 2 向 teammate 发 stderr 并阻止空闲</td>
+</tr>
+<tr>
+<td><code>TaskCreated</code></td>
+<td>创建任务时</td>
+<td>exit 2 阻止任务创建</td>
+</tr>
+<tr>
+<td><code>TaskCompleted</code></td>
+<td>标记任务完成时</td>
+<td>exit 2 阻止任务完成</td>
+</tr>
+</tbody></table>
+<h3 id="配置与指令（2-个）"><a href="#配置与指令（2-个）" class="headerlink" title="配置与指令（2 个）"></a>配置与指令（2 个）</h3><table>
+<thead>
+<tr>
+<th>事件</th>
+<th>触发</th>
+<th>阻断</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ConfigChange</code></td>
+<td>会话期间配置文件变更</td>
+<td>exit 2 阻止变更应用</td>
+</tr>
+<tr>
+<td><code>InstructionsLoaded</code></td>
+<td>CLAUDE.md 或规则文件加载</td>
+<td><strong>仅可观察</strong>，不支持阻断</td>
+</tr>
+</tbody></table>
+<h3 id="仓库维护（1-个）"><a href="#仓库维护（1-个）" class="headerlink" title="仓库维护（1 个）"></a>仓库维护（1 个）</h3><table>
+<thead>
+<tr>
+<th>事件</th>
+<th>触发</th>
+<th>matcher</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Setup</code></td>
+<td>init 或 maintenance 触发</td>
+<td><code>trigger</code>（init&#x2F;maintenance）；始终广播</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="三、5-种钩子类型"><a href="#三、5-种钩子类型" class="headerlink" title="三、5 种钩子类型"></a>三、5 种钩子类型</h2><p>来源：<code>src/utils/settings/types.ts</code>（<code>HookCommand</code>）、<code>src/utils/hooks/hooksSettings.ts</code>（<code>isHookEqual</code>）</p>
+<h3 id="1-command（最常用）"><a href="#1-command（最常用）" class="headerlink" title="1. command（最常用）"></a>1. command（最常用）</h3><figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;command&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;command&quot;</span><span class="punctuation">:</span> <span class="string">&quot;python3 /path/to/pre_tool_use.py&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;shell&quot;</span><span class="punctuation">:</span> <span class="string">&quot;bash&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;timeout&quot;</span><span class="punctuation">:</span> <span class="number">30</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;if&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Bash(git *)&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>shell</strong>：bash（默认）、powershell、powershell_core、sh、zsh、fish</li>
+<li><strong>if</strong>：条件过滤，格式 <code>ToolName(pattern)</code>，仅在模式匹配时执行</li>
+<li><strong>timeout</strong>：秒（默认 10 分钟，与工具钩子超时一致）</li>
+<li>输入通过 <strong>stdin</strong> 接收 JSON</li>
+</ul>
+<p>执行链路：<code>hooks.ts:runHook()</code> → <code>spawn()</code> → 读 stdout&#x2F;stderr → 解析 exit code</p>
+<h3 id="2-prompt（LLM-单轮）"><a href="#2-prompt（LLM-单轮）" class="headerlink" title="2. prompt（LLM 单轮）"></a>2. prompt（LLM 单轮）</h3><figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;prompt&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;prompt&quot;</span><span class="punctuation">:</span> <span class="string">&quot;检查这段代码是否安全：$ARGUMENTS&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;model&quot;</span><span class="punctuation">:</span> <span class="string">&quot;claude-haiku-4-5-20251001&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;timeout&quot;</span><span class="punctuation">:</span> <span class="number">30</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>$ARGUMENTS</code> 占位符在执行时替换为钩子 JSON 输入（<code>addArgumentsToPrompt</code>）</li>
+<li>默认使用 <code>getSmallFastModel()</code>（Haiku）</li>
+<li>单次 <code>queryModelWithoutStreaming()</code> 调用，默认 30s 超时</li>
+<li>响应必须是 JSON：<code>&#123;&quot;ok&quot;: true&#125;</code> 或 <code>&#123;&quot;ok&quot;: false, &quot;reason&quot;: &quot;...&quot;&#125;</code></li>
+<li>ok&#x3D;false 时等价于 exit 2（blocking）</li>
+</ul>
+<p>实现：<code>src/utils/hooks/execPromptHook.ts</code></p>
+<h3 id="3-agent（LLM-多轮）"><a href="#3-agent（LLM-多轮）" class="headerlink" title="3. agent（LLM 多轮）"></a>3. agent（LLM 多轮）</h3><figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;agent&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;prompt&quot;</span><span class="punctuation">:</span> <span class="string">&quot;验证 Agent 完成了计划中的所有步骤：$ARGUMENTS&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;model&quot;</span><span class="punctuation">:</span> <span class="string">&quot;claude-haiku-4-5-20251001&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;timeout&quot;</span><span class="punctuation">:</span> <span class="number">60</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>使用完整 <code>query()</code> 引擎，最多 <strong>50 轮</strong>对话</li>
+<li>可访问所有工具（除 <code>ALL_AGENT_DISALLOWED_TOOLS</code>：不能启动子 Agent 或进入 PlanMode）</li>
+<li>通过 <code>SyntheticOutputTool</code> 返回结构化输出 <code>&#123;ok, reason?&#125;</code></li>
+<li>自动注入 transcript 路径权限，Agent 可读取对话历史</li>
+<li>未在 50 轮内返回结果 → outcome: ‘cancelled’（不报错）</li>
+<li>分析事件：<code>tengu_agent_stop_hook_*</code></li>
+</ul>
+<p>实现：<code>src/utils/hooks/execAgentHook.ts</code></p>
+<h3 id="4-http（HTTP-POST）"><a href="#4-http（HTTP-POST）" class="headerlink" title="4. http（HTTP POST）"></a>4. http（HTTP POST）</h3><figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;http&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;url&quot;</span><span class="punctuation">:</span> <span class="string">&quot;https://policy.internal/pre-tool-use&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;headers&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;Authorization&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Bearer $MY_TOKEN&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;allowedEnvVars&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;MY_TOKEN&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;timeout&quot;</span><span class="punctuation">:</span> <span class="number">30</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>POST JSON 到指定 URL，body &#x3D; 钩子输入 JSON</li>
+<li><strong>header 环境变量插值</strong>：<code>$VAR</code> &#x2F; <code>$&#123;VAR&#125;</code> → 仅 <code>allowedEnvVars</code> 中的变量被展开，防止 secrets 泄露</li>
+<li><strong>SSRF 防护</strong>（见下节）</li>
+<li>企业策略：<code>allowedHttpHookUrls</code>（URL 白名单）+ <code>httpHookAllowedEnvVars</code>（全局 env 变量白名单）</li>
+<li>禁用 axios 自动重定向（maxRedirects: 0）</li>
+</ul>
+<p>实现：<code>src/utils/hooks/execHttpHook.ts</code></p>
+<h3 id="5-function（TypeScript-回调，仅会话作用域）"><a href="#5-function（TypeScript-回调，仅会话作用域）" class="headerlink" title="5. function（TypeScript 回调，仅会话作用域）"></a>5. function（TypeScript 回调，仅会话作用域）</h3><figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="title function_">addFunctionHook</span>(setAppState, sessionId, <span class="string">&#x27;PreToolUse&#x27;</span>, <span class="string">&#x27;Bash&#x27;</span>, </span><br><span class="line">  <span class="title function_">async</span> (messages, signal) =&gt; &#123;</span><br><span class="line">    <span class="comment">// 返回 true 通过，false 阻断</span></span><br><span class="line">    <span class="keyword">return</span> !<span class="title function_">isSomeCondition</span>(messages)</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">&#x27;条件不满足，阻止执行&#x27;</span>,</span><br><span class="line">  &#123; <span class="attr">timeout</span>: <span class="number">5000</span> &#125;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>不可持久化</strong>：仅存 AppState 内存，会话结束即清除</li>
+<li>有返回 ID，可通过 <code>removeFunctionHook(id)</code> 移除</li>
+<li>超时默认 5s（比 command 短得多）</li>
+<li>无法通过 settings.json 配置，只能 SDK 编程注入</li>
+</ul>
+<hr>
+<h2 id="四、配置源与优先级"><a href="#四、配置源与优先级" class="headerlink" title="四、配置源与优先级"></a>四、配置源与优先级</h2><p>来源：<code>src/utils/hooks/hooksSettings.ts:getAllHooks()</code></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">优先级（高 → 低）：</span><br><span class="line">userSettings     (~/.claude/settings.json)</span><br><span class="line">projectSettings  (.claude/settings.json)</span><br><span class="line">localSettings    (.claude/settings.local.json)</span><br><span class="line">policySettings   (企业管理策略，不在 getAllHooks 但会覆盖一切)</span><br><span class="line">pluginHook       (插件注册的钩子，最低优先级 = 999)</span><br><span class="line">sessionHook      (内存临时，动态注入，与上述并列）</span><br><span class="line">builtinHook      (CC 内部，ANT-only)</span><br></pre></td></tr></table></figure>
+
+<p><strong>去重机制</strong>：多个源指向同一个 settings.json 文件时（如在 home 目录运行，userSettings &#x3D; projectSettings），通过 <code>seenFiles: Set&lt;string&gt;</code> 跳过重复文件。</p>
+<p><strong>企业锁定</strong>：<code>policySettings.allowManagedHooksOnly = true</code> 时，userSettings&#x2F;projectSettings&#x2F;localSettings 的钩子<strong>全部忽略</strong>，只有管理员定义的 hooks 生效。</p>
+<hr>
+<h2 id="五、SessionHooks：会话级动态钩子"><a href="#五、SessionHooks：会话级动态钩子" class="headerlink" title="五、SessionHooks：会话级动态钩子"></a>五、SessionHooks：会话级动态钩子</h2><p>来源：<code>src/utils/hooks/sessionHooks.ts</code></p>
+<h3 id="存储结构"><a href="#存储结构" class="headerlink" title="存储结构"></a>存储结构</h3><figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="title class_">SessionHooksState</span> = <span class="title class_">Map</span>&lt;<span class="built_in">string</span>, <span class="title class_">SessionStore</span>&gt;</span><br><span class="line"><span class="comment">//                           sessionId    per-session state</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> <span class="title class_">SessionStore</span> = &#123;</span><br><span class="line">  <span class="attr">hooks</span>: &#123;</span><br><span class="line">    [event <span class="keyword">in</span> <span class="title class_">HookEvent</span>]?: <span class="title class_">SessionHookMatcher</span>[]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>为什么用 Map 而不是 Record？</strong></p>
+<blockquote>
+<p>注释原话：高并发场景下，parallel() 启动 N 个 schema-mode agents 时，N 个 addFunctionHook 在同一个同步 tick 触发。Record + spread 是 O(N²)（每次 spread 复制增长的 Map）且触发所有 ~30 个 store listeners；Map.set() 是 O(1)，返回 prev 不触发 listener。</p>
+</blockquote>
+<h3 id="操作-API"><a href="#操作-API" class="headerlink" title="操作 API"></a>操作 API</h3><figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 添加命令钩子（临时）</span></span><br><span class="line"><span class="title function_">addSessionHook</span>(setAppState, sessionId, <span class="string">&#x27;PreToolUse&#x27;</span>, <span class="string">&#x27;Bash&#x27;</span>, commandHook)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 添加函数钩子（返回 ID 用于移除）</span></span><br><span class="line"><span class="keyword">const</span> id = <span class="title function_">addFunctionHook</span>(setAppState, sessionId, <span class="string">&#x27;PreToolUse&#x27;</span>, <span class="string">&#x27;Bash&#x27;</span>, callback, errorMsg)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 移除函数钩子</span></span><br><span class="line"><span class="title function_">removeFunctionHook</span>(setAppState, sessionId, <span class="string">&#x27;PreToolUse&#x27;</span>, id)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 清除会话所有钩子（session end 时调用）</span></span><br><span class="line"><span class="title function_">clearSessionHooks</span>(setAppState, sessionId)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Function-钩子-vs-Command-钩子"><a href="#Function-钩子-vs-Command-钩子" class="headerlink" title="Function 钩子 vs Command 钩子"></a>Function 钩子 vs Command 钩子</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>function</th>
+<th>command&#x2F;prompt&#x2F;agent&#x2F;http</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>执行位置</td>
+<td>进程内（TypeScript 回调）</td>
+<td>子进程或外部 HTTP</td>
+</tr>
+<tr>
+<td>持久化</td>
+<td>❌ 仅内存</td>
+<td>✅ settings.json</td>
+</tr>
+<tr>
+<td>超时</td>
+<td>5s 默认</td>
+<td>30s-60s 默认</td>
+</tr>
+<tr>
+<td>并发安全</td>
+<td>O(1) Map.set</td>
+<td>O(N) spawn</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>SDK 编程式注入</td>
+<td>用户配置</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="六、AsyncHookRegistry：异步钩子注册表"><a href="#六、AsyncHookRegistry：异步钩子注册表" class="headerlink" title="六、AsyncHookRegistry：异步钩子注册表"></a>六、AsyncHookRegistry：异步钩子注册表</h2><p>来源：<code>src/utils/hooks/AsyncHookRegistry.ts</code></p>
+<h3 id="异步协议"><a href="#异步协议" class="headerlink" title="异步协议"></a>异步协议</h3><p>钩子可以在 stdout 输出 <code>&#123;&quot;async&quot;: true, &quot;asyncTimeout&quot;: 15000&#125;</code> 后继续后台运行（不阻塞主流程）。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">钩子进程     stdout: &#123;&quot;async&quot;: true, &quot;asyncTimeout&quot;: 15000&#125;</span><br><span class="line">              ↓ 立即返回</span><br><span class="line">CC 主流程    继续下一步</span><br><span class="line">              ↓ 稍后在 query loop 轮询</span><br><span class="line">CC 查询      checkForAsyncHookResponses() 发现完成</span><br><span class="line">              ↓ 注入响应</span><br></pre></td></tr></table></figure>
+
+<h3 id="核心数据结构"><a href="#核心数据结构" class="headerlink" title="核心数据结构"></a>核心数据结构</h3><figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="title class_">PendingAsyncHook</span> = &#123;</span><br><span class="line">  <span class="attr">processId</span>: <span class="built_in">string</span></span><br><span class="line">  <span class="attr">hookId</span>: <span class="built_in">string</span></span><br><span class="line">  <span class="attr">timeout</span>: <span class="built_in">number</span>          <span class="comment">// 默认 15s</span></span><br><span class="line">  <span class="attr">shellCommand</span>?: <span class="title class_">ShellCommand</span></span><br><span class="line">  <span class="attr">stopProgressInterval</span>: <span class="function">() =&gt;</span> <span class="built_in">void</span>  <span class="comment">// 清理进度 interval</span></span><br><span class="line">  <span class="attr">responseAttachmentSent</span>: <span class="built_in">boolean</span>   <span class="comment">// 防重复投递</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> pendingHooks = <span class="keyword">new</span> <span class="title class_">Map</span>&lt;<span class="built_in">string</span>, <span class="title class_">PendingAsyncHook</span>&gt;()  <span class="comment">// 全局单例</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="轮询与清理"><a href="#轮询与清理" class="headerlink" title="轮询与清理"></a>轮询与清理</h3><figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 在 query loop 每轮调用</span></span><br><span class="line"><span class="keyword">const</span> responses = <span class="keyword">await</span> <span class="title function_">checkForAsyncHookResponses</span>()</span><br><span class="line"></span><br><span class="line"><span class="comment">// 处理完成的 hook</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">const</span> r <span class="keyword">of</span> responses) &#123;</span><br><span class="line">  <span class="comment">// 注入到 model messages</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">removeDeliveredAsyncHooks</span>(processIds)</span><br><span class="line"></span><br><span class="line"><span class="comment">// Session 结束时</span></span><br><span class="line"><span class="keyword">await</span> <span class="title function_">finalizePendingAsyncHooks</span>()  <span class="comment">// kill 未完成的，cleanup 所有</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>SessionStart 特殊处理</strong>：SessionStart 的异步钩子完成后，自动调用 <code>invalidateSessionEnvCache()</code> 使环境变量缓存失效，确保下一次工具调用使用最新环境。</p>
+<p><strong>进度事件</strong>：每 1000ms 轮询 shellCommand.taskOutput，有新 stdout 时通过 <code>emitHookProgress</code> 广播。</p>
+<hr>
+<h2 id="七、SSRF-防护（HTTP-钩子专用）"><a href="#七、SSRF-防护（HTTP-钩子专用）" class="headerlink" title="七、SSRF 防护（HTTP 钩子专用）"></a>七、SSRF 防护（HTTP 钩子专用）</h2><p>来源：<code>src/utils/hooks/ssrfGuard.ts</code></p>
+<h3 id="阻断的-IP-范围"><a href="#阻断的-IP-范围" class="headerlink" title="阻断的 IP 范围"></a>阻断的 IP 范围</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">IPv4 阻断：</span><br><span class="line">  0.0.0.0/8      &quot;this&quot; network</span><br><span class="line">  10.0.0.0/8     私有网络</span><br><span class="line">  100.64.0.0/10  CGNAT/共享地址（阿里云 metadata: 100.100.100.200）</span><br><span class="line">  169.254.0.0/16 链路本地（云 metadata：169.254.169.254）</span><br><span class="line">  172.16.0.0/12  私有网络</span><br><span class="line">  192.168.0.0/16 私有网络</span><br><span class="line"></span><br><span class="line">IPv4 放行：</span><br><span class="line">  127.0.0.0/8    回环（本地开发策略服务器是主要用例）</span><br><span class="line"></span><br><span class="line">IPv6 阻断：fc00::/7（本地唯一）、fe80::/10（链路本地）、::（未指定）</span><br><span class="line">IPv6 放行：::1（回环）</span><br></pre></td></tr></table></figure>
+
+<h3 id="防-DNS-重绑定"><a href="#防-DNS-重绑定" class="headerlink" title="防 DNS 重绑定"></a>防 DNS 重绑定</h3><p><code>ssrfGuardedLookup</code> 作为 axios <code>lookup</code> 回调，在 <strong>DNS 解析完成后、socket 连接前</strong>验证 IP，消除 Time-of-Check-to-Time-of-Use 窗口。</p>
+<p><strong>代理绕过</strong>：当沙箱代理或环境变量代理生效时，跳过 SSRF guard（代理本身执行 DNS，guard 会错误地检查代理的 IP）。</p>
+<h3 id="IPv4-mapped-IPv6-防绕过"><a href="#IPv4-mapped-IPv6-防绕过" class="headerlink" title="IPv4-mapped IPv6 防绕过"></a>IPv4-mapped IPv6 防绕过</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">::ffff:169.254.169.254  →  提取 169.254.169.254  →  阻断</span><br><span class="line">::ffff:a9fe:a9fe        →  展开 hex 组  →  提取 169.254.169.254  →  阻断</span><br></pre></td></tr></table></figure>
+
+<p><code>expandIPv6Groups()</code> 先展开 <code>::</code> 压缩形式，再提取嵌入的 IPv4 地址，避免 hex 形式绕过。</p>
+<hr>
+<h2 id="八、Hook-事件广播系统"><a href="#八、Hook-事件广播系统" class="headerlink" title="八、Hook 事件广播系统"></a>八、Hook 事件广播系统</h2><p>来源：<code>src/utils/hooks/hookEvents.ts</code></p>
+<h3 id="事件类型"><a href="#事件类型" class="headerlink" title="事件类型"></a>事件类型</h3><figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="title class_">HookStartedEvent</span>  = &#123; <span class="attr">type</span>: <span class="string">&#x27;started&#x27;</span>; hookId; hookName; hookEvent &#125;</span><br><span class="line"><span class="keyword">type</span> <span class="title class_">HookProgressEvent</span> = &#123; <span class="attr">type</span>: <span class="string">&#x27;progress&#x27;</span>; ...; stdout; stderr; output &#125;</span><br><span class="line"><span class="keyword">type</span> <span class="title class_">HookResponseEvent</span> = &#123; <span class="attr">type</span>: <span class="string">&#x27;response&#x27;</span>; ...; exitCode?; <span class="attr">outcome</span>: <span class="string">&#x27;success&#x27;</span>|<span class="string">&#x27;error&#x27;</span>|<span class="string">&#x27;cancelled&#x27;</span> &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="广播策略"><a href="#广播策略" class="headerlink" title="广播策略"></a>广播策略</h3><table>
+<thead>
+<tr>
+<th>模式</th>
+<th>总是广播</th>
+<th>可选广播（需开启）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>默认</td>
+<td>SessionStart、Setup</td>
+<td>其余 25 个事件</td>
+</tr>
+<tr>
+<td>SDK <code>includeHookEvents: true</code> 或 <code>CLAUDE_CODE_REMOTE</code></td>
+<td>全部 27 个</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<p><code>setAllHookEventsEnabled(true)</code> 开启全量广播。</p>
+<h3 id="Pending-Buffer"><a href="#Pending-Buffer" class="headerlink" title="Pending Buffer"></a>Pending Buffer</h3><p>handler 注册前积压的事件存入 <code>pendingEvents</code>（上限 100 条，超出丢弃最旧）。handler 注册时立即 replay 所有积压事件。</p>
+<hr>
+<h2 id="九、Hooks-配置快照机制"><a href="#九、Hooks-配置快照机制" class="headerlink" title="九、Hooks 配置快照机制"></a>九、Hooks 配置快照机制</h2><p>来源：<code>src/utils/hooks/hooksConfigSnapshot.ts</code></p>
+<p>Hooks 配置在 session 初始化时<strong>快照</strong>一次（避免运行中配置热更新带来不确定性）。关键函数：</p>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="title function_">getHooksConfigFromSnapshot</span>()     <span class="comment">// 使用快照中的 hooks</span></span><br><span class="line"><span class="title function_">shouldAllowManagedHooksOnly</span>()    <span class="comment">// 企业策略：只允许 managed hooks</span></span><br><span class="line"><span class="title function_">shouldDisableAllHooksIncludingManaged</span>()  <span class="comment">// 完全禁用所有 hooks</span></span><br></pre></td></tr></table></figure>
+
+<p><code>ConfigChange</code> 事件本身由文件监控触发，hook 可 exit 2 阻止新配置应用到当前会话。</p>
+<hr>
+<h2 id="十、面试必考点"><a href="#十、面试必考点" class="headerlink" title="十、面试必考点"></a>十、面试必考点</h2><h3 id="Q1：Claude-Code-的钩子系统如何工作？能实现哪些能力？"><a href="#Q1：Claude-Code-的钩子系统如何工作？能实现哪些能力？" class="headerlink" title="Q1：Claude Code 的钩子系统如何工作？能实现哪些能力？"></a>Q1：Claude Code 的钩子系统如何工作？能实现哪些能力？</h3><p><strong>答</strong>：Hooks 是用户&#x2F;企业在 Agent 生命周期关键节点注入自定义逻辑的机制。27 个事件覆盖工具调用前后、会话开始&#x2F;结束、用户输入提交、压缩、权限请求等全链路。</p>
+<p>核心能力三类：</p>
+<ul>
+<li><strong>观察</strong>：记录日志（exit 0，stdout 不打扰 model）</li>
+<li><strong>阻断</strong>：exit 2 阻止危险操作（如 PreToolUse 阻止写生产数据库）</li>
+<li><strong>增强</strong>：exit 0 stdout 向 Claude 注入上下文（如 SessionStart 注入团队规范）</li>
+</ul>
+<h3 id="Q2：exit-code-协议是什么？"><a href="#Q2：exit-code-协议是什么？" class="headerlink" title="Q2：exit code 协议是什么？"></a>Q2：exit code 协议是什么？</h3><p><strong>答</strong>：不同事件的 exit code 语义不同，但通用模式：</p>
+<ul>
+<li><strong>exit 0</strong>：成功，stdout 可能显示给 Claude 或用户（事件决定）</li>
+<li><strong>exit 2</strong>：<strong>阻断</strong>，stderr 发给 model 或阻止动作（事件决定）</li>
+<li><strong>其他非零</strong>：向用户显示 stderr，主流程继续</li>
+</ul>
+<p>PreToolUse exit 2 &#x3D; 阻止工具执行 + 向 model 发错误；Stop exit 2 &#x3D; 继续对话（Claude 再想想）。</p>
+<h3 id="Q3：5-种钩子类型各有什么适用场景？"><a href="#Q3：5-种钩子类型各有什么适用场景？" class="headerlink" title="Q3：5 种钩子类型各有什么适用场景？"></a>Q3：5 种钩子类型各有什么适用场景？</h3><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>适用场景</th>
+<th>性能开销</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>command</td>
+<td>日志、通知、调用现有脚本</td>
+<td>低（子进程）</td>
+</tr>
+<tr>
+<td>prompt</td>
+<td>简单 LLM 验证（30s 超时）</td>
+<td>中（单次 API 调用）</td>
+</tr>
+<tr>
+<td>agent</td>
+<td>复杂验证，需要读文件&#x2F;工具（50 轮）</td>
+<td>高（多轮 query）</td>
+</tr>
+<tr>
+<td>http</td>
+<td>企业策略服务、外部审批</td>
+<td>低（HTTP POST）</td>
+</tr>
+<tr>
+<td>function</td>
+<td>SDK 编程式注入（不持久化）</td>
+<td>极低（进程内）</td>
+</tr>
+</tbody></table>
+<h3 id="Q4：SessionHooks-为什么用-Map-而不是-Record？"><a href="#Q4：SessionHooks-为什么用-Map-而不是-Record？" class="headerlink" title="Q4：SessionHooks 为什么用 Map 而不是 Record？"></a>Q4：SessionHooks 为什么用 Map 而不是 Record？</h3><p><strong>答</strong>：高并发场景（parallel() 启动 N 个 agent 在同一 tick 调用 addFunctionHook）：</p>
+<ul>
+<li>Record + spread：O(N²) 复制成本 + 触发 ~30 个 store listeners</li>
+<li>Map：O(1) set + <code>return prev</code>（引用不变）→ Object.is 检查短路，零 listener 触发</li>
+</ul>
+<h3 id="Q5：HTTP-钩子的安全机制是什么？"><a href="#Q5：HTTP-钩子的安全机制是什么？" class="headerlink" title="Q5：HTTP 钩子的安全机制是什么？"></a>Q5：HTTP 钩子的安全机制是什么？</h3><p><strong>答</strong>：三层防护：</p>
+<ol>
+<li><strong>URL 白名单</strong>：<code>allowedHttpHookUrls</code>（企业管理员设置，<code>*</code> 通配符）</li>
+<li><strong>SSRF 防护</strong>：<code>ssrfGuardedLookup</code> 在 DNS 解析完成后检查 IP，阻断私有&#x2F;链路本地地址；特别处理 IPv4-mapped IPv6 防绕过</li>
+<li><strong>env 变量白名单</strong>：header 中的 <code>$VAR</code> 插值只展开 <code>allowedEnvVars</code> 中的变量，防止 secrets 泄露；结果 sanitize 去除 <code>\r\n\x00</code> 防 CRLF 注入</li>
+</ol>
+<h3 id="Q6：异步钩子如何不阻塞主流程？"><a href="#Q6：异步钩子如何不阻塞主流程？" class="headerlink" title="Q6：异步钩子如何不阻塞主流程？"></a>Q6：异步钩子如何不阻塞主流程？</h3><p><strong>答</strong>：钩子进程在 stdout 输出 <code>&#123;&quot;async&quot;: true&#125;</code> 后即返回，主流程继续。<code>AsyncHookRegistry</code> 保存对进程的引用，query loop 在每轮 <code>checkForAsyncHookResponses()</code> 轮询是否完成，完成后注入响应。SessionStart 的异步钩子完成后额外触发 <code>invalidateSessionEnvCache()</code>。</p>
+<h3 id="Q7：企业如何锁定钩子？"><a href="#Q7：企业如何锁定钩子？" class="headerlink" title="Q7：企业如何锁定钩子？"></a>Q7：企业如何锁定钩子？</h3><p><strong>答</strong>：<code>allowManagedHooksOnly = true</code> → userSettings&#x2F;projectSettings&#x2F;localSettings 的钩子全部忽略，只有管理员在 policySettings 中定义的 hooks 生效。<code>shouldDisableAllHooksIncludingManaged = true</code> → 完全禁用钩子，包括 managed hooks。</p>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析    </a><a class="post-meta__tags" href="/tags/Claude-Code/">Claude Code    </a><a class="post-meta__tags" href="/tags/Agent/">Agent    </a><a class="post-meta__tags" href="/tags/LLM/">LLM    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="next-post pull-full"><a href="/2026/05/18/%E3%80%90Claude%20Code%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E3%80%9127-VCR%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【Claude Code源码剖析】27-VCR 测试基础设施</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2026/05/18/【Claude Code源码剖析】27-VCR测试基础设施/" title="【Claude Code源码剖析】27-VCR 测试基础设施"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】27-VCR 测试基础设施</div></a></div><div class="relatedPosts_item"><a href="/2026/05/17/【Claude Code源码剖析】26-PlanModeV2规划模式/" title="【Claude Code源码剖析】26-多 Agent 规划系统"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】26-多 Agent 规划系统</div></a></div><div class="relatedPosts_item"><a href="/2026/05/11/【Claude Code源码剖析】25-LSP集成与IDE能力/" title="【Claude Code源码剖析】25-LSP 集成与 IDE 能力"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】25-LSP 集成与 IDE 能力</div></a></div><div class="relatedPosts_item"><a href="/2026/05/10/【Claude Code源码剖析】24-ComputerUse桌面自动化系统/" title="【Claude Code源码剖析】24-桌面自动化子系统"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】24-桌面自动化子系统</div></a></div><div class="relatedPosts_item"><a href="/2026/05/03/【Claude Code源码剖析】23-MemDir自动记忆系统/" title="【Claude Code源码剖析】23-MemDir 自动记忆系统"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】23-MemDir 自动记忆系统</div></a></div><div class="relatedPosts_item"><a href="/2026/05/03/【Claude Code源码剖析】22-Session管理与状态恢复/" title="【Claude Code源码剖析】22-Session 管理与状态恢复"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【Claude Code源码剖析】22-Session 管理与状态恢复</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

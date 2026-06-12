@@ -1,0 +1,820 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【GNN原理解析】图信号处理与图卷积神经网络 | ONE·PIECE</title><meta name="description" content="【GNN原理解析】图信号处理与图卷积神经网络"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【GNN原理解析】图信号处理与图卷积神经网络"><meta name="twitter:description" content="【GNN原理解析】图信号处理与图卷积神经网络"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【GNN原理解析】图信号处理与图卷积神经网络"><meta property="og:url" content="http://tufusi.com/2020/08/15/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E5%9B%BE%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86%E4%B8%8E%E5%9B%BE%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【GNN原理解析】图信号处理与图卷积神经网络"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2020/08/15/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E5%9B%BE%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86%E4%B8%8E%E5%9B%BE%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/"><link rel="prev" title="【GNN原理解析】神经网络基础" href="http://tufusi.com/2020/08/20/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80/"><link rel="next" title="【统计学习方法死磕系列】EM算法" href="http://tufusi.com/2020/08/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91EM%E7%AE%97%E6%B3%95/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E5%9B%BE%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86%E5%9F%BA%E7%A1%80"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、图信号处理基础</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-%E5%9B%BE%E4%B8%8A%E7%9A%84%E4%BF%A1%E5%8F%B7"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">1.1 图上的信号</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-2-%E6%8B%89%E6%99%AE%E6%8B%89%E6%96%AF%E7%9F%A9%E9%98%B5%E7%9A%84%E8%B0%B1%E5%88%86%E8%A7%A3"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">1.2 拉普拉斯矩阵的谱分解</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-3-%E5%9B%BE%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2"><span class="toc_mobile_items-number">1.3.</span> <span class="toc_mobile_items-text">1.3 图傅里叶变换</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81%E8%B0%B1%E5%9F%9F%E5%9B%BE%E5%8D%B7%E7%A7%AF"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、谱域图卷积</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E5%8D%B7%E7%A7%AF%E5%AE%9A%E7%90%86%E7%9A%84%E5%9B%BE%E6%8E%A8%E5%B9%BF"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 卷积定理的图推广</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-Bruna-et-al-2014-%EF%BC%9A%E5%8F%AF%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%AF%B9%E8%A7%92%E6%BB%A4%E6%B3%A2%E5%99%A8"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 Bruna et al. (2014)：可学习的对角滤波器</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-Defferrard-et-al-2016-ChebNet-%EF%BC%9A%E5%88%87%E6%AF%94%E9%9B%AA%E5%A4%AB%E5%A4%9A%E9%A1%B9%E5%BC%8F%E8%BF%91%E4%BC%BC"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 Defferrard et al. (2016, ChebNet)：切比雪夫多项式近似</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81GCN%EF%BC%88Kipf-Welling-2017%EF%BC%89"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、GCN（Kipf &amp; Welling, 2017）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E4%B8%80%E9%98%B6%E8%BF%91%E4%BC%BC"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 一阶近似</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E9%87%8D%E5%BD%92%E4%B8%80%E5%8C%96%E6%8A%80%E5%B7%A7"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 重归一化技巧</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-GCN-%E7%9A%84%E9%80%90%E8%8A%82%E7%82%B9%E8%A7%86%E8%A7%92"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 GCN 的逐节点视角</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-%E5%AE%8C%E6%95%B4%E7%9A%84-PyTorch-%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">3.4 完整的 PyTorch 实现</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E7%A9%BA%E9%97%B4%E5%9F%9F-GNN%EF%BC%88Message-Passing%EF%BC%89"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、空间域 GNN（Message Passing）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92%E8%8C%83%E5%BC%8F"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 消息传递范式</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-GraphSAGE"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 GraphSAGE</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-GAT%EF%BC%88Graph-Attention-Networks%EF%BC%89"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 GAT（Graph Attention Networks）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-4-GIN%EF%BC%88Graph-Isomorphism-Network%EF%BC%89"><span class="toc_mobile_items-number">4.4.</span> <span class="toc_mobile_items-text">4.4 GIN（Graph Isomorphism Network）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81%E8%B0%B1%E5%9F%9F-vs-%E7%A9%BA%E9%97%B4%E5%9F%9F%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、谱域 vs 空间域对比</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E8%BF%87%E5%B9%B3%E6%BB%91%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、过平滑问题</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E8%BF%87%E5%B9%B3%E6%BB%91%E7%9A%84%E6%95%B0%E5%AD%A6%E8%A7%A3%E9%87%8A"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 过平滑的数学解释</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-%E5%AE%9A%E9%87%8F%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 定量分析</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-%E7%BC%93%E8%A7%A3%E8%BF%87%E5%B9%B3%E6%BB%91%E7%9A%84%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">6.3 缓解过平滑的策略</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81GNN-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E4%B8%8E%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、GNN 常见问题与最佳实践</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-%E6%A8%A1%E5%9E%8B%E9%80%89%E6%8B%A9%E5%86%B3%E7%AD%96%E6%A0%91"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">7.1 模型选择决策树</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-%E8%B6%85%E5%8F%82%E6%95%B0%E8%B0%83%E4%BC%98%E6%8C%87%E5%8D%97"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">7.2 超参数调优指南</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81GCN-%E5%8F%98%E4%BD%93%E4%B8%80%E8%A7%88"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、GCN 变体一览</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%9D%A2%E8%AF%95-%E8%87%AA%E6%9F%A5%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">面试&#x2F;自查问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E5%A4%A7%E8%A7%84%E6%A8%A1%E5%9B%BE%E8%AE%AD%E7%BB%83%E6%8A%80%E6%9C%AF"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">九、大规模图训练技术</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-1-%E9%82%BB%E5%B1%85%E9%87%87%E6%A0%B7%EF%BC%88Neighbor-Sampling%EF%BC%89"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">9.1 邻居采样（Neighbor Sampling）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-2-ClusterGCN"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">9.2 ClusterGCN</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-3-GraphSAINT"><span class="toc_mobile_items-number">10.3.</span> <span class="toc_mobile_items-text">9.3 GraphSAINT</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81GNN-%E8%AF%84%E4%BC%B0%E4%B8%8E%E5%9F%BA%E5%87%86%E6%B5%8B%E8%AF%95"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">十、GNN 评估与基准测试</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-1-%E6%A0%87%E5%87%86%E8%AF%84%E4%BC%B0%E5%8D%8F%E8%AE%AE"><span class="toc_mobile_items-number">11.1.</span> <span class="toc_mobile_items-text">10.1 标准评估协议</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-2-%E6%B6%88%E8%9E%8D%E5%AE%9E%E9%AA%8C%E8%AE%BE%E8%AE%A1"><span class="toc_mobile_items-number">11.2.</span> <span class="toc_mobile_items-text">10.2 消融实验设计</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-3-%E5%B8%B8%E8%A7%81%E5%A4%B1%E8%B4%A5%E6%A8%A1%E5%BC%8F"><span class="toc_mobile_items-number">11.3.</span> <span class="toc_mobile_items-text">10.3 常见失败模式</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%80%E3%80%81GNN-%E7%9A%84%E5%8F%AF%E8%A7%A3%E9%87%8A%E6%80%A7"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">十一、GNN 的可解释性</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-1-GNNExplainer"><span class="toc_mobile_items-number">12.1.</span> <span class="toc_mobile_items-text">11.1 GNNExplainer</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-2-%E5%9F%BA%E4%BA%8E%E6%A2%AF%E5%BA%A6%E7%9A%84%E5%BD%92%E5%9B%A0"><span class="toc_mobile_items-number">12.2.</span> <span class="toc_mobile_items-text">11.2 基于梯度的归因</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E5%AE%9E%E9%99%85%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc_mobile_items-number">13.</span> <span class="toc_mobile_items-text">十二、实际应用场景</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#12-1-%E5%B7%A5%E4%B8%9A%E7%BA%A7%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F"><span class="toc_mobile_items-number">13.1.</span> <span class="toc_mobile_items-text">12.1 工业级推荐系统</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#12-2-%E8%8D%AF%E7%89%A9%E5%8F%91%E7%8E%B0%E4%B8%AD%E7%9A%84-GNN"><span class="toc_mobile_items-number">13.2.</span> <span class="toc_mobile_items-text">12.2 药物发现中的 GNN</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#12-3-%E7%A4%BE%E4%BA%A4%E7%BD%91%E7%BB%9C%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">13.3.</span> <span class="toc_mobile_items-text">12.3 社交网络分析</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#12-4-%E4%BA%A4%E9%80%9A%E9%A2%84%E6%B5%8B"><span class="toc_mobile_items-number">13.4.</span> <span class="toc_mobile_items-text">12.4 交通预测</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%89%E3%80%81GNN-%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7%E4%B8%8E%E6%9C%AA%E6%9D%A5%E6%96%B9%E5%90%91"><span class="toc_mobile_items-number">14.</span> <span class="toc_mobile_items-text">十三、GNN 的局限性与未来方向</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#13-1-%E5%BD%93%E5%89%8D%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc_mobile_items-number">14.1.</span> <span class="toc_mobile_items-text">13.1 当前局限性</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#13-2-%E5%89%8D%E6%B2%BF%E6%96%B9%E5%90%91"><span class="toc_mobile_items-number">14.2.</span> <span class="toc_mobile_items-text">13.2 前沿方向</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E5%9B%9B%E3%80%81%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-GCN%EF%BC%88%E4%B8%8D%E7%94%A8%E6%A1%86%E6%9E%B6%EF%BC%89"><span class="toc_mobile_items-number">15.</span> <span class="toc_mobile_items-text">十四、从零实现 GCN（不用框架）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%BA%94%E3%80%81%E5%AE%8C%E6%95%B4%E8%AE%AD%E7%BB%83%E8%84%9A%E6%9C%AC%EF%BC%88Cora-%E8%8A%82%E7%82%B9%E5%88%86%E7%B1%BB%EF%BC%89"><span class="toc_mobile_items-number">16.</span> <span class="toc_mobile_items-text">十五、完整训练脚本（Cora 节点分类）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%83%E3%80%81%E5%9B%BE%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2%E7%9A%84%E5%8F%AF%E8%A7%86%E5%8C%96%E7%90%86%E8%A7%A3"><span class="toc_mobile_items-number">17.</span> <span class="toc_mobile_items-text">十七、图傅里叶变换的可视化理解</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E5%85%AB%E3%80%81SGC%EF%BC%88Simplifying-Graph-Convolutional-Networks%EF%BC%89"><span class="toc_mobile_items-number">18.</span> <span class="toc_mobile_items-text">十八、SGC（Simplifying Graph Convolutional Networks）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B9%9D%E3%80%81%E9%99%84%E5%BD%95%EF%BC%9A%E5%85%B3%E9%94%AE%E6%95%B0%E5%AD%A6%E5%85%AC%E5%BC%8F%E9%80%9F%E6%9F%A5%E8%A1%A8"><span class="toc_mobile_items-number">19.</span> <span class="toc_mobile_items-text">十九、附录：关键数学公式速查表</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E5%8D%81%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc_mobile_items-number">20.</span> <span class="toc_mobile_items-text">二十、总结</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E5%8D%81%E4%B8%80%E3%80%81%E8%A1%A5%E5%85%85%EF%BC%9A%E5%9B%BE%E7%9A%84%E5%90%8C%E8%B4%A8%E6%80%A7%E4%B8%8E%E5%BC%82%E8%B4%A8%E6%80%A7"><span class="toc_mobile_items-number">21.</span> <span class="toc_mobile_items-text">二十一、补充：图的同质性与异质性</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#21-1-%E5%90%8C%E8%B4%A8%E6%80%A7%EF%BC%88Homophily%EF%BC%89"><span class="toc_mobile_items-number">21.1.</span> <span class="toc_mobile_items-text">21.1 同质性（Homophily）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#21-2-%E5%BC%82%E8%B4%A8%E6%80%A7%EF%BC%88Heterophily%EF%BC%89"><span class="toc_mobile_items-number">21.2.</span> <span class="toc_mobile_items-text">21.2 异质性（Heterophily）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#21-3-%E5%9B%BE%E5%90%8C%E8%B4%A8%E6%80%A7%E5%AE%9E%E9%AA%8C"><span class="toc_mobile_items-number">21.3.</span> <span class="toc_mobile_items-text">21.3 图同质性实验</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E5%8D%81%E4%BA%8C%E3%80%81%E9%98%85%E8%AF%BB%E8%AE%BA%E6%96%87%E6%8E%A8%E8%8D%90%E9%A1%BA%E5%BA%8F"><span class="toc_mobile_items-number">22.</span> <span class="toc_mobile_items-text">二十二、阅读论文推荐顺序</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E5%8D%81%E4%B8%89%E3%80%81GNN-%E5%AE%9E%E8%B7%B5-Checklist"><span class="toc_mobile_items-number">23.</span> <span class="toc_mobile_items-text">二十三、GNN 实践 Checklist</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%9B%BE%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86%E5%9F%BA%E7%A1%80"><span class="toc-number">1.</span> <span class="toc-text">一、图信号处理基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E5%9B%BE%E4%B8%8A%E7%9A%84%E4%BF%A1%E5%8F%B7"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 图上的信号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E6%8B%89%E6%99%AE%E6%8B%89%E6%96%AF%E7%9F%A9%E9%98%B5%E7%9A%84%E8%B0%B1%E5%88%86%E8%A7%A3"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 拉普拉斯矩阵的谱分解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E5%9B%BE%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2"><span class="toc-number">1.3.</span> <span class="toc-text">1.3 图傅里叶变换</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E8%B0%B1%E5%9F%9F%E5%9B%BE%E5%8D%B7%E7%A7%AF"><span class="toc-number">2.</span> <span class="toc-text">二、谱域图卷积</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%8D%B7%E7%A7%AF%E5%AE%9A%E7%90%86%E7%9A%84%E5%9B%BE%E6%8E%A8%E5%B9%BF"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 卷积定理的图推广</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Bruna-et-al-2014-%EF%BC%9A%E5%8F%AF%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%AF%B9%E8%A7%92%E6%BB%A4%E6%B3%A2%E5%99%A8"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 Bruna et al. (2014)：可学习的对角滤波器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Defferrard-et-al-2016-ChebNet-%EF%BC%9A%E5%88%87%E6%AF%94%E9%9B%AA%E5%A4%AB%E5%A4%9A%E9%A1%B9%E5%BC%8F%E8%BF%91%E4%BC%BC"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 Defferrard et al. (2016, ChebNet)：切比雪夫多项式近似</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81GCN%EF%BC%88Kipf-Welling-2017%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">三、GCN（Kipf &amp; Welling, 2017）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E4%B8%80%E9%98%B6%E8%BF%91%E4%BC%BC"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 一阶近似</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E9%87%8D%E5%BD%92%E4%B8%80%E5%8C%96%E6%8A%80%E5%B7%A7"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 重归一化技巧</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-GCN-%E7%9A%84%E9%80%90%E8%8A%82%E7%82%B9%E8%A7%86%E8%A7%92"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 GCN 的逐节点视角</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%AE%8C%E6%95%B4%E7%9A%84-PyTorch-%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 完整的 PyTorch 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E7%A9%BA%E9%97%B4%E5%9F%9F-GNN%EF%BC%88Message-Passing%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">四、空间域 GNN（Message Passing）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92%E8%8C%83%E5%BC%8F"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 消息传递范式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-GraphSAGE"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 GraphSAGE</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-GAT%EF%BC%88Graph-Attention-Networks%EF%BC%89"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 GAT（Graph Attention Networks）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-GIN%EF%BC%88Graph-Isomorphism-Network%EF%BC%89"><span class="toc-number">4.4.</span> <span class="toc-text">4.4 GIN（Graph Isomorphism Network）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E8%B0%B1%E5%9F%9F-vs-%E7%A9%BA%E9%97%B4%E5%9F%9F%E5%AF%B9%E6%AF%94"><span class="toc-number">5.</span> <span class="toc-text">五、谱域 vs 空间域对比</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E8%BF%87%E5%B9%B3%E6%BB%91%E9%97%AE%E9%A2%98"><span class="toc-number">6.</span> <span class="toc-text">六、过平滑问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E8%BF%87%E5%B9%B3%E6%BB%91%E7%9A%84%E6%95%B0%E5%AD%A6%E8%A7%A3%E9%87%8A"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 过平滑的数学解释</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%AE%9A%E9%87%8F%E5%88%86%E6%9E%90"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 定量分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E7%BC%93%E8%A7%A3%E8%BF%87%E5%B9%B3%E6%BB%91%E7%9A%84%E7%AD%96%E7%95%A5"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 缓解过平滑的策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81GNN-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E4%B8%8E%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc-number">7.</span> <span class="toc-text">七、GNN 常见问题与最佳实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E6%A8%A1%E5%9E%8B%E9%80%89%E6%8B%A9%E5%86%B3%E7%AD%96%E6%A0%91"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 模型选择决策树</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E8%B6%85%E5%8F%82%E6%95%B0%E8%B0%83%E4%BC%98%E6%8C%87%E5%8D%97"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 超参数调优指南</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81GCN-%E5%8F%98%E4%BD%93%E4%B8%80%E8%A7%88"><span class="toc-number">8.</span> <span class="toc-text">八、GCN 变体一览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95-%E8%87%AA%E6%9F%A5%E9%97%AE%E9%A2%98"><span class="toc-number">9.</span> <span class="toc-text">面试&#x2F;自查问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E5%A4%A7%E8%A7%84%E6%A8%A1%E5%9B%BE%E8%AE%AD%E7%BB%83%E6%8A%80%E6%9C%AF"><span class="toc-number">10.</span> <span class="toc-text">九、大规模图训练技术</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E9%82%BB%E5%B1%85%E9%87%87%E6%A0%B7%EF%BC%88Neighbor-Sampling%EF%BC%89"><span class="toc-number">10.1.</span> <span class="toc-text">9.1 邻居采样（Neighbor Sampling）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-ClusterGCN"><span class="toc-number">10.2.</span> <span class="toc-text">9.2 ClusterGCN</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-GraphSAINT"><span class="toc-number">10.3.</span> <span class="toc-text">9.3 GraphSAINT</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81GNN-%E8%AF%84%E4%BC%B0%E4%B8%8E%E5%9F%BA%E5%87%86%E6%B5%8B%E8%AF%95"><span class="toc-number">11.</span> <span class="toc-text">十、GNN 评估与基准测试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-%E6%A0%87%E5%87%86%E8%AF%84%E4%BC%B0%E5%8D%8F%E8%AE%AE"><span class="toc-number">11.1.</span> <span class="toc-text">10.1 标准评估协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-%E6%B6%88%E8%9E%8D%E5%AE%9E%E9%AA%8C%E8%AE%BE%E8%AE%A1"><span class="toc-number">11.2.</span> <span class="toc-text">10.2 消融实验设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-3-%E5%B8%B8%E8%A7%81%E5%A4%B1%E8%B4%A5%E6%A8%A1%E5%BC%8F"><span class="toc-number">11.3.</span> <span class="toc-text">10.3 常见失败模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81GNN-%E7%9A%84%E5%8F%AF%E8%A7%A3%E9%87%8A%E6%80%A7"><span class="toc-number">12.</span> <span class="toc-text">十一、GNN 的可解释性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-1-GNNExplainer"><span class="toc-number">12.1.</span> <span class="toc-text">11.1 GNNExplainer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-2-%E5%9F%BA%E4%BA%8E%E6%A2%AF%E5%BA%A6%E7%9A%84%E5%BD%92%E5%9B%A0"><span class="toc-number">12.2.</span> <span class="toc-text">11.2 基于梯度的归因</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E5%AE%9E%E9%99%85%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">13.</span> <span class="toc-text">十二、实际应用场景</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#12-1-%E5%B7%A5%E4%B8%9A%E7%BA%A7%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F"><span class="toc-number">13.1.</span> <span class="toc-text">12.1 工业级推荐系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-2-%E8%8D%AF%E7%89%A9%E5%8F%91%E7%8E%B0%E4%B8%AD%E7%9A%84-GNN"><span class="toc-number">13.2.</span> <span class="toc-text">12.2 药物发现中的 GNN</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-3-%E7%A4%BE%E4%BA%A4%E7%BD%91%E7%BB%9C%E5%88%86%E6%9E%90"><span class="toc-number">13.3.</span> <span class="toc-text">12.3 社交网络分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-4-%E4%BA%A4%E9%80%9A%E9%A2%84%E6%B5%8B"><span class="toc-number">13.4.</span> <span class="toc-text">12.4 交通预测</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%89%E3%80%81GNN-%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7%E4%B8%8E%E6%9C%AA%E6%9D%A5%E6%96%B9%E5%90%91"><span class="toc-number">14.</span> <span class="toc-text">十三、GNN 的局限性与未来方向</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#13-1-%E5%BD%93%E5%89%8D%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc-number">14.1.</span> <span class="toc-text">13.1 当前局限性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-2-%E5%89%8D%E6%B2%BF%E6%96%B9%E5%90%91"><span class="toc-number">14.2.</span> <span class="toc-text">13.2 前沿方向</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E5%9B%9B%E3%80%81%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-GCN%EF%BC%88%E4%B8%8D%E7%94%A8%E6%A1%86%E6%9E%B6%EF%BC%89"><span class="toc-number">15.</span> <span class="toc-text">十四、从零实现 GCN（不用框架）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%94%E3%80%81%E5%AE%8C%E6%95%B4%E8%AE%AD%E7%BB%83%E8%84%9A%E6%9C%AC%EF%BC%88Cora-%E8%8A%82%E7%82%B9%E5%88%86%E7%B1%BB%EF%BC%89"><span class="toc-number">16.</span> <span class="toc-text">十五、完整训练脚本（Cora 节点分类）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%83%E3%80%81%E5%9B%BE%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2%E7%9A%84%E5%8F%AF%E8%A7%86%E5%8C%96%E7%90%86%E8%A7%A3"><span class="toc-number">17.</span> <span class="toc-text">十七、图傅里叶变换的可视化理解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E5%85%AB%E3%80%81SGC%EF%BC%88Simplifying-Graph-Convolutional-Networks%EF%BC%89"><span class="toc-number">18.</span> <span class="toc-text">十八、SGC（Simplifying Graph Convolutional Networks）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B9%9D%E3%80%81%E9%99%84%E5%BD%95%EF%BC%9A%E5%85%B3%E9%94%AE%E6%95%B0%E5%AD%A6%E5%85%AC%E5%BC%8F%E9%80%9F%E6%9F%A5%E8%A1%A8"><span class="toc-number">19.</span> <span class="toc-text">十九、附录：关键数学公式速查表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E5%8D%81%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-number">20.</span> <span class="toc-text">二十、总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E5%8D%81%E4%B8%80%E3%80%81%E8%A1%A5%E5%85%85%EF%BC%9A%E5%9B%BE%E7%9A%84%E5%90%8C%E8%B4%A8%E6%80%A7%E4%B8%8E%E5%BC%82%E8%B4%A8%E6%80%A7"><span class="toc-number">21.</span> <span class="toc-text">二十一、补充：图的同质性与异质性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#21-1-%E5%90%8C%E8%B4%A8%E6%80%A7%EF%BC%88Homophily%EF%BC%89"><span class="toc-number">21.1.</span> <span class="toc-text">21.1 同质性（Homophily）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#21-2-%E5%BC%82%E8%B4%A8%E6%80%A7%EF%BC%88Heterophily%EF%BC%89"><span class="toc-number">21.2.</span> <span class="toc-text">21.2 异质性（Heterophily）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#21-3-%E5%9B%BE%E5%90%8C%E8%B4%A8%E6%80%A7%E5%AE%9E%E9%AA%8C"><span class="toc-number">21.3.</span> <span class="toc-text">21.3 图同质性实验</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E5%8D%81%E4%BA%8C%E3%80%81%E9%98%85%E8%AF%BB%E8%AE%BA%E6%96%87%E6%8E%A8%E8%8D%90%E9%A1%BA%E5%BA%8F"><span class="toc-number">22.</span> <span class="toc-text">二十二、阅读论文推荐顺序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E5%8D%81%E4%B8%89%E3%80%81GNN-%E5%AE%9E%E8%B7%B5-Checklist"><span class="toc-number">23.</span> <span class="toc-text">二十三、GNN 实践 Checklist</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【GNN原理解析】图信号处理与图卷积神经网络</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2020-08-15<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E5%9B%BE%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/">图神经网络</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">9.8k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 40 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>图卷积神经网络（GCN）是图深度学习中最具影响力的模型。本文从图信号处理的谱域视角出发，完整推导 GCN 的数学原理：从图傅里叶变换、谱域卷积，到切比雪夫多项式近似、一阶近似和重归一化技巧。同时涵盖空间域 GNN（GraphSAGE、GAT、GIN）以及过平滑问题的系统分析。</p>
+<span id="more"></span>
+
+<h2 id="一、图信号处理基础"><a href="#一、图信号处理基础" class="headerlink" title="一、图信号处理基础"></a>一、图信号处理基础</h2><h3 id="1-1-图上的信号"><a href="#1-1-图上的信号" class="headerlink" title="1.1 图上的信号"></a>1.1 图上的信号</h3><p>图信号 x ∈ R^N 是一个定义在图节点上的函数，x_i 表示节点 v_i 的信号值。在 GNN 的语境中，x 就是某一维度的节点特征。</p>
+<p>在欧几里得空间（图像）中，信号定义在规则网格上，傅里叶变换将信号分解为不同频率的正弦波。在图空间中，我们需要一个类似的工具来分析图信号的”频率”成分。</p>
+<h3 id="1-2-拉普拉斯矩阵的谱分解"><a href="#1-2-拉普拉斯矩阵的谱分解" class="headerlink" title="1.2 拉普拉斯矩阵的谱分解"></a>1.2 拉普拉斯矩阵的谱分解</h3><p>图拉普拉斯矩阵 L 是一个实对称半正定矩阵，可以进行特征分解：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">L = U Λ U^T</span><br></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<ul>
+<li>Λ &#x3D; diag(λ_1, λ_2, …, λ_N)，λ_1 ≤ λ_2 ≤ … ≤ λ_N 是特征值</li>
+<li>U &#x3D; [u_1, u_2, …, u_N] 是正交的特征向量矩阵，满足 U^T U &#x3D; I</li>
+</ul>
+<p><strong>拉普拉斯特征向量的物理意义：</strong></p>
+<ul>
+<li>小特征值 λ_k 对应的特征向量 u_k 在图上变化平缓（低频），反映了图的宏观结构</li>
+<li>大特征值 λ_k 对应的特征向量 u_k 在图上变化剧烈（高频），反映了局部差异</li>
+<li>特征向量可以视为图上的”傅里叶基函数”</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> networkx <span class="keyword">as</span> nx</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line"><span class="comment"># 构造路径图并计算拉普拉斯特征向量</span></span><br><span class="line">N = <span class="number">20</span></span><br><span class="line">G = nx.path_graph(N)</span><br><span class="line">A = nx.adjacency_matrix(G).toarray()</span><br><span class="line">D = np.diag(A.<span class="built_in">sum</span>(axis=<span class="number">1</span>))</span><br><span class="line">L = D - A</span><br><span class="line"></span><br><span class="line">eigenvalues, eigenvectors = np.linalg.eigh(L)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 可视化前 5 个特征向量（低频到高频）</span></span><br><span class="line">fig, axes = plt.subplots(<span class="number">5</span>, <span class="number">1</span>, figsize=(<span class="number">12</span>, <span class="number">10</span>))</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">5</span>):</span><br><span class="line">    axes[i].stem(<span class="built_in">range</span>(N), eigenvectors[:, i])</span><br><span class="line">    axes[i].set_title(<span class="string">f&#x27;特征向量 <span class="subst">&#123;i+<span class="number">1</span>&#125;</span> (λ_<span class="subst">&#123;i+<span class="number">1</span>&#125;</span>=<span class="subst">&#123;eigenvalues[i]:<span class="number">.3</span>f&#125;</span>)&#x27;</span>)</span><br><span class="line">    axes[i].set_ylabel(<span class="string">&#x27;振幅&#x27;</span>)</span><br><span class="line">plt.tight_layout()</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-3-图傅里叶变换"><a href="#1-3-图傅里叶变换" class="headerlink" title="1.3 图傅里叶变换"></a>1.3 图傅里叶变换</h3><p>类比经典傅里叶变换，定义<strong>图傅里叶变换（Graph Fourier Transform）</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x̂(λ_k) = &lt;x, u_k&gt; = Σ_&#123;i=1&#125;^N x_i · u_k(i)      即 x̂ = U^T x</span><br></pre></td></tr></table></figure>
+
+<p><strong>逆图傅里叶变换</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x_i = Σ_&#123;k=1&#125;^N x̂(λ_k) · u_k(i)                     即 x = U x̂</span><br></pre></td></tr></table></figure>
+
+<p>物理含义：图信号 x 被分解为 N 个”图频率”分量，每个分量对应一个特征向量 u_k 及其系数 x̂(λ_k)。小 λ_k 对应低频分量（图结构上平滑），大 λ_k 对应高频分量（图结构上震荡）。</p>
+<h2 id="二、谱域图卷积"><a href="#二、谱域图卷积" class="headerlink" title="二、谱域图卷积"></a>二、谱域图卷积</h2><h3 id="2-1-卷积定理的图推广"><a href="#2-1-卷积定理的图推广" class="headerlink" title="2.1 卷积定理的图推广"></a>2.1 卷积定理的图推广</h3><p>经典信号处理中，卷积定理：时域卷积 &#x3D; 频域逐元素乘积。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">(f * g)(t) ⟷ f̂(ω) · ĝ(ω)         （傅里叶变换域中的乘法）</span><br></pre></td></tr></table></figure>
+
+<p>推广到图上，定义图卷积：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x * G y = U ( (U^T x) ⊙ (U^T y) )       ⊙ 表示逐元素乘法</span><br></pre></td></tr></table></figure>
+
+<p>更一般地，定义带有可学习谱域滤波器 g_θ 的图卷积：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x * G g_θ = U g_θ(Λ) U^T x</span><br></pre></td></tr></table></figure>
+
+<p>其中 g_θ(Λ) &#x3D; diag(θ_1, θ_2, …, θ_N) 是谱域中的滤波器参数。</p>
+<h3 id="2-2-Bruna-et-al-2014-：可学习的对角滤波器"><a href="#2-2-Bruna-et-al-2014-：可学习的对角滤波器" class="headerlink" title="2.2 Bruna et al. (2014)：可学习的对角滤波器"></a>2.2 Bruna et al. (2014)：可学习的对角滤波器</h3><p>Bruna 等人直接学习 g_θ(Λ) 的对角元素：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">H^&#123;(l+1)&#125; = σ( U diag(θ^&#123;(l)&#125;) U^T H^&#123;(l)&#125; )</span><br></pre></td></tr></table></figure>
+
+<p><strong>优点</strong>：数学上最直接、最精确的图卷积。<br><strong>缺点</strong>：</p>
+<ol>
+<li><strong>需要完整的特征分解</strong>（O(N^3) 复杂度，对大规模图不可行）</li>
+<li><strong>非局部化</strong>：参数 θ_k 影响全局（通过 u_k），不是局部化的</li>
+<li><strong>非共享</strong>：滤波器参数 θ 和特定的图 G 绑定，不能跨图使用</li>
+<li><strong>参数量</strong>：O(N) 个参数（每个特征值一个），与节点数成正比</li>
+</ol>
+<h3 id="2-3-Defferrard-et-al-2016-ChebNet-：切比雪夫多项式近似"><a href="#2-3-Defferrard-et-al-2016-ChebNet-：切比雪夫多项式近似" class="headerlink" title="2.3 Defferrard et al. (2016, ChebNet)：切比雪夫多项式近似"></a>2.3 Defferrard et al. (2016, ChebNet)：切比雪夫多项式近似</h3><p>Defferrard 等人的核心创新：用切比雪夫多项式近似 g_θ(Λ)，避免昂贵的特征分解。</p>
+<p><strong>切比雪夫多项式</strong>的定义：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">T_0(x) = 1</span><br><span class="line">T_1(x) = x</span><br><span class="line">T_k(x) = 2x T_&#123;k-1&#125;(x) - T_&#123;k-2&#125;(x)      (k ≥ 2)</span><br></pre></td></tr></table></figure>
+
+<p>切比雪夫多项式构成了 [-1, 1] 上的正交基。</p>
+<p>对 g_θ(Λ) 做 K 阶切比雪夫展开：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">g_θ(Λ) ≈ Σ_&#123;k=0&#125;^&#123;K-1&#125; θ_k T_k(Λ̃)</span><br></pre></td></tr></table></figure>
+
+<p>其中 Λ̃ &#x3D; 2Λ&#x2F;λ_max - I 是将特征值缩放到 [-1, 1] 的归一化操作。</p>
+<p><strong>关键性质</strong>：利用 T_k(L̃) &#x3D; U T_k(Λ̃) U^T（切比雪夫多项式与特征分解可交换），得到：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x * G g_θ = Σ_&#123;k=0&#125;^&#123;K-1&#125; θ_k T_k(L̃) x</span><br></pre></td></tr></table></figure>
+
+<p>其中 L̃ &#x3D; 2L&#x2F;λ_max - I。</p>
+<p><strong>重要</strong>：这个公式<strong>完全不需要计算特征分解</strong>。T_k(L̃) 通过递归关系 T_k(L̃)x &#x3D; 2L̃ T_{k-1}(L̃)x - T_{k-2}(L̃)x 计算，每次迭代只需要稀疏矩阵-向量乘法（O(|E|)），总复杂度 O(K|E|)。</p>
+<p>此外，切比雪夫多项式在 [-1, 1] 上是有界的（|T_k(x)| ≤ 1），保证了计算的数值稳定性。</p>
+<p><strong>局部化性质</strong>：K 阶切比雪夫多项式 T_K(L̃) 的求解只涉及每个节点不超过 K-hop 的邻居。因此 ChebNet 是<strong>严格局部化的 K 阶图卷积</strong>。</p>
+<h2 id="三、GCN（Kipf-Welling-2017）"><a href="#三、GCN（Kipf-Welling-2017）" class="headerlink" title="三、GCN（Kipf &amp; Welling, 2017）"></a>三、GCN（Kipf &amp; Welling, 2017）</h2><h3 id="3-1-一阶近似"><a href="#3-1-一阶近似" class="headerlink" title="3.1 一阶近似"></a>3.1 一阶近似</h3><p>Kipf &amp; Welling 对 ChebNet 做了两个极简的近似：</p>
+<p><strong>近似 1：K&#x3D;1（一阶近似，每层只看 1-hop 邻居）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x * G g_θ ≈ θ_0 x + θ_1 L̃ x</span><br><span class="line">           = θ_0 x + θ_1 (2L/λ_max - I) x</span><br></pre></td></tr></table></figure>
+
+<p><strong>近似 2：λ_max ≈ 2</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x * G g_θ ≈ θ_0 x + θ_1 (L - I) x</span><br><span class="line">           = θ_0 x + θ_1 (D - A - I) x</span><br><span class="line">           = θ_0 x + θ_1 (D - (A + I)) x</span><br></pre></td></tr></table></figure>
+
+<p>进一步令 θ &#x3D; θ_0 &#x3D; -θ_1 减少参数：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x * G g_θ ≈ θ (I + D^&#123;-1/2&#125; A D^&#123;-1/2&#125;) x</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-重归一化技巧"><a href="#3-2-重归一化技巧" class="headerlink" title="3.2 重归一化技巧"></a>3.2 重归一化技巧</h3><p>I + D^{-1&#x2F;2} A D^{-1&#x2F;2} 的特征值范围为 [0, 2]。在深层网络中反复使用这个算子会导致梯度消失或爆炸。</p>
+<p><strong>重归一化技巧（Renormalization Trick）</strong>：</p>
+<p>定义 Ã &#x3D; A + I（带自环的邻接矩阵），D̃_ii &#x3D; Σ_j Ã_ij（带自环的度矩阵）。使用：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">D̃^&#123;-1/2&#125; Ã D̃^&#123;-1/2&#125;</span><br></pre></td></tr></table></figure>
+
+<p>替换 I + D^{-1&#x2F;2} A D^{-1&#x2F;2}。这个新算子的特征值范围在 (-1, 1] 之间，数值上更稳定。</p>
+<p><strong>最终 GCN 层的公式：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">H^&#123;(l+1)&#125; = σ( D̃^&#123;-1/2&#125; Ã D̃^&#123;-1/2&#125; H^&#123;(l)&#125; W^&#123;(l)&#125; )</span><br></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<ul>
+<li>H^{(l)} ∈ R^{N×d_l}：第 l 层的节点嵌入矩阵</li>
+<li>W^{(l)} ∈ R^{d_l×d_{l+1}}：可学习的权重矩阵</li>
+<li>σ：激活函数（通常为 ReLU）</li>
+<li>D̃^{-1&#x2F;2} Ã D̃^{-1&#x2F;2}：重归一化后的邻接矩阵（固定，在训练前计算一次）</li>
+</ul>
+<h3 id="3-3-GCN-的逐节点视角"><a href="#3-3-GCN-的逐节点视角" class="headerlink" title="3.3 GCN 的逐节点视角"></a>3.3 GCN 的逐节点视角</h3><p>将矩阵乘积展开到单个节点 v，可以更直观地理解 GCN 在做什么：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h_v^&#123;(l+1)&#125; = σ( W^&#123;(l)&#125;^T · Σ_&#123;u∈N(v)∪&#123;v&#125;&#125; ( 1 / √(d_u+1)(d_v+1) ) · h_u^&#123;(l)&#125; )</span><br></pre></td></tr></table></figure>
+
+<p>节点 v 的新嵌入 &#x3D; 自身嵌入 + 所有邻居嵌入的加权平均，然后通过 W^{(l)} 做线性变换，再通过 σ 做非线性激活。</p>
+<p>权重 1&#x2F;√((d_u+1)(d_v+1)) 同时对发送节点 (d_u+1) 和接收节点 (d_v+1) 进行归一化，防止高度数的节点主导聚合结果。</p>
+<h3 id="3-4-完整的-PyTorch-实现"><a href="#3-4-完整的-PyTorch-实现" class="headerlink" title="3.4 完整的 PyTorch 实现"></a>3.4 完整的 PyTorch 实现</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"><span class="keyword">from</span> torch_geometric.nn <span class="keyword">import</span> GCNConv</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">GCN</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, in_channels, hidden_channels, out_channels, num_layers=<span class="number">2</span>, dropout=<span class="number">0.5</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.dropout = dropout</span><br><span class="line">        <span class="variable language_">self</span>.convs = nn.ModuleList()</span><br><span class="line">        <span class="variable language_">self</span>.convs.append(GCNConv(in_channels, hidden_channels))</span><br><span class="line">        <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(num_layers - <span class="number">2</span>):</span><br><span class="line">            <span class="variable language_">self</span>.convs.append(GCNConv(hidden_channels, hidden_channels))</span><br><span class="line">        <span class="variable language_">self</span>.convs.append(GCNConv(hidden_channels, out_channels))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x, edge_index</span>):</span><br><span class="line">        <span class="keyword">for</span> i, conv <span class="keyword">in</span> <span class="built_in">enumerate</span>(<span class="variable language_">self</span>.convs[:-<span class="number">1</span>]):</span><br><span class="line">            x = conv(x, edge_index)</span><br><span class="line">            x = F.relu(x)</span><br><span class="line">            x = F.dropout(x, p=<span class="variable language_">self</span>.dropout, training=<span class="variable language_">self</span>.training)</span><br><span class="line">        x = <span class="variable language_">self</span>.convs[-<span class="number">1</span>](x, edge_index)</span><br><span class="line">        <span class="keyword">return</span> x</span><br><span class="line"></span><br><span class="line"><span class="comment"># 训练 GCN</span></span><br><span class="line"><span class="keyword">from</span> torch_geometric.datasets <span class="keyword">import</span> Planetoid</span><br><span class="line">dataset = Planetoid(root=<span class="string">&#x27;/tmp/Cora&#x27;</span>, name=<span class="string">&#x27;Cora&#x27;</span>)</span><br><span class="line">data = dataset[<span class="number">0</span>]</span><br><span class="line"></span><br><span class="line">device = torch.device(<span class="string">&#x27;cuda&#x27;</span> <span class="keyword">if</span> torch.cuda.is_available() <span class="keyword">else</span> <span class="string">&#x27;cpu&#x27;</span>)</span><br><span class="line">model = GCN(dataset.num_features, hidden_channels=<span class="number">64</span>,</span><br><span class="line">            out_channels=dataset.num_classes).to(device)</span><br><span class="line">data = data.to(device)</span><br><span class="line"></span><br><span class="line">optimizer = torch.optim.Adam(model.parameters(), lr=<span class="number">0.01</span>, weight_decay=<span class="number">5e-4</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">train</span>():</span><br><span class="line">    model.train()</span><br><span class="line">    optimizer.zero_grad()</span><br><span class="line">    out = model(data.x, data.edge_index)</span><br><span class="line">    loss = F.cross_entropy(out[data.train_mask], data.y[data.train_mask])</span><br><span class="line">    loss.backward()</span><br><span class="line">    optimizer.step()</span><br><span class="line">    <span class="keyword">return</span> loss.item()</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test</span>():</span><br><span class="line">    model.<span class="built_in">eval</span>()</span><br><span class="line">    out = model(data.x, data.edge_index)</span><br><span class="line">    pred = out.argmax(dim=<span class="number">1</span>)</span><br><span class="line">    accs = []</span><br><span class="line">    <span class="keyword">for</span> mask <span class="keyword">in</span> [data.train_mask, data.val_mask, data.test_mask]:</span><br><span class="line">        acc = (pred[mask] == data.y[mask]).<span class="built_in">float</span>().mean().item()</span><br><span class="line">        accs.append(acc)</span><br><span class="line">    <span class="keyword">return</span> accs</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">200</span>):</span><br><span class="line">    loss = train()</span><br><span class="line">    <span class="keyword">if</span> epoch % <span class="number">20</span> == <span class="number">0</span>:</span><br><span class="line">        train_acc, val_acc, test_acc = test()</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&#x27;Epoch <span class="subst">&#123;epoch:03d&#125;</span>: Loss <span class="subst">&#123;loss:<span class="number">.4</span>f&#125;</span>, &#x27;</span></span><br><span class="line">              <span class="string">f&#x27;Train <span class="subst">&#123;train_acc:<span class="number">.4</span>f&#125;</span>, Val <span class="subst">&#123;val_acc:<span class="number">.4</span>f&#125;</span>, Test <span class="subst">&#123;test_acc:<span class="number">.4</span>f&#125;</span>&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="四、空间域-GNN（Message-Passing）"><a href="#四、空间域-GNN（Message-Passing）" class="headerlink" title="四、空间域 GNN（Message Passing）"></a>四、空间域 GNN（Message Passing）</h2><h3 id="4-1-消息传递范式"><a href="#4-1-消息传递范式" class="headerlink" title="4.1 消息传递范式"></a>4.1 消息传递范式</h3><p>谱域 GCN 是数学上优美的，但空间域的”消息传递”视角更直观、更通用：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h_v^&#123;(l+1)&#125; = UPDATE( h_v^&#123;(l)&#125;, AGGREGATE( &#123; h_u^&#123;(l)&#125; : u ∈ N(v) &#125; ) )</span><br></pre></td></tr></table></figure>
+
+<p>每个节点首先从邻居收集”消息”，然后将消息聚合，最后用聚合结果更新自身表示。</p>
+<h3 id="4-2-GraphSAGE"><a href="#4-2-GraphSAGE" class="headerlink" title="4.2 GraphSAGE"></a>4.2 GraphSAGE</h3><p>GraphSAGE（Hamilton et al., NeurIPS 2017）是一个归纳式（inductive）的空间 GNN。核心公式：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h_v^&#123;(l+1)&#125; = σ( W^&#123;(l)&#125; · CONCAT( h_v^&#123;(l)&#125;, AGGREGATE(&#123;h_u^&#123;(l)&#125;: u∈N(v)&#125;) ) )</span><br></pre></td></tr></table></figure>
+
+<p>GraphSAGE 提出了三种聚合器：</p>
+<p><strong>Mean Aggregator</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">AGGREGATE = 1/|N(v)| Σ_&#123;u∈N(v)&#125; h_u</span><br></pre></td></tr></table></figure>
+
+<p><strong>LSTM Aggregator</strong>：将邻居视为序列，用 LSTM 聚合。优点是表达能力强，缺点是输入顺序敏感（不是置换不变的）。</p>
+<p><strong>Pooling Aggregator</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">AGGREGATE = max( &#123; W_pool·h_u + b : u∈N(v) &#125; )</span><br></pre></td></tr></table></figure>
+
+<p>GraphSAGE 的关键创新是<strong>邻居采样</strong>：不对所有邻居操作，而是随机采样固定数量的邻居（如 25 个）。这使得训练可以 mini-batch 化，支持大规模图。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> torch_geometric.nn <span class="keyword">import</span> SAGEConv</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">GraphSAGE</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, in_channels, hidden_channels, out_channels</span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.conv1 = SAGEConv(in_channels, hidden_channels)</span><br><span class="line">        <span class="variable language_">self</span>.conv2 = SAGEConv(hidden_channels, out_channels)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x, edge_index</span>):</span><br><span class="line">        x = F.relu(<span class="variable language_">self</span>.conv1(x, edge_index))</span><br><span class="line">        x = F.dropout(x, p=<span class="number">0.5</span>, training=<span class="variable language_">self</span>.training)</span><br><span class="line">        x = <span class="variable language_">self</span>.conv2(x, edge_index)</span><br><span class="line">        <span class="keyword">return</span> x</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-GAT（Graph-Attention-Networks）"><a href="#4-3-GAT（Graph-Attention-Networks）" class="headerlink" title="4.3 GAT（Graph Attention Networks）"></a>4.3 GAT（Graph Attention Networks）</h3><p>GAT（Velickovic et al., ICLR 2018）引入注意力机制来动态计算不同邻居的重要性：</p>
+<p><strong>注意力系数计算</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">α_ij = softmax_j( LeakyReLU( a^T [Wh_i || Wh_j] ) )</span><br></pre></td></tr></table></figure>
+
+<p><strong>多头注意力聚合</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h&#x27;_i = σ( 1/K Σ_&#123;k=1&#125;^K Σ_&#123;j∈N(i)&#125; α_ij^k W^k h_j )</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> torch_geometric.nn <span class="keyword">import</span> GATConv</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">GAT</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, in_channels, hidden_channels, out_channels, heads=<span class="number">8</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.conv1 = GATConv(in_channels, hidden_channels, heads=heads, dropout=<span class="number">0.6</span>)</span><br><span class="line">        <span class="variable language_">self</span>.conv2 = GATConv(hidden_channels * heads, out_channels, heads=<span class="number">1</span>,</span><br><span class="line">                             concat=<span class="literal">False</span>, dropout=<span class="number">0.6</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x, edge_index</span>):</span><br><span class="line">        x = F.dropout(x, p=<span class="number">0.6</span>, training=<span class="variable language_">self</span>.training)</span><br><span class="line">        x = F.elu(<span class="variable language_">self</span>.conv1(x, edge_index))</span><br><span class="line">        x = F.dropout(x, p=<span class="number">0.6</span>, training=<span class="variable language_">self</span>.training)</span><br><span class="line">        x = <span class="variable language_">self</span>.conv2(x, edge_index)</span><br><span class="line">        <span class="keyword">return</span> x</span><br></pre></td></tr></table></figure>
+
+<p><strong>GAT vs GCN 关键区别</strong>：</p>
+<ul>
+<li>GCN 的邻居权重是固定的（1&#x2F;√(d_u d_v)），由图的拓扑结构决定</li>
+<li>GAT 的邻居权重是动态计算的，由节点特征和注意力机制决定</li>
+<li>GAT 通过多头注意力增强了模型的鲁棒性</li>
+</ul>
+<h3 id="4-4-GIN（Graph-Isomorphism-Network）"><a href="#4-4-GIN（Graph-Isomorphism-Network）" class="headerlink" title="4.4 GIN（Graph Isomorphism Network）"></a>4.4 GIN（Graph Isomorphism Network）</h3><p>GIN（Xu et al., ICLR 2019）从图同构的角度出发，证明了 SUM 聚合器 + MLP 可以达到 WL 测试的表达能力上限：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h_v^&#123;(l+1)&#125; = MLP( (1 + ε^&#123;(l)&#125;) h_v^&#123;(l)&#125; + Σ_&#123;u∈N(v)&#125; h_u^&#123;(l)&#125; )</span><br></pre></td></tr></table></figure>
+
+<p>其中 ε 是可学习参数或固定为 0。MLP 是至少两层的多层感知器。</p>
+<p><strong>为什么 SUM 比 MEAN&#x2F;MAX 更强大？</strong></p>
+<ul>
+<li><strong>MAX 聚合器</strong>：只保留邻居中每维的最大值，丢失了邻居的分布信息。多个有相同最大值的邻居结构无法区分</li>
+<li><strong>MEAN 聚合器</strong>：能捕捉分布的平均水平，但丢失了邻居数量的信息。有 2 个(1,2)邻居的节点 vs 有 4 个(2,1)邻居的节点，MEAN 输出相同</li>
+<li><strong>SUM 聚合器</strong>：同时保留了分布水平和邻居数量（多重集的大小）。因此 SUM 的表达能力等于 WL 测试</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">from</span> torch_geometric.nn <span class="keyword">import</span> GINConv</span><br><span class="line"><span class="keyword">from</span> torch_geometric.nn.glob <span class="keyword">import</span> global_add_pool</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">GIN</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, in_channels, hidden_channels, out_channels, num_layers=<span class="number">4</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.convs = nn.ModuleList()</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(num_layers):</span><br><span class="line">            mlp = nn.Sequential(</span><br><span class="line">                nn.Linear(in_channels <span class="keyword">if</span> i == <span class="number">0</span> <span class="keyword">else</span> hidden_channels, hidden_channels),</span><br><span class="line">                nn.BatchNorm1d(hidden_channels),</span><br><span class="line">                nn.ReLU(),</span><br><span class="line">                nn.Linear(hidden_channels, hidden_channels),</span><br><span class="line">                nn.ReLU()</span><br><span class="line">            )</span><br><span class="line">            <span class="variable language_">self</span>.convs.append(GINConv(mlp, train_eps=<span class="literal">True</span>))</span><br><span class="line"></span><br><span class="line">        <span class="variable language_">self</span>.lin = nn.Linear(hidden_channels, out_channels)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x, edge_index, batch</span>):</span><br><span class="line">        <span class="keyword">for</span> conv <span class="keyword">in</span> <span class="variable language_">self</span>.convs:</span><br><span class="line">            x = conv(x, edge_index)</span><br><span class="line">        <span class="comment"># 图分类：用 SUM 池化聚和所有节点的表示</span></span><br><span class="line">        x = global_add_pool(x, batch)</span><br><span class="line">        x = <span class="variable language_">self</span>.lin(x)</span><br><span class="line">        <span class="keyword">return</span> x</span><br></pre></td></tr></table></figure>
+
+<h2 id="五、谱域-vs-空间域对比"><a href="#五、谱域-vs-空间域对比" class="headerlink" title="五、谱域 vs 空间域对比"></a>五、谱域 vs 空间域对比</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>谱域 GNN</th>
+<th>空间域 GNN</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数学基础</td>
+<td>图信号处理、拉普拉斯谱分解</td>
+<td>消息传递、邻居聚合</td>
+</tr>
+<tr>
+<td>代表性模型</td>
+<td>GCN, ChebNet</td>
+<td>GraphSAGE, GAT, GIN</td>
+</tr>
+<tr>
+<td>特征分解</td>
+<td>需要（ChebNet&#x2F;K&#x3D;1 GCN 不需要）</td>
+<td>不需要</td>
+</tr>
+<tr>
+<td>泛化能力</td>
+<td>谱域滤波器与图绑定，难以泛化到新图</td>
+<td>空间域聚合函数可泛化到新图</td>
+</tr>
+<tr>
+<td>计算复杂度</td>
+<td>O(N^3) 如果做特征分解，O(K</td>
+<td>E</td>
+</tr>
+<tr>
+<td>灵活性</td>
+<td>较低（限于对称邻接矩阵）</td>
+<td>高（可处理有向图、边特征、多种聚合方式）</td>
+</tr>
+<tr>
+<td>理论保障</td>
+<td>强的理论框架（谱域）</td>
+<td>有 WL 测试的表达能力上限</td>
+</tr>
+</tbody></table>
+<p>现代 GNN 研究主要沿空间域方向发展，因为空间域方法更灵活、更高效、更易扩展到异构图和动态图。</p>
+<h2 id="六、过平滑问题"><a href="#六、过平滑问题" class="headerlink" title="六、过平滑问题"></a>六、过平滑问题</h2><h3 id="6-1-过平滑的数学解释"><a href="#6-1-过平滑的数学解释" class="headerlink" title="6.1 过平滑的数学解释"></a>6.1 过平滑的数学解释</h3><p>堆叠多层 GCN 后，所有节点的嵌入趋于相同（收敛到图的”平均”状态）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">lim_&#123;k→∞&#125; (D̃^&#123;-1/2&#125; Ã D̃^&#123;-1/2&#125;)^k H = Π H</span><br></pre></td></tr></table></figure>
+
+<p>其中 Π 是将信号投影到”主特征空间”（零特征值对应的特征向量方向）的投影矩阵。随着层数增加，高频信息被反复平滑掉，所有节点变得无法区分。</p>
+<h3 id="6-2-定量分析"><a href="#6-2-定量分析" class="headerlink" title="6.2 定量分析"></a>6.2 定量分析</h3><p>Li et al. (2018) 证明：在 K 层 GCN 后，两个不同节点的嵌入之差的 L2 范数满足：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">||h_u^&#123;(K)&#125; - h_v^&#123;(K)&#125;|| ≤ (sλ)^K ||h_u^&#123;(0)&#125; - h_v^&#123;(0)&#125;||</span><br></pre></td></tr></table></figure>
+
+<p>其中 s 是权重矩阵的最大奇异值，λ 是 D̃^{-1&#x2F;2} Ã D̃^{-1&#x2F;2} 的第二大特征值。当 |sλ| &lt; 1 时，差距指数衰减到 0。</p>
+<h3 id="6-3-缓解过平滑的策略"><a href="#6-3-缓解过平滑的策略" class="headerlink" title="6.3 缓解过平滑的策略"></a>6.3 缓解过平滑的策略</h3><p><strong>1. 浅层 GCN（2-4 层）</strong>：<br>最简单的方法：不要用太多层。实验表明 2 层 GCN 在多数任务上已足够。</p>
+<p><strong>2. DropEdge（Rong et al., ICLR 2020）</strong>：<br>训练时随机丢弃一部分边：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">drop_edge</span>(<span class="params">edge_index, drop_rate=<span class="number">0.2</span></span>):</span><br><span class="line">    mask = torch.rand(edge_index.size(<span class="number">1</span>)) &gt; drop_rate</span><br><span class="line">    <span class="keyword">return</span> edge_index[:, mask]</span><br></pre></td></tr></table></figure>
+<p>DropEdge 减少了图的”连通性”，有效延缓了过平滑，使得可以训练更深（最多 8-10 层）的 GCN。</p>
+<p><strong>3. JK-Net（Xu et al., ICML 2018）</strong>：<br>将每一层的输出拼接&#x2F;池化起来作为最终表示：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h_v^&#123;final&#125; = CONCAT/MAX( h_v^&#123;(1)&#125;, h_v^&#123;(2)&#125;, ..., h_v^&#123;(K)&#125; )</span><br></pre></td></tr></table></figure>
+<p>这允许模型在”不同层的表示”之间选择，浅层保留局部信息，深层保留全局信息。</p>
+<p><strong>4. GCNII（Chen et al., ICML 2020）</strong>：<br>在 GCN 中引入 initial residual connection（与输入层的连接）和 identity mapping：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">H^&#123;(l+1)&#125; = σ( ((1-α_l) D̃^&#123;-1/2&#125; Ã D̃^&#123;-1/2&#125; + α_l I) H^&#123;(l)&#125; ( (1-β_l) I + β_l W^&#123;(l)&#125; ) )</span><br></pre></td></tr></table></figure>
+<p>这使得非常深（64 层）的 GCN 也能有效训练。</p>
+<p><strong>5. PairNorm（Zhao &amp; Akoglu, 2019）</strong>：<br>在每层后归一化节点嵌入，保持总 pairwise 距离不变：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">pair_norm</span>(<span class="params">x</span>):</span><br><span class="line">    <span class="comment"># 中心化</span></span><br><span class="line">    mean = x.mean(dim=<span class="number">0</span>, keepdim=<span class="literal">True</span>)</span><br><span class="line">    x_centered = x - mean</span><br><span class="line">    <span class="comment"># 缩放到固定的总平方距离</span></span><br><span class="line">    scale = (x_centered.size(<span class="number">0</span>) / x_centered.<span class="built_in">pow</span>(<span class="number">2</span>).<span class="built_in">sum</span>()).sqrt()</span><br><span class="line">    <span class="keyword">return</span> scale * x_centered</span><br></pre></td></tr></table></figure>
+
+<h2 id="七、GNN-常见问题与最佳实践"><a href="#七、GNN-常见问题与最佳实践" class="headerlink" title="七、GNN 常见问题与最佳实践"></a>七、GNN 常见问题与最佳实践</h2><h3 id="7-1-模型选择决策树"><a href="#7-1-模型选择决策树" class="headerlink" title="7.1 模型选择决策树"></a>7.1 模型选择决策树</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">图规模？</span><br><span class="line">├── 小图 (&lt; 10K 节点) → GCN 或 GAT</span><br><span class="line">├── 中图 (10K - 1M 节点) → GraphSAGE（邻居采样）或 ClusterGCN</span><br><span class="line">│     └── 需要注意力？→ GAT</span><br><span class="line">└── 大图 (&gt; 1M 节点) → GraphSAGE + 采样 或简化版 GCN (SGC)</span><br><span class="line"></span><br><span class="line">任务类型？</span><br><span class="line">├── 节点分类 → GCN / GAT / GraphSAGE</span><br><span class="line">├── 链接预测 → GCN + 点积解码器 / SEAL</span><br><span class="line">├── 图分类 → GIN / GatedGCN（全局池化）</span><br><span class="line">└── 图生成 → VGAE / GraphVAE</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-2-超参数调优指南"><a href="#7-2-超参数调优指南" class="headerlink" title="7.2 超参数调优指南"></a>7.2 超参数调优指南</h3><table>
+<thead>
+<tr>
+<th>超参数</th>
+<th>推荐值</th>
+<th>搜索范围</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>层数</td>
+<td>2-3</td>
+<td>1-5</td>
+</tr>
+<tr>
+<td>隐藏层维度</td>
+<td>64-256</td>
+<td>16-512</td>
+</tr>
+<tr>
+<td>学习率</td>
+<td>0.01 (Adam)</td>
+<td>0.001-0.05</td>
+</tr>
+<tr>
+<td>Dropout</td>
+<td>0.5-0.6</td>
+<td>0.1-0.8</td>
+</tr>
+<tr>
+<td>Weight Decay</td>
+<td>5e-4</td>
+<td>1e-5 - 1e-3</td>
+</tr>
+<tr>
+<td>Normalization</td>
+<td>LayerNorm</td>
+<td>BN &#x2F; LN &#x2F; 无</td>
+</tr>
+<tr>
+<td>Skip Connection</td>
+<td>推荐使用</td>
+<td>加 &#x2F; 不加</td>
+</tr>
+</tbody></table>
+<h2 id="八、GCN-变体一览"><a href="#八、GCN-变体一览" class="headerlink" title="八、GCN 变体一览"></a>八、GCN 变体一览</h2><table>
+<thead>
+<tr>
+<th>模型</th>
+<th>年份 + 会议</th>
+<th>核心创新</th>
+<th>聚合方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GCN</td>
+<td>ICLR 2017</td>
+<td>谱域一阶近似 + 重归一化</td>
+<td>归一化求和</td>
+</tr>
+<tr>
+<td>GraphSAGE</td>
+<td>NeurIPS 2017</td>
+<td>归纳式、邻居采样</td>
+<td>Mean&#x2F;LSTM&#x2F;MaxPool</td>
+</tr>
+<tr>
+<td>GAT</td>
+<td>ICLR 2018</td>
+<td>注意力机制</td>
+<td>加权求和（注意力）</td>
+</tr>
+<tr>
+<td>GIN</td>
+<td>ICLR 2019</td>
+<td>表达力 &#x3D; WL 测试</td>
+<td>SUM + MLP</td>
+</tr>
+<tr>
+<td>SGC</td>
+<td>ICML 2019</td>
+<td>去除 GCN 的非线性</td>
+<td>无激活、纯线性</td>
+</tr>
+<tr>
+<td>GCNII</td>
+<td>ICML 2020</td>
+<td>初始残差连接、恒等映射</td>
+<td>重归一化求和 + 残差</td>
+</tr>
+<tr>
+<td>PNA</td>
+<td>NeurIPS 2020</td>
+<td>多种聚合器的组合</td>
+<td>mean+min+max+std</td>
+</tr>
+<tr>
+<td>GatedGCN</td>
+<td>2018</td>
+<td>边门控机制</td>
+<td>门控边信息聚合</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="面试-自查问题"><a href="#面试-自查问题" class="headerlink" title="面试&#x2F;自查问题"></a>面试&#x2F;自查问题</h2><p><strong>Q1：GCN 的 D^{-1&#x2F;2} A D^{-1&#x2F;2} 从何而来？</strong></p>
+<p>从谱域卷积的推导：</p>
+<ol>
+<li>图卷积 &#x3D; g_θ(L) x &#x3D; U g_θ(Λ) U^T x</li>
+<li>令 g_θ(Λ) &#x3D; θ I（一阶多项式）</li>
+<li>归一化拉普拉斯 L_sym &#x3D; I - D^{-1&#x2F;2} A D^{-1&#x2F;2}</li>
+<li>卷积变为：θ (I - L_sym) x &#x3D; θ D^{-1&#x2F;2} A D^{-1&#x2F;2} x</li>
+<li>引入自环和重归一化：D^{-1&#x2F;2}(A + I)D^{-1&#x2F;2}</li>
+</ol>
+<p>本质上是图信号处理中谱域滤波器的低阶多项式近似。</p>
+<p><strong>Q2：GCN、GraphSAGE、GAT 的核心区别？</strong></p>
+<ul>
+<li>GCN：邻居权重由图的度矩阵归一化决定（固定的），聚合方式为归一化求和</li>
+<li>GraphSAGE：聚合函数可以是 mean&#x2F;lstm&#x2F;pooling，显式拼接自身和邻居信息，支持邻居采样</li>
+<li>GAT：通过自注意力机制动态学习每个邻居的重要性权重，支持多头注意力增强鲁棒性</li>
+</ul>
+<p><strong>Q3：为什么 GNN 不能像 CNN 那样堆叠很多层？</strong></p>
+<p>核心原因是<strong>过平滑（Over-smoothing）</strong>：</p>
+<ol>
+<li>每次 GCN 层都是在对节点特征做图拉普拉斯平滑（加权平均邻居特征）</li>
+<li>经过足够多层后，所有节点的表示趋于相同（收敛到零空间）</li>
+<li>CNN 的感受野随层数线性增长，GNN 的感受野指数增长 —— 3 层 GCN 可能已经覆盖了大多数节点的大多数近邻</li>
+<li>解决方案：残差连接（GCNII）、DropEdge、JK-Net、PairNorm</li>
+</ol>
+<p><strong>Q4：SUM vs MEAN vs MAX 聚合器的表达能力差异？</strong></p>
+<p>从 GIN 的理论分析：</p>
+<ul>
+<li>MAX（1）最多仅能区分存在哪些不同的邻居特征值（丢失多重集信息）</li>
+<li>MEAN 能区分邻居特征的分布（丢失了邻居数量的信息）</li>
+<li>SUM 同时保留了邻居特征分布和邻居数量信息，表达能力最强</li>
+</ul>
+<p>这是 GIN 使用 SUM 聚合器并证明其等于 WL 测试表达能力的理论基础。</p>
+<h2 id="九、大规模图训练技术"><a href="#九、大规模图训练技术" class="headerlink" title="九、大规模图训练技术"></a>九、大规模图训练技术</h2><h3 id="9-1-邻居采样（Neighbor-Sampling）"><a href="#9-1-邻居采样（Neighbor-Sampling）" class="headerlink" title="9.1 邻居采样（Neighbor Sampling）"></a>9.1 邻居采样（Neighbor Sampling）</h3><p>GraphSAGE 的邻居采样是处理大图的核心技术：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">sample_neighbors</span>(<span class="params">adj_list, nodes, sample_sizes=[<span class="number">25</span>, <span class="number">10</span>]</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    多层邻居采样</span></span><br><span class="line"><span class="string">    sample_sizes: 每层采样的邻居数，如 [25, 10] 表示：</span></span><br><span class="line"><span class="string">      - 第 1 层：每个节点采样 25 个一阶邻居</span></span><br><span class="line"><span class="string">      - 第 2 层：每个一阶邻居再采样 10 个二阶邻居</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    sampled = [<span class="built_in">set</span>(nodes)]</span><br><span class="line">    <span class="keyword">for</span> size <span class="keyword">in</span> sample_sizes:</span><br><span class="line">        next_nodes = <span class="built_in">set</span>()</span><br><span class="line">        <span class="keyword">for</span> node <span class="keyword">in</span> sampled[-<span class="number">1</span>]:</span><br><span class="line">            neighbors = adj_list.get(node, [])</span><br><span class="line">            <span class="keyword">if</span> <span class="built_in">len</span>(neighbors) &gt; size:</span><br><span class="line">                sampled_neighbors = random.sample(neighbors, size)</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                sampled_neighbors = neighbors</span><br><span class="line">            next_nodes.update(sampled_neighbors)</span><br><span class="line">        sampled.append(next_nodes)</span><br><span class="line">    <span class="keyword">return</span> sampled</span><br><span class="line"></span><br><span class="line"><span class="comment"># 采样后在这个子图上运行 GNN</span></span><br><span class="line"><span class="comment"># 总复杂度降低到 O(Π sample_sizes) &lt;&lt; O(|V|^2)</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="9-2-ClusterGCN"><a href="#9-2-ClusterGCN" class="headerlink" title="9.2 ClusterGCN"></a>9.2 ClusterGCN</h3><p>ClusterGCN（Chiang et al., KDD 2019）通过图聚类将大图划分为多个子图，在每个子图上运行 GCN，从而避免采样引入的偏差：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> metis</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">cluster_graph</span>(<span class="params">adj_matrix, num_clusters</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;使用 METIS 算法划分图&quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># METIS 是一个经典的图划分算法，将图划分为大致均匀的子图</span></span><br><span class="line">    <span class="comment"># 同时最小化跨分区的边数（最小化 cut）</span></span><br><span class="line">    edge_cuts, parts = metis.part_graph(adj_matrix, nparts=num_clusters)</span><br><span class="line">    clusters = [[] <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(num_clusters)]</span><br><span class="line">    <span class="keyword">for</span> node, part <span class="keyword">in</span> <span class="built_in">enumerate</span>(parts):</span><br><span class="line">        clusters[part].append(node)</span><br><span class="line">    <span class="keyword">return</span> clusters</span><br><span class="line"></span><br><span class="line"><span class="comment"># 训练时每次随机选择一个或几个 cluster 作为 mini-batch</span></span><br><span class="line"><span class="comment"># 在 cluster 内部的图上运行 GCN</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="9-3-GraphSAINT"><a href="#9-3-GraphSAINT" class="headerlink" title="9.3 GraphSAINT"></a>9.3 GraphSAINT</h3><p>GraphSAINT（Zeng et al., ICLR 2020）通过多种采样策略（节点采样、边采样、随机游走采样）构建 mini-batch 子图。核心代码：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">node_sampler</span>(<span class="params">graph, num_roots</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;以节点为中心的采样器&quot;&quot;&quot;</span></span><br><span class="line">    roots = random.sample(<span class="built_in">range</span>(graph.num_nodes), num_roots)</span><br><span class="line">    <span class="comment"># 对每个 root 节点，执行随机游走，收集子图节点</span></span><br><span class="line">    subgraph_nodes = <span class="built_in">set</span>()</span><br><span class="line">    <span class="keyword">for</span> root <span class="keyword">in</span> roots:</span><br><span class="line">        walk = random_walk(graph, root, walk_length=<span class="number">3</span>)</span><br><span class="line">        subgraph_nodes.update(walk)</span><br><span class="line">    <span class="keyword">return</span> subgraph_nodes</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">edge_sampler</span>(<span class="params">graph, num_edges</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;以边为中心的采样器&quot;&quot;&quot;</span></span><br><span class="line">    edges = random.sample(graph.edges, num_edges)</span><br><span class="line">    subgraph_nodes = <span class="built_in">set</span>()</span><br><span class="line">    <span class="keyword">for</span> u, v <span class="keyword">in</span> edges:</span><br><span class="line">        subgraph_nodes.add(u)</span><br><span class="line">        subgraph_nodes.add(v)</span><br><span class="line">        <span class="comment"># 可选：包含边的两端节点的邻居</span></span><br><span class="line">        subgraph_nodes.update(graph.neighbors(u))</span><br><span class="line">        subgraph_nodes.update(graph.neighbors(v))</span><br><span class="line">    <span class="keyword">return</span> subgraph_nodes</span><br></pre></td></tr></table></figure>
+
+<h2 id="十、GNN-评估与基准测试"><a href="#十、GNN-评估与基准测试" class="headerlink" title="十、GNN 评估与基准测试"></a>十、GNN 评估与基准测试</h2><h3 id="10-1-标准评估协议"><a href="#10-1-标准评估协议" class="headerlink" title="10.1 标准评估协议"></a>10.1 标准评估协议</h3><p><strong>节点分类（Node Classification）</strong>：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> torch_geometric.datasets <span class="keyword">import</span> Planetoid</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> f1_score</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">evaluate_node_classification</span>(<span class="params">model, data</span>):</span><br><span class="line">    model.<span class="built_in">eval</span>()</span><br><span class="line">    <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">        out = model(data.x, data.edge_index)</span><br><span class="line">        pred = out.argmax(dim=<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 标准划分：每类 20 个节点用于训练，500 用于验证，1000 用于测试</span></span><br><span class="line">    test_acc = (pred[data.test_mask] == data.y[data.test_mask]).<span class="built_in">float</span>().mean()</span><br><span class="line">    <span class="keyword">return</span> test_acc.item()</span><br></pre></td></tr></table></figure>
+
+<p><strong>链接预测（Link Prediction）</strong>：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">evaluate_link_prediction</span>(<span class="params">model, data</span>):</span><br><span class="line">    <span class="comment"># 随机遮蔽 10% 的边作为测试集</span></span><br><span class="line">    <span class="comment"># 使用模型输出的节点嵌入，计算节点对的内积作为预测得分</span></span><br><span class="line">    <span class="comment"># 评估指标：AUC-ROC, Hits@K</span></span><br><span class="line">    <span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> roc_auc_score</span><br><span class="line"></span><br><span class="line">    edge_index = data.edge_index</span><br><span class="line">    num_edges = edge_index.size(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 随机划分</span></span><br><span class="line">    perm = torch.randperm(num_edges)</span><br><span class="line">    train_edges = edge_index[:, perm[:<span class="built_in">int</span>(<span class="number">0.8</span> * num_edges)]]</span><br><span class="line">    test_pos_edges = edge_index[:, perm[<span class="built_in">int</span>(<span class="number">0.8</span> * num_edges):]]</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 生成负样本（不存在的边）</span></span><br><span class="line">    test_neg_edges = sample_negative_edges(data.num_nodes, test_pos_edges.size(<span class="number">1</span>))</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 计算得分</span></span><br><span class="line">    embeddings = model(data.x, train_edges)</span><br><span class="line">    pos_scores = (embeddings[test_pos_edges[<span class="number">0</span>]] * embeddings[test_pos_edges[<span class="number">1</span>]]).<span class="built_in">sum</span>(dim=<span class="number">1</span>)</span><br><span class="line">    neg_scores = (embeddings[test_neg_edges[<span class="number">0</span>]] * embeddings[test_neg_edges[<span class="number">1</span>]]).<span class="built_in">sum</span>(dim=<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    scores = torch.cat([pos_scores, neg_scores])</span><br><span class="line">    labels = torch.cat([torch.ones(pos_scores.size(<span class="number">0</span>)), torch.zeros(neg_scores.size(<span class="number">0</span>))])</span><br><span class="line">    auc = roc_auc_score(labels.numpy(), scores.numpy())</span><br><span class="line">    <span class="keyword">return</span> auc</span><br></pre></td></tr></table></figure>
+
+<h3 id="10-2-消融实验设计"><a href="#10-2-消融实验设计" class="headerlink" title="10.2 消融实验设计"></a>10.2 消融实验设计</h3><p>在进行 GNN 实验时，以下消融实验是标准做法：</p>
+<ol>
+<li><strong>层数消融</strong>：测试 1&#x2F;2&#x2F;3&#x2F;4&#x2F;5 层，观察过平滑何时发生</li>
+<li><strong>宽度消融</strong>：测试 hidden_dim ∈ {16, 32, 64, 128, 256}</li>
+<li><strong>Dropout 率消融</strong>：测试 dropout ∈ {0, 0.2, 0.4, 0.5, 0.6, 0.8}</li>
+<li><strong>归一化消融</strong>：测试 None &#x2F; BN &#x2F; LN &#x2F; GraphNorm</li>
+<li><strong>聚合函数消融</strong>：测试 mean &#x2F; sum &#x2F; max &#x2F; attention</li>
+<li><strong>残差连接消融</strong>：测试 有残差&#x2F;无残差</li>
+</ol>
+<h3 id="10-3-常见失败模式"><a href="#10-3-常见失败模式" class="headerlink" title="10.3 常见失败模式"></a>10.3 常见失败模式</h3><table>
+<thead>
+<tr>
+<th>失败模式</th>
+<th>症状</th>
+<th>可能原因</th>
+<th>解决方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>过平滑</td>
+<td>增加层数后性能下降</td>
+<td>感受野过大，所有节点嵌入趋同</td>
+<td>DropEdge, GCNII, JK-Net</td>
+</tr>
+<tr>
+<td>过拟合</td>
+<td>训练准确率高，测试准确率低</td>
+<td>模型太深&#x2F;太宽，训练集太小</td>
+<td>增加 dropout, 减少层数&#x2F;维度</td>
+</tr>
+<tr>
+<td>欠拟合</td>
+<td>训练准确率低</td>
+<td>模型太浅，学习率不当</td>
+<td>增加层数&#x2F;维度，调整学习率和优化器</td>
+</tr>
+<tr>
+<td>训练不收敛</td>
+<td>Loss 震荡</td>
+<td>学习率过大</td>
+<td>降低学习率，使用 warmup</td>
+</tr>
+<tr>
+<td>度数偏差</td>
+<td>高度数节点预测好，低度数节点差</td>
+<td>归一化不足或归一化过度</td>
+<td>调整聚合方式，考虑 PNA</td>
+</tr>
+<tr>
+<td>特征依赖</td>
+<td>只依赖特征、忽略图结构也能达到相似的准确率</td>
+<td>图的归纳偏差未被利用</td>
+<td>检查图结构是否真的有信息，可能任务不适合 GNN</td>
+</tr>
+</tbody></table>
+<h2 id="十一、GNN-的可解释性"><a href="#十一、GNN-的可解释性" class="headerlink" title="十一、GNN 的可解释性"></a>十一、GNN 的可解释性</h2><h3 id="11-1-GNNExplainer"><a href="#11-1-GNNExplainer" class="headerlink" title="11.1 GNNExplainer"></a>11.1 GNNExplainer</h3><p>GNNExplainer（Ying et al., NeurIPS 2019）学习一个软掩码来识别对预测最重要的子图结构和节点特征：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> torch_geometric.nn <span class="keyword">import</span> GNNExplainer</span><br><span class="line"></span><br><span class="line">explainer = GNNExplainer(model, epochs=<span class="number">200</span>, return_type=<span class="string">&#x27;log_prob&#x27;</span>)</span><br><span class="line">node_idx = <span class="number">10</span>  <span class="comment"># 要解释的节点</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 解释</span></span><br><span class="line">node_feat_mask, edge_mask = explainer.explain_node(node_idx, x=data.x, edge_index=data.edge_index)</span><br><span class="line"></span><br><span class="line"><span class="comment"># edge_mask 给出了每条边的重要性得分</span></span><br><span class="line"><span class="comment"># 可以据此可视化对预测最重要的子图</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="11-2-基于梯度的归因"><a href="#11-2-基于梯度的归因" class="headerlink" title="11.2 基于梯度的归因"></a>11.2 基于梯度的归因</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">gradient_attribution</span>(<span class="params">model, data, node_idx</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;计算每个输入特征和邻居对该节点预测的贡献&quot;&quot;&quot;</span></span><br><span class="line">    x = data.x.clone().requires_grad_(<span class="literal">True</span>)</span><br><span class="line">    out = model(x, data.edge_index)</span><br><span class="line">    loss = out[node_idx].<span class="built_in">max</span>()  <span class="comment"># 对预测类别得分求梯度</span></span><br><span class="line"></span><br><span class="line">    model.zero_grad()</span><br><span class="line">    loss.backward()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 特征梯度揭示重要的输入特征维度</span></span><br><span class="line">    <span class="comment"># 邻接矩阵梯度揭示重要的邻居</span></span><br><span class="line">    feature_importance = x.grad[node_idx].<span class="built_in">abs</span>()</span><br><span class="line">    <span class="keyword">return</span> feature_importance</span><br></pre></td></tr></table></figure>
+
+<h2 id="十二、实际应用场景"><a href="#十二、实际应用场景" class="headerlink" title="十二、实际应用场景"></a>十二、实际应用场景</h2><h3 id="12-1-工业级推荐系统"><a href="#12-1-工业级推荐系统" class="headerlink" title="12.1 工业级推荐系统"></a>12.1 工业级推荐系统</h3><p>Pinterest 的 PinSage 使用 GraphSAGE 的变体在大规模 pin-board 异构图（30 亿节点 + 180 亿边）上执行推荐。核心设计：</p>
+<ul>
+<li>重要性池化：根据随机游走的访问频率加权采样邻居</li>
+<li>多 GPU 分布式训练</li>
+<li>MapReduce 风格的邻居采样管道</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">PinSageConv</span>(nn.Module):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;PinSage 图卷积层的简化实现&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, in_dim, out_dim</span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.lin = nn.Linear(in_dim * <span class="number">2</span>, out_dim)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x, edge_index, importance</span>):</span><br><span class="line">        <span class="comment"># importance: 邻居采样时根据随机游走频率计算的权重</span></span><br><span class="line">        out = []</span><br><span class="line">        <span class="keyword">for</span> v <span class="keyword">in</span> <span class="built_in">range</span>(x.size(<span class="number">0</span>)):</span><br><span class="line">            neighbors = edge_index[<span class="number">1</span>][edge_index[<span class="number">0</span>] == v]</span><br><span class="line">            <span class="keyword">if</span> <span class="built_in">len</span>(neighbors) == <span class="number">0</span>:</span><br><span class="line">                out.append(<span class="variable language_">self</span>.lin(torch.cat([x[v], torch.zeros_like(x[v])])))</span><br><span class="line">                <span class="keyword">continue</span></span><br><span class="line">            <span class="comment"># 加权邻居聚合</span></span><br><span class="line">            neighbor_agg = (x[neighbors] * importance[neighbors].unsqueeze(<span class="number">1</span>)).<span class="built_in">sum</span>(<span class="number">0</span>)</span><br><span class="line">            neighbor_agg /= importance[neighbors].<span class="built_in">sum</span>()</span><br><span class="line">            out.append(F.relu(<span class="variable language_">self</span>.lin(torch.cat([x[v], neighbor_agg]))))</span><br><span class="line">        <span class="keyword">return</span> torch.stack(out)</span><br></pre></td></tr></table></figure>
+
+<h3 id="12-2-药物发现中的-GNN"><a href="#12-2-药物发现中的-GNN" class="headerlink" title="12.2 药物发现中的 GNN"></a>12.2 药物发现中的 GNN</h3><p>分子可以自然地表示为图：原子是节点，化学键是边。GNN 广泛应用于：</p>
+<ul>
+<li>分子性质预测（溶解度、毒性、logP）</li>
+<li>药物-靶标相互作用预测</li>
+<li>逆合成路线规划</li>
+<li>分子生成与优化</li>
+</ul>
+<h3 id="12-3-社交网络分析"><a href="#12-3-社交网络分析" class="headerlink" title="12.3 社交网络分析"></a>12.3 社交网络分析</h3><ul>
+<li>好友推荐（链接预测）</li>
+<li>社区检测（节点聚类）</li>
+<li>虚假新闻检测（节点分类 + 异构图）</li>
+<li>影响力最大化（关键节点发现）</li>
+</ul>
+<h3 id="12-4-交通预测"><a href="#12-4-交通预测" class="headerlink" title="12.4 交通预测"></a>12.4 交通预测</h3><p>在道路网络中，传感器是节点，道路连接是边。使用时空 GNN（如 DCRNN, STGCN）预测交通流量、速度和拥堵状态。</p>
+<h2 id="十三、GNN-的局限性与未来方向"><a href="#十三、GNN-的局限性与未来方向" class="headerlink" title="十三、GNN 的局限性与未来方向"></a>十三、GNN 的局限性与未来方向</h2><h3 id="13-1-当前局限性"><a href="#13-1-当前局限性" class="headerlink" title="13.1 当前局限性"></a>13.1 当前局限性</h3><table>
+<thead>
+<tr>
+<th>局限</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>浅层性</strong></td>
+<td>由于过平滑，GNN 通常只有 2-4 层，限制了感受野</td>
+</tr>
+<tr>
+<td><strong>表达能力上限</strong></td>
+<td>消息传递 GNN 的表达能力受 WL 测试限制</td>
+</tr>
+<tr>
+<td><strong>位置&#x2F;距离感知</strong></td>
+<td>GNN 难以区分异质节点中的”位置”</td>
+</tr>
+<tr>
+<td><strong>可扩展性</strong></td>
+<td>在大图上训练仍然困难（邻居爆炸、内存爆炸）</td>
+</tr>
+<tr>
+<td><strong>动态图</strong></td>
+<td>现有 GNN 假设静态图，动态图上的 GNN 仍在早期</td>
+</tr>
+<tr>
+<td><strong>定向边</strong></td>
+<td>大部分 GNN 假设无向图，有向图上的研究较少</td>
+</tr>
+</tbody></table>
+<h3 id="13-2-前沿方向"><a href="#13-2-前沿方向" class="headerlink" title="13.2 前沿方向"></a>13.2 前沿方向</h3><ul>
+<li><strong>Graph Transformers</strong>：结合 GNN 和 Transformer 的优势（Graphormer, SAN）</li>
+<li><strong>等变 GNN（Equivariant GNNs）</strong>：处理 3D 坐标（分子构象），满足旋转&#x2F;平移等变性</li>
+<li><strong>图的生成模型</strong>：通过扩散模型、自回归模型生成分子图</li>
+<li><strong>GNN + LLM</strong>：将大语言模型与 GNN 结合，处理文本属性图</li>
+<li><strong>自监督学习 in GNNs</strong>：GraphCL, BGRL, MAE for graphs</li>
+</ul>
+<h2 id="十四、从零实现-GCN（不用框架）"><a href="#十四、从零实现-GCN（不用框架）" class="headerlink" title="十四、从零实现 GCN（不用框架）"></a>十四、从零实现 GCN（不用框架）</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> scipy.sparse <span class="keyword">as</span> sp</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">normalize_adjacency</span>(<span class="params">adj</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;计算 D^&#123;-1/2&#125; A D^&#123;-1/2&#125;&quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># 添加自环</span></span><br><span class="line">    adj = adj + sp.eye(adj.shape[<span class="number">0</span>])</span><br><span class="line">    <span class="comment"># 计算度矩阵</span></span><br><span class="line">    d = np.array(adj.<span class="built_in">sum</span>(<span class="number">1</span>)).flatten()</span><br><span class="line">    d_inv_sqrt = np.power(d, -<span class="number">0.5</span>)</span><br><span class="line">    d_inv_sqrt[np.isinf(d_inv_sqrt)] = <span class="number">0.</span></span><br><span class="line">    d_mat_inv_sqrt = sp.diags(d_inv_sqrt)</span><br><span class="line">    <span class="comment"># 归一化</span></span><br><span class="line">    <span class="keyword">return</span> d_mat_inv_sqrt @ adj @ d_mat_inv_sqrt</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">SimpleGCN</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, input_dim, hidden_dim, output_dim, lr=<span class="number">0.01</span></span>):</span><br><span class="line">        <span class="comment"># 随机初始化权重</span></span><br><span class="line">        <span class="variable language_">self</span>.W1 = np.random.randn(input_dim, hidden_dim) * np.sqrt(<span class="number">2.0</span> / input_dim)</span><br><span class="line">        <span class="variable language_">self</span>.W2 = np.random.randn(hidden_dim, output_dim) * np.sqrt(<span class="number">2.0</span> / hidden_dim)</span><br><span class="line">        <span class="variable language_">self</span>.lr = lr</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, X, A_norm</span>):</span><br><span class="line">        <span class="comment"># 第一层</span></span><br><span class="line">        H1 = A_norm @ X @ <span class="variable language_">self</span>.W1</span><br><span class="line">        H1 = np.maximum(<span class="number">0</span>, H1)  <span class="comment"># ReLU</span></span><br><span class="line">        <span class="comment"># 第二层</span></span><br><span class="line">        H2 = A_norm @ H1 @ <span class="variable language_">self</span>.W2</span><br><span class="line">        <span class="comment"># Softmax</span></span><br><span class="line">        exp_H2 = np.exp(H2 - np.<span class="built_in">max</span>(H2, axis=<span class="number">1</span>, keepdims=<span class="literal">True</span>))</span><br><span class="line">        <span class="variable language_">self</span>.out = exp_H2 / np.<span class="built_in">sum</span>(exp_H2, axis=<span class="number">1</span>, keepdims=<span class="literal">True</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">self</span>.out</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">backward</span>(<span class="params">self, X, A_norm, y, mask</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;简化版反向传播（仅示意）&quot;&quot;&quot;</span></span><br><span class="line">        <span class="comment"># Cross-entropy loss</span></span><br><span class="line">        N = mask.<span class="built_in">sum</span>()</span><br><span class="line">        loss = -np.<span class="built_in">sum</span>(np.log(<span class="variable language_">self</span>.out[mask] + <span class="number">1e-10</span>) * y[mask]) / N</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 输出层梯度</span></span><br><span class="line">        grad_H2 = <span class="variable language_">self</span>.out.copy()</span><br><span class="line">        grad_H2[mask] -= y[mask]</span><br><span class="line">        grad_H2 /= N</span><br><span class="line"></span><br><span class="line">        <span class="comment"># W2 梯度</span></span><br><span class="line">        H1 = np.maximum(<span class="number">0</span>, A_norm @ X @ <span class="variable language_">self</span>.W1)</span><br><span class="line">        grad_W2 = (A_norm @ H1).T @ grad_H2</span><br><span class="line"></span><br><span class="line">        <span class="comment"># W1 梯度</span></span><br><span class="line">        grad_H1 = grad_H2 @ <span class="variable language_">self</span>.W2.T</span><br><span class="line">        grad_H1[H1 &lt;= <span class="number">0</span>] = <span class="number">0</span>  <span class="comment"># ReLU 反向传播</span></span><br><span class="line">        grad_W1 = X.T @ (A_norm.T @ grad_H1)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 更新权重</span></span><br><span class="line">        <span class="variable language_">self</span>.W2 -= <span class="variable language_">self</span>.lr * grad_W2</span><br><span class="line">        <span class="variable language_">self</span>.W1 -= <span class="variable language_">self</span>.lr * grad_W1</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> loss</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用示例</span></span><br><span class="line"><span class="comment"># A: scipy.sparse 邻接矩阵</span></span><br><span class="line"><span class="comment"># X: N×d 特征矩阵</span></span><br><span class="line"><span class="comment"># y: N×C one-hot 标签</span></span><br><span class="line"><span class="comment"># mask: 训练节点掩码</span></span><br><span class="line"><span class="comment"># A_norm = normalize_adjacency(A)</span></span><br><span class="line"><span class="comment"># gcn = SimpleGCN(d, 16, C)</span></span><br><span class="line"><span class="comment"># for epoch in range(200):</span></span><br><span class="line"><span class="comment">#     gcn.forward(X, A_norm)</span></span><br><span class="line"><span class="comment">#     loss = gcn.backward(X, A_norm, y, mask)</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="十五、完整训练脚本（Cora-节点分类）"><a href="#十五、完整训练脚本（Cora-节点分类）" class="headerlink" title="十五、完整训练脚本（Cora 节点分类）"></a>十五、完整训练脚本（Cora 节点分类）</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"><span class="keyword">from</span> torch_geometric.nn <span class="keyword">import</span> GCNConv</span><br><span class="line"><span class="keyword">from</span> torch_geometric.datasets <span class="keyword">import</span> Planetoid</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="comment"># 固定随机种子确保可复现</span></span><br><span class="line">torch.manual_seed(<span class="number">42</span>)</span><br><span class="line">np.random.seed(<span class="number">42</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 数据</span></span><br><span class="line">dataset = Planetoid(root=<span class="string">&#x27;/tmp/Cora&#x27;</span>, name=<span class="string">&#x27;Cora&#x27;</span>)</span><br><span class="line">data = dataset[<span class="number">0</span>]  <span class="comment"># x: (2708, 1433), edge_index: (2, 10556), y: (2708,)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 模型</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">GCN</span>(torch.nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, in_feat, hidden_feat, out_feat, dropout=<span class="number">0.5</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.conv1 = GCNConv(in_feat, hidden_feat)</span><br><span class="line">        <span class="variable language_">self</span>.conv2 = GCNConv(hidden_feat, out_feat)</span><br><span class="line">        <span class="variable language_">self</span>.dropout = dropout</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x, edge_index</span>):</span><br><span class="line">        x = F.dropout(x, p=<span class="variable language_">self</span>.dropout, training=<span class="variable language_">self</span>.training)</span><br><span class="line">        x = <span class="variable language_">self</span>.conv1(x, edge_index)</span><br><span class="line">        x = F.relu(x)</span><br><span class="line">        x = F.dropout(x, p=<span class="variable language_">self</span>.dropout, training=<span class="variable language_">self</span>.training)</span><br><span class="line">        x = <span class="variable language_">self</span>.conv2(x, edge_index)</span><br><span class="line">        <span class="keyword">return</span> F.log_softmax(x, dim=<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">device = torch.device(<span class="string">&#x27;cuda&#x27;</span> <span class="keyword">if</span> torch.cuda.is_available() <span class="keyword">else</span> <span class="string">&#x27;cpu&#x27;</span>)</span><br><span class="line">model = GCN(dataset.num_features, <span class="number">64</span>, dataset.num_classes).to(device)</span><br><span class="line">data = data.to(device)</span><br><span class="line"></span><br><span class="line">optimizer = torch.optim.Adam(model.parameters(), lr=<span class="number">0.01</span>, weight_decay=<span class="number">5e-4</span>)</span><br><span class="line"></span><br><span class="line">best_val_acc = <span class="number">0</span></span><br><span class="line">best_test_acc = <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">200</span>):</span><br><span class="line">    <span class="comment"># 训练</span></span><br><span class="line">    model.train()</span><br><span class="line">    optimizer.zero_grad()</span><br><span class="line">    out = model(data.x, data.edge_index)</span><br><span class="line">    loss = F.nll_loss(out[data.train_mask], data.y[data.train_mask])</span><br><span class="line">    loss.backward()</span><br><span class="line">    optimizer.step()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 评估</span></span><br><span class="line">    model.<span class="built_in">eval</span>()</span><br><span class="line">    <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">        out = model(data.x, data.edge_index)</span><br><span class="line">        pred = out.argmax(dim=<span class="number">1</span>)</span><br><span class="line">        val_acc = (pred[data.val_mask] == data.y[data.val_mask]).<span class="built_in">float</span>().mean()</span><br><span class="line">        test_acc = (pred[data.test_mask] == data.y[data.test_mask]).<span class="built_in">float</span>().mean()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> val_acc &gt; best_val_acc:</span><br><span class="line">        best_val_acc = val_acc</span><br><span class="line">        best_test_acc = test_acc</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> epoch % <span class="number">20</span> == <span class="number">0</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&#x27;Epoch <span class="subst">&#123;epoch:03d&#125;</span>: Loss <span class="subst">&#123;loss:<span class="number">.4</span>f&#125;</span>, Val <span class="subst">&#123;val_acc:<span class="number">.4</span>f&#125;</span>, Test <span class="subst">&#123;test_acc:<span class="number">.4</span>f&#125;</span>&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&#x27;Best Test Accuracy: <span class="subst">&#123;best_test_acc:<span class="number">.4</span>f&#125;</span>&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">## 十六、GNN 与 CNN 参数效率对比实验</span></span><br><span class="line"></span><br><span class="line">在 Cora 数据集上，对比 GCN、GAT 和 MLP（忽略图结构）：</span><br><span class="line"></span><br><span class="line">```python</span><br><span class="line"><span class="comment"># MLP（不使用图结构）作为 baseline</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MLP</span>(torch.nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, in_feat, hidden_feat, out_feat</span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.lin1 = torch.nn.Linear(in_feat, hidden_feat)</span><br><span class="line">        <span class="variable language_">self</span>.lin2 = torch.nn.Linear(hidden_feat, out_feat)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x, edge_index=<span class="literal">None</span></span>):</span><br><span class="line">        x = F.relu(<span class="variable language_">self</span>.lin1(x))</span><br><span class="line">        x = <span class="variable language_">self</span>.lin2(x)</span><br><span class="line">        <span class="keyword">return</span> F.log_softmax(x, dim=<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 典型结果（Cora 数据集，20 nodes/class 训练）：</span></span><br><span class="line"><span class="comment"># MLP:        ~55% (忽略了图结构，仅靠节点特征)</span></span><br><span class="line"><span class="comment"># GCN (2层):  ~81% (利用了图结构和节点特征)</span></span><br><span class="line"><span class="comment"># GAT (2层):  ~83% (注意力机制进一步提升了邻居信息的利用效率)</span></span><br><span class="line"><span class="comment"># SGC:        ~80% (去除非线性，仅在预处理阶段做图滤波，然后接线性分类器)</span></span><br></pre></td></tr></table></figure>
+
+<p>MLP 和 GCN 之间的性能差距（26%）完全来自图结构的贡献。这表明在 Cora 引文网络中，论文的引用关系对其分类有巨大的信息增益。</p>
+<h2 id="十七、图傅里叶变换的可视化理解"><a href="#十七、图傅里叶变换的可视化理解" class="headerlink" title="十七、图傅里叶变换的可视化理解"></a>十七、图傅里叶变换的可视化理解</h2><p>为了直观理解图傅里叶变换，考虑一个简单的路径图：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">节点: 0 — 1 — 2 — 3 — 4 — 5 — 6 — 7 — 8 — 9</span><br><span class="line"></span><br><span class="line">特征值 λ_1 (最小): 特征向量平滑变化，对应&quot;低频信号&quot;</span><br><span class="line">  [0.32, 0.32, 0.32, 0.32, 0.32, 0.32, 0.32, 0.32, 0.32, 0.32]</span><br><span class="line"></span><br><span class="line">特征值 λ_5 (中频): 特征向量有若干次正负交替</span><br><span class="line">  [0.5, 0.4, 0.1, -0.3, -0.5, -0.5, -0.3, 0.1, 0.4, 0.5]</span><br><span class="line"></span><br><span class="line">特征值 λ_10 (最大): 特征向量在相邻节点间急速震荡，&quot;高频信号&quot;</span><br><span class="line">  [0.5, -0.5, 0.5, -0.5, 0.5, -0.5, 0.5, -0.5, 0.5, -0.5]</span><br></pre></td></tr></table></figure>
+
+<p><strong>GCN 的低通滤波特性</strong>：由于使用了归一化的邻接矩阵 D^{-1&#x2F;2} A D^{-1&#x2F;2}，GCN 本质上是一个<strong>低通滤波器</strong>。它保留了图的低频信号（社区结构、簇），而抑制了高频信号（孤立节点的噪声）。这也是 GCN 能有效进行节点分类的内在原因：同一社区中的节点倾向于有相同的标签，而低频信号正好捕捉了社区结构。</p>
+<h2 id="十八、SGC（Simplifying-Graph-Convolutional-Networks）"><a href="#十八、SGC（Simplifying-Graph-Convolutional-Networks）" class="headerlink" title="十八、SGC（Simplifying Graph Convolutional Networks）"></a>十八、SGC（Simplifying Graph Convolutional Networks）</h2><p>Wu et al. (ICML 2019) 提出了一个激进的问题：GCN 的非线性变换真的必要吗？</p>
+<p>他们去除了 GCN 中的所有 ReLU 激活和中间权重矩阵，只保留初始的图滤波步骤：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SGC: H = softmax( S^K X W )</span><br></pre></td></tr></table></figure>
+
+<p>其中 S &#x3D; D^{-1&#x2F;2} Ã D^{-1&#x2F;2} 是归一化邻接矩阵，S^K 是在预处理阶段计算好的（不需要在训练中计算梯度）。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">SGC</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, in_feat, out_feat, K=<span class="number">2</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.lin = nn.Linear(in_feat, out_feat)</span><br><span class="line">        <span class="variable language_">self</span>.K = K</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x, edge_index, edge_weight=<span class="literal">None</span></span>):</span><br><span class="line">        <span class="comment"># 在预处理阶段计算好 S^K X</span></span><br><span class="line">        <span class="comment"># 训练时只需要一次线性变换</span></span><br><span class="line">        x = <span class="variable language_">self</span>.precomputed_x</span><br><span class="line">        <span class="keyword">return</span> F.log_softmax(<span class="variable language_">self</span>.lin(x), dim=<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+<p>SGC 在多个基准上的性能与 GCN 相当，但速度快 100 倍以上。这表明：<strong>GCN 的大部分收益来自图结构的预处理（邻域聚合），而非深层的非线性变换。</strong></p>
+<p>这也引出了对深层 GNN 的重新思考：如果 2 层的 SGC 就足够，那为什么还需要更深？答案是：对于需要更大感受野的任务（如大图上的长程依赖、异质图中需要远距离传播信息的场景），深层 GNN 是必要的。但关键是通过残差连接、DropEdge、PairNorm 等技术来缓解过平滑。</p>
+<h2 id="十九、附录：关键数学公式速查表"><a href="#十九、附录：关键数学公式速查表" class="headerlink" title="十九、附录：关键数学公式速查表"></a>十九、附录：关键数学公式速查表</h2><table>
+<thead>
+<tr>
+<th>对象</th>
+<th>公式</th>
+<th>维度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>邻接矩阵</td>
+<td>A</td>
+<td>N × N</td>
+</tr>
+<tr>
+<td>度矩阵</td>
+<td>D &#x3D; diag(Σ_j A_{ij})</td>
+<td>N × N</td>
+</tr>
+<tr>
+<td>组合拉普拉斯</td>
+<td>L &#x3D; D - A</td>
+<td>N × N</td>
+</tr>
+<tr>
+<td>对称归一化拉普拉斯</td>
+<td>L_sym &#x3D; I - D^{-1&#x2F;2} A D^{-1&#x2F;2}</td>
+<td>N × N</td>
+</tr>
+<tr>
+<td>图傅里叶变换</td>
+<td>x̂ &#x3D; U^T x</td>
+<td>N</td>
+</tr>
+<tr>
+<td>逆图傅里叶变换</td>
+<td>x &#x3D; U x̂</td>
+<td>N</td>
+</tr>
+<tr>
+<td>谱域图卷积</td>
+<td>x * g &#x3D; U g_θ(Λ) U^T x</td>
+<td>N</td>
+</tr>
+<tr>
+<td>ChebNet</td>
+<td>H’ &#x3D; Σ_{k&#x3D;0}^{K-1} θ_k T_k(L̃) H</td>
+<td>N × d</td>
+</tr>
+<tr>
+<td>GCN 传播</td>
+<td>H’ &#x3D; D̃^{-1&#x2F;2} Ã D̃^{-1&#x2F;2} H W</td>
+<td>N × d’</td>
+</tr>
+<tr>
+<td>GraphSAGE (mean)</td>
+<td>h’<em>v &#x3D; σ(W·CONCAT(h_v, MEAN</em>{u∈N(v)} h_u))</td>
+<td>d’</td>
+</tr>
+<tr>
+<td>GAT 注意力</td>
+<td>α_ij &#x3D; softmax(LeakyReLU(a^T [Wh_i || Wh_j]))</td>
+<td>标量</td>
+</tr>
+<tr>
+<td>GIN</td>
+<td>h’<em>v &#x3D; MLP((1+ε)h_v + Σ</em>{u∈N(v)} h_u)</td>
+<td>d’</td>
+</tr>
+</tbody></table>
+<h2 id="二十、总结"><a href="#二十、总结" class="headerlink" title="二十、总结"></a>二十、总结</h2><p>从图信号处理到 GCN，本文完整展示了一条优美的数学推导路径：</p>
+<ol>
+<li>图拉普拉斯的谱分解定义了图上的”频率”概念</li>
+<li>图傅里叶变换将图信号分解为不同频率分量</li>
+<li>谱域图卷积 &#x3D; 在傅里叶域中对每个频率分量做逐元素乘积</li>
+<li>ChebNet 用切比雪夫多项式避免特征分解，实现了局部化卷积</li>
+<li>GCN 将 ChebNet 简化到一阶 + 重归一化，使之实用且高效</li>
+<li>空间域 GNN（GraphSAGE, GAT, GIN）从消息传递的角度重新诠释了图卷积</li>
+</ol>
+<p>理解这条路径，才能真正理解 GCN 中那些看似神秘的归一化操作（D^{-1&#x2F;2} A D^{-1&#x2F;2}）从何而来，以及为什么仅仅平均邻居的特征就能取得如此强大的性能。核心洞见：GCN 是一个图低通滤波器，它平滑了节点特征，使得同一社团内的节点表示趋于一致。在图同质性假设下（相连的节点倾向于有相同标签），这种平滑自然导向更好的分类性能。</p>
+<h2 id="二十一、补充：图的同质性与异质性"><a href="#二十一、补充：图的同质性与异质性" class="headerlink" title="二十一、补充：图的同质性与异质性"></a>二十一、补充：图的同质性与异质性</h2><h3 id="21-1-同质性（Homophily）"><a href="#21-1-同质性（Homophily）" class="headerlink" title="21.1 同质性（Homophily）"></a>21.1 同质性（Homophily）</h3><p>图的同质性是指”相似的节点倾向于相互连接”。社交网络中，”朋友往往有相似的兴趣”就是这个道理。同质性的数学度量：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">H(G) = (1/|V|) Σ_&#123;v∈V&#125; (  |&#123;u∈N(v) : y_u=y_v&#125;| / |N(v)|  )</span><br></pre></td></tr></table></figure>
+
+<p>大多数真实世界图（引文网络、社交网络）具有高同质性（H &gt; 0.5），GCN 在这些图上效果最好。</p>
+<h3 id="21-2-异质性（Heterophily）"><a href="#21-2-异质性（Heterophily）" class="headerlink" title="21.2 异质性（Heterophily）"></a>21.2 异质性（Heterophily）</h3><p>某些图的连接模式是”不同类别的节点倾向于连接”（如约会网络、金融交易网络中的欺诈者-受害者关系）。GCN 在异质性图上表现不佳，因为低通滤波会混合不同类别的信息。</p>
+<p>针对异质性图的 GNN 设计：</p>
+<ul>
+<li><strong>H2GCN</strong>：区分同质邻居和异质邻居，分别聚合</li>
+<li><strong>GPRGNN</strong>：使用广义 PageRank（允许负权重）替代纯低通滤波</li>
+<li><strong>FAGCN</strong>：学习每条边的正&#x2F;负权重，实现高通+低通自适应滤波</li>
+</ul>
+<h3 id="21-3-图同质性实验"><a href="#21-3-图同质性实验" class="headerlink" title="21.3 图同质性实验"></a>21.3 图同质性实验</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">compute_homophily</span>(<span class="params">edge_index, y</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;计算图的同质性指标&quot;&quot;&quot;</span></span><br><span class="line">    src, dst = edge_index[<span class="number">0</span>], edge_index[<span class="number">1</span>]</span><br><span class="line">    <span class="comment"># 有同标签邻居的边占总边的比例</span></span><br><span class="line">    same_label = (y[src] == y[dst]).<span class="built_in">float</span>().mean()</span><br><span class="line">    <span class="keyword">return</span> same_label.item()</span><br><span class="line"></span><br><span class="line"><span class="comment"># Cora 的同质性约为 0.81（高度同质）</span></span><br><span class="line"><span class="comment"># Actor co-occurrence 网络的同质性约为 0.22（高度异质）</span></span><br><span class="line"><span class="comment"># GCN 在 Cora 上 81%，在 Actor 上仅 ~27%（不如 MLP 的 ~35%）</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="二十二、阅读论文推荐顺序"><a href="#二十二、阅读论文推荐顺序" class="headerlink" title="二十二、阅读论文推荐顺序"></a>二十二、阅读论文推荐顺序</h2><p>对于想要深入理解 GNN 的读者，推荐以下论文阅读路径：</p>
+<ol>
+<li><strong>Kipf &amp; Welling, ICLR 2017</strong>: Semi-Supervised Classification with Graph Convolutional Networks（GCN 原始论文，必读）</li>
+<li><strong>Hamilton et al., NeurIPS 2017</strong>: Inductive Representation Learning on Large Graphs（GraphSAGE，邻居采样）</li>
+<li><strong>Velickovic et al., ICLR 2018</strong>: Graph Attention Networks（GAT，注意力机制）</li>
+<li><strong>Xu et al., ICLR 2019</strong>: How Powerful are Graph Neural Networks?（GIN，表达能力分析）</li>
+<li><strong>Li et al., ICML 2018</strong>: Deeper Insights into Graph Convolutional Networks（过平滑分析）</li>
+<li><strong>Rong et al., ICLR 2020</strong>: DropEdge: Towards Deep Graph Convolutional Networks（缓解过平滑）</li>
+<li><strong>Chen et al., ICML 2020</strong>: Simple and Deep Graph Convolutional Networks（GCNII，极深 GCN）</li>
+<li><strong>Wu et al., ICML 2019</strong>: Simplifying Graph Convolutional Networks（SGC，去除非线性）</li>
+<li><strong>Klicpera et al., ICLR 2019</strong>: Diffusion-Convolutional Neural Networks（图扩散卷积统一框架）</li>
+<li><strong>Brossard et al., NeurIPS 2020</strong>: Graph Convolutional Networks with Eigenpooling（特征池化）</li>
+</ol>
+<h2 id="二十三、GNN-实践-Checklist"><a href="#二十三、GNN-实践-Checklist" class="headerlink" title="二十三、GNN 实践 Checklist"></a>二十三、GNN 实践 Checklist</h2><p>在开始一个 GNN 项目之前，确认以下各项：</p>
+<ul>
+<li><input disabled="" type="checkbox"> 图是同质性的还是异质性的？→ 选择合适的模型（GCN vs H2GCN）</li>
+<li><input disabled="" type="checkbox"> 图规模多大？→ 小型用 GCN&#x2F;GAT，大型用 GraphSAGE&#x2F;ClusterGCN</li>
+<li><input disabled="" type="checkbox"> 是归纳式还是直推式？→ 直推式用 GCN，归纳式用 GraphSAGE</li>
+<li><input disabled="" type="checkbox"> 节点特征是否可用？→ 如否，先做 DeepWalk&#x2F;Node2Vec 生成初始嵌入</li>
+<li><input disabled="" type="checkbox"> 是否实现了 baseline（MLP + Logistic Regression）？→ 需要验证图结构确实在贡献信息</li>
+<li><input disabled="" type="checkbox"> 实验是否复现？→ 固定随机种子，报告均值和标准差</li>
+<li><input disabled="" type="checkbox"> 是否做了消融实验？→ 层数、宽度、dropout、聚合函数</li>
+<li><input disabled="" type="checkbox"> 是否检查了过平滑？→ 如果加层后性能下降，可能是过平滑</li>
+<li><input disabled="" type="checkbox"> 是否正确处理了孤立节点？→ 确保 mask 中包含这些节点</li>
+<li><input disabled="" type="checkbox"> 训练&#x2F;验证&#x2F;测试集划分是否合理？→ 使用标准数据集划分或服从官方 benchmark 协议</li>
+</ul>
+<pre><code>
+## 二十四、总结
+
+图信号处理为 GNN 提供了严密的数学基础。从图的傅里叶变换到谱域图卷积，从切比雪夫多项式近似到 GCN 的一阶简化，再到 GAT 的注意力机制和 GraphSAGE 的归纳式采样——每一步演化都为 GNN 增加了新的能力维度：
+
+| 模型 | 核心贡献 | 适用场景 |
+|------|----------|----------|
+| Spectral CNN | 谱域图卷积的数学定义 | 理论基准 |
+| ChebNet | K 阶多项式近似，局部化 | 中等规模图 |
+| GCN | 一阶近似 + 重归一化技巧 | 直推式节点分类 |
+| GAT | 注意力权重，异质性图能力 | 异质性图、归纳式 |
+| GraphSAGE | 邻居采样 + 聚合函数 | 大规模归纳式图 |
+| GIN | Weisfeiler-Lehman 同构测试 | 图分类 |
+| SGC | 去除非线性，极简 GCN | 快速baseline |
+| APPNP | PageRank 传播解耦 | 缓解过平滑 |
+| GCNII | 初始残差 + 恒等映射 | 深层 GCN |
+| ClusterGCN | 图聚类 + 子图 SGD | 超大规模图 |
+
+图卷积的根本设计挑战永远不会变：**如何在保留图结构信息的同时，避免过平滑和过压缩？** 这一对张力驱动着 GNN 从 3 层到 64 层，从局部邻域到全局信息，从各向同性聚合到各向异性注意力。理解图信号处理的底层数学，是驾驭这些模型演化的钥匙。对于实践者而言，在着手新项目时，GCN + GAT + GraphSAGE 的组合覆盖了大多数场景，而本文的 Checklist 则提供了从理论到实践的完整桥接。
+
+## 参考
+
+- Shuman et al., &quot;The Emerging Field of Signal Processing on Graphs&quot;, IEEE SPM 2013
+- Defferrard et al., &quot;Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering&quot;, NeurIPS 2016
+- Kipf &amp; Welling, &quot;Semi-Supervised Classification with Graph Convolutional Networks&quot;, ICLR 2017
+- Veličković et al., &quot;Graph Attention Networks&quot;, ICLR 2018
+- Hamilton et al., &quot;Inductive Representation Learning on Large Graphs&quot;, NeurIPS 2017
+- Xu et al., &quot;How Powerful are Graph Neural Networks?&quot;, ICLR 2019
+- Wu et al., &quot;Simplifying Graph Convolutional Networks&quot;, ICML 2019
+- Klicpera et al., &quot;Predict then Propagate: Graph Neural Networks meet Personalized PageRank&quot;, ICLR 2019
+- Chen et al., &quot;Simple and Deep Graph Convolutional Networks&quot;, ICML 2020
+- Chiang et al., &quot;Cluster-GCN: An Efficient Algorithm for Training Deep and Large Graph Convolutional Networks&quot;, KDD 2019
+</code></pre>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2020/08/15/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E5%9B%BE%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86%E4%B8%8E%E5%9B%BE%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/">http://tufusi.com/2020/08/15/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E5%9B%BE%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86%E4%B8%8E%E5%9B%BE%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2020/08/20/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【GNN原理解析】神经网络基础</span></div></a></div><div class="next-post pull_right"><a href="/2020/08/15/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E3%80%91EM%E7%AE%97%E6%B3%95/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【统计学习方法死磕系列】EM算法</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

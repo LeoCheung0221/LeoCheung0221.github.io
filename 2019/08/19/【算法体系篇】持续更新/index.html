@@ -1,0 +1,660 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【算法体系篇】持续更新 | ONE·PIECE</title><meta name="description" content="【算法体系篇】持续更新"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【算法体系篇】持续更新"><meta name="twitter:description" content="【算法体系篇】持续更新"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286927.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【算法体系篇】持续更新"><meta property="og:url" content="http://tufusi.com/2019/08/19/%E3%80%90%E7%AE%97%E6%B3%95%E4%BD%93%E7%B3%BB%E7%AF%87%E3%80%91%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【算法体系篇】持续更新"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286927.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2019/08/19/%E3%80%90%E7%AE%97%E6%B3%95%E4%BD%93%E7%B3%BB%E7%AF%87%E3%80%91%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0/"><link rel="prev" title="【架构篇】MVP架构" href="http://tufusi.com/2019/09/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%9E%B6%E6%9E%84%E7%AF%87%E3%80%91MVP%E6%9E%B6%E6%9E%84/"><link rel="next" title="【数据结构与算法体系】之图算法（五）-最大流" href="http://tufusi.com/2019/08/18/%E3%80%90%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%E4%BD%93%E7%B3%BB%E3%80%91%E4%B9%8B%E5%9B%BE%E7%AE%97%E6%B3%95%EF%BC%88%E4%BA%94%EF%BC%89-%E6%9C%80%E5%A4%A7%E6%B5%81/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E7%AE%97%E6%B3%95%E7%9F%A5%E8%AF%86%E4%BD%93%E7%B3%BB%EF%BC%9A%E4%BB%8E%E5%9F%BA%E7%A1%80%E5%88%B0%E7%AB%9E%E8%B5%9B"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">算法知识体系：从基础到竞赛</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E7%AF%87"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">一、数据结构篇</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-%E7%BA%BF%E6%80%A7%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">1.1 线性结构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-2-%E6%A0%91%E5%BD%A2%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">1.2 树形结构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-3-%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">1.3 字符串结构</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81%E5%9F%BA%E7%A1%80%E7%AE%97%E6%B3%95%E7%AF%87"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">二、基础算法篇</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">2.1 排序算法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E6%90%9C%E7%B4%A2%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">2.2 搜索算法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">2.3 动态规划</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81%E9%AB%98%E7%BA%A7%E7%AE%97%E6%B3%95%E7%AF%87"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">三、高级算法篇</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E5%9B%BE%E8%AE%BA%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">3.1 图论算法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">3.2 字符串算法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-%E6%95%B0%E5%AD%A6%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">3.3 数学算法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-%E7%BA%BF%E6%AE%B5%E6%A0%91%E6%B7%B1%E5%85%A5%EF%BC%9A%E6%87%92%E6%A0%87%E8%AE%B0%E4%B8%8E%E5%8C%BA%E9%97%B4%E6%9B%B4%E6%96%B0"><span class="toc_mobile_items-number">4.4.</span> <span class="toc_mobile_items-text">3.4 线段树深入：懒标记与区间更新</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-5-%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84%EF%BC%88Fenwick-Tree%EF%BC%89%E6%B7%B1%E5%85%A5"><span class="toc_mobile_items-number">4.5.</span> <span class="toc_mobile_items-text">3.5 树状数组（Fenwick Tree）深入</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-6-%E5%B9%B6%E6%9F%A5%E9%9B%86%E7%9A%84%E4%BC%98%E5%8C%96%E6%B7%B1%E5%BA%A6%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">4.6.</span> <span class="toc_mobile_items-text">3.6 并查集的优化深度分析</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-7-KMP-%E7%AE%97%E6%B3%95%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%80%A7%E7%9B%B4%E8%A7%89"><span class="toc_mobile_items-number">4.7.</span> <span class="toc_mobile_items-text">3.7 KMP 算法的正确性直觉</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-8-%E5%8D%95%E8%B0%83%E6%A0%88%E4%B8%8E%E5%8D%95%E8%B0%83%E9%98%9F%E5%88%97%E7%9A%84%E6%89%A9%E5%B1%95%E5%BA%94%E7%94%A8"><span class="toc_mobile_items-number">4.8.</span> <span class="toc_mobile_items-text">3.8 单调栈与单调队列的扩展应用</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84%E4%B8%8E%E8%B5%84%E6%BA%90"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">四、学习路径与资源</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E4%B8%89%E9%98%B6%E6%AE%B5%E5%AD%A6%E4%B9%A0"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">4.1 三阶段学习</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E5%88%B7%E9%A2%98%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">4.2 刷题策略</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-%E6%8E%A8%E8%8D%90%E8%B5%84%E6%BA%90"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">4.3 推荐资源</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%80%83%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">面试常考问题</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%97%E6%B3%95%E7%9F%A5%E8%AF%86%E4%BD%93%E7%B3%BB%EF%BC%9A%E4%BB%8E%E5%9F%BA%E7%A1%80%E5%88%B0%E7%AB%9E%E8%B5%9B"><span class="toc-number">1.</span> <span class="toc-text">算法知识体系：从基础到竞赛</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E7%AF%87"><span class="toc-number">2.</span> <span class="toc-text">一、数据结构篇</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E7%BA%BF%E6%80%A7%E7%BB%93%E6%9E%84"><span class="toc-number">2.1.</span> <span class="toc-text">1.1 线性结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E6%A0%91%E5%BD%A2%E7%BB%93%E6%9E%84"><span class="toc-number">2.2.</span> <span class="toc-text">1.2 树形结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%BB%93%E6%9E%84"><span class="toc-number">2.3.</span> <span class="toc-text">1.3 字符串结构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%9F%BA%E7%A1%80%E7%AE%97%E6%B3%95%E7%AF%87"><span class="toc-number">3.</span> <span class="toc-text">二、基础算法篇</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95"><span class="toc-number">3.1.</span> <span class="toc-text">2.1 排序算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%90%9C%E7%B4%A2%E7%AE%97%E6%B3%95"><span class="toc-number">3.2.</span> <span class="toc-text">2.2 搜索算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92"><span class="toc-number">3.3.</span> <span class="toc-text">2.3 动态规划</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E9%AB%98%E7%BA%A7%E7%AE%97%E6%B3%95%E7%AF%87"><span class="toc-number">4.</span> <span class="toc-text">三、高级算法篇</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%9B%BE%E8%AE%BA%E7%AE%97%E6%B3%95"><span class="toc-number">4.1.</span> <span class="toc-text">3.1 图论算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%AE%97%E6%B3%95"><span class="toc-number">4.2.</span> <span class="toc-text">3.2 字符串算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%95%B0%E5%AD%A6%E7%AE%97%E6%B3%95"><span class="toc-number">4.3.</span> <span class="toc-text">3.3 数学算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E7%BA%BF%E6%AE%B5%E6%A0%91%E6%B7%B1%E5%85%A5%EF%BC%9A%E6%87%92%E6%A0%87%E8%AE%B0%E4%B8%8E%E5%8C%BA%E9%97%B4%E6%9B%B4%E6%96%B0"><span class="toc-number">4.4.</span> <span class="toc-text">3.4 线段树深入：懒标记与区间更新</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84%EF%BC%88Fenwick-Tree%EF%BC%89%E6%B7%B1%E5%85%A5"><span class="toc-number">4.5.</span> <span class="toc-text">3.5 树状数组（Fenwick Tree）深入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-%E5%B9%B6%E6%9F%A5%E9%9B%86%E7%9A%84%E4%BC%98%E5%8C%96%E6%B7%B1%E5%BA%A6%E5%88%86%E6%9E%90"><span class="toc-number">4.6.</span> <span class="toc-text">3.6 并查集的优化深度分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-7-KMP-%E7%AE%97%E6%B3%95%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%80%A7%E7%9B%B4%E8%A7%89"><span class="toc-number">4.7.</span> <span class="toc-text">3.7 KMP 算法的正确性直觉</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-8-%E5%8D%95%E8%B0%83%E6%A0%88%E4%B8%8E%E5%8D%95%E8%B0%83%E9%98%9F%E5%88%97%E7%9A%84%E6%89%A9%E5%B1%95%E5%BA%94%E7%94%A8"><span class="toc-number">4.8.</span> <span class="toc-text">3.8 单调栈与单调队列的扩展应用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84%E4%B8%8E%E8%B5%84%E6%BA%90"><span class="toc-number">5.</span> <span class="toc-text">四、学习路径与资源</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E4%B8%89%E9%98%B6%E6%AE%B5%E5%AD%A6%E4%B9%A0"><span class="toc-number">5.1.</span> <span class="toc-text">4.1 三阶段学习</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E5%88%B7%E9%A2%98%E7%AD%96%E7%95%A5"><span class="toc-number">5.2.</span> <span class="toc-text">4.2 刷题策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E6%8E%A8%E8%8D%90%E8%B5%84%E6%BA%90"><span class="toc-number">5.3.</span> <span class="toc-text">4.3 推荐资源</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%80%83%E9%97%AE%E9%A2%98"><span class="toc-number">6.</span> <span class="toc-text">面试常考问题</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286927.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【算法体系篇】持续更新</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2019-08-19<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-11</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/">数据结构与算法</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">5.7k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 22 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="算法知识体系：从基础到竞赛"><a href="#算法知识体系：从基础到竞赛" class="headerlink" title="算法知识体系：从基础到竞赛"></a>算法知识体系：从基础到竞赛</h2><p>本文是算法学习的完整知识地图。按数据结构→基础算法→高级算法→竞赛专题四层递进，每个条目附核心模板和典型题目。</p>
+<hr>
+<h2 id="一、数据结构篇"><a href="#一、数据结构篇" class="headerlink" title="一、数据结构篇"></a>一、数据结构篇</h2><h3 id="1-1-线性结构"><a href="#1-1-线性结构" class="headerlink" title="1.1 线性结构"></a>1.1 线性结构</h3><p><strong>数组与矩阵</strong></p>
+<table>
+<thead>
+<tr>
+<th>技术</th>
+<th>核心思路</th>
+<th>典型题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>前缀和</td>
+<td><code>pref[i] = Σarr[0..i-1]</code>，区间和 O(1)</td>
+<td>区域和检索</td>
+</tr>
+<tr>
+<td>差分数组</td>
+<td><code>diff[i] = arr[i]-arr[i-1]</code>，区间增减 O(1)</td>
+<td>航班预订统计</td>
+</tr>
+<tr>
+<td>滑动窗口</td>
+<td>双指针维护窗口，右扩左缩，满足条件时更新结果</td>
+<td>无重复字符最长子串</td>
+</tr>
+<tr>
+<td>双指针</td>
+<td>对撞指针&#x2F;快慢指针&#x2F;分离双指针</td>
+<td>三数之和、接雨水</td>
+</tr>
+<tr>
+<td>原地哈希</td>
+<td>将值映射到下标，标记为负</td>
+<td>缺失的第一个正数</td>
+</tr>
+</tbody></table>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 滑动窗口模板</span></span><br><span class="line"><span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">0</span>, r = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">while</span> (r &lt; n) &#123;</span><br><span class="line">    window.add(arr[r++]);     <span class="comment">// 扩大窗口</span></span><br><span class="line">    <span class="keyword">while</span> (needShrink()) &#123;</span><br><span class="line">        window.remove(arr[l++]); <span class="comment">// 缩小窗口</span></span><br><span class="line">    &#125;</span><br><span class="line">    updateResult();             <span class="comment">// 更新答案</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>链表</strong></p>
+<table>
+<thead>
+<tr>
+<th>技术</th>
+<th>核心思路</th>
+<th>典型题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>快慢指针</td>
+<td>fast 走 2 步, slow 走 1 步；fast 到末尾时 slow 在中点</td>
+<td>链表中点、环形链表</td>
+</tr>
+<tr>
+<td>反转链表</td>
+<td>prev&#x2F;curr&#x2F;next 三指针迭代；递归头插法</td>
+<td>反转链表、K 个一组翻转</td>
+</tr>
+<tr>
+<td>虚拟头节点</td>
+<td>dummy node 简化边界处理</td>
+<td>合并有序链表、删除节点</td>
+</tr>
+<tr>
+<td>Floyd 判圈</td>
+<td>快慢指针相遇后，slow 重置到头，同步走直到再次相遇</td>
+<td>环形链表 II</td>
+</tr>
+</tbody></table>
+<p><strong>栈与单调栈</strong></p>
+<p>单调栈的核心是维护栈内元素的单调性（递增或递减），用于快速找到元素左右两侧第一个比它大&#x2F;小的元素——这是解决”下一个更大元素”类问题的统一框架。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 单调递增栈：找下一个更小元素</span></span><br><span class="line">Deque&lt;Integer&gt; stack = <span class="keyword">new</span> <span class="title class_">ArrayDeque</span>&lt;&gt;();</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">    <span class="keyword">while</span> (!stack.isEmpty() &amp;&amp; arr[stack.peek()] &gt; arr[i]) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">top</span> <span class="operator">=</span> stack.pop();</span><br><span class="line">        <span class="comment">// arr[top] 的下一个更小元素是 arr[i]</span></span><br><span class="line">    &#125;</span><br><span class="line">    stack.push(i);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>队列与单调队列</strong></p>
+<p>单调队列维护队列内元素的单调性，队首始终是当前窗口的最值。核心操作：入队时从队尾弹出破坏单调性的元素；队首元素过期（不在窗口内）时从队首弹出。</p>
+<p>应用场景：滑动窗口最大值、带限制的最短子数组。</p>
+<h3 id="1-2-树形结构"><a href="#1-2-树形结构" class="headerlink" title="1.2 树形结构"></a>1.2 树形结构</h3><p><strong>二叉树遍历</strong></p>
+<table>
+<thead>
+<tr>
+<th>遍历方式</th>
+<th>递归</th>
+<th>迭代（栈模拟）</th>
+<th>Morris（O(1)空间）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>前序</td>
+<td>node→left→right</td>
+<td>栈存右子</td>
+<td>利用空闲指针</td>
+</tr>
+<tr>
+<td>中序</td>
+<td>left→node→right</td>
+<td>一直往左走</td>
+<td>利用前驱节点</td>
+</tr>
+<tr>
+<td>后序</td>
+<td>left→right→node</td>
+<td>前序逆序或双栈</td>
+<td>复杂</td>
+</tr>
+</tbody></table>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 中序迭代模板</span></span><br><span class="line">Deque&lt;TreeNode&gt; stack = <span class="keyword">new</span> <span class="title class_">ArrayDeque</span>&lt;&gt;();</span><br><span class="line"><span class="type">TreeNode</span> <span class="variable">curr</span> <span class="operator">=</span> root;</span><br><span class="line"><span class="keyword">while</span> (curr != <span class="literal">null</span> || !stack.isEmpty()) &#123;</span><br><span class="line">    <span class="keyword">while</span> (curr != <span class="literal">null</span>) &#123; stack.push(curr); curr = curr.left; &#125;</span><br><span class="line">    curr = stack.pop();</span><br><span class="line">    visit(curr);</span><br><span class="line">    curr = curr.right;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>平衡搜索树</strong></p>
+<table>
+<thead>
+<tr>
+<th>结构</th>
+<th>平衡策略</th>
+<th>查找</th>
+<th>插入</th>
+<th>删除</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AVL 树</td>
+<td>旋转（LL&#x2F;RR&#x2F;LR&#x2F;RL），高度差 ≤1</td>
+<td>O(log n)</td>
+<td>O(log n)</td>
+<td>O(log n)</td>
+</tr>
+<tr>
+<td>红黑树</td>
+<td>颜色翻转 + 旋转，黑高相等</td>
+<td>O(log n)</td>
+<td>O(log n)</td>
+<td>O(log n)</td>
+</tr>
+<tr>
+<td>B 树</td>
+<td>节点分裂&#x2F;合并，m 叉</td>
+<td>O(log n)</td>
+<td>O(log n)</td>
+<td>O(log n)</td>
+</tr>
+<tr>
+<td>Treap</td>
+<td>随机优先级 + 旋转</td>
+<td>O(log n) 期望</td>
+<td>O(log n)</td>
+<td>O(log n)</td>
+</tr>
+<tr>
+<td>Splay</td>
+<td>访问时旋转至根（摊还）</td>
+<td>O(log n) 摊还</td>
+<td>O(log n)</td>
+<td>O(log n)</td>
+</tr>
+</tbody></table>
+<p>红黑树 vs AVL：AVL 更严格平衡 → 查找更快；红黑树插入&#x2F;删除更少旋转 → 修改更快。Java TreeMap 使用红黑树。Android 的 ArrayMap 在元素少（≤8）时使用数组二分查找代替红黑树（节省内存）。</p>
+<p><strong>线段树（Segment Tree）</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 区间查询、单点/区间更新 O(log n)</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">SegmentTree</span> &#123;</span><br><span class="line">    <span class="type">int</span>[] tree, lazy;</span><br><span class="line">    <span class="type">int</span> n;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">build</span><span class="params">(<span class="type">int</span> node, <span class="type">int</span> l, <span class="type">int</span> r, <span class="type">int</span>[] arr)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (l == r) &#123; tree[node] = arr[l]; <span class="keyword">return</span>; &#125;</span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> (l + r) / <span class="number">2</span>;</span><br><span class="line">        build(node * <span class="number">2</span>, l, mid, arr);</span><br><span class="line">        build(node * <span class="number">2</span> + <span class="number">1</span>, mid + <span class="number">1</span>, r, arr);</span><br><span class="line">        tree[node] = tree[node * <span class="number">2</span>] + tree[node * <span class="number">2</span> + <span class="number">1</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 懒标记下推（Lazy Propagation）</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">pushDown</span><span class="params">(<span class="type">int</span> node, <span class="type">int</span> l, <span class="type">int</span> r)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (lazy[node] == <span class="number">0</span>) <span class="keyword">return</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> (l + r) / <span class="number">2</span>;</span><br><span class="line">        tree[node*<span class="number">2</span>] += lazy[node] * (mid - l + <span class="number">1</span>);</span><br><span class="line">        tree[node*<span class="number">2</span>+<span class="number">1</span>] += lazy[node] * (r - mid);</span><br><span class="line">        lazy[node*<span class="number">2</span>] += lazy[node];</span><br><span class="line">        lazy[node*<span class="number">2</span>+<span class="number">1</span>] += lazy[node];</span><br><span class="line">        lazy[node] = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>树状数组（Fenwick Tree &#x2F; BIT）</strong></p>
+<p>前缀和查询和单点更新都是 O(log n)，比线段树代码量小 3-4 倍，是竞赛中的首选。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Fenwick</span> &#123;</span><br><span class="line">    <span class="type">int</span>[] tree;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">add</span><span class="params">(<span class="type">int</span> i, <span class="type">int</span> delta)</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (; i &lt; tree.length; i += i &amp; -i) tree[i] += delta;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span> <span class="title function_">sum</span><span class="params">(<span class="type">int</span> i)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">s</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (; i &gt; <span class="number">0</span>; i -= i &amp; -i) s += tree[i];</span><br><span class="line">        <span class="keyword">return</span> s;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>核心：<code>i &amp; -i</code> 提取整数 i 的最低有效位（lowbit），树状数组利用 lowbit 将 n 的二进制表示分解为 O(log n) 个区间。</p>
+<p><strong>并查集（Disjoint Set Union）</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">DSU</span> &#123;</span><br><span class="line">    <span class="type">int</span>[] parent, rank;</span><br><span class="line">    <span class="type">int</span> <span class="title function_">find</span><span class="params">(<span class="type">int</span> x)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (parent[x] != x) parent[x] = find(parent[x]); <span class="comment">// 路径压缩</span></span><br><span class="line">        <span class="keyword">return</span> parent[x];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">union</span><span class="params">(<span class="type">int</span> x, <span class="type">int</span> y)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">rx</span> <span class="operator">=</span> find(x), ry = find(y);</span><br><span class="line">        <span class="keyword">if</span> (rx == ry) <span class="keyword">return</span>;</span><br><span class="line">        <span class="keyword">if</span> (rank[rx] &lt; rank[ry]) parent[rx] = ry;   <span class="comment">// 按秩合并</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (rank[rx] &gt; rank[ry]) parent[ry] = rx;</span><br><span class="line">        <span class="keyword">else</span> &#123; parent[rx] = ry; rank[ry]++; &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-3-字符串结构"><a href="#1-3-字符串结构" class="headerlink" title="1.3 字符串结构"></a>1.3 字符串结构</h3><p><strong>Trie（前缀树&#x2F;字典树）</strong></p>
+<p>每个节点存 26 个子节点指针和一个 isEnd 标记。用于字符串前缀匹配、自动补全。插入&#x2F;查找时间复杂度 O(L)，L 为字符串长度。</p>
+<p><strong>后缀数组（Suffix Array）</strong></p>
+<p><code>sa[i]</code> &#x3D; 字典序第 i 小的后缀的起始位置。核心算法：倍增法 O(n log n)。配合 <code>rank[]</code> 和 <code>height[]</code>（LCP：Longest Common Prefix，用 Kasai 算法 O(n) 计算），可在 O(log n) 内完成字符串匹配和公共子串查询。</p>
+<hr>
+<h2 id="二、基础算法篇"><a href="#二、基础算法篇" class="headerlink" title="二、基础算法篇"></a>二、基础算法篇</h2><h3 id="2-1-排序算法"><a href="#2-1-排序算法" class="headerlink" title="2.1 排序算法"></a>2.1 排序算法</h3><table>
+<thead>
+<tr>
+<th>算法</th>
+<th>平均时间</th>
+<th>最坏时间</th>
+<th>空间</th>
+<th>稳定</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>快速排序</td>
+<td>O(n log n)</td>
+<td>O(n²)</td>
+<td>O(log n)</td>
+<td>否</td>
+<td>通用，工业界首选</td>
+</tr>
+<tr>
+<td>归并排序</td>
+<td>O(n log n)</td>
+<td>O(n log n)</td>
+<td>O(n)</td>
+<td>是</td>
+<td>外部排序、链表排序</td>
+</tr>
+<tr>
+<td>堆排序</td>
+<td>O(n log n)</td>
+<td>O(n log n)</td>
+<td>O(1)</td>
+<td>否</td>
+<td>内存受限场景</td>
+</tr>
+<tr>
+<td>计数排序</td>
+<td>O(n + k)</td>
+<td>O(n + k)</td>
+<td>O(k)</td>
+<td>是</td>
+<td>整数范围小 (k ≤ n)</td>
+</tr>
+<tr>
+<td>基数排序</td>
+<td>O(d(n + k))</td>
+<td>O(d(n + k))</td>
+<td>O(n + k)</td>
+<td>是</td>
+<td>字符串&#x2F;大整数排序</td>
+</tr>
+<tr>
+<td>TimSort</td>
+<td>O(n log n)</td>
+<td>O(n log n)</td>
+<td>O(n)</td>
+<td>是</td>
+<td>Java&#x2F;Android 默认排序</td>
+</tr>
+</tbody></table>
+<p><strong>O(n log n) 下界的简要证明</strong>：基于比较的排序算法，决策树叶子数 ≥ n!。二叉树高度 h 满足 2^h ≥ n! → h ≥ log₂(n!)。由 Stirling 近似，log₂(n!) &#x3D; n log₂ n - n log₂ e + O(log n) &#x3D; Ω(n log n)。</p>
+<h3 id="2-2-搜索算法"><a href="#2-2-搜索算法" class="headerlink" title="2.2 搜索算法"></a>2.2 搜索算法</h3><p><strong>二分查找模板</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 查找第一个 ≥ target 的位置（lower_bound）</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">binarySearch</span><span class="params">(<span class="type">int</span>[] arr, <span class="type">int</span> target)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">0</span>, r = arr.length;</span><br><span class="line">    <span class="keyword">while</span> (l &lt; r) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> l + (r - l) / <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">if</span> (arr[mid] &gt;= target) r = mid;</span><br><span class="line">        <span class="keyword">else</span> l = mid + <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> l;  <span class="comment">// l == r, 指向第一个 ≥ target 的位置</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>核心原则：维持循环不变量——l 左侧的元素一律 &lt; target，r 及 r 右侧的元素一律 ≥ target。l 和 r 缩到相等时即分界点。</p>
+<p><strong>图搜索</strong></p>
+<table>
+<thead>
+<tr>
+<th>算法</th>
+<th>数据结构</th>
+<th>空间</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>BFS</td>
+<td>队列</td>
+<td>O(V+E)</td>
+<td>无权图最短路径、层序遍历</td>
+</tr>
+<tr>
+<td>DFS</td>
+<td>栈&#x2F;递归</td>
+<td>O(V)</td>
+<td>连通性、拓扑排序、回溯</td>
+</tr>
+<tr>
+<td>双向 BFS</td>
+<td>两个队列</td>
+<td>O(b^(d&#x2F;2))</td>
+<td>大幅减少搜索空间</td>
+</tr>
+<tr>
+<td>A*</td>
+<td>优先队列 f&#x3D;g+h</td>
+<td>取决于启发</td>
+<td>带启发式最短路径</td>
+</tr>
+</tbody></table>
+<h3 id="2-3-动态规划"><a href="#2-3-动态规划" class="headerlink" title="2.3 动态规划"></a>2.3 动态规划</h3><p>DP 五步法：</p>
+<ol>
+<li>定义状态（最难）</li>
+<li>定义状态转移方程</li>
+<li>初始化边界条件</li>
+<li>确定计算顺序</li>
+<li>空间优化（可选）</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>DP 类型</th>
+<th>状态结构</th>
+<th>代表问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>线性 DP</td>
+<td>dp[i]</td>
+<td>爬楼梯、打家劫舍、最长递增子序列</td>
+</tr>
+<tr>
+<td>背包 DP</td>
+<td>dp[i][w]</td>
+<td>0-1 背包、完全背包、多重背包</td>
+</tr>
+<tr>
+<td>区间 DP</td>
+<td>dp[l][r]</td>
+<td>石子合并、最长回文子序列</td>
+</tr>
+<tr>
+<td>树形 DP</td>
+<td>dp[node]</td>
+<td>树的直径、最大独立集</td>
+</tr>
+<tr>
+<td>状态压缩 DP</td>
+<td>dp[mask]</td>
+<td>旅行商 TSP、分配问题</td>
+</tr>
+<tr>
+<td>数位 DP</td>
+<td>dp[pos][tight]</td>
+<td>1～N 中满足条件的数的个数</td>
+</tr>
+<tr>
+<td>概率 DP</td>
+<td>dp[i] &#x3D; Σp·dp[j]</td>
+<td>期望步数、游戏通关概率</td>
+</tr>
+</tbody></table>
+<p><strong>背包问题模板</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 0-1 背包（逆序遍历，保证每件物品只用一次）</span></span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> item : items)</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">w</span> <span class="operator">=</span> W; w &gt;= weight[item]; w--)</span><br><span class="line">        dp[w] = Math.max(dp[w], dp[w - weight[item]] + value[item]);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 完全背包（正序遍历，物品可无限次使用）</span></span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> item : items)</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">w</span> <span class="operator">=</span> weight[item]; w &lt;= W; w++)</span><br><span class="line">        dp[w] = Math.max(dp[w], dp[w - weight[item]] + value[item]);</span><br></pre></td></tr></table></figure>
+
+<p><strong>DP 优化技术</strong>：单调队列优化（斜率优化，将 O(n²) 降到 O(n)）、四边形不等式优化（区间 DP 决策单调性）、CDQ 分治优化、矩阵快速幂优化（线性递推）。</p>
+<hr>
+<h2 id="三、高级算法篇"><a href="#三、高级算法篇" class="headerlink" title="三、高级算法篇"></a>三、高级算法篇</h2><h3 id="3-1-图论算法"><a href="#3-1-图论算法" class="headerlink" title="3.1 图论算法"></a>3.1 图论算法</h3><p><strong>最短路径</strong></p>
+<p>Bellman-Ford 的第 k 轮松弛保证所有 ≤ k 条边的最短路径被找到。该性质不仅用于负权检测，也衍生出”恰好经过 k 条边的最短路径”这类变体——这正是 Floyd-Warshall 思想从另一角度的特化。</p>
+<p><strong>最小生成树 MST</strong></p>
+<table>
+<thead>
+<tr>
+<th>算法</th>
+<th>思路</th>
+<th>复杂度</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Kruskal</td>
+<td>边排序 + 并查集</td>
+<td>O(E log E)</td>
+<td>稀疏图最优</td>
+</tr>
+<tr>
+<td>Prim</td>
+<td>顶点贪心扩展（类似 Dijkstra）</td>
+<td>O((V+E)log V)</td>
+<td>稠密图最优</td>
+</tr>
+<tr>
+<td>Boruvka</td>
+<td>每轮每个连通块选最小出边</td>
+<td>O(E log V)</td>
+<td>可并行化</td>
+</tr>
+</tbody></table>
+<p>MST 的正确性基于割性质和圈性质。割性质（Cut Property）：对于任意割 (S, V\S)，图中权值最小的跨割边一定属于某棵 MST。圈性质（Cycle Property）：对于任意圈，图中权值最大的边一定不属于某棵 MST。Kruskal 利用圈性质（跳过形成圈的边），Prim 利用割性质（每次选择跨割的最小边）。</p>
+<p><strong>流网络</strong></p>
+<table>
+<thead>
+<tr>
+<th>算法</th>
+<th>思路</th>
+<th>复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Ford-Fulkerson</td>
+<td>DFS 找增广路</td>
+<td>O(E·f_max)，f_max 为最大流值</td>
+</tr>
+<tr>
+<td>Edmonds-Karp</td>
+<td>BFS 找最短增广路</td>
+<td>O(VE²)</td>
+</tr>
+<tr>
+<td>Dinic</td>
+<td>BFS 分层 + DFS 多路增广 + 当前弧优化</td>
+<td>O(V²E) 一般，O(min(V²&#x2F;³, E¹&#x2F;²)·E) 单位容量</td>
+</tr>
+<tr>
+<td>Push-Relabel</td>
+<td>顶点高度标号 + 超额流推送</td>
+<td>O(V²√E)</td>
+</tr>
+</tbody></table>
+<p>最大流-最小割定理是图论中最重要的对偶性定理之一：网络中最大流的值等于最小割的容量。该定理的本质等价于线性规划的对偶性——最大流问题与最小割问题构成一对原始-对偶线性规划。</p>
+<p><strong>二分图匹配</strong></p>
+<p>将二分图匹配转化为最大流：源点→左侧所有节点（容量 1），左侧→右侧（按原始边，容量 1），右侧所有节点→汇点（容量 1）。最大流值 &#x3D; 最大匹配数。</p>
+<p>匈牙利算法专门针对二分图最大匹配优化——本质上是 DFS 寻找增广路并反转路径上边的匹配状态，复杂度 O(VE)。</p>
+<h3 id="3-2-字符串算法"><a href="#3-2-字符串算法" class="headerlink" title="3.2 字符串算法"></a>3.2 字符串算法</h3><p><strong>KMP（Knuth-Morris-Pratt）</strong></p>
+<p>核心是 LPS（Longest Prefix Suffix）数组——<code>lps[i]</code> 表示模式串 <code>P[0..i]</code> 中最长相等前后缀的长度。匹配失败时利用 lps 跳过已匹配部分。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span>[] buildLPS(String pattern) &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> pattern.length();</span><br><span class="line">    <span class="type">int</span>[] lps = <span class="keyword">new</span> <span class="title class_">int</span>[m];</span><br><span class="line">    <span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> <span class="number">0</span>, i = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (i &lt; m) &#123;</span><br><span class="line">        <span class="keyword">if</span> (pattern.charAt(i) == pattern.charAt(len)) &#123;</span><br><span class="line">            lps[i++] = ++len;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (len &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            len = lps[len - <span class="number">1</span>];  <span class="comment">// 递归回退</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            lps[i++] = <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> lps;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>其他字符串算法</strong>：Z 算法（O(n) 计算每个位置与字符串前缀的最长公共前缀长度，用于模式匹配和边界检测）、Manacher 算法（O(n) 找字符串的最长回文子串，核心是用对称性减少重复计算）、Rabin-Karp 滚动哈希（使用滑动窗口哈希值 O(1) 更新，双模哈希防止碰撞）、Aho-Corasick 自动机（Trie + 失败指针 &#x3D; 多模式匹配 O(n + m) 经典解法）、后缀自动机 SAM（有向无环图表示所有子串，解决最长公共子串等问题）。</p>
+<h3 id="3-3-数学算法"><a href="#3-3-数学算法" class="headerlink" title="3.3 数学算法"></a>3.3 数学算法</h3><p><strong>数论</strong>：埃式筛（O(n log log n)），线性筛（欧拉筛 O(n)，每个合数只被其最小质因子筛掉），快速幂（a^b mod m 用二进制拆分，O(log b)），扩展欧几里得（求 ax + by &#x3D; gcd(a, b) 的一组整数解，用于求模逆元），中国剩余定理 CRT（合并多个同余方程）。</p>
+<p><strong>组合数学</strong>：预处理阶乘和逆元 O(n) 后 O(1) 求组合数 C(n, k)。卡特兰数（出栈序列、合法括号、二叉树计数）。</p>
+<p><strong>线性代数</strong>：高斯消元 O(n³) 解线性方程组和求矩阵的逆。快速傅里叶变换 FFT（多项式乘法 O(n log n)，需要复数运算）和 NTT（数论变换，用原根代替单位复根，避免浮点误差）。</p>
+<h3 id="3-4-线段树深入：懒标记与区间更新"><a href="#3-4-线段树深入：懒标记与区间更新" class="headerlink" title="3.4 线段树深入：懒标记与区间更新"></a>3.4 线段树深入：懒标记与区间更新</h3><p>线段树本质上是一棵满二叉树，每个节点代表一个区间的聚合值。懒标记（Lazy Propagation）是区间更新的核心优化——当更新一个完全覆盖当前节点区间的范围时，不递归到底层，而是在当前节点打上标记并更新聚合值，待查询或再次更新需要进入子节点时再下推。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 线段树区间加 + 区间求和（带懒标记完整实现）</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">SegTree</span> &#123;</span><br><span class="line">    <span class="type">long</span>[] tree, lazy;</span><br><span class="line">    <span class="type">int</span> n;</span><br><span class="line">    </span><br><span class="line">    SegTree(<span class="type">int</span>[] arr) &#123;</span><br><span class="line">        n = arr.length;</span><br><span class="line">        tree = <span class="keyword">new</span> <span class="title class_">long</span>[<span class="number">4</span> * n];</span><br><span class="line">        lazy = <span class="keyword">new</span> <span class="title class_">long</span>[<span class="number">4</span> * n];</span><br><span class="line">        build(<span class="number">1</span>, <span class="number">0</span>, n - <span class="number">1</span>, arr);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">build</span><span class="params">(<span class="type">int</span> u, <span class="type">int</span> l, <span class="type">int</span> r, <span class="type">int</span>[] arr)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (l == r) &#123; tree[u] = arr[l]; <span class="keyword">return</span>; &#125;</span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> (l + r) &gt;&gt; <span class="number">1</span>;</span><br><span class="line">        build(u &lt;&lt; <span class="number">1</span>, l, mid, arr);</span><br><span class="line">        build(u &lt;&lt; <span class="number">1</span> | <span class="number">1</span>, mid + <span class="number">1</span>, r, arr);</span><br><span class="line">        tree[u] = tree[u &lt;&lt; <span class="number">1</span>] + tree[u &lt;&lt; <span class="number">1</span> | <span class="number">1</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">pushDown</span><span class="params">(<span class="type">int</span> u, <span class="type">int</span> l, <span class="type">int</span> r)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (lazy[u] == <span class="number">0</span>) <span class="keyword">return</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> (l + r) &gt;&gt; <span class="number">1</span>;</span><br><span class="line">        <span class="comment">// 下推到左子</span></span><br><span class="line">        tree[u &lt;&lt; <span class="number">1</span>] += lazy[u] * (mid - l + <span class="number">1</span>);</span><br><span class="line">        lazy[u &lt;&lt; <span class="number">1</span>] += lazy[u];</span><br><span class="line">        <span class="comment">// 下推到右子</span></span><br><span class="line">        tree[u &lt;&lt; <span class="number">1</span> | <span class="number">1</span>] += lazy[u] * (r - mid);</span><br><span class="line">        lazy[u &lt;&lt; <span class="number">1</span> | <span class="number">1</span>] += lazy[u];</span><br><span class="line">        lazy[u] = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">add</span><span class="params">(<span class="type">int</span> u, <span class="type">int</span> l, <span class="type">int</span> r, <span class="type">int</span> ql, <span class="type">int</span> qr, <span class="type">long</span> val)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (ql &lt;= l &amp;&amp; r &lt;= qr) &#123;</span><br><span class="line">            tree[u] += val * (r - l + <span class="number">1</span>);</span><br><span class="line">            lazy[u] += val;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        pushDown(u, l, r);</span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> (l + r) &gt;&gt; <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">if</span> (ql &lt;= mid) add(u &lt;&lt; <span class="number">1</span>, l, mid, ql, qr, val);</span><br><span class="line">        <span class="keyword">if</span> (qr &gt; mid)  add(u &lt;&lt; <span class="number">1</span> | <span class="number">1</span>, mid + <span class="number">1</span>, r, ql, qr, val);</span><br><span class="line">        tree[u] = tree[u &lt;&lt; <span class="number">1</span>] + tree[u &lt;&lt; <span class="number">1</span> | <span class="number">1</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="type">long</span> <span class="title function_">query</span><span class="params">(<span class="type">int</span> u, <span class="type">int</span> l, <span class="type">int</span> r, <span class="type">int</span> ql, <span class="type">int</span> qr)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (ql &lt;= l &amp;&amp; r &lt;= qr) <span class="keyword">return</span> tree[u];</span><br><span class="line">        pushDown(u, l, r);</span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> (l + r) &gt;&gt; <span class="number">1</span>;</span><br><span class="line">        <span class="type">long</span> <span class="variable">ans</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span> (ql &lt;= mid) ans += query(u &lt;&lt; <span class="number">1</span>, l, mid, ql, qr);</span><br><span class="line">        <span class="keyword">if</span> (qr &gt; mid)  ans += query(u &lt;&lt; <span class="number">1</span> | <span class="number">1</span>, mid + <span class="number">1</span>, r, ql, qr);</span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>懒标记的核心思想</strong>：将”推迟的工作”记录在节点上，仅在必要时下发。这是”批处理”思想在数据结构中的体现——平摊下来，每次操作仍是 O(log n)。</p>
+<h3 id="3-5-树状数组（Fenwick-Tree）深入"><a href="#3-5-树状数组（Fenwick-Tree）深入" class="headerlink" title="3.5 树状数组（Fenwick Tree）深入"></a>3.5 树状数组（Fenwick Tree）深入</h3><p>树状数组在 1.2 节已有简介。这里补充其与线段树的对比及进阶用法。</p>
+<p><strong>为什么 lowbit 有效？</strong> lowbit(x) &#x3D; x &amp; -x 提取 x 二进制表示中最低位的 1 所代表的值。例如 x &#x3D; 12 (1100₂)，lowbit &#x3D; 4 (100₂)。BIT 通过 lowbit 将前缀 [1, x] 分解为 O(log n) 个不相交区间，每个区间的长度恰好是 lowbit 值。</p>
+<p><strong>BIT 的进阶应用</strong>：</p>
+<ul>
+<li><strong>区间更新 + 单点查询</strong>：使用差分思想，<code>add(l, val)</code>, <code>add(r+1, -val)</code>，单点查询 &#x3D; prefix sum</li>
+<li><strong>区间更新 + 区间查询</strong>：维护两个 BIT，一个存 delta，一个存 delta*i。区间和 &#x3D; (x+1)*sum(bit1, x) - sum(bit2, x)</li>
+<li><strong>求第 k 小</strong>（BIT 上二分）：在值域 BIT 上倍增查找第一个前缀和 &gt;&#x3D; k 的位置，O(log n)</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// BIT 上二分查找第 k 小（1-indexed，值域 [1, n]）</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">kth</span><span class="params">(<span class="type">int</span> k)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">idx</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="type">int</span> <span class="variable">bitMask</span> <span class="operator">=</span> Integer.highestOneBit(n); <span class="comment">// 最高位</span></span><br><span class="line">    <span class="keyword">while</span> (bitMask != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">t</span> <span class="operator">=</span> idx + bitMask;</span><br><span class="line">        <span class="keyword">if</span> (t &lt;= n &amp;&amp; tree[t] &lt; k) &#123;</span><br><span class="line">            k -= tree[t];</span><br><span class="line">            idx = t;</span><br><span class="line">        &#125;</span><br><span class="line">        bitMask &gt;&gt;= <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> idx + <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-6-并查集的优化深度分析"><a href="#3-6-并查集的优化深度分析" class="headerlink" title="3.6 并查集的优化深度分析"></a>3.6 并查集的优化深度分析</h3><p><strong>路径压缩 + 按秩合并 &#x3D; O(α(n)) 摊还</strong>，其中 α(n) 是反阿克曼函数——增长极其缓慢，对 n &lt; 2↑↑65536，α(n) ≤ 5。</p>
+<p><strong>路径压缩的三种实现</strong>：</p>
+<ol>
+<li>递归压缩：<code>return parent[x] = find(parent[x]);</code></li>
+<li>迭代压缩：从 x 向上找根，再沿路将路径上所有节点直接指向根</li>
+<li>路径减半（path halving）：<code>parent[x] = parent[parent[x]];</code> 只跳过一代</li>
+</ol>
+<p><strong>按秩合并 vs 按大小合并</strong>：两者在实际中几乎等价。按秩合并初始 rank&#x3D;0，合并时 rank 相等才增加；按大小合并维护子树节点数。按大小合并在需要 know 连通块大小时更方便。</p>
+<p><strong>带权并查集</strong>：维护节点到父节点的相对关系（如食物链问题）。find 时更新权值：<code>d[x] = (d[x] + d[parent[x]]) % mod</code>。</p>
+<h3 id="3-7-KMP-算法的正确性直觉"><a href="#3-7-KMP-算法的正确性直觉" class="headerlink" title="3.7 KMP 算法的正确性直觉"></a>3.7 KMP 算法的正确性直觉</h3><p>KMP 在 3.2 节已给出模板，这里补充其正确性直觉和变体。</p>
+<p><strong>LPS 数组的含义</strong>：<code>lps[i]</code> 表示模式串 <code>P[0..i]</code> 中，最长的真前缀同时也是真后缀的长度。失配时，模式串可以安全地跳过 <code>已匹配长度 - lps[已匹配长度-1]</code> 个字符——因为跳过的那部分不可能产生匹配。</p>
+<p><strong>KMP 自动机视角</strong>：可以将 <code>lps</code> 数组视为一个确定性有限自动机（DFA）的状态转移表——模式串的每个位置是一个状态，匹配&#x2F;失配时发生状态转移。这个视角下，AC 自动机（Aho-Corasick）就是 KMP 在多模式串上的自然推广——将 KMP 的线型状态链扩展为 Trie 树上的状态转移。</p>
+<p><strong>时间复杂度</strong>：预处理 O(m)，匹配 O(n)。匹配循环中 <code>j</code> 的减少次数被 <code>j</code> 的增加次数所限制——<code>j</code> 最多增加 n 次，所以 <code>j</code> 的减少总计也是 O(n)。</p>
+<h3 id="3-8-单调栈与单调队列的扩展应用"><a href="#3-8-单调栈与单调队列的扩展应用" class="headerlink" title="3.8 单调栈与单调队列的扩展应用"></a>3.8 单调栈与单调队列的扩展应用</h3><p><strong>单调栈经典问题</strong>：</p>
+<ul>
+<li>下一个更大元素（Next Greater Element）：单调递减栈</li>
+<li>柱状图中最大矩形：枚举高度，单调递增栈维护左右第一个更低的柱子的位置</li>
+<li>接雨水：双指针法（O(n) space O(1)）或单调递减栈（逐层计算）</li>
+</ul>
+<p><strong>单调队列经典问题</strong>：</p>
+<ul>
+<li>滑动窗口最大值：单调递减队列，队首即窗口最大值</li>
+<li>带限制的最短子数组：单调队列优化 DP（如「跳跃游戏」的 O(n) 解）</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 柱状图中最大矩形——单调栈 O(n)</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">largestRectangleArea</span><span class="params">(<span class="type">int</span>[] heights)</span> &#123;</span><br><span class="line">    Deque&lt;Integer&gt; stack = <span class="keyword">new</span> <span class="title class_">ArrayDeque</span>&lt;&gt;();</span><br><span class="line">    <span class="type">int</span> <span class="variable">maxArea</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt;= heights.length; i++) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">h</span> <span class="operator">=</span> (i == heights.length) ? <span class="number">0</span> : heights[i];</span><br><span class="line">        <span class="keyword">while</span> (!stack.isEmpty() &amp;&amp; heights[stack.peek()] &gt; h) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">height</span> <span class="operator">=</span> heights[stack.pop()];</span><br><span class="line">            <span class="type">int</span> <span class="variable">width</span> <span class="operator">=</span> stack.isEmpty() ? i : i - stack.peek() - <span class="number">1</span>;</span><br><span class="line">            maxArea = Math.max(maxArea, height * width);</span><br><span class="line">        &#125;</span><br><span class="line">        stack.push(i);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> maxArea;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="四、学习路径与资源"><a href="#四、学习路径与资源" class="headerlink" title="四、学习路径与资源"></a>四、学习路径与资源</h2><h3 id="4-1-三阶段学习"><a href="#4-1-三阶段学习" class="headerlink" title="4.1 三阶段学习"></a>4.1 三阶段学习</h3><p><strong>阶段一（基础期，3-6 月）</strong>：数组、链表、栈、队列、哈希表 → 排序（快排&#x2F;归并&#x2F;堆排）→ 二分查找 → BFS&#x2F;DFS → 树的前中后序遍历。刷题量 150-200 道，以 LeetCode 简单和中等为主。核心目标是建立数据结构和算法的直觉。</p>
+<p><strong>阶段二（进阶期，6-12 月）</strong>：动态规划（线性&#x2F;背包&#x2F;区间）→ 图论（最短路径&#x2F;MST&#x2F;拓扑排序）→ 并查集 → 单调栈&#x2F;单调队列 → 滑动窗口 → 前缀和&#x2F;差分。刷题量 300-500 道，以 LeetCode 中等为主，适度 Hard。</p>
+<p><strong>阶段三（精通期，1-2 年）</strong>：线段树&#x2F;树状数组 → 字符串匹配算法 → 流网络 → 状态压缩 DP → 数位 DP → 后缀数组 → 莫队算法 → 树链剖分 → 竞赛级专题。刷题 500-800 道，参加 Codeforces 和 AtCoder 比赛。</p>
+<h3 id="4-2-刷题策略"><a href="#4-2-刷题策略" class="headerlink" title="4.2 刷题策略"></a>4.2 刷题策略</h3><p><strong>五遍刷题法</strong>：</p>
+<ol>
+<li>第一遍：独立思考不超过 30 分钟，做不出来看题解，理解思路后手写实现</li>
+<li>第二遍：第二天重新独立实现，不参考题解</li>
+<li>第三遍：一周后复习，写出最优解</li>
+<li>第四遍：一个月后限时完成（1.5x 速度）</li>
+<li>第五遍：面试前集中复习，能口述所有关键步骤</li>
+</ol>
+<p><strong>分类刷 vs 随机刷</strong>：初学阶段按分类刷（如集中练习滑动窗口），熟练后按随机刷（模拟面试）。分类刷建立模式识别，随机刷训练问题转换。</p>
+<h3 id="4-3-推荐资源"><a href="#4-3-推荐资源" class="headerlink" title="4.3 推荐资源"></a>4.3 推荐资源</h3><table>
+<thead>
+<tr>
+<th>类别</th>
+<th>资源</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>在线评测</td>
+<td>LeetCode（面试导向）、Codeforces（竞赛风格）、AtCoder（日本，题目精美）、洛谷（国内竞赛社区）</td>
+</tr>
+<tr>
+<td>教材</td>
+<td>《算法导论》CLRS（理论圣经）、《算法》Sedgewick（Java 实现）、《挑战程序设计竞赛》（竞赛入门）、《算法竞赛进阶指南》（国内竞赛必读）</td>
+</tr>
+<tr>
+<td>工具</td>
+<td>USFCA 算法可视化、VisuAlgo、Algorithm Visualizer</td>
+</tr>
+<tr>
+<td>社区</td>
+<td>LeetCode 讨论区、Codeforces 博客、r&#x2F;algorithms、ACWing</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="面试常考问题"><a href="#面试常考问题" class="headerlink" title="面试常考问题"></a>面试常考问题</h2><p><strong>Q1：排序算法的稳定性有什么实际意义？</strong></p>
+<p>稳定性保证等值元素的相对顺序不变。实际场景：先按姓名排序，再按成绩排序——如果排序稳定，相同成绩的记录仍保持姓名字典序。Java 的 <code>Arrays.sort()</code> 对基本类型使用双轴快排（不稳定，性能优先），对对象类型使用 TimSort（稳定）。Android 继承此行为。</p>
+<p><strong>Q2：什么时候用线段树，什么时候用树状数组？</strong></p>
+<p>树状数组代码极短（~10 行），能用树状数组的场景优先用它。但树状数组只能维护可减的运算（和、异或），区间最值不能用树状数组（因为 max&#x2F;min 不可逆——不能通过 sum(r)-sum(l-1) 推导）。线段树可以维护任意结合律运算（和、最值、矩阵乘），且支持区间更新（懒标记）。</p>
+<p><strong>Q3：递归改迭代的通用方法？</strong></p>
+<p>三种方法：(1) 手动模拟栈——将递归调用的局部状态（参数、局部变量）压入显式栈中，循环弹出处理。(2) 尾递归优化——如果递归调用是函数的最后一个操作（返回递归调用的结果），编译器&#x2F;解释器可以直接将递归栈帧复用，不增加调用栈深度。(3) 动态规划——DP 通常将递归的自顶向下记忆化搜索改为自底向上的迭代填表，消除递归开销。</p>
+<p><strong>Q4：并查集的时间复杂度为什么是接近 O(1) 的？</strong></p>
+<p>仅路径压缩给出 O(log n) 摊还。路径压缩 + 按秩合并给出 O(α(n)) 摊还，其中 α(n) 是阿克曼函数的反函数。α(n) 增长极慢——对任何可观测的 n（n &lt; 2^2^2^65536），α(n) ≤ 5。实际使用中等价于常数时间。证明依赖 Ackermann 函数的层级结构——并查集操作的摊还代价可以按 Ackermann 函数的逆”分层”，每层仅有有限次操作。</p>
+<p><strong>Q5：如何系统地准备算法面试？</strong></p>
+<p>三步走：(1) 先过一遍知识体系（本文结构），确保每个专题的模板代码能盲写。(2) 按专题刷 LeetCode Top 100 + 剑指 Offer，培养问题→模板的映射直觉。(3) 模拟面试——随机抽取 Medium 题，30 分钟内完成。核心是培养”看一眼题就知道什么数据结构&#x2F;算法”的直觉——这需要足够的题量积累（200+ 题是门槛）。</p>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286927.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2019/09/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%9E%B6%E6%9E%84%E7%AF%87%E3%80%91MVP%E6%9E%B6%E6%9E%84/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/apothecary-87-CVBQdww5JZU-unsplash.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【架构篇】MVP架构</span></div></a></div><div class="next-post pull_right"><a href="/2019/08/18/%E3%80%90%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%E4%BD%93%E7%B3%BB%E3%80%91%E4%B9%8B%E5%9B%BE%E7%AE%97%E6%B3%95%EF%BC%88%E4%BA%94%EF%BC%89-%E6%9C%80%E5%A4%A7%E6%B5%81/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286820.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【数据结构与算法体系】之图算法（五）-最大流</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286927.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

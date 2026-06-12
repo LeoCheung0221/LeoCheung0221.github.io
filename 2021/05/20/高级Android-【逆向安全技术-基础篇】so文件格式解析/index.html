@@ -1,0 +1,1255 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【逆向安全技术-基础篇】so文件格式解析 | ONE·PIECE</title><meta name="description" content="【逆向安全技术-基础篇】so文件格式解析"><meta name="keywords" content="文件格式,逆向安全"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【逆向安全技术-基础篇】so文件格式解析"><meta name="twitter:description" content="【逆向安全技术-基础篇】so文件格式解析"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【逆向安全技术-基础篇】so文件格式解析"><meta property="og:url" content="http://tufusi.com/2021/05/20/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%9F%BA%E7%A1%80%E7%AF%87%E3%80%91so%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【逆向安全技术-基础篇】so文件格式解析"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2021/05/20/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%9F%BA%E7%A1%80%E7%AF%87%E3%80%91so%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90/"><link rel="prev" title="【逆向安全技术-基础篇】resource.arsc文件格式解析" href="http://tufusi.com/2021/05/25/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%9F%BA%E7%A1%80%E7%AF%87%E3%80%91resource.arsc%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90/"><link rel="next" title="【逆向安全技术-基础篇】AndroidManifest.xml文件格式解析" href="http://tufusi.com/2021/05/15/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%9F%BA%E7%A1%80%E7%AF%87%E3%80%91AndroidManifest.xml%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%89%8D%E8%A8%80"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">前言</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81Android-%E4%B8%AD-ELF-%E7%9A%84%E7%89%B9%E6%AE%8A%E6%80%A7"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">一、Android 中 ELF 的特殊性</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-ET-DYN-%E7%BB%9F%E4%B8%80%E5%8C%96"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">1.1 ET_DYN 统一化</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-2-%E6%94%AF%E6%8C%81%E6%9E%B6%E6%9E%84"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">1.2 支持架构</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81ELF-%E6%96%87%E4%BB%B6%E4%B8%A4%E7%A7%8D%E8%A7%86%E5%9B%BE"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">二、ELF 文件两种视图</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81ELF-Header-Ehdr-%E9%80%90%E5%AD%97%E6%AE%B5%E8%A7%A3%E6%9E%90"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">三、ELF Header (Ehdr) 逐字段解析</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E5%AE%8C%E6%95%B4%E7%BB%93%E6%9E%84%E5%AE%9A%E4%B9%89"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">3.1 完整结构定义</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E7%9C%9F%E5%AE%9E-hex-dump-%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">3.2 真实 hex dump 分析</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-e-ident-%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">3.3 e_ident 详解</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81Program-Headers-%E2%80%94-%E6%89%A7%E8%A1%8C%E8%A7%86%E5%9B%BE"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">四、Program Headers — 执行视图</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-Elf64-Phdr-%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">4.1 Elf64_Phdr 结构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E5%B8%B8%E8%A7%81-Segment-%E7%B1%BB%E5%9E%8B"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">4.2 常见 Segment 类型</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-Segment-%E6%9D%83%E9%99%90%E6%A0%87%E5%BF%97-p-flags"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">4.3 Segment 权限标志 (p_flags)</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-4-%E7%9C%9F%E5%AE%9E%E7%9A%84-Program-Headers-%E5%AE%9E%E4%BE%8B"><span class="toc_mobile_items-number">5.4.</span> <span class="toc_mobile_items-text">4.4 真实的 Program Headers 实例</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81Section-Headers-%E2%80%94-%E9%93%BE%E6%8E%A5%E8%A7%86%E5%9B%BE"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">五、Section Headers — 链接视图</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-Elf64-Shdr-%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">5.1 Elf64_Shdr 结构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-%E6%A0%B8%E5%BF%83-Section-%E6%B8%85%E5%8D%95"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">5.2 核心 Section 清单</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-dynsym-%E7%AC%A6%E5%8F%B7%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">5.3 .dynsym 符号结构</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81PLT-GOT-%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">六、PLT&#x2F;GOT 延迟绑定机制</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-PLT-GOT%EF%BC%9F"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">6.1 为什么需要 PLT&#x2F;GOT？</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-%E9%A6%96%E6%AC%A1%E8%B0%83%E7%94%A8%E6%B5%81%E7%A8%8B"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">6.2 首次调用流程</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-FULL-RELRO-vs-Partial-RELRO"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">6.3 FULL RELRO vs Partial RELRO</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81-dynamic-Section-%E2%80%94-%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%BF%A1%E6%81%AF"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">七、.dynamic Section — 动态链接信息</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%A0%B8%E5%BF%83-DT-%E6%A0%87%E7%AD%BE"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">核心 DT_ 标签</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81ARM64-%E9%87%8D%E5%AE%9A%E4%BD%8D%E7%B1%BB%E5%9E%8B%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">八、ARM64 重定位类型详解</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-%E9%87%8D%E5%AE%9A%E4%BD%8D%E8%A1%A8%E9%A1%B9%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">8.1 重定位表项结构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-ARM64-%E6%A0%B8%E5%BF%83%E9%87%8D%E5%AE%9A%E4%BD%8D%E7%B1%BB%E5%9E%8B"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">8.2 ARM64 核心重定位类型</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-3-R-AARCH64-RELATIVE-%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">9.3.</span> <span class="toc_mobile_items-text">8.3 R_AARCH64_RELATIVE 详解</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-4-R-AARCH64-JUMP-SLOT-%E4%B8%8E-R-AARCH64-GLOB-DAT-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc_mobile_items-number">9.4.</span> <span class="toc_mobile_items-text">8.4 R_AARCH64_JUMP_SLOT 与 R_AARCH64_GLOB_DAT 的区别</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-5-linker-%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E5%90%84%E7%B1%BB%E9%87%8D%E5%AE%9A%E4%BD%8D%EF%BC%88%E7%AE%80%E5%8C%96%E6%B5%81%E7%A8%8B%EF%BC%89"><span class="toc_mobile_items-number">9.5.</span> <span class="toc_mobile_items-text">8.5 linker 如何处理各类重定位（简化流程）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E7%AC%A6%E5%8F%B7%E7%89%88%E6%9C%AC%E5%8C%96%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">九、符号版本化详解</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-1-%E6%B6%89%E5%8F%8A%E7%9A%84-Section"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">9.1 涉及的 Section</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-2-%E7%89%B9%E6%AE%8A%E7%89%88%E6%9C%AC%E7%B4%A2%E5%BC%95%E5%B8%B8%E9%87%8F"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">9.2 特殊版本索引常量</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-3-gnu-version-r-Verneed-%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">10.3.</span> <span class="toc_mobile_items-text">9.3 .gnu.version_r (Verneed) 结构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-4-%E7%89%88%E6%9C%AC%E5%8C%B9%E9%85%8D%E8%A7%84%E5%88%99"><span class="toc_mobile_items-number">10.4.</span> <span class="toc_mobile_items-text">9.4 版本匹配规则</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-5-%E7%89%88%E6%9C%AC%E4%B8%8D%E5%8C%B9%E9%85%8D%E5%AF%BC%E8%87%B4%E7%9A%84%E5%B8%B8%E8%A7%81%E9%94%99%E8%AF%AF"><span class="toc_mobile_items-number">10.5.</span> <span class="toc_mobile_items-text">9.5 版本不匹配导致的常见错误</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81Android-Linker-%E7%89%B9%E6%9C%89%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">十、Android Linker 特有机制</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-1-Namespace-%E9%9A%94%E7%A6%BB%EF%BC%88Android-7-0-%EF%BC%89"><span class="toc_mobile_items-number">11.1.</span> <span class="toc_mobile_items-text">10.1 Namespace 隔离（Android 7.0+）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-2-dlopen-%E6%B5%81%E7%A8%8B"><span class="toc_mobile_items-number">11.2.</span> <span class="toc_mobile_items-text">10.2 dlopen 流程</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-3-DT-RELR-%E2%80%94-Android-%E7%9A%84%E5%8E%8B%E7%BC%A9%E9%87%8D%E5%AE%9A%E4%BD%8D"><span class="toc_mobile_items-number">11.3.</span> <span class="toc_mobile_items-text">10.3 DT_RELR — Android 的压缩重定位</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%80%E3%80%81linker-%E7%9A%84%E7%AC%A6%E5%8F%B7%E8%A7%A3%E6%9E%90-lookup-%E7%AE%97%E6%B3%95"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">十一、linker 的符号解析 (lookup) 算法</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-1-%E6%9F%A5%E6%89%BE%E5%85%A5%E5%8F%A3"><span class="toc_mobile_items-number">12.1.</span> <span class="toc_mobile_items-text">11.1 查找入口</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-2-%E7%AC%A6%E5%8F%B7%E6%9F%A5%E6%89%BE%E7%AE%97%E6%B3%95%EF%BC%88BFS-%E5%B9%BF%E5%BA%A6%E4%BC%98%E5%85%88%EF%BC%89"><span class="toc_mobile_items-number">12.2.</span> <span class="toc_mobile_items-text">11.2 符号查找算法（BFS 广度优先）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-3-%E7%AC%A6%E5%8F%B7%E7%89%88%E6%9C%AC%E5%8C%B9%E9%85%8D"><span class="toc_mobile_items-number">12.3.</span> <span class="toc_mobile_items-text">11.3 符号版本匹配</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-4-%E7%AC%A6%E5%8F%B7%E5%8F%AF%E8%A7%81%E6%80%A7%E8%BF%87%E6%BB%A4"><span class="toc_mobile_items-number">12.4.</span> <span class="toc_mobile_items-text">11.4 符号可见性过滤</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-5-%E5%85%A8%E5%B1%80%E4%BD%9C%E7%94%A8%E5%9F%9F-Global-Scope-%E4%B8%8E-Namespace-%E4%BD%9C%E7%94%A8%E5%9F%9F"><span class="toc_mobile_items-number">12.5.</span> <span class="toc_mobile_items-text">11.5 全局作用域 (Global Scope) 与 Namespace 作用域</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-6-symbol-lookup-%E4%B8%8E-dlsym-%E7%9A%84%E5%B7%AE%E5%BC%82"><span class="toc_mobile_items-number">12.6.</span> <span class="toc_mobile_items-text">11.6 symbol lookup 与 dlsym 的差异</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81Android-linker-%E7%9A%84-soinfo-%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">13.</span> <span class="toc_mobile_items-text">十二、Android linker 的 soinfo 结构</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#12-1-soinfo-%E7%BB%93%E6%9E%84%EF%BC%88%E7%AE%80%E5%8C%96%E7%89%88%EF%BC%89"><span class="toc_mobile_items-number">13.1.</span> <span class="toc_mobile_items-text">12.1 soinfo 结构（简化版）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#12-2-soinfo-%E7%9A%84%E5%88%86%E9%85%8D%E4%B8%8E%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc_mobile_items-number">13.2.</span> <span class="toc_mobile_items-text">12.2 soinfo 的分配与生命周期</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#12-3-load-bias-%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">13.3.</span> <span class="toc_mobile_items-text">12.3 load_bias 详解</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%89%E3%80%81Android-%E7%89%B9%E6%9C%89%E7%9A%84-ELF-%E6%89%A9%E5%B1%95"><span class="toc_mobile_items-number">14.</span> <span class="toc_mobile_items-text">十三、Android 特有的 ELF 扩展</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#13-1-RELR-%E5%8E%8B%E7%BC%A9%E9%87%8D%E5%AE%9A%E4%BD%8D%E6%A0%BC%E5%BC%8F"><span class="toc_mobile_items-number">14.1.</span> <span class="toc_mobile_items-text">13.1 RELR 压缩重定位格式</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#13-2-android-dlopen-ext-%E4%B8%8E-ANDROID-DLEXT-%E6%A0%87%E5%BF%97"><span class="toc_mobile_items-number">14.2.</span> <span class="toc_mobile_items-text">13.2 android_dlopen_ext 与 ANDROID_DLEXT_* 标志</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#13-3-note-android-ident-Section"><span class="toc_mobile_items-number">14.3.</span> <span class="toc_mobile_items-text">13.3 .note.android.ident Section</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#13-4-Vendor-NDK-VNDK-vs-Platform-NDK-%E7%9A%84%E7%AC%A6%E5%8F%B7%E9%99%90%E5%88%B6"><span class="toc_mobile_items-number">14.4.</span> <span class="toc_mobile_items-text">13.4 Vendor NDK (VNDK) vs Platform NDK 的符号限制</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E5%9B%9B%E3%80%81%E5%AE%9E%E6%88%98-SO-%E6%B3%A8%E5%85%A5%E6%8A%80%E6%9C%AF"><span class="toc_mobile_items-number">15.</span> <span class="toc_mobile_items-text">十四、实战: SO 注入技术</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#14-1-ptrace-%E6%B3%A8%E5%85%A5%E6%B3%95%EF%BC%88%E7%BB%8F%E5%85%B8%E6%96%B9%E5%BC%8F%EF%BC%89"><span class="toc_mobile_items-number">15.1.</span> <span class="toc_mobile_items-text">14.1 ptrace 注入法（经典方式）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#14-2-proc-pid-maps-%E6%B3%A8%E5%85%A5%E6%B3%95"><span class="toc_mobile_items-number">15.2.</span> <span class="toc_mobile_items-text">14.2 &#x2F;proc&#x2F;pid&#x2F;maps 注入法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#14-3-Linker-%E7%BA%A7%E6%B3%A8%E5%85%A5%EF%BC%88LD-PRELOAD-%E7%AD%89%E6%95%88%EF%BC%89"><span class="toc_mobile_items-number">15.3.</span> <span class="toc_mobile_items-text">14.3 Linker 级注入（LD_PRELOAD 等效）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#14-4-Android-%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6%E5%AF%B9%E6%8A%97%E6%80%BB%E7%BB%93"><span class="toc_mobile_items-number">15.4.</span> <span class="toc_mobile_items-text">14.4 Android 安全机制对抗总结</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%BA%94%E3%80%81%E5%AE%8C%E6%95%B4-Python-ELF-%E8%A7%A3%E6%9E%90%E5%99%A8"><span class="toc_mobile_items-number">16.</span> <span class="toc_mobile_items-text">十五、完整 Python ELF 解析器</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E5%85%AD%E3%80%81%E9%80%86%E5%90%91%E5%AE%9E%E6%88%98"><span class="toc_mobile_items-number">17.</span> <span class="toc_mobile_items-text">十六、逆向实战</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#16-1-%E5%87%BD%E6%95%B0%E5%AE%9A%E4%BD%8D%E4%B8%8E%E7%AC%A6%E5%8F%B7%E6%81%A2%E5%A4%8D"><span class="toc_mobile_items-number">17.1.</span> <span class="toc_mobile_items-text">16.1 函数定位与符号恢复</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#16-2-Inline-Hook-%E5%8E%9F%E7%90%86"><span class="toc_mobile_items-number">17.2.</span> <span class="toc_mobile_items-text">16.2 Inline Hook 原理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#16-3-SO-%E5%8A%A0%E5%9B%BA%E6%A3%80%E6%B5%8B"><span class="toc_mobile_items-number">17.3.</span> <span class="toc_mobile_items-text">16.3 SO 加固检测</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%80%83%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">18.</span> <span class="toc_mobile_items-text">面试常考问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8F%82%E8%80%83"><span class="toc_mobile_items-number">19.</span> <span class="toc_mobile_items-text">参考</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81Android-%E4%B8%AD-ELF-%E7%9A%84%E7%89%B9%E6%AE%8A%E6%80%A7"><span class="toc-number">2.</span> <span class="toc-text">一、Android 中 ELF 的特殊性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-ET-DYN-%E7%BB%9F%E4%B8%80%E5%8C%96"><span class="toc-number">2.1.</span> <span class="toc-text">1.1 ET_DYN 统一化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E6%94%AF%E6%8C%81%E6%9E%B6%E6%9E%84"><span class="toc-number">2.2.</span> <span class="toc-text">1.2 支持架构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81ELF-%E6%96%87%E4%BB%B6%E4%B8%A4%E7%A7%8D%E8%A7%86%E5%9B%BE"><span class="toc-number">3.</span> <span class="toc-text">二、ELF 文件两种视图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81ELF-Header-Ehdr-%E9%80%90%E5%AD%97%E6%AE%B5%E8%A7%A3%E6%9E%90"><span class="toc-number">4.</span> <span class="toc-text">三、ELF Header (Ehdr) 逐字段解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%AE%8C%E6%95%B4%E7%BB%93%E6%9E%84%E5%AE%9A%E4%B9%89"><span class="toc-number">4.1.</span> <span class="toc-text">3.1 完整结构定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E7%9C%9F%E5%AE%9E-hex-dump-%E5%88%86%E6%9E%90"><span class="toc-number">4.2.</span> <span class="toc-text">3.2 真实 hex dump 分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-e-ident-%E8%AF%A6%E8%A7%A3"><span class="toc-number">4.3.</span> <span class="toc-text">3.3 e_ident 详解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Program-Headers-%E2%80%94-%E6%89%A7%E8%A1%8C%E8%A7%86%E5%9B%BE"><span class="toc-number">5.</span> <span class="toc-text">四、Program Headers — 执行视图</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Elf64-Phdr-%E7%BB%93%E6%9E%84"><span class="toc-number">5.1.</span> <span class="toc-text">4.1 Elf64_Phdr 结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E5%B8%B8%E8%A7%81-Segment-%E7%B1%BB%E5%9E%8B"><span class="toc-number">5.2.</span> <span class="toc-text">4.2 常见 Segment 类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-Segment-%E6%9D%83%E9%99%90%E6%A0%87%E5%BF%97-p-flags"><span class="toc-number">5.3.</span> <span class="toc-text">4.3 Segment 权限标志 (p_flags)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E7%9C%9F%E5%AE%9E%E7%9A%84-Program-Headers-%E5%AE%9E%E4%BE%8B"><span class="toc-number">5.4.</span> <span class="toc-text">4.4 真实的 Program Headers 实例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Section-Headers-%E2%80%94-%E9%93%BE%E6%8E%A5%E8%A7%86%E5%9B%BE"><span class="toc-number">6.</span> <span class="toc-text">五、Section Headers — 链接视图</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Elf64-Shdr-%E7%BB%93%E6%9E%84"><span class="toc-number">6.1.</span> <span class="toc-text">5.1 Elf64_Shdr 结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E6%A0%B8%E5%BF%83-Section-%E6%B8%85%E5%8D%95"><span class="toc-number">6.2.</span> <span class="toc-text">5.2 核心 Section 清单</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-dynsym-%E7%AC%A6%E5%8F%B7%E7%BB%93%E6%9E%84"><span class="toc-number">6.3.</span> <span class="toc-text">5.3 .dynsym 符号结构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81PLT-GOT-%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E6%9C%BA%E5%88%B6"><span class="toc-number">7.</span> <span class="toc-text">六、PLT&#x2F;GOT 延迟绑定机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-PLT-GOT%EF%BC%9F"><span class="toc-number">7.1.</span> <span class="toc-text">6.1 为什么需要 PLT&#x2F;GOT？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E9%A6%96%E6%AC%A1%E8%B0%83%E7%94%A8%E6%B5%81%E7%A8%8B"><span class="toc-number">7.2.</span> <span class="toc-text">6.2 首次调用流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-FULL-RELRO-vs-Partial-RELRO"><span class="toc-number">7.3.</span> <span class="toc-text">6.3 FULL RELRO vs Partial RELRO</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81-dynamic-Section-%E2%80%94-%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%BF%A1%E6%81%AF"><span class="toc-number">8.</span> <span class="toc-text">七、.dynamic Section — 动态链接信息</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83-DT-%E6%A0%87%E7%AD%BE"><span class="toc-number">8.1.</span> <span class="toc-text">核心 DT_ 标签</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81ARM64-%E9%87%8D%E5%AE%9A%E4%BD%8D%E7%B1%BB%E5%9E%8B%E8%AF%A6%E8%A7%A3"><span class="toc-number">9.</span> <span class="toc-text">八、ARM64 重定位类型详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E9%87%8D%E5%AE%9A%E4%BD%8D%E8%A1%A8%E9%A1%B9%E7%BB%93%E6%9E%84"><span class="toc-number">9.1.</span> <span class="toc-text">8.1 重定位表项结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-ARM64-%E6%A0%B8%E5%BF%83%E9%87%8D%E5%AE%9A%E4%BD%8D%E7%B1%BB%E5%9E%8B"><span class="toc-number">9.2.</span> <span class="toc-text">8.2 ARM64 核心重定位类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-R-AARCH64-RELATIVE-%E8%AF%A6%E8%A7%A3"><span class="toc-number">9.3.</span> <span class="toc-text">8.3 R_AARCH64_RELATIVE 详解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-4-R-AARCH64-JUMP-SLOT-%E4%B8%8E-R-AARCH64-GLOB-DAT-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">9.4.</span> <span class="toc-text">8.4 R_AARCH64_JUMP_SLOT 与 R_AARCH64_GLOB_DAT 的区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-5-linker-%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E5%90%84%E7%B1%BB%E9%87%8D%E5%AE%9A%E4%BD%8D%EF%BC%88%E7%AE%80%E5%8C%96%E6%B5%81%E7%A8%8B%EF%BC%89"><span class="toc-number">9.5.</span> <span class="toc-text">8.5 linker 如何处理各类重定位（简化流程）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E7%AC%A6%E5%8F%B7%E7%89%88%E6%9C%AC%E5%8C%96%E8%AF%A6%E8%A7%A3"><span class="toc-number">10.</span> <span class="toc-text">九、符号版本化详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E6%B6%89%E5%8F%8A%E7%9A%84-Section"><span class="toc-number">10.1.</span> <span class="toc-text">9.1 涉及的 Section</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E7%89%B9%E6%AE%8A%E7%89%88%E6%9C%AC%E7%B4%A2%E5%BC%95%E5%B8%B8%E9%87%8F"><span class="toc-number">10.2.</span> <span class="toc-text">9.2 特殊版本索引常量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-gnu-version-r-Verneed-%E7%BB%93%E6%9E%84"><span class="toc-number">10.3.</span> <span class="toc-text">9.3 .gnu.version_r (Verneed) 结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-4-%E7%89%88%E6%9C%AC%E5%8C%B9%E9%85%8D%E8%A7%84%E5%88%99"><span class="toc-number">10.4.</span> <span class="toc-text">9.4 版本匹配规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-5-%E7%89%88%E6%9C%AC%E4%B8%8D%E5%8C%B9%E9%85%8D%E5%AF%BC%E8%87%B4%E7%9A%84%E5%B8%B8%E8%A7%81%E9%94%99%E8%AF%AF"><span class="toc-number">10.5.</span> <span class="toc-text">9.5 版本不匹配导致的常见错误</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81Android-Linker-%E7%89%B9%E6%9C%89%E6%9C%BA%E5%88%B6"><span class="toc-number">11.</span> <span class="toc-text">十、Android Linker 特有机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-Namespace-%E9%9A%94%E7%A6%BB%EF%BC%88Android-7-0-%EF%BC%89"><span class="toc-number">11.1.</span> <span class="toc-text">10.1 Namespace 隔离（Android 7.0+）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-dlopen-%E6%B5%81%E7%A8%8B"><span class="toc-number">11.2.</span> <span class="toc-text">10.2 dlopen 流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-3-DT-RELR-%E2%80%94-Android-%E7%9A%84%E5%8E%8B%E7%BC%A9%E9%87%8D%E5%AE%9A%E4%BD%8D"><span class="toc-number">11.3.</span> <span class="toc-text">10.3 DT_RELR — Android 的压缩重定位</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81linker-%E7%9A%84%E7%AC%A6%E5%8F%B7%E8%A7%A3%E6%9E%90-lookup-%E7%AE%97%E6%B3%95"><span class="toc-number">12.</span> <span class="toc-text">十一、linker 的符号解析 (lookup) 算法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-1-%E6%9F%A5%E6%89%BE%E5%85%A5%E5%8F%A3"><span class="toc-number">12.1.</span> <span class="toc-text">11.1 查找入口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-2-%E7%AC%A6%E5%8F%B7%E6%9F%A5%E6%89%BE%E7%AE%97%E6%B3%95%EF%BC%88BFS-%E5%B9%BF%E5%BA%A6%E4%BC%98%E5%85%88%EF%BC%89"><span class="toc-number">12.2.</span> <span class="toc-text">11.2 符号查找算法（BFS 广度优先）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-3-%E7%AC%A6%E5%8F%B7%E7%89%88%E6%9C%AC%E5%8C%B9%E9%85%8D"><span class="toc-number">12.3.</span> <span class="toc-text">11.3 符号版本匹配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-4-%E7%AC%A6%E5%8F%B7%E5%8F%AF%E8%A7%81%E6%80%A7%E8%BF%87%E6%BB%A4"><span class="toc-number">12.4.</span> <span class="toc-text">11.4 符号可见性过滤</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-5-%E5%85%A8%E5%B1%80%E4%BD%9C%E7%94%A8%E5%9F%9F-Global-Scope-%E4%B8%8E-Namespace-%E4%BD%9C%E7%94%A8%E5%9F%9F"><span class="toc-number">12.5.</span> <span class="toc-text">11.5 全局作用域 (Global Scope) 与 Namespace 作用域</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-6-symbol-lookup-%E4%B8%8E-dlsym-%E7%9A%84%E5%B7%AE%E5%BC%82"><span class="toc-number">12.6.</span> <span class="toc-text">11.6 symbol lookup 与 dlsym 的差异</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81Android-linker-%E7%9A%84-soinfo-%E7%BB%93%E6%9E%84"><span class="toc-number">13.</span> <span class="toc-text">十二、Android linker 的 soinfo 结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#12-1-soinfo-%E7%BB%93%E6%9E%84%EF%BC%88%E7%AE%80%E5%8C%96%E7%89%88%EF%BC%89"><span class="toc-number">13.1.</span> <span class="toc-text">12.1 soinfo 结构（简化版）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-2-soinfo-%E7%9A%84%E5%88%86%E9%85%8D%E4%B8%8E%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-number">13.2.</span> <span class="toc-text">12.2 soinfo 的分配与生命周期</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-3-load-bias-%E8%AF%A6%E8%A7%A3"><span class="toc-number">13.3.</span> <span class="toc-text">12.3 load_bias 详解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%89%E3%80%81Android-%E7%89%B9%E6%9C%89%E7%9A%84-ELF-%E6%89%A9%E5%B1%95"><span class="toc-number">14.</span> <span class="toc-text">十三、Android 特有的 ELF 扩展</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#13-1-RELR-%E5%8E%8B%E7%BC%A9%E9%87%8D%E5%AE%9A%E4%BD%8D%E6%A0%BC%E5%BC%8F"><span class="toc-number">14.1.</span> <span class="toc-text">13.1 RELR 压缩重定位格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-2-android-dlopen-ext-%E4%B8%8E-ANDROID-DLEXT-%E6%A0%87%E5%BF%97"><span class="toc-number">14.2.</span> <span class="toc-text">13.2 android_dlopen_ext 与 ANDROID_DLEXT_* 标志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-3-note-android-ident-Section"><span class="toc-number">14.3.</span> <span class="toc-text">13.3 .note.android.ident Section</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-4-Vendor-NDK-VNDK-vs-Platform-NDK-%E7%9A%84%E7%AC%A6%E5%8F%B7%E9%99%90%E5%88%B6"><span class="toc-number">14.4.</span> <span class="toc-text">13.4 Vendor NDK (VNDK) vs Platform NDK 的符号限制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E5%9B%9B%E3%80%81%E5%AE%9E%E6%88%98-SO-%E6%B3%A8%E5%85%A5%E6%8A%80%E6%9C%AF"><span class="toc-number">15.</span> <span class="toc-text">十四、实战: SO 注入技术</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#14-1-ptrace-%E6%B3%A8%E5%85%A5%E6%B3%95%EF%BC%88%E7%BB%8F%E5%85%B8%E6%96%B9%E5%BC%8F%EF%BC%89"><span class="toc-number">15.1.</span> <span class="toc-text">14.1 ptrace 注入法（经典方式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-2-proc-pid-maps-%E6%B3%A8%E5%85%A5%E6%B3%95"><span class="toc-number">15.2.</span> <span class="toc-text">14.2 &#x2F;proc&#x2F;pid&#x2F;maps 注入法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-3-Linker-%E7%BA%A7%E6%B3%A8%E5%85%A5%EF%BC%88LD-PRELOAD-%E7%AD%89%E6%95%88%EF%BC%89"><span class="toc-number">15.3.</span> <span class="toc-text">14.3 Linker 级注入（LD_PRELOAD 等效）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-4-Android-%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6%E5%AF%B9%E6%8A%97%E6%80%BB%E7%BB%93"><span class="toc-number">15.4.</span> <span class="toc-text">14.4 Android 安全机制对抗总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%94%E3%80%81%E5%AE%8C%E6%95%B4-Python-ELF-%E8%A7%A3%E6%9E%90%E5%99%A8"><span class="toc-number">16.</span> <span class="toc-text">十五、完整 Python ELF 解析器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E5%85%AD%E3%80%81%E9%80%86%E5%90%91%E5%AE%9E%E6%88%98"><span class="toc-number">17.</span> <span class="toc-text">十六、逆向实战</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#16-1-%E5%87%BD%E6%95%B0%E5%AE%9A%E4%BD%8D%E4%B8%8E%E7%AC%A6%E5%8F%B7%E6%81%A2%E5%A4%8D"><span class="toc-number">17.1.</span> <span class="toc-text">16.1 函数定位与符号恢复</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#16-2-Inline-Hook-%E5%8E%9F%E7%90%86"><span class="toc-number">17.2.</span> <span class="toc-text">16.2 Inline Hook 原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#16-3-SO-%E5%8A%A0%E5%9B%BA%E6%A3%80%E6%B5%8B"><span class="toc-number">17.3.</span> <span class="toc-text">16.3 SO 加固检测</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%80%83%E9%97%AE%E9%A2%98"><span class="toc-number">18.</span> <span class="toc-text">面试常考问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">19.</span> <span class="toc-text">参考</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【逆向安全技术-基础篇】so文件格式解析</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-05-20<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">11.8k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 49 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Android 的 Native 层以 ELF（Executable and Linkable Format）作为其可执行文件和共享库的标准格式。<code>.so</code> 文件（Shared Object）是 Android NDK 编译的核心产物，也是逆向分析 Native Hook、SO 加固、符号恢复等技术的基本分析单元。</p>
+<p>本文以 Android 15 的 AOSP bionic&#x2F;linker 源码为参照，从二进制层面解析 Android <code>.so</code> 文件的 ELF 结构，覆盖 ELF Header、Program Headers、Section Headers、PLT&#x2F;GOT、动态链接流程，并提供完整 Python 解析器。</p>
+<blockquote>
+<p><strong>参考</strong>: <code>bionic/linker/linker.cpp</code>, <code>bionic/libc/kernel/uapi/linux/elf.h</code></p>
+</blockquote>
+<hr>
+<h2 id="一、Android-中-ELF-的特殊性"><a href="#一、Android-中-ELF-的特殊性" class="headerlink" title="一、Android 中 ELF 的特殊性"></a>一、Android 中 ELF 的特殊性</h2><h3 id="1-1-ET-DYN-统一化"><a href="#1-1-ET-DYN-统一化" class="headerlink" title="1.1 ET_DYN 统一化"></a>1.1 ET_DYN 统一化</h3><p>传统 Linux 系统中，可执行文件是 <code>ET_EXEC</code> 类型，共享库是 <code>ET_DYN</code> 类型。自 Android 5.0 (API 21) 起，<strong>所有可执行文件和共享库全部使用 ET_DYN</strong>，配合 PIE (Position-Independent Executable) 实现 ASLR 地址随机化：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ readelf -h /system/bin/app_process64 | grep Type</span><br><span class="line">  Type:  DYN (Shared object file)</span><br><span class="line"></span><br><span class="line">$ readelf -h /system/lib64/libc.so | grep Type</span><br><span class="line">  Type:  DYN (Shared object file)</span><br></pre></td></tr></table></figure>
+
+<p>两者 ELF type 相同，区别仅在于有无 <code>INTERP</code> 段（可执行文件有，指定动态链接器路径）。</p>
+<h3 id="1-2-支持架构"><a href="#1-2-支持架构" class="headerlink" title="1.2 支持架构"></a>1.2 支持架构</h3><table>
+<thead>
+<tr>
+<th>e_machine</th>
+<th>值</th>
+<th>架构</th>
+<th>ABI 目录</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>EM_ARM</td>
+<td>40</td>
+<td>ARMv7 (32-bit)</td>
+<td>armeabi-v7a</td>
+</tr>
+<tr>
+<td>EM_AARCH64</td>
+<td>183</td>
+<td>ARM64 (64-bit)</td>
+<td>arm64-v8a</td>
+</tr>
+<tr>
+<td>EM_386</td>
+<td>3</td>
+<td>x86 (32-bit)</td>
+<td>x86</td>
+</tr>
+<tr>
+<td>EM_X86_64</td>
+<td>62</td>
+<td>x86-64 (64-bit)</td>
+<td>x86_64</td>
+</tr>
+<tr>
+<td>EM_RISCV</td>
+<td>243</td>
+<td>RISC-V 64</td>
+<td>riscv64</td>
+</tr>
+</tbody></table>
+<p>本文以 ARM64 (EM_AARCH64&#x3D;183) 的 64 位 ELF 为主要示例。</p>
+<hr>
+<h2 id="二、ELF-文件两种视图"><a href="#二、ELF-文件两种视图" class="headerlink" title="二、ELF 文件两种视图"></a>二、ELF 文件两种视图</h2><p>ELF 文件有两个组织视图，服务于不同阶段：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"> Linking View          Execution View</span><br><span class="line">┌──────────────┐     ┌──────────────┐</span><br><span class="line">│  ELF Header   │     │  ELF Header   │</span><br><span class="line">├──────────────┤     ├──────────────┤</span><br><span class="line">│ Program      │ ←── │ Program      │  加载到内存时使用</span><br><span class="line">│ Header Table │     │ Header Table │</span><br><span class="line">├──────────────┤     ├──────────────┤</span><br><span class="line">│ Section 1    │     │              │</span><br><span class="line">├──────────────┤     │  Segment 1   │</span><br><span class="line">│ Section 2    │     │  (含多个     │</span><br><span class="line">├──────────────┤     │   Section)   │</span><br><span class="line">│ ...          │     │              │</span><br><span class="line">├──────────────┤     ├──────────────┤</span><br><span class="line">│ Section n    │     │  Segment 2   │</span><br><span class="line">├──────────────┤     │              │</span><br><span class="line">│ Section      │     ├──────────────┤</span><br><span class="line">│ Header Table │ ──→ │              │  不需要加载</span><br><span class="line">└──────────────┘     └──────────────┘</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>Linking View（链接视图）</strong>: 编译&#x2F;链接阶段使用 Section Headers 组织代码和数据</li>
+<li><strong>Execution View（执行视图）</strong>: loader (linker) 在运行时按 Program Headers 中的 Segment 描述将文件映射到内存</li>
+</ul>
+<hr>
+<h2 id="三、ELF-Header-Ehdr-逐字段解析"><a href="#三、ELF-Header-Ehdr-逐字段解析" class="headerlink" title="三、ELF Header (Ehdr) 逐字段解析"></a>三、ELF Header (Ehdr) 逐字段解析</h2><h3 id="3-1-完整结构定义"><a href="#3-1-完整结构定义" class="headerlink" title="3.1 完整结构定义"></a>3.1 完整结构定义</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// bionic/libc/kernel/uapi/linux/elf.h</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">elf64_hdr</span> &#123;</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> e_ident[<span class="number">16</span>];   <span class="comment">// ELF 标识</span></span><br><span class="line">    Elf64_Half    e_type;        <span class="comment">// 文件类型</span></span><br><span class="line">    Elf64_Half    e_machine;     <span class="comment">// 目标架构</span></span><br><span class="line">    Elf64_Word    e_version;     <span class="comment">// ELF 版本（始终=1）</span></span><br><span class="line">    Elf64_Addr    e_entry;       <span class="comment">// 入口地址（SO &gt; 0，可执行文件 &gt; 代码段）</span></span><br><span class="line">    Elf64_Off     e_phoff;       <span class="comment">// Program Header 表偏移</span></span><br><span class="line">    Elf64_Off     e_shoff;       <span class="comment">// Section Header 表偏移</span></span><br><span class="line">    Elf64_Word    e_flags;       <span class="comment">// 处理器特定标志</span></span><br><span class="line">    Elf64_Half    e_ehsize;      <span class="comment">// ELF header 大小（始终=64）</span></span><br><span class="line">    Elf64_Half    e_phentsize;   <span class="comment">// 每个 Program Header 大小（始终=56）</span></span><br><span class="line">    Elf64_Half    e_phnum;       <span class="comment">// Program Header 数量</span></span><br><span class="line">    Elf64_Half    e_shentsize;   <span class="comment">// 每个 Section Header 大小（始终=64）</span></span><br><span class="line">    Elf64_Half    e_shnum;       <span class="comment">// Section Header 数量</span></span><br><span class="line">    Elf64_Half    e_shstrndx;    <span class="comment">// Section 名称字符串表的索引</span></span><br><span class="line">&#125; Elf64_Ehdr;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-真实-hex-dump-分析"><a href="#3-2-真实-hex-dump-分析" class="headerlink" title="3.2 真实 hex dump 分析"></a>3.2 真实 hex dump 分析</h3><p>以下是一个真实 <code>libnative.so</code>（ARM64）的 ELF header hex dump：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Offset  Hex                                              Decode</span><br><span class="line">0x00    7F 45 4C 46        e_ident[0..3] = ELF magic &quot;\x7FELF&quot;</span><br><span class="line">0x04    02                 e_ident[4] = ELFCLASS64 (64-bit)</span><br><span class="line">0x05    01                 e_ident[5] = ELFDATA2LSB (小端序)</span><br><span class="line">0x06    01                 e_ident[6] = EV_CURRENT (版本1)</span><br><span class="line">0x07    00                 e_ident[7] = ELFOSABI_NONE</span><br><span class="line">0x08    00 00 00 00 00 00 00 00  e_ident[8..15] = padding</span><br><span class="line"></span><br><span class="line">0x10    03 00              e_type = 3 (ET_DYN)</span><br><span class="line">0x12    B7 00              e_machine = 0xB7 = 183 (EM_AARCH64)</span><br><span class="line">0x14    01 00 00 00        e_version = 1</span><br><span class="line">0x18    00 10 00 00 00 00 00 00  e_entry = 0x1000 (入口地址)</span><br><span class="line">0x20    40 00 00 00 00 00 00 00  e_phoff = 0x40 (Program Headers 起始)</span><br><span class="line">0x28    50 C2 00 00 00 00 00 00  e_shoff = 0xC250 (Section Headers 起始)</span><br><span class="line">0x30    00 00 00 00        e_flags = 0</span><br><span class="line">0x34    40 00              e_ehsize = 64</span><br><span class="line">0x36    38 00              e_phentsize = 56</span><br><span class="line">0x38    0B 00              e_phnum = 11 (11 个 Program Headers)</span><br><span class="line">0x3A    40 00              e_shentsize = 64</span><br><span class="line">0x3C    1F 00              e_shnum = 31 (31 个 Section Headers)</span><br><span class="line">0x3E    1E 00              e_shstrndx = 30 (Section 名称表在第30个section)</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-e-ident-详解"><a href="#3-3-e-ident-详解" class="headerlink" title="3.3 e_ident 详解"></a>3.3 e_ident 详解</h3><p><code>e_ident[16]</code> 的前 16 字节是 ELF 的”指纹”：</p>
+<table>
+<thead>
+<tr>
+<th>字节</th>
+<th>字段</th>
+<th>常见值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0-3</td>
+<td>EI_MAG0..3</td>
+<td>7F 45 4C 46</td>
+<td><code>\x7FELF</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>EI_CLASS</td>
+<td>01&#x3D;32bit, 02&#x3D;64bit</td>
+<td>地址宽度</td>
+</tr>
+<tr>
+<td>5</td>
+<td>EI_DATA</td>
+<td>01&#x3D;小端, 02&#x3D;大端</td>
+<td>字节序</td>
+</tr>
+<tr>
+<td>6</td>
+<td>EI_VERSION</td>
+<td>01</td>
+<td>ELF 版本</td>
+</tr>
+<tr>
+<td>7</td>
+<td>EI_OSABI</td>
+<td>00&#x3D;SystemV, 03&#x3D;Linux</td>
+<td>目标 OS ABI</td>
+</tr>
+<tr>
+<td>8-15</td>
+<td>EI_PAD</td>
+<td>全0</td>
+<td>填充</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="四、Program-Headers-—-执行视图"><a href="#四、Program-Headers-—-执行视图" class="headerlink" title="四、Program Headers — 执行视图"></a>四、Program Headers — 执行视图</h2><p>Program Header Table 描述 linker 加载 SO 时如何将文件内容映射到内存。每个 Program Header 56 字节（64-bit ELF）。</p>
+<h3 id="4-1-Elf64-Phdr-结构"><a href="#4-1-Elf64-Phdr-结构" class="headerlink" title="4.1 Elf64_Phdr 结构"></a>4.1 Elf64_Phdr 结构</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">elf64_phdr</span> &#123;</span></span><br><span class="line">    Elf64_Word  p_type;      <span class="comment">// Segment 类型</span></span><br><span class="line">    Elf64_Word  p_flags;     <span class="comment">// 内存权限标志（64-bit 中 flags 和 type 都是 4 字节）</span></span><br><span class="line">    Elf64_Off   p_offset;    <span class="comment">// 在文件中的偏移</span></span><br><span class="line">    Elf64_Addr  p_vaddr;     <span class="comment">// 虚拟内存地址</span></span><br><span class="line">    Elf64_Addr  p_paddr;     <span class="comment">// 物理地址（通常与 vaddr 相同）</span></span><br><span class="line">    Elf64_Xword p_filesz;    <span class="comment">// 文件中占用的字节数</span></span><br><span class="line">    Elf64_Xword p_memsz;     <span class="comment">// 内存中占用的字节数（&gt;= filesz）</span></span><br><span class="line">    Elf64_Xword p_align;     <span class="comment">// 对齐要求</span></span><br><span class="line">&#125; Elf64_Phdr;</span><br></pre></td></tr></table></figure>
+
+<p><strong><code>p_filesz</code> vs <code>p_memsz</code></strong>: 如果 <code>p_memsz &gt; p_filesz</code>，多出的部分由 linker 填充为零（如 <code>.bss</code> 段）。</p>
+<h3 id="4-2-常见-Segment-类型"><a href="#4-2-常见-Segment-类型" class="headerlink" title="4.2 常见 Segment 类型"></a>4.2 常见 Segment 类型</h3><table>
+<thead>
+<tr>
+<th>p_type</th>
+<th>值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PT_NULL</td>
+<td>0</td>
+<td>未使用</td>
+</tr>
+<tr>
+<td>PT_LOAD</td>
+<td>1</td>
+<td><strong>可加载段</strong>（核心）— linker 将此段映射到内存</td>
+</tr>
+<tr>
+<td>PT_DYNAMIC</td>
+<td>2</td>
+<td><code>.dynamic</code> 段 — 动态链接信息</td>
+</tr>
+<tr>
+<td>PT_INTERP</td>
+<td>3</td>
+<td>解释器路径（<code>.interp</code>）— 指向 linker 路径</td>
+</tr>
+<tr>
+<td>PT_NOTE</td>
+<td>4</td>
+<td>辅助信息（如 <code>.note.gnu.build-id</code>）</td>
+</tr>
+<tr>
+<td>PT_PHDR</td>
+<td>6</td>
+<td>Program Header Table 自身的位置和大小</td>
+</tr>
+<tr>
+<td>PT_GNU_RELRO</td>
+<td>0x6474E552</td>
+<td>RELRO 段 — 只读重定位区域</td>
+</tr>
+<tr>
+<td>PT_GNU_STACK</td>
+<td>0x6474E551</td>
+<td>栈可执行性 — p_flags 中的 PF_X 控制 NX bit</td>
+</tr>
+<tr>
+<td>PT_GNU_EH_FRAME</td>
+<td>0x6474E550</td>
+<td>异常处理框架（<code>.eh_frame_hdr</code>）</td>
+</tr>
+</tbody></table>
+<h3 id="4-3-Segment-权限标志-p-flags"><a href="#4-3-Segment-权限标志-p-flags" class="headerlink" title="4.3 Segment 权限标志 (p_flags)"></a>4.3 Segment 权限标志 (p_flags)</h3><table>
+<thead>
+<tr>
+<th>标志</th>
+<th>值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PF_X</td>
+<td>1</td>
+<td>可执行</td>
+</tr>
+<tr>
+<td>PF_W</td>
+<td>2</td>
+<td>可写</td>
+</tr>
+<tr>
+<td>PF_R</td>
+<td>4</td>
+<td>可读</td>
+</tr>
+</tbody></table>
+<p>常见的组合：</p>
+<ul>
+<li><code>R_X</code> (5): <code>.text</code> 段 — 可读+可执行</li>
+<li><code>R__</code> (4): <code>.rodata</code> 段 — 只读</li>
+<li><code>RW_</code> (6): <code>.data</code> 段 — 可读+可写</li>
+<li><code>RW_</code> (6): <code>.bss</code> 段 — 可读+可写，文件大小&#x3D;0，内存大小&gt;0</li>
+</ul>
+<h3 id="4-4-真实的-Program-Headers-实例"><a href="#4-4-真实的-Program-Headers-实例" class="headerlink" title="4.4 真实的 Program Headers 实例"></a>4.4 真实的 Program Headers 实例</h3><blockquote>
+<p><strong>注意</strong>: 以下示例来自某个可执行文件（<code>ET_DYN</code> PIE），因为它含有 <code>INTERP</code> 段指定 <code>/system/bin/linker64</code>。普通 <code>.so</code> 共享库 <strong>不包含</strong> <code>INTERP</code> 段——只有可执行文件才需要通过 <code>INTERP</code> 指定动态链接器的路径。</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ readelf -l /system/bin/app_process64</span><br><span class="line"></span><br><span class="line">Program Headers:</span><br><span class="line">  Type           Offset             VirtAddr           PhysAddr</span><br><span class="line">                 FileSiz            MemSiz              Flags  Align</span><br><span class="line">  PHDR           0x0000000000000040 0x0000000000000040 0x0000000000000040</span><br><span class="line">                 0x0000000000000268 0x0000000000000268  R      0x8</span><br><span class="line">  INTERP         0x00000000000002A8 0x00000000000002A8 0x00000000000002A8</span><br><span class="line">                 0x0000000000000019 0x0000000000000019  R      0x1</span><br><span class="line">      [Requesting program interpreter: /system/bin/linker64]</span><br><span class="line">  LOAD           0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">                 0x0000000000000A54 0x0000000000000A54  R E    0x1000</span><br><span class="line">  LOAD           0x0000000000001000 0x0000000000001000 0x0000000000001000</span><br><span class="line">                 0x0000000000000208 0x0000000000000210  RW     0x1000</span><br><span class="line">  DYNAMIC        0x0000000000001010 0x0000000000001010 0x0000000000001010</span><br><span class="line">                 0x0000000000000190 0x0000000000000190  RW     0x8</span><br><span class="line">  GNU_RELRO      0x0000000000001000 0x0000000000001000 0x0000000000001000</span><br><span class="line">                 0x0000000000000208 0x0000000000000208  R      0x1</span><br><span class="line">  GNU_STACK      0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">                 0x0000000000000000 0x0000000000000000  RW     0x10</span><br></pre></td></tr></table></figure>
+
+<p>这里有<strong>两个 LOAD segment</strong>：</p>
+<ol>
+<li><strong>第一个 LOAD (R_E)</strong>: 映射代码段 (<code>.text</code>, <code>.rodata</code>, <code>.plt</code> 等只读&#x2F;可执行节)</li>
+<li><strong>第二个 LOAD (RW_)</strong>: 映射数据段 (<code>.data</code>, <code>.bss</code>, <code>.got</code>, <code>.dynamic</code> 等可读写节)</li>
+</ol>
+<p>linker 使用 <code>mmap</code> 将这两个 LOAD segment 映射到进程地址空间，页对齐由 <code>p_align</code>（通常 0x1000 &#x3D; 4KB）保证。</p>
+<hr>
+<h2 id="五、Section-Headers-—-链接视图"><a href="#五、Section-Headers-—-链接视图" class="headerlink" title="五、Section Headers — 链接视图"></a>五、Section Headers — 链接视图</h2><p>Section 是连接视图的粒度单位，包含编译器和链接器需要的信息。对于已 strip 的 release SO，section headers 可能被删除，但 program headers <strong>始终存在</strong>（linker 只读 program headers）。</p>
+<h3 id="5-1-Elf64-Shdr-结构"><a href="#5-1-Elf64-Shdr-结构" class="headerlink" title="5.1 Elf64_Shdr 结构"></a>5.1 Elf64_Shdr 结构</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">elf64_shdr</span> &#123;</span></span><br><span class="line">    Elf64_Word  sh_name;       <span class="comment">// Section 名称在 .shstrtab 中的偏移</span></span><br><span class="line">    Elf64_Word  sh_type;       <span class="comment">// Section 类型</span></span><br><span class="line">    Elf64_Xword sh_flags;      <span class="comment">// Section 属性标志</span></span><br><span class="line">    Elf64_Addr  sh_addr;       <span class="comment">// 内存地址</span></span><br><span class="line">    Elf64_Off   sh_offset;     <span class="comment">// 文件偏移</span></span><br><span class="line">    Elf64_Xword sh_size;       <span class="comment">// 大小（字节）</span></span><br><span class="line">    Elf64_Word  sh_link;       <span class="comment">// 关联 section 的索引</span></span><br><span class="line">    Elf64_Word  sh_info;       <span class="comment">// 额外信息</span></span><br><span class="line">    Elf64_Xword sh_addralign;  <span class="comment">// 对齐要求</span></span><br><span class="line">    Elf64_Xword sh_entsize;    <span class="comment">// 条目大小（固定大小的 table 有效）</span></span><br><span class="line">&#125; Elf64_Shdr;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-核心-Section-清单"><a href="#5-2-核心-Section-清单" class="headerlink" title="5.2 核心 Section 清单"></a>5.2 核心 Section 清单</h3><table>
+<thead>
+<tr>
+<th>Section</th>
+<th>sh_type</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>.text</code></td>
+<td>SHT_PROGBITS</td>
+<td><strong>可执行代码</strong></td>
+</tr>
+<tr>
+<td><code>.rodata</code></td>
+<td>SHT_PROGBITS</td>
+<td>只读数据（字符串常量、虚表）</td>
+</tr>
+<tr>
+<td><code>.data</code></td>
+<td>SHT_PROGBITS</td>
+<td>已初始化的全局变量</td>
+</tr>
+<tr>
+<td><code>.bss</code></td>
+<td>SHT_NOBITS</td>
+<td>未初始化的全局变量（文件占 0 字节）</td>
+</tr>
+<tr>
+<td><code>.plt</code></td>
+<td>SHT_PROGBITS</td>
+<td>Procedure Linkage Table — 延迟绑定桩代码</td>
+</tr>
+<tr>
+<td><code>.got</code></td>
+<td>SHT_PROGBITS</td>
+<td>Global Offset Table — 全局数据地址表</td>
+</tr>
+<tr>
+<td><code>.got.plt</code></td>
+<td>SHT_PROGBITS</td>
+<td>GOT 中用于 PLT 的条目</td>
+</tr>
+<tr>
+<td><code>.dynsym</code></td>
+<td>SHT_DYNSYM</td>
+<td>动态符号表 — 导入&#x2F;导出符号</td>
+</tr>
+<tr>
+<td><code>.dynstr</code></td>
+<td>SHT_STRTAB</td>
+<td>动态符号的字符串表</td>
+</tr>
+<tr>
+<td><code>.hash</code> &#x2F; <code>.gnu.hash</code></td>
+<td>SHT_HASH</td>
+<td>符号哈希表 — 加速符号查找</td>
+</tr>
+<tr>
+<td><code>.rela.dyn</code></td>
+<td>SHT_RELA</td>
+<td>非 PLT 重定位表（如全局变量地址）</td>
+</tr>
+<tr>
+<td><code>.rela.plt</code></td>
+<td>SHT_RELA</td>
+<td>PLT 重定位表（函数调用延迟绑定）</td>
+</tr>
+<tr>
+<td><code>.dynamic</code></td>
+<td>SHT_DYNAMIC</td>
+<td>动态链接信息数组</td>
+</tr>
+<tr>
+<td><code>.interp</code></td>
+<td>SHT_PROGBITS</td>
+<td>动态链接器路径</td>
+</tr>
+<tr>
+<td><code>.init_array</code></td>
+<td>SHT_INIT_ARRAY</td>
+<td>初始化函数指针数组（构造函数）</td>
+</tr>
+<tr>
+<td><code>.fini_array</code></td>
+<td>SHT_FINI_ARRAY</td>
+<td>终止化函数指针数组（析构函数）</td>
+</tr>
+<tr>
+<td><code>.note.gnu.build-id</code></td>
+<td>SHT_NOTE</td>
+<td>构建唯一 ID</td>
+</tr>
+<tr>
+<td><code>.shstrtab</code></td>
+<td>SHT_STRTAB</td>
+<td>Section 名称字符串表</td>
+</tr>
+<tr>
+<td><code>.symtab</code></td>
+<td>SHT_SYMTAB</td>
+<td>完整符号表（release SO 通常 strip 掉此表）</td>
+</tr>
+<tr>
+<td><code>.strtab</code></td>
+<td>SHT_STRTAB</td>
+<td>完整字符串表（同上，通常 strip 掉）</td>
+</tr>
+</tbody></table>
+<h3 id="5-3-dynsym-符号结构"><a href="#5-3-dynsym-符号结构" class="headerlink" title="5.3 .dynsym 符号结构"></a>5.3 <code>.dynsym</code> 符号结构</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">elf64_sym</span> &#123;</span></span><br><span class="line">    Elf64_Word    st_name;   <span class="comment">// 符号名在 .dynstr 中的偏移</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> st_info;   <span class="comment">// 符号类型 + 绑定属性</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> st_other;  <span class="comment">// 可见性 (STV_DEFAULT/HIDDEN/INTERNAL/PROTECTED)</span></span><br><span class="line">    Elf64_Half    st_shndx;  <span class="comment">// 符号所在 section 索引</span></span><br><span class="line">    Elf64_Addr    st_value;  <span class="comment">// 符号地址</span></span><br><span class="line">    Elf64_Xword   st_size;   <span class="comment">// 符号大小</span></span><br><span class="line">&#125; Elf64_Sym;</span><br></pre></td></tr></table></figure>
+
+<p><code>st_info</code> 编码规则：</p>
+<ul>
+<li>低 4 位: 符号类型 (STT_NOTYPE&#x3D;0, STT_OBJECT&#x3D;1, STT_FUNC&#x3D;2…)</li>
+<li>高 4 位: 绑定属性 (STB_LOCAL&#x3D;0, STB_GLOBAL&#x3D;1, STB_WEAK&#x3D;2…)</li>
+</ul>
+<p><code>st_other</code> 可见性：</p>
+<table>
+<thead>
+<tr>
+<th>可见性</th>
+<th>值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>STV_DEFAULT</td>
+<td>0</td>
+<td>默认可见</td>
+</tr>
+<tr>
+<td>STV_HIDDEN</td>
+<td>2</td>
+<td>隐藏，外部不可引用</td>
+</tr>
+<tr>
+<td>STV_PROTECTED</td>
+<td>3</td>
+<td>保护（始终在自身 SO 内解析）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="六、PLT-GOT-延迟绑定机制"><a href="#六、PLT-GOT-延迟绑定机制" class="headerlink" title="六、PLT&#x2F;GOT 延迟绑定机制"></a>六、PLT&#x2F;GOT 延迟绑定机制</h2><p>这是理解 Native Hook（如 Xposed、Frida）底层原理的关键。</p>
+<h3 id="6-1-为什么需要-PLT-GOT？"><a href="#6-1-为什么需要-PLT-GOT？" class="headerlink" title="6.1 为什么需要 PLT&#x2F;GOT？"></a>6.1 为什么需要 PLT&#x2F;GOT？</h3><p>动态链接时，<code>.so</code> 并不知道其所调用的外部函数（如 <code>libc.so</code> 中的 <code>open</code>、<code>malloc</code>）在内存中的实际地址。GOT 存储这些地址，PLT 提供间接跳转。</p>
+<h3 id="6-2-首次调用流程"><a href="#6-2-首次调用流程" class="headerlink" title="6.2 首次调用流程"></a>6.2 首次调用流程</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">调用者代码:</span><br><span class="line">  BL  printf@plt        // ① 跳转到 PLT 表项</span><br><span class="line"></span><br><span class="line">printf@plt:                     // ARM64 PLT 表项（每条 16 字节）</span><br><span class="line">  ADRP x16, .got.plt          // ② 获取 GOT 表所在 4KB 页基址</span><br><span class="line">  LDR  x17, [x16, #page_off]  // ③ 加载 GOT 条目中的地址</span><br><span class="line">  ADD  x16, x16, #page_off    // ④ x16 = GOT 条目的精确地址（供 resolver 反查条目索引）</span><br><span class="line">  BR   x17                    // ⑤ 跳转到目标</span><br><span class="line"></span><br><span class="line">首次调用时，GOT[printf] 尚未填充真实地址，而指向下一条指令（引导进入 resolver）：</span><br><span class="line">  </span><br><span class="line">PLT[0] (公共 resolver stub):   // ARM64 标准 PLT 解析器桩</span><br><span class="line">  // ARM64 GOT 布局约定：</span><br><span class="line">  //   GOT[0] = .dynamic 段地址</span><br><span class="line">  //   GOT[1] = link_map 指针（即 soinfo*）</span><br><span class="line">  //   GOT[2] = _dl_runtime_resolve 函数指针</span><br><span class="line">  // 调用 _dl_runtime_resolve(link_map, reloc_index)</span><br><span class="line">  // 其中 reloc_index 由 linker 根据 x16 指向的 GOT 条目反推</span><br><span class="line">  STP  x29, x30, [sp, #-16]!  // 保存 frame pointer 和 link register</span><br><span class="line">  STP  x0,  x1,  [sp, #-16]!  // 保存参数/返回值寄存器</span><br><span class="line">  STP  x2,  x3,  [sp, #-16]!</span><br><span class="line">  STP  x4,  x5,  [sp, #-16]!</span><br><span class="line">  STP  x6,  x7,  [sp, #-16]!</span><br><span class="line">  LDR  x0,  [x16, #-16]       // 从 GOT[-2]（即 GOT[1]）加载 link_map → x0</span><br><span class="line">  LDR  x17, [x16, #-8]        // 从 GOT[-1]（即 GOT[2]）加载 resolver → x17</span><br><span class="line">  BLR  x17                    // ⑥ 调用 _dl_runtime_resolve(link_map, reloc_index)</span><br><span class="line"></span><br><span class="line">_dl_runtime_resolve 内部:</span><br><span class="line">  1. 根据 reloc_index 定位到对应的 Elf64_Rela 条目</span><br><span class="line">  2. 从 .dynsym 中查找符号名（如 &quot;printf&quot;）</span><br><span class="line">  3. 在已加载的依赖 SO 列表中搜索该符号的定义地址</span><br><span class="line">  4. 将解析到的地址写入 GOT[printf]（更新为真实地址）</span><br><span class="line">  5. 跳转到真实的 printf 函数入口</span><br><span class="line"></span><br><span class="line">后续调用:</span><br><span class="line">  BL  printf@plt → GOT[printf] 已有真实地址 → 直接跳转，无额外开销</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-3-FULL-RELRO-vs-Partial-RELRO"><a href="#6-3-FULL-RELRO-vs-Partial-RELRO" class="headerlink" title="6.3 FULL RELRO vs Partial RELRO"></a>6.3 FULL RELRO vs Partial RELRO</h3><p>Android 6.0+ 平台二进制默认开启 FULL RELRO，Android 8.0+ 应用也开始普遍采用 <strong>FULL RELRO</strong>（<code>-Wl,-z,relro -Wl,-z,now</code>）：</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>绑定时机</th>
+<th>GOT 可写性</th>
+<th>安全性</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Partial RELRO</td>
+<td>延迟绑定（首次调用时）</td>
+<td>GOT 可写</td>
+<td>可被 GOT Hook</td>
+</tr>
+<tr>
+<td><strong>FULL RELRO</strong></td>
+<td>加载时立即全部解析</td>
+<td><strong>加载后 GOT 只读</strong></td>
+<td>GOT Hook 不可行</td>
+</tr>
+</tbody></table>
+<p>FULL RELRO 下，所有 PLT 重定位在 linker 加载 SO 时就全部解析完成，<code>.got.plt</code> 被 <code>mprotect</code> 为只读。这阻止了基于 GOT 覆写的 Hook，但 Frida&#x2F;Xposed 仍可通过 <strong>inline hook</strong>（直接修改目标函数的前几条指令）绕过。</p>
+<p>可以通过以下命令检查：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ readelf -d libnative.so | grep BIND_NOW</span><br><span class="line"> 0x0000000000000018 (BIND_NOW)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="七、-dynamic-Section-—-动态链接信息"><a href="#七、-dynamic-Section-—-动态链接信息" class="headerlink" title="七、.dynamic Section — 动态链接信息"></a>七、<code>.dynamic</code> Section — 动态链接信息</h2><p><code>.dynamic</code> 是 tag-value 对数组，linker 据此获取 SO 的所有动态链接信息：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">elf64_dyn</span> &#123;</span></span><br><span class="line">    Elf64_Sxword d_tag;    <span class="comment">// 条目类型</span></span><br><span class="line">    <span class="class"><span class="keyword">union</span> &#123;</span></span><br><span class="line">        Elf64_Xword d_val;</span><br><span class="line">        Elf64_Addr  d_ptr;</span><br><span class="line">    &#125; d_un;</span><br><span class="line">&#125; Elf64_Dyn;</span><br></pre></td></tr></table></figure>
+
+<h3 id="核心-DT-标签"><a href="#核心-DT-标签" class="headerlink" title="核心 DT_ 标签"></a>核心 DT_ 标签</h3><table>
+<thead>
+<tr>
+<th>d_tag</th>
+<th>值</th>
+<th>d_un 含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DT_NEEDED</td>
+<td>1</td>
+<td>依赖的 SO 名称（d_val 是 .dynstr 偏移）</td>
+</tr>
+<tr>
+<td>DT_SONAME</td>
+<td>14</td>
+<td>本 SO 的名称</td>
+</tr>
+<tr>
+<td>DT_INIT</td>
+<td>12</td>
+<td>初始化函数地址</td>
+</tr>
+<tr>
+<td>DT_FINI</td>
+<td>13</td>
+<td>终止化函数地址</td>
+</tr>
+<tr>
+<td>DT_INIT_ARRAY</td>
+<td>25</td>
+<td>.init_array 地址</td>
+</tr>
+<tr>
+<td>DT_FINI_ARRAY</td>
+<td>26</td>
+<td>.fini_array 地址</td>
+</tr>
+<tr>
+<td>DT_HASH</td>
+<td>4</td>
+<td>SYSV hash 表地址</td>
+</tr>
+<tr>
+<td>DT_GNU_HASH</td>
+<td>0x6FFFFEF5</td>
+<td>GNU hash 表地址</td>
+</tr>
+<tr>
+<td>DT_STRTAB</td>
+<td>5</td>
+<td>.dynstr 地址</td>
+</tr>
+<tr>
+<td>DT_SYMTAB</td>
+<td>6</td>
+<td>.dynsym 地址</td>
+</tr>
+<tr>
+<td>DT_STRSZ</td>
+<td>10</td>
+<td>.dynstr 大小</td>
+</tr>
+<tr>
+<td>DT_SYMENT</td>
+<td>11</td>
+<td>sizeof(Elf64_Sym)</td>
+</tr>
+<tr>
+<td>DT_RELA</td>
+<td>7</td>
+<td>.rela.dyn 地址</td>
+</tr>
+<tr>
+<td>DT_RELASZ</td>
+<td>8</td>
+<td>.rela.dyn 大小</td>
+</tr>
+<tr>
+<td>DT_RELAENT</td>
+<td>9</td>
+<td>sizeof(Elf64_Rela)</td>
+</tr>
+<tr>
+<td>DT_JMPREL</td>
+<td>23</td>
+<td>.rela.plt 地址</td>
+</tr>
+<tr>
+<td>DT_PLTRELSZ</td>
+<td>2</td>
+<td>.rela.plt 大小</td>
+</tr>
+<tr>
+<td>DT_PLTGOT</td>
+<td>3</td>
+<td>.got.plt 地址</td>
+</tr>
+<tr>
+<td>DT_BIND_NOW</td>
+<td>24</td>
+<td>立即绑定标记 (FULL RELRO)</td>
+</tr>
+<tr>
+<td>DT_FLAGS_1</td>
+<td>0x6FFFFFFB</td>
+<td>标志位 (DF_1_NOW&#x3D;1)</td>
+</tr>
+<tr>
+<td>DT_RELR</td>
+<td>0x6FFFE000</td>
+<td>Android 特有的压缩重定位表</td>
+</tr>
+<tr>
+<td>DT_ANDROID_RELRSZ</td>
+<td>0x6FFFE003</td>
+<td>RELR 表大小</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="八、ARM64-重定位类型详解"><a href="#八、ARM64-重定位类型详解" class="headerlink" title="八、ARM64 重定位类型详解"></a>八、ARM64 重定位类型详解</h2><p>重定位（relocation）是动态链接的核心步骤：当 SO 被加载到内存时，其代码和数据中的地址引用是相对于编译时基址的，linker 必须根据运行时加载地址修正这些引用。</p>
+<h3 id="8-1-重定位表项结构"><a href="#8-1-重定位表项结构" class="headerlink" title="8.1 重定位表项结构"></a>8.1 重定位表项结构</h3><p>ARM64 使用 <code>Elf64_Rela</code> 结构（带显式加数 addend），每条 24 字节：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">elf64_rela</span> &#123;</span></span><br><span class="line">    Elf64_Addr r_offset;   <span class="comment">// 重定位目标地址（需要修正的内存位置）</span></span><br><span class="line">    Elf64_Xword r_info;    <span class="comment">// 高 4 字节: 符号索引, 低 4 字节: 重定位类型</span></span><br><span class="line">    Elf64_Sxword r_addend; <span class="comment">// 显式加数（A 值）</span></span><br><span class="line">&#125; Elf64_Rela;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 提取符号索引和重定位类型的宏</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ELF64_R_SYM(info)  ((info) &gt;&gt; 32)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ELF64_R_TYPE(info) ((info) &amp; 0xFFFFFFFF)</span></span><br></pre></td></tr></table></figure>
+
+<p>与 32-bit x86 使用的 <code>Elf32_Rel</code>（隐式加数，存储在目标地址处）不同，ARM64 的 RELA 格式在 <code>r_addend</code> 字段中显式存储加数，无需从目标地址读取。</p>
+<h3 id="8-2-ARM64-核心重定位类型"><a href="#8-2-ARM64-核心重定位类型" class="headerlink" title="8.2 ARM64 核心重定位类型"></a>8.2 ARM64 核心重定位类型</h3><p>ARM64 (AArch64) 的重定位类型定义在 <code>bionic/libc/kernel/uapi/linux/elf.h</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 需在 AOSP bionic/libc/kernel/uapi/asm-arm64/asm/elf.h 中验证</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>重定位类型</th>
+<th>值</th>
+<th>应用场景</th>
+<th>公式</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>R_AARCH64_NONE</strong></td>
+<td>0</td>
+<td>空重定位</td>
+<td>无</td>
+<td>占位，linker 跳过</td>
+</tr>
+<tr>
+<td><strong>R_AARCH64_ABS64</strong></td>
+<td>257</td>
+<td><code>.rela.dyn</code> 中的数据指针</td>
+<td><code>S + A</code></td>
+<td>直接将符号绝对地址写入目标位置。用于全局变量指针、C++ vtable 等需要 64 位绝对地址的场景</td>
+</tr>
+<tr>
+<td><strong>R_AARCH64_COPY</strong></td>
+<td>1024</td>
+<td><code>.rela.dyn</code> 中的复制重定位</td>
+<td>(内存拷贝)</td>
+<td>将符号定义从依赖 SO 的只读段<strong>复制</strong>到当前 SO 的可写段（<code>.bss</code>）。触发条件：引用 SO 有只读数据段，被引用符号在主程序中定义</td>
+</tr>
+<tr>
+<td><strong>R_AARCH64_GLOB_DAT</strong></td>
+<td>1025</td>
+<td><code>.rela.dyn</code> 中的 GOT 条目</td>
+<td><code>S + A</code></td>
+<td>为全局符号在 GOT 中设置地址。与 JUMP_SLOT 不同，GLOB_DAT 用于数据引用或被取地址的函数，在加载时<strong>立即解析</strong>，即使 Partial RELRO 也不例外</td>
+</tr>
+<tr>
+<td><strong>R_AARCH64_JUMP_SLOT</strong></td>
+<td>1026</td>
+<td><code>.rela.plt</code> 中的 PLT GOT 条目</td>
+<td><code>S + A</code></td>
+<td>为 PLT 调用的函数设置 GOT 地址。Partial RELRO 下延迟解析（首次调用时由 <code>_dl_runtime_resolve</code> 填充），FULL RELRO 下在加载时立即解析</td>
+</tr>
+<tr>
+<td><strong>R_AARCH64_RELATIVE</strong></td>
+<td>1027</td>
+<td><code>.rela.dyn</code> 中的相对重定位</td>
+<td><code>Base + A</code></td>
+<td>修正指向 SO 内部地址的指针。Base 是 SO 的加载基址（load_bias），A 是编译时的偏移量加数。<strong>不需要符号查找</strong>，性能最高</td>
+</tr>
+<tr>
+<td><strong>R_AARCH64_TLS_TPREL</strong></td>
+<td>1030</td>
+<td>TLS (Thread-Local Storage)</td>
+<td><code>S + A - TLS_TP</code></td>
+<td>修正 TLS 变量偏移，linker 配合 <code>__tls_get_addr</code> 处理</td>
+</tr>
+<tr>
+<td><strong>R_AARCH64_IRELATIVE</strong></td>
+<td>1032</td>
+<td>IFUNC (间接函数)</td>
+<td><code>Base + resolver()</code></td>
+<td>调用 resolver 函数，将其返回值写入目标位置。用于多版本函数选择（如根据 CPU 特性选择 memcpy 实现）</td>
+</tr>
+</tbody></table>
+<h3 id="8-3-R-AARCH64-RELATIVE-详解"><a href="#8-3-R-AARCH64-RELATIVE-详解" class="headerlink" title="8.3 R_AARCH64_RELATIVE 详解"></a>8.3 R_AARCH64_RELATIVE 详解</h3><p>这是 Android ELF 中数量最多的重定位类型，也是 RELR 压缩重定位的作用目标。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">公式: *(Base + r_offset) = Base + r_addend</span><br></pre></td></tr></table></figure>
+
+<p><strong>实例</strong>：SO 编译时设定 <code>.data</code> 段中某全局指针指向 <code>.rodata</code> 中的字符串，编译产生的 offset &#x3D; 0x2000，加载时 Base &#x3D; 0x7000000000：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">r_offset  = 0x3000   (.data 段中的全局变量位置)</span><br><span class="line">r_addend  = 0x2000   (编译时 .rodata 字符串与 Base 的偏移)</span><br><span class="line"></span><br><span class="line">执行: *(0x7000003000) = 0x7000000000 + 0x2000 = 0x7000002000</span><br></pre></td></tr></table></figure>
+
+<p>该字符串的运行时地址被正确写入全局变量中。</p>
+<h3 id="8-4-R-AARCH64-JUMP-SLOT-与-R-AARCH64-GLOB-DAT-的区别"><a href="#8-4-R-AARCH64-JUMP-SLOT-与-R-AARCH64-GLOB-DAT-的区别" class="headerlink" title="8.4 R_AARCH64_JUMP_SLOT 与 R_AARCH64_GLOB_DAT 的区别"></a>8.4 R_AARCH64_JUMP_SLOT 与 R_AARCH64_GLOB_DAT 的区别</h3><p>两种重定位都操作 GOT 条目，但行为有重要差异：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>JUMP_SLOT (1026)</th>
+<th>GLOB_DAT (1025)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>所在表</td>
+<td><code>.rela.plt</code></td>
+<td><code>.rela.dyn</code></td>
+</tr>
+<tr>
+<td>触发时机</td>
+<td>Partial RELRO: 延迟（首次调用）</td>
+<td><strong>始终立即解析</strong></td>
+</tr>
+<tr>
+<td>用途</td>
+<td>函数调用 (<code>BL func@plt</code>)</td>
+<td>数据引用 &#x2F; 取函数地址 (<code>&amp;func</code>)</td>
+</tr>
+<tr>
+<td>lookup 策略</td>
+<td>广度优先查找 .dynsym</td>
+<td>同左</td>
+</tr>
+<tr>
+<td>FULL RELRO 行为</td>
+<td>加载时解析，之后 GOT 只读</td>
+<td>同左</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>关键</strong>：C 代码中 <code>func()</code> 产生 JUMP_SLOT，<code>&amp;func</code> 取函数地址产生 GLOB_DAT。这也是为什么即使 FULL RELRO 下 <code>.rela.dyn</code> 和 <code>.rela.plt</code> 都被处理，但两者的物理存储位置和语义仍然不同。</p>
+</blockquote>
+<h3 id="8-5-linker-如何处理各类重定位（简化流程）"><a href="#8-5-linker-如何处理各类重定位（简化流程）" class="headerlink" title="8.5 linker 如何处理各类重定位（简化流程）"></a>8.5 linker 如何处理各类重定位（简化流程）</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 需在 AOSP bionic/linker/linker_relocs.h 中验证具体逻辑</span><br></pre></td></tr></table></figure>
+
+<p>linker 遍历 <code>.rela.dyn</code> 和 <code>.rela.plt</code> 数组，对每条 <code>Elf64_Rela</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">for each relocation entry in (.rela.dyn + .rela.plt):</span><br><span class="line">    sym = &amp;dynsym[ELF64_R_SYM(r_info)]</span><br><span class="line">    type = ELF64_R_TYPE(r_info)</span><br><span class="line"></span><br><span class="line">    switch type:</span><br><span class="line">        case R_AARCH64_NONE:</span><br><span class="line">            continue  // 跳过</span><br><span class="line"></span><br><span class="line">        case R_AARCH64_RELATIVE:</span><br><span class="line">            *(base + r_offset) = base + r_addend</span><br><span class="line">            break</span><br><span class="line"></span><br><span class="line">        case R_AARCH64_ABS64:</span><br><span class="line">            sym_addr = lookup_symbol(sym)  // 符号查找</span><br><span class="line">            *(base + r_offset) = sym_addr + r_addend</span><br><span class="line">            break</span><br><span class="line"></span><br><span class="line">        case R_AARCH64_GLOB_DAT:</span><br><span class="line">            sym_addr = lookup_symbol(sym)</span><br><span class="line">            *(base + r_offset) = sym_addr + r_addend</span><br><span class="line">            break</span><br><span class="line"></span><br><span class="line">        case R_AARCH64_JUMP_SLOT:</span><br><span class="line">            if (FULL_RELRO || !lazy):</span><br><span class="line">                sym_addr = lookup_symbol(sym)</span><br><span class="line">                *(base + r_offset) = sym_addr + r_addend</span><br><span class="line">            else:</span><br><span class="line">                // Lazy: GOT 初始指向 PLT stub（已在编译时填充）</span><br><span class="line">                // linker 不需要在这里做任何事</span><br><span class="line">                pass</span><br><span class="line">            break</span><br><span class="line"></span><br><span class="line">        case R_AARCH64_COPY:</span><br><span class="line">            // 从定义 SO 复制数据到当前 SO 的 .bss 区域</span><br><span class="line">            memcpy(base + r_offset, def_sym_addr, sym.st_size)</span><br><span class="line">            break</span><br><span class="line"></span><br><span class="line">        case R_AARCH64_IRELATIVE:</span><br><span class="line">            resolver = (Elf64_Addr(*)()) (base + r_addend)</span><br><span class="line">            *(base + r_offset) = resolver()</span><br><span class="line">            break</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="九、符号版本化详解"><a href="#九、符号版本化详解" class="headerlink" title="九、符号版本化详解"></a>九、符号版本化详解</h2><p>符号版本化（Symbol Versioning）是 GNU ELF 扩展，允许同一共享库提供同一符号的多个版本。Android 的 Bionic linker 完整支持此机制（在 <code>bionic/linker/linker_gnu_hash.cpp</code> 中处理），这是解决 “dlopen failed: cannot locate symbol” 错误的常见原因。</p>
+<h3 id="9-1-涉及的-Section"><a href="#9-1-涉及的-Section" class="headerlink" title="9.1 涉及的 Section"></a>9.1 涉及的 Section</h3><p>符号版本化涉及三个 section（均为 GNU 扩展）：</p>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>sh_type</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>.gnu.version</code></td>
+<td>SHT_GNU_versym</td>
+<td>为 <code>.dynsym</code> 中的每个符号分配一个版本索引。每个条目 2 字节（<code>Elf64_Half</code>），第 i 个条目对应 dynsym[i] 的版本</td>
+</tr>
+<tr>
+<td><code>.gnu.version_r</code></td>
+<td>SHT_GNU_verneed</td>
+<td><strong>版本需求表</strong>：记录本 SO 需要的来自依赖 SO 的版本定义。结构为链表，每个依赖 SO 对应一个 <code>Elf64_Verneed</code> 条目</td>
+</tr>
+<tr>
+<td><code>.gnu.version_d</code></td>
+<td>SHT_GNU_verdef</td>
+<td><strong>版本定义表</strong>：记录本 SO 自己导出的版本化符号。结构为链表，每个版本对应一个 <code>Elf64_Verdef</code> 条目。通常出现在 libc.so、libm.so 等系统库中</td>
+</tr>
+</tbody></table>
+<h3 id="9-2-特殊版本索引常量"><a href="#9-2-特殊版本索引常量" class="headerlink" title="9.2 特殊版本索引常量"></a>9.2 特殊版本索引常量</h3><p>在 <code>.gnu.version</code> 中，每个条目的值含义如下：</p>
+<table>
+<thead>
+<tr>
+<th>常量</th>
+<th>值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>VER_NDX_LOCAL</strong></td>
+<td>0</td>
+<td>符号仅本地可见，不参与符号查找。linker 在 <code>lookup</code> 时会跳过这些符号</td>
+</tr>
+<tr>
+<td><strong>VER_NDX_GLOBAL</strong></td>
+<td>1</td>
+<td>符号为全局版本，无特定版本约束。所有 SO 均可引用</td>
+</tr>
+<tr>
+<td>2+</td>
+<td>具体版本索引</td>
+<td>该索引指向 <code>.gnu.version_r</code> 或 <code>.gnu.version_d</code> 中的版本条目</td>
+</tr>
+</tbody></table>
+<h3 id="9-3-gnu-version-r-Verneed-结构"><a href="#9-3-gnu-version-r-Verneed-结构" class="headerlink" title="9.3 .gnu.version_r (Verneed) 结构"></a>9.3 <code>.gnu.version_r</code> (Verneed) 结构</h3><p>当 SO A 引用 SO B 中某个带版本的符号时，A 的 <code>.gnu.version_r</code> 记录此需求：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    Elf64_Half vn_version;   <span class="comment">// 版本结构版本号（始终为 1）</span></span><br><span class="line">    Elf64_Half vn_cnt;       <span class="comment">// 关联的 Vernaux 条目数量</span></span><br><span class="line">    Elf64_Word vn_file;      <span class="comment">// 依赖 SO 名称在 .dynstr 中的偏移（如 &quot;libc.so&quot;）</span></span><br><span class="line">    Elf64_Word vn_aux;       <span class="comment">// 第一个 Vernaux 条目的偏移</span></span><br><span class="line">    Elf64_Word vn_next;      <span class="comment">// 下一个 Verneed 条目的偏移（组成链表）</span></span><br><span class="line">&#125; Elf64_Verneed;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    Elf64_Word vna_hash;     <span class="comment">// 版本名称的 ELF hash</span></span><br><span class="line">    Elf64_Half vna_flags;    <span class="comment">// 标志位</span></span><br><span class="line">    Elf64_Half vna_other;    <span class="comment">// .gnu.version 中使用的版本索引（≥2）</span></span><br><span class="line">    Elf64_Word vna_name;     <span class="comment">// 版本名称在 .dynstr 中的偏移（如 &quot;LIBC&quot;）</span></span><br><span class="line">    Elf64_Word vna_next;     <span class="comment">// 下一个 Vernaux 条目的偏移</span></span><br><span class="line">&#125; Elf64_Vernaux;</span><br></pre></td></tr></table></figure>
+
+<h3 id="9-4-版本匹配规则"><a href="#9-4-版本匹配规则" class="headerlink" title="9.4 版本匹配规则"></a>9.4 版本匹配规则</h3><p>linker 在符号查找时的版本匹配逻辑（<code>bionic/linker/linker_gnu_hash.cpp</code> 中实现，函数为 <code>check_symbol_version</code>）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">给定: 符号 S 来自 .dynsym</span><br><span class="line">      S 在 .gnu.version 中的条目 → version_index</span><br><span class="line"></span><br><span class="line">1. version_index == VER_NDX_LOCAL (0):</span><br><span class="line">   → 本地符号，跳过，不暴露给任何引用者</span><br><span class="line"></span><br><span class="line">2. version_index == VER_NDX_GLOBAL (1):</span><br><span class="line">   → 全局符号，任何 SO 均可匹配</span><br><span class="line"></span><br><span class="line">3. version_index &gt;= 2:</span><br><span class="line">   → 该符号有特定版本约束</span><br><span class="line">   → 在 .gnu.version_r 中找到 version_index 对应的版本名称（如 &quot;LIBC_PRIVATE&quot;）</span><br><span class="line">   → 仅当引用者明确声明需要该版本时，才返回此符号</span><br></pre></td></tr></table></figure>
+
+<h3 id="9-5-版本不匹配导致的常见错误"><a href="#9-5-版本不匹配导致的常见错误" class="headerlink" title="9.5 版本不匹配导致的常见错误"></a>9.5 版本不匹配导致的常见错误</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// dlopen 时的典型错误信息：</span><br><span class="line">dlopen failed: cannot locate symbol &quot;__emutls_get_address&quot; </span><br><span class="line">  referenced by &quot;libfoo.so&quot;</span><br></pre></td></tr></table></figure>
+
+<p>这通常表示 <code>libfoo.so</code> 引用了某个需要特定版本标记的符号，但当前 Android 系统的 libc.so（或其他依赖库）没有导出该版本的符号。</p>
+<p><strong>常见原因</strong>：</p>
+<ol>
+<li><strong>NDK 版本不匹配</strong>：用 NDK r25 编译的 SO 放到旧版 Android 系统上，缺少新版本符号</li>
+<li><strong>平台私有符号引用</strong>：SO 试图引用 <code>LIBC_PRIVATE</code> 版本符号，但应用 namespace 不允许访问</li>
+<li><strong>缺少 Verneed 条目</strong>：编译时链接了某个依赖，但运行时该依赖不存在或版本不对</li>
+</ol>
+<p><strong>排查方法</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 查看 SO 需要的版本</span></span><br><span class="line">$ readelf -V libfoo.so</span><br><span class="line"></span><br><span class="line">Version needs section <span class="string">&#x27;.gnu.version_r&#x27;</span>:</span><br><span class="line">  Needed section: libc.so</span><br><span class="line">  0x0c00: Version: LIBC   (1)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看系统库提供的版本</span></span><br><span class="line">$ readelf -V /system/lib64/libc.so | <span class="built_in">head</span> -20</span><br><span class="line"></span><br><span class="line">Version definition section <span class="string">&#x27;.gnu.version_d&#x27;</span>:</span><br><span class="line">  0x0001: Version: LIBC</span><br><span class="line">  0x0002: Version: LIBC_N</span><br><span class="line">  0x0003: Version: LIBC_P</span><br><span class="line">  0x0004: Version: LIBC_Q</span><br><span class="line">  ...</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="十、Android-Linker-特有机制"><a href="#十、Android-Linker-特有机制" class="headerlink" title="十、Android Linker 特有机制"></a>十、Android Linker 特有机制</h2><h3 id="10-1-Namespace-隔离（Android-7-0-）"><a href="#10-1-Namespace-隔离（Android-7-0-）" class="headerlink" title="10.1 Namespace 隔离（Android 7.0+）"></a>10.1 Namespace 隔离（Android 7.0+）</h3><p>Android 7.0 引入 linker namespace 机制，限制应用 <code>.so</code> 可以 link 哪些系统库：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/system/lib64/ (平台 SO，只有 NDK 公开 API 可被应用访问)</span><br><span class="line">  ├── libc.so          ← 公开</span><br><span class="line">  ├── libm.so          ← 公开</span><br><span class="line">  ├── libandroid.so    ← 公开</span><br><span class="line">  └── libart.so        ← 私有 (应用无法直接链接)</span><br><span class="line"></span><br><span class="line">/vendor/lib64/ (厂商 SO)</span><br><span class="line">/data/app/xxx/lib/arm64/ (应用 SO)</span><br></pre></td></tr></table></figure>
+
+<p>linker 维护多个 namespace（<code>default</code>, <code>sphal</code>, <code>vndk</code> 等），每个 namespace 有独立的搜索路径和链接规则。应用只能链接到 NDK 公开 API 列表中的符号。</p>
+<h3 id="10-2-dlopen-流程"><a href="#10-2-dlopen-流程" class="headerlink" title="10.2 dlopen 流程"></a>10.2 dlopen 流程</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> *handle = dlopen(<span class="string">&quot;libfoo.so&quot;</span>, RTLD_NOW);</span><br><span class="line"></span><br><span class="line"><span class="comment">// linker 内部流程:</span></span><br><span class="line"><span class="comment">// 1. 解析 ELF header，验证 magic 和 e_machine</span></span><br><span class="line"><span class="comment">// 2. 遍历 Program Headers，mmap LOAD segments</span></span><br><span class="line"><span class="comment">// 3. 应用 RELRO 保护（mprotect）</span></span><br><span class="line"><span class="comment">// 4. 解析 .dynamic，遍历 DT_NEEDED 加载依赖 SO</span></span><br><span class="line"><span class="comment">// 5. 处理重定位（.rela.dyn, .rela.plt）</span></span><br><span class="line"><span class="comment">// 6. 调用 .init_array 中的初始化函数</span></span><br><span class="line"><span class="comment">// 7. 返回 soinfo 指针</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="10-3-DT-RELR-—-Android-的压缩重定位"><a href="#10-3-DT-RELR-—-Android-的压缩重定位" class="headerlink" title="10.3 DT_RELR — Android 的压缩重定位"></a>10.3 DT_RELR — Android 的压缩重定位</h3><p>Android 10+ 引入 RELR 相对重定位格式，将重定位表体积压缩 5-10 倍。传统的 <code>.rela.dyn</code> 每条重定位 24 字节 (ARM64)，而 RELR 使用位图编码多个连续重定位，极大减小了 SO 体积。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ readelf -d libnative.so | grep RELR</span><br><span class="line"> 0x000000006FFFE000 (ANDROID_RELR)    0x1234</span><br><span class="line"> 0x000000006FFFE003 (ANDROID_RELRSZ)  48 (bytes)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="十一、linker-的符号解析-lookup-算法"><a href="#十一、linker-的符号解析-lookup-算法" class="headerlink" title="十一、linker 的符号解析 (lookup) 算法"></a>十一、linker 的符号解析 (lookup) 算法</h2><p>linker 的符号解析是动态链接最核心的操作。每次调用 <code>dlsym()</code> 或 PLT 延迟绑定时，linker 都需要在已加载的 SO 图中搜索符号。Android Bionic linker 的实现位于 <code>bionic/linker/linker.cpp</code>（主要函数：<code>soinfo::lookup_symbol</code> 及相关辅助函数）。</p>
+<h3 id="11-1-查找入口"><a href="#11-1-查找入口" class="headerlink" title="11.1 查找入口"></a>11.1 查找入口</h3><p>linker 提供两个主要入口：</p>
+<table>
+<thead>
+<tr>
+<th>入口</th>
+<th>触发来源</th>
+<th>搜索范围</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>dlsym(handle, &quot;sym&quot;)</code></td>
+<td>应用调用 <code>dlsym</code> &#x2F; <code>dlsym(RTLD_DEFAULT, ...)</code></td>
+<td>handle 指定的 SO 及其依赖树；RTLD_DEFAULT 则搜索全局作用域</td>
+</tr>
+<tr>
+<td><code>_dl_runtime_resolve</code></td>
+<td>PLT 延迟绑定时自动触发</td>
+<td>从调用者 SO 的依赖树中搜索，结果缓存到 GOT</td>
+</tr>
+</tbody></table>
+<h3 id="11-2-符号查找算法（BFS-广度优先）"><a href="#11-2-符号查找算法（BFS-广度优先）" class="headerlink" title="11.2 符号查找算法（BFS 广度优先）"></a>11.2 符号查找算法（BFS 广度优先）</h3><p>AOSP linker 使用<strong>广度优先搜索</strong>（BFS）遍历依赖图，函数为 <code>soinfo::find_symbol_by_name()</code> &#x2F; <code>soinfo::lookup_symbol()</code>（7.0+ 重构后）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 简化版符号查找算法</span><br><span class="line">// src: bionic/linker/linker.cpp → soinfo::lookup_symbol()</span><br><span class="line">// 需在 AOSP bionic/linker/linker.cpp 中验证最新实现</span><br><span class="line"></span><br><span class="line">Symbol lookup(soinfo* requesting_so, const char* sym_name) &#123;</span><br><span class="line"></span><br><span class="line">    // ① 首先在 requesting_so 自身的 .dynsym 中查找</span><br><span class="line">    Symbol s = requesting_so-&gt;find_symbol_by_name(sym_name);</span><br><span class="line">    if (s != NULL &amp;&amp; version_match(s, requesting_so)) &#123;</span><br><span class="line">        return s;  // 自己定义的符号优先级最高</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // ② 广度优先遍历 DT_NEEDED 依赖树</span><br><span class="line">    Queue&lt;soinfo*&gt; queue;</span><br><span class="line">    Set&lt;soinfo*&gt; visited;</span><br><span class="line">    for each DT_NEEDED so in requesting_so-&gt;children:</span><br><span class="line">        queue.push(so);</span><br><span class="line"></span><br><span class="line">    while (!queue.empty()) &#123;</span><br><span class="line">        soinfo* cur = queue.pop();</span><br><span class="line">        if (visited.contains(cur)) continue;</span><br><span class="line">        visited.add(cur);</span><br><span class="line"></span><br><span class="line">        // 在当前 SO 中查找</span><br><span class="line">        s = cur-&gt;find_symbol_by_name(sym_name);</span><br><span class="line">        if (s != NULL &amp;&amp; version_match(s, requesting_so)) &#123;</span><br><span class="line">            return s;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // 将当前 SO 的依赖也加入队列（BFS 展开）</span><br><span class="line">        for each DT_NEEDED dep in cur-&gt;children:</span><br><span class="line">            queue.push(dep);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return NULL;  // 未找到</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>BFS vs DFS</strong>：Bionic 使用 BFS，确保先搜索直接依赖、再搜索间接依赖。这与 GNU&#x2F;Linux glibc linker 的默认行为一致。</p>
+<h3 id="11-3-符号版本匹配"><a href="#11-3-符号版本匹配" class="headerlink" title="11.3 符号版本匹配"></a>11.3 符号版本匹配</h3><p>版本匹配由 <code>check_symbol_version()</code> 在 <code>bionic/linker/linker_gnu_hash.cpp</code> 中实现：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bool version_match(Elf64_Sym* sym, soinfo* requesting_so, int version_index) &#123;</span><br><span class="line"></span><br><span class="line">    switch (version_index):</span><br><span class="line">    </span><br><span class="line">        case VER_NDX_LOCAL (0):</span><br><span class="line">            // 符号对引用者不可见</span><br><span class="line">            return false;</span><br><span class="line"></span><br><span class="line">        case VER_NDX_GLOBAL (1):</span><br><span class="line">            // 无版本约束，总是匹配</span><br><span class="line">            return true;</span><br><span class="line"></span><br><span class="line">        default (&gt;= 2):</span><br><span class="line">            // version_index 对应 .gnu.version_r 中的一个 Verneed 条目</span><br><span class="line">            // 检查 requesting_so 是否声明需要该版本</span><br><span class="line">            Verneed* vn = requesting_so-&gt;get_verneed_by_index(version_index);</span><br><span class="line">            if (vn != NULL &amp;&amp; vn-&gt;vna_name == sym_version_name) &#123;</span><br><span class="line">                return true;</span><br><span class="line">            &#125;</span><br><span class="line">            return false;  // 版本不匹配，符号视为不存在</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="11-4-符号可见性过滤"><a href="#11-4-符号可见性过滤" class="headerlink" title="11.4 符号可见性过滤"></a>11.4 符号可见性过滤</h3><p>在遍历 dynsym 时，linker 会检查每个符号的 <code>st_other</code> 可见性字段：</p>
+<table>
+<thead>
+<tr>
+<th>可见性</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>STV_DEFAULT</strong> (0)</td>
+<td>正常导出，任何依赖 SO 均可引用</td>
+</tr>
+<tr>
+<td><strong>STV_HIDDEN</strong> (2)</td>
+<td>符号仅在定义 SO 内部可见。<strong>外部 SO 引用该符号时，linker 会跳过它</strong>（如同不存在）</td>
+</tr>
+<tr>
+<td><strong>STV_PROTECTED</strong> (3)</td>
+<td>符号可被引用，但引用<strong>永远在定义 SO 内解析</strong>，不会被其他 SO 的同名符号覆盖。类似 <code>-Bsymbolic</code> 的效果，但作用于单个符号</td>
+</tr>
+<tr>
+<td><strong>STV_INTERNAL</strong> (1)</td>
+<td>与 HIDDEN 相似，语义更强（在某些工具链中等同于 HIDDEN）</td>
+</tr>
+</tbody></table>
+<p><strong>HIDDEN vs PROTECTED 实战差异</strong>：</p>
+<ul>
+<li><code>__attribute__((visibility(&quot;hidden&quot;)))</code> → STV_HIDDEN → 外部调用该函数会产生链接错误</li>
+<li><code>__attribute__((visibility(&quot;protected&quot;)))</code> → STV_PROTECTED → 外部可以调用，但保证调用到<strong>这个 SO 的版本</strong>，不会被 <code>LD_PRELOAD</code> 或同名符号覆盖</li>
+</ul>
+<h3 id="11-5-全局作用域-Global-Scope-与-Namespace-作用域"><a href="#11-5-全局作用域-Global-Scope-与-Namespace-作用域" class="headerlink" title="11.5 全局作用域 (Global Scope) 与 Namespace 作用域"></a>11.5 全局作用域 (Global Scope) 与 Namespace 作用域</h3><p>Android 7.0+ 的 namespace 机制增加了额外的作用域层级：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">符号查找的完整路径：</span><br><span class="line"></span><br><span class="line">1. 在 requesting_so 所属 namespace 中搜索</span><br><span class="line">   - 遍历该 namespace 中已加载的所有 SO</span><br><span class="line">   - 按照 BFS 顺序搜索每个 SO 的 .dynsym</span><br><span class="line"></span><br><span class="line">2. 如果当前 namespace 设置了 linked_namespaces</span><br><span class="line">   - 允许搜索其他 namespace 时，也遍历那些 namespace 中的 SO</span><br><span class="line"></span><br><span class="line">3. 平台 SO（如 libc.so）导出两类符号：</span><br><span class="line">   - NDK 公开符号：放在全局可见的 namespace 中 ↓</span><br><span class="line">   - 平台私有符号（LIBC_PRIVATE 版本标记）：仅平台 namespace 可见</span><br><span class="line"></span><br><span class="line">4. 应用 SO 默认 namespace 只能访问 NDK 公开符号列表</span><br><span class="line">   - android_dlopen_ext 可以通过 ANDROID_DLEXT_USE_NAMESPACE 指定目标 namespace</span><br></pre></td></tr></table></figure>
+
+<h3 id="11-6-symbol-lookup-与-dlsym-的差异"><a href="#11-6-symbol-lookup-与-dlsym-的差异" class="headerlink" title="11.6 symbol lookup 与 dlsym 的差异"></a>11.6 symbol lookup 与 dlsym 的差异</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>PLT 延迟解析</th>
+<th>dlsym()</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>触发方式</td>
+<td>自动（首次调用函数时）</td>
+<td>应用主动调用</td>
+</tr>
+<tr>
+<td>搜索范围</td>
+<td>仅依赖树</td>
+<td>RTLD_DEFAULT: 全局；具体 handle: 其依赖树</td>
+</tr>
+<tr>
+<td>符号类型</td>
+<td>仅 <code>.dynsym</code></td>
+<td><code>.dynsym</code> + <code>.symtab</code>（如果未 strip）</td>
+</tr>
+<tr>
+<td>是否缓存</td>
+<td>结果写入 GOT</td>
+<td>每次调用都搜索</td>
+</tr>
+<tr>
+<td>版本匹配</td>
+<td>是（严格）</td>
+<td>RTLD_DEFAULT 下可配置</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="十二、Android-linker-的-soinfo-结构"><a href="#十二、Android-linker-的-soinfo-结构" class="headerlink" title="十二、Android linker 的 soinfo 结构"></a>十二、Android linker 的 soinfo 结构</h2><p><code>soinfo</code> 是 Bionic linker 内部用于跟踪每个已加载 SO 的核心数据结构。定义在 <code>bionic/linker/linker_soinfo.h</code>。</p>
+<h3 id="12-1-soinfo-结构（简化版）"><a href="#12-1-soinfo-结构（简化版）" class="headerlink" title="12.1 soinfo 结构（简化版）"></a>12.1 soinfo 结构（简化版）</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 源: bionic/linker/linker_soinfo.h</span></span><br><span class="line"><span class="comment">// 以下为简化版本，完整结构含 60+ 字段</span></span><br><span class="line"><span class="comment">// 需在 AOSP bionic/linker/linker_soinfo.h 中验证完整字段列表</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">soinfo</span> &#123;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// === 基本信息 ===</span></span><br><span class="line">    <span class="type">char</span> name[<span class="number">128</span>];               <span class="comment">// SO 名称（如 &quot;libc.so&quot;），非完整路径</span></span><br><span class="line">    <span class="type">const</span> <span class="type">char</span>* real_path;        <span class="comment">// SO 在文件系统中的完整路径</span></span><br><span class="line">    <span class="type">const</span> <span class="title function_">ElfW</span><span class="params">(Phdr)</span>* phdr;       <span class="comment">// Program Header 数组指针（mmap 映射到内存后）</span></span><br><span class="line">    <span class="type">size_t</span> phnum;                 <span class="comment">// Program Header 数量</span></span><br><span class="line">    ElfW(Addr) base;              <span class="comment">// SO 加载基址（第一个 LOAD segment 的 mmap 起始地址）</span></span><br><span class="line">    ElfW(Addr) load_bias;         <span class="comment">// base - min(p_vaddr of LOAD segments)</span></span><br><span class="line">                                  <span class="comment">// 用于虚拟地址与运行时地址的转换</span></span><br><span class="line">    <span class="type">size_t</span> size;                  <span class="comment">// SO 在内存中占用的总大小</span></span><br><span class="line">    ElfW(Addr) entry;             <span class="comment">// 入口点（可执行文件 e_entry，SO 通常为 0）</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// === .dynamic 段信息 ===</span></span><br><span class="line">    <span class="type">const</span> <span class="title function_">ElfW</span><span class="params">(Dyn)</span>* dynamic;     <span class="comment">// .dynamic 段在内存中的地址</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// === 符号与字符串表 ===</span></span><br><span class="line">    <span class="type">const</span> <span class="type">char</span>* strtab;           <span class="comment">// .dynstr 指针</span></span><br><span class="line">    ElfW(Sym)* symtab;            <span class="comment">// .dynsym 指针</span></span><br><span class="line">    <span class="type">size_t</span> strtab_size;           <span class="comment">// .dynstr 大小</span></span><br><span class="line">    <span class="type">size_t</span> nbucket;               <span class="comment">// SYSV hash: bucket 数量</span></span><br><span class="line">    <span class="type">size_t</span> nchain;                <span class="comment">// SYSV hash: chain 数量</span></span><br><span class="line">    <span class="type">uint32_t</span>* bucket;             <span class="comment">// SYSV hash bucket 数组</span></span><br><span class="line">    <span class="type">uint32_t</span>* chain;              <span class="comment">// SYSV hash chain 数组</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// === GNU hash 表 ===</span></span><br><span class="line">    <span class="type">uint32_t</span> gnu_nbucket;         <span class="comment">// GNU hash bucket 数量</span></span><br><span class="line">    <span class="type">uint32_t</span>* gnu_bucket;         <span class="comment">// GNU hash bucket 数组</span></span><br><span class="line">    <span class="type">uint32_t</span>* gnu_chain;          <span class="comment">// GNU hash chain 数组</span></span><br><span class="line">    <span class="type">uint32_t</span> gnu_maskwords;       <span class="comment">// GNU hash bloom filter 位数</span></span><br><span class="line">    <span class="type">uint32_t</span> gnu_shift2;          <span class="comment">// GNU hash bloom filter shift</span></span><br><span class="line">    ElfW(Addr)* gnu_bloom_filter; <span class="comment">// GNU hash bloom filter</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// === 版本信息 ===</span></span><br><span class="line">    <span class="type">const</span> <span class="title function_">ElfW</span><span class="params">(Versym)</span>* versym;   <span class="comment">// .gnu.version 指针</span></span><br><span class="line">    <span class="type">const</span> <span class="title function_">ElfW</span><span class="params">(Verneed)</span>* verneed; <span class="comment">// .gnu.version_r 指针</span></span><br><span class="line">    <span class="type">size_t</span> verneed_num;           <span class="comment">// Verneed 条目数量</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// === 重定位表 ===</span></span><br><span class="line">    ElfW(Rela)* plt_rela;         <span class="comment">// .rela.plt 指针</span></span><br><span class="line">    <span class="type">size_t</span> plt_rela_count;        <span class="comment">// PLT 重定位条目数量</span></span><br><span class="line">    ElfW(Rela)* rela;             <span class="comment">// .rela.dyn 指针</span></span><br><span class="line">    <span class="type">size_t</span> rela_count;            <span class="comment">// 非 PLT 重定位条目数量</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// === 依赖关系 ===</span></span><br><span class="line">    <span class="type">soinfo_list_t</span> children;       <span class="comment">// DT_NEEDED 依赖列表（本 SO 依赖了谁）</span></span><br><span class="line">    <span class="type">soinfo_list_t</span> parents;        <span class="comment">// 反向依赖列表（谁依赖了本 SO）</span></span><br><span class="line">    <span class="type">uint32_t</span> ref_count;           <span class="comment">// 引用计数（dlopen/dlclose 管理）</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// === Namespace ===</span></span><br><span class="line">    <span class="type">android_namespace_t</span>* primary_namespace;  <span class="comment">// 所属 namespace</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// === 标志位 ===</span></span><br><span class="line">    <span class="type">uint32_t</span> flags;               <span class="comment">// FLAG_LINKED, FLAG_EXE, FLAG_LINKER, FLAG_NEW_SOINFO 等</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// === PREINIT_ARRAY / INIT_ARRAY / FINI_ARRAY ===</span></span><br><span class="line">    <span class="type">linker_ctor_function_t</span>* preinit_array;</span><br><span class="line">    <span class="type">size_t</span> preinit_array_count;</span><br><span class="line">    <span class="type">linker_ctor_function_t</span>* init_array;</span><br><span class="line">    <span class="type">size_t</span> init_array_count;</span><br><span class="line">    <span class="type">linker_dtor_function_t</span>* fini_array;</span><br><span class="line">    <span class="type">size_t</span> fini_array_count;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// === TLS (Thread-Local Storage) ===</span></span><br><span class="line">    <span class="comment">// module ID, offset, size 等</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// === 链表指针（linker 全局 SO 列表） ===</span></span><br><span class="line">    <span class="comment">// next, prev 等</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// === 文件身份 ===</span></span><br><span class="line">    <span class="type">dev_t</span> st_dev;</span><br><span class="line">    <span class="type">ino_t</span> st_ino;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ... 更多字段</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="12-2-soinfo-的分配与生命周期"><a href="#12-2-soinfo-的分配与生命周期" class="headerlink" title="12.2 soinfo 的分配与生命周期"></a>12.2 soinfo 的分配与生命周期</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">soinfo 生命周期:</span><br><span class="line"></span><br><span class="line">1. 分配</span><br><span class="line">   - 系统 linker（/system/bin/linker64）预分配一个静态 soinfo 数组</span><br><span class="line">   - 早期 Android 版本（&lt; 7.0）使用固定大小的全局 soinfo_pool[]</span><br><span class="line">   - Android 7.0+ 重构后使用动态分配（soinfo::allocator），移除数量上限</span><br><span class="line">   - 内存来自 linker 自己的堆（linker 运行前 malloc 不可用）</span><br><span class="line"></span><br><span class="line">2. 初始化 (find_library → load_library)</span><br><span class="line">   a. 创建 soinfo 对象</span><br><span class="line">   b. 设置 name（从 DT_SONAME 或文件名推断）</span><br><span class="line">   c. 打开 ELF 文件，读取 Elf64_Ehdr</span><br><span class="line">   d. 验证 e_machine 匹配当前架构</span><br><span class="line">   e. 读取 Program Headers</span><br><span class="line">   f. mmap 所有 PT_LOAD segments → 设置 base、size、load_bias</span><br><span class="line">   g. 设置 phdr、phnum、dynamic 指针</span><br><span class="line">   h. 解析 .dynamic 段 → 填充 strtab、symtab、hash、rela 等字段</span><br><span class="line"></span><br><span class="line">3. 链接 (find_library → link_library)</span><br><span class="line">   a. 链接 DT_NEEDED 依赖：填充 children 列表</span><br><span class="line">   b. 建立反向依赖：填充被依赖 SO 的 parents 列表</span><br><span class="line">   c. 添加到全局 SO 链表 (g_soinfo_list)</span><br><span class="line">   d. 执行重定位（relocate()）</span><br><span class="line"></span><br><span class="line">4. 初始化 (call_constructors)</span><br><span class="line">   a. 递归初始化所有依赖 SO（自底向上）</span><br><span class="line">   b. 执行 .preinit_array、.init_array</span><br><span class="line">   c. 设置 FLAG_LINKED 标志</span><br><span class="line"></span><br><span class="line">5. 销毁 (dlclose → unload_library)</span><br><span class="line">   a. ref_count--</span><br><span class="line">   b. 如果 ref_count == 0：</span><br><span class="line">      - 执行 .fini_array</span><br><span class="line">      - 递归卸载依赖（ref_count-- 并可能卸载）</span><br><span class="line">      - munmap LOAD segments</span><br><span class="line">      - 释放 soinfo</span><br></pre></td></tr></table></figure>
+
+<h3 id="12-3-load-bias-详解"><a href="#12-3-load-bias-详解" class="headerlink" title="12.3 load_bias 详解"></a>12.3 load_bias 详解</h3><p><code>load_bias</code> 是实现 PIE&#x2F;ASLR 的关键概念：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">load_bias = 运行时 mmap 返回的基址 - ELF 中最早的 PT_LOAD 的 p_vaddr</span><br><span class="line"></span><br><span class="line">示例:</span><br><span class="line">  ELF 中:  LOAD[0].p_vaddr = 0x0000  (代码段)</span><br><span class="line">           LOAD[1].p_vaddr = 0x1000  (数据段)</span><br><span class="line">  </span><br><span class="line">  运行时:  mmap 返回基址 = 0x7a00_0000</span><br><span class="line">  </span><br><span class="line">  load_bias = 0x7a00_0000 - 0x0000 = 0x7a00_0000</span><br><span class="line"></span><br><span class="line">地址转换:</span><br><span class="line">  运行时地址 = ELF 中的 p_vaddr + load_bias</span><br><span class="line">  ELF 地址   = 运行时地址 - load_bias</span><br><span class="line">  </span><br><span class="line">例如 .dynsym 的 ELF 地址为 0x500:</span><br><span class="line">  运行时 .dynsym  = 0x500 + 0x7a00_0000 = 0x7a00_0500</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="十三、Android-特有的-ELF-扩展"><a href="#十三、Android-特有的-ELF-扩展" class="headerlink" title="十三、Android 特有的 ELF 扩展"></a>十三、Android 特有的 ELF 扩展</h2><h3 id="13-1-RELR-压缩重定位格式"><a href="#13-1-RELR-压缩重定位格式" class="headerlink" title="13.1 RELR 压缩重定位格式"></a>13.1 RELR 压缩重定位格式</h3><p>Android 10 (API 29) 引入 RELR 压缩重定位格式，旨在压缩大量 <code>R_AARCH64_RELATIVE</code> 类型重定位（占大多数 SO 重定位条目的 90%+）。传统的 <code>Elf64_Rela</code> 每条 24 字节，RELR 使用位图编码可将体积压缩至原来的 1&#x2F;5~1&#x2F;10。</p>
+<p><strong>RELR 编码格式</strong>：</p>
+<p><code>.relr.dyn</code> section 包含一系列 64-bit 条目，格式如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">RELR 条目类型（由 LSB 位 0 区分）:</span><br><span class="line"></span><br><span class="line">1. 地址条目（bit 0 = 0 或 bit 0 = 1 且全位图为 0）:</span><br><span class="line">   → 64-bit 值存储的是绝对虚拟地址（p_vaddr），需要对其进行重定位</span><br><span class="line">   → *(base + value) += base</span><br><span class="line">   </span><br><span class="line">2. 位图条目（bit 0 = 1）:</span><br><span class="line">   → bits[63:1] 构成一个 63-bit 的位图</span><br><span class="line">   → 位图中的某位为 1，表示 &quot;距离上一个重定位地址 + 该位索引 * 8 字节&quot; 的位置也需要重定位</span><br><span class="line">   → 公式：*(base + prev_addr + (i+1)*8) += base  （对于位 i）</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">.relr.dyn 的内容（64-bit words）:</span><br><span class="line"></span><br><span class="line">0x0000000000002000    ← 地址条目: 重定位 vaddr=0x2000 的位置</span><br><span class="line">0x0000000000000007    ← 位图条目: bit=1, bits[1]=1, bits[2]=1</span><br><span class="line">                       → 重定位 vaddr=0x2008, vaddr=0x2010 的位置</span><br><span class="line">                       </span><br><span class="line">该序列表示 3 个连续重定位: 0x2000, 0x2008, 0x2010</span><br><span class="line">用 RELA 格式需 3×24=72 字节，RELR 仅用 2×8=16 字节</span><br></pre></td></tr></table></figure>
+
+<p><strong>在 .dynamic 中的标记</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ readelf -d libfoo.so | grep -E <span class="string">&quot;RELR|RELRSZ|RELRENT&quot;</span></span><br><span class="line"> 0x000000006FFFE000 (RELR)       0x338     <span class="comment"># .relr.dyn 在内存中的地址</span></span><br><span class="line"> 0x000000006FFFE003 (RELRSZ)     32 (bytes) <span class="comment"># .relr.dyn 的大小</span></span><br><span class="line"> 0x000000006FFFE001 (RELRENT)    8 (bytes)  <span class="comment"># 每条 RELR 条目大小（始终为 8）</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>注</strong>: Android 最初使用 <code>DT_ANDROID_RELR</code> &#x2F; <code>DT_ANDROID_RELRSZ</code> &#x2F; <code>DT_ANDROID_RELRENT</code> 作为自定义标签。RELR 被标准化为通用 ELF 扩展后，现代 AOSP 同时识别标准名和 ANDROID_ 前缀名。</p>
+</blockquote>
+<h3 id="13-2-android-dlopen-ext-与-ANDROID-DLEXT-标志"><a href="#13-2-android-dlopen-ext-与-ANDROID-DLEXT-标志" class="headerlink" title="13.2 android_dlopen_ext 与 ANDROID_DLEXT_* 标志"></a>13.2 android_dlopen_ext 与 ANDROID_DLEXT_* 标志</h3><p>Android 提供了 <code>android_dlopen_ext()</code> 作为 <code>dlopen()</code> 的扩展，允许指定更精细的加载控制：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;android/dlext.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="type">uint64_t</span> flags;               <span class="comment">// ANDROID_DLEXT_* 标志位组合</span></span><br><span class="line">    <span class="type">void</span>*   library_fd;           <span class="comment">// 预打开的文件描述符</span></span><br><span class="line">    <span class="type">off64_t</span> library_fd_offset;    <span class="comment">// 从文件描述符的偏移开始读取</span></span><br><span class="line">    <span class="type">const</span> <span class="type">char</span>* library_namespace; <span class="comment">// 目标 namespace 名称</span></span><br><span class="line">    <span class="comment">// ... 更多字段</span></span><br><span class="line">&#125; android_dlextinfo;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span>* <span class="title function_">android_dlopen_ext</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* filename, <span class="type">int</span> flag,</span></span><br><span class="line"><span class="params">                         <span class="type">const</span> android_dlextinfo* extinfo)</span>;</span><br></pre></td></tr></table></figure>
+
+<p><em><em>核心 ANDROID_DLEXT_</em> 标志</em>*（定义于 <code>bionic/libc/include/android/dlext.h</code>）：</p>
+<table>
+<thead>
+<tr>
+<th>标志</th>
+<th>值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>ANDROID_DLEXT_RESERVED_ADDRESS</strong></td>
+<td>0x1</td>
+<td>要求在指定地址加载 SO（需要 <code>library_fd</code> 和预期地址）</td>
+</tr>
+<tr>
+<td><strong>ANDROID_DLEXT_RESERVED_ADDRESS_HINT</strong></td>
+<td>0x2</td>
+<td>建议在指定地址附近加载</td>
+</tr>
+<tr>
+<td><strong>ANDROID_DLEXT_WRITE_RELRO</strong></td>
+<td>0x4</td>
+<td>将 RELRO 段写入文件（配合 <code>ANDROID_DLEXT_RESERVED_ADDRESS</code> 实现跨进程共享 GOT）</td>
+</tr>
+<tr>
+<td><strong>ANDROID_DLEXT_USE_RELRO</strong></td>
+<td>0x8</td>
+<td>从文件恢复 RELRO 段内容</td>
+</tr>
+<tr>
+<td><strong>ANDROID_DLEXT_USE_LIBRARY_FD</strong></td>
+<td>0x10</td>
+<td>使用 <code>library_fd</code> 而不是文件路径加载 SO</td>
+</tr>
+<tr>
+<td><strong>ANDROID_DLEXT_USE_LIBRARY_FD_OFFSET</strong></td>
+<td>0x20</td>
+<td>配合 <code>library_fd</code>，从指定偏移开始读取（用于 APK 内的 SO，无需解压）</td>
+</tr>
+<tr>
+<td><strong>ANDROID_DLEXT_FORCE_LOAD</strong></td>
+<td>0x40</td>
+<td>即使 DT_NEEDED 未声明也强制加载依赖</td>
+</tr>
+<tr>
+<td><strong>ANDROID_DLEXT_USE_NAMESPACE</strong></td>
+<td>0x200</td>
+<td>加载到 <code>library_namespace</code> 指定的 namespace 中</td>
+</tr>
+<tr>
+<td><strong>ANDROID_DLEXT_FORCE_FIXED_VADDR</strong></td>
+<td>0x400</td>
+<td>强制 SO 加载到编译时的 p_vaddr（通常用于预链接的 vendor SO）</td>
+</tr>
+<tr>
+<td><strong>ANDROID_DLEXT_LOAD_AT_FIXED_ADDRESS</strong></td>
+<td>0x800</td>
+<td>在已确定的地址加载（用于 system server 启动优化）</td>
+</tr>
+</tbody></table>
+<p><strong>典型应用场景</strong>：</p>
+<ul>
+<li><strong>APK 内 .so 直接加载</strong>: 使用 <code>ANDROID_DLEXT_USE_LIBRARY_FD_OFFSET</code> 从 APK zip 内部偏移直接 mmap，避免解压到磁盘。Android 6.0+ 的 <code>NativeLibraryHelper</code> 默认使用此方式</li>
+<li><strong>跨进程 RELRO 共享</strong>: 使用 <code>ANDROID_DLEXT_WRITE_RELRO</code> &#x2F; <code>ANDROID_DLEXT_USE_RELRO</code> 在 Zygote 子进程间共享已解析的 GOT，加速应用启动</li>
+</ul>
+<h3 id="13-3-note-android-ident-Section"><a href="#13-3-note-android-ident-Section" class="headerlink" title="13.3 .note.android.ident Section"></a>13.3 .note.android.ident Section</h3><p>Android NDK r23+ 会在编译的 SO 中嵌入 <code>.note.android.ident</code> section，用于标识该 SO 是使用哪个 NDK 版本构建的：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ readelf -n libfoo.so</span><br><span class="line"></span><br><span class="line">Displaying notes found in: .note.android.ident</span><br><span class="line">  Owner                 Data size       Description</span><br><span class="line">  Android               0x00000004      NT_VERSION</span><br><span class="line">   NDK r26b (clang 17.0.2)</span><br></pre></td></tr></table></figure>
+
+<p>该 section 类型为 <code>SHT_NOTE</code>，包含 NDK 版本、clang 版本等构建元数据。主要用于：</p>
+<ul>
+<li><strong>兼容性诊断</strong>：崩溃报告中可以看到 SO 是用哪个 NDK 构建的</li>
+<li><strong>符号可用性判断</strong>：不同 NDK 版本对应不同的 API level 和可用符号集</li>
+</ul>
+<h3 id="13-4-Vendor-NDK-VNDK-vs-Platform-NDK-的符号限制"><a href="#13-4-Vendor-NDK-VNDK-vs-Platform-NDK-的符号限制" class="headerlink" title="13.4 Vendor NDK (VNDK) vs Platform NDK 的符号限制"></a>13.4 Vendor NDK (VNDK) vs Platform NDK 的符号限制</h3><p>Android 8.0 引入 VNDK（Vendor Native Development Kit），明确区分两类符号：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>链接库</th>
+<th>符号范围</th>
+<th>使用方</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>NDK 公开 API</strong></td>
+<td><code>libc.so</code>, <code>libm.so</code>, <code>libandroid.so</code> 等</td>
+<td>严格限制在 NDK 文档列出的符号</td>
+<td>应用和 vendor 模块</td>
+</tr>
+<tr>
+<td><strong>VNDK 库</strong></td>
+<td><code>libbase.so</code>, <code>libutils.so</code>, <code>libbinder.so</code> 等</td>
+<td>VNDK 子集（<code>VNDK-core</code> &#x2F; <code>VNDK-SP</code>）</td>
+<td>Vendor HAL 实现</td>
+</tr>
+<tr>
+<td><strong>平台私有 (LLNDK)</strong></td>
+<td><code>libart.so</code>, <code>libandroid_runtime.so</code></td>
+<td>平台内部使用</td>
+<td>仅 system 分区模块</td>
+</tr>
+<tr>
+<td><strong>SP-HAL (Same-Process HAL)</strong></td>
+<td>VNDK-SP 库子集</td>
+<td>隔离在 <code>sphal</code> namespace</td>
+<td>Google 提供的 HAL 实现</td>
+</tr>
+</tbody></table>
+<p><strong>符号访问规则</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">应用 SO (default namespace):</span><br><span class="line">  ✓ 可以链接: NDK 公开符号（libc.so: LIBC 版本）</span><br><span class="line">  ✗ 不能链接: LIBC_PRIVATE 版本符号</span><br><span class="line">  ✗ 不能链接: libart.so 中的任何符号</span><br><span class="line">  </span><br><span class="line">Vendor SO (sphal namespace):</span><br><span class="line">  ✓ 可以链接: VNDK 库中的 VNDK-core 符号</span><br><span class="line">  ✗ 不能链接: 系统分区中的非 VNDK 库</span><br><span class="line">  </span><br><span class="line">系统 SO (default namespace, system 分区):</span><br><span class="line">  ✓ 可以链接: 所有平台库</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="十四、实战-SO-注入技术"><a href="#十四、实战-SO-注入技术" class="headerlink" title="十四、实战: SO 注入技术"></a>十四、实战: SO 注入技术</h2><p>SO 注入（SO Injection）在 Android 逆向工程中有广泛应用：Hook 框架注入、游戏修改、抓包工具等。以下是主流注入技术及其原理。</p>
+<h3 id="14-1-ptrace-注入法（经典方式）"><a href="#14-1-ptrace-注入法（经典方式）" class="headerlink" title="14.1 ptrace 注入法（经典方式）"></a>14.1 ptrace 注入法（经典方式）</h3><p><strong>原理</strong>：利用 <code>ptrace</code> 系统调用附加到目标进程，劫持其执行流，在目标进程内执行 <code>dlopen</code> 加载 SO。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ptrace 注入流程:</span><br><span class="line"></span><br><span class="line">1. ATTACH: ptrace(PTRACE_ATTACH, pid)</span><br><span class="line">   → 暂停目标进程的所有线程</span><br><span class="line"></span><br><span class="line">2. 保存现场:</span><br><span class="line">   → ptrace(PTRACE_GETREGS) 获取目标进程的 CPU 寄存器状态</span><br><span class="line">   → 保存 PC、SP、LR 等关键寄存器（用于后续恢复）</span><br><span class="line"></span><br><span class="line">3. 注入 shellcode:</span><br><span class="line">   → 在目标进程地址空间中使用 mmap 分配内存</span><br><span class="line">   → ptrace(PTRACE_POKETEXT) 逐字写入 shellcode</span><br><span class="line">   → shellcode 功能: 调用 dlopen(&quot;inject.so&quot;), 调用 dlsym 获取入口函数</span><br><span class="line"></span><br><span class="line">4. 劫持执行:</span><br><span class="line">   → 修改目标进程 PC 指向 shellcode</span><br><span class="line">   → ptrace(PTRACE_SETREGS)</span><br><span class="line">   → ptrace(PTRACE_CONT) 恢复执行</span><br><span class="line"></span><br><span class="line">5. Shellcode 执行完毕:</span><br><span class="line">   → 触发 breakpoint (BKPT) 通知注入进程</span><br><span class="line">   → 注入进程恢复原始寄存器状态</span><br><span class="line"></span><br><span class="line">6. DETACH: ptrace(PTRACE_DETACH, pid)</span><br></pre></td></tr></table></figure>
+
+<p><strong>ARM64 shellcode 模板</strong>（简化版）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 目标: 在远程进程中执行 dlopen(&quot;/data/local/tmp/inject.so&quot;, RTLD_NOW)</span><br><span class="line">// 注意: 需要先定位 dlopen 在 libc.so 中的地址</span><br><span class="line">// 实际 shellcode 还需处理参数传递和返回值</span><br><span class="line"></span><br><span class="line">    // 保存现场</span><br><span class="line">    STP  x29, x30, [sp, #-16]!</span><br><span class="line">    STP  x0,  x1,  [sp, #-16]!</span><br><span class="line">    // ... 保存更多寄存器</span><br><span class="line">    </span><br><span class="line">    // 准备 dlopen 参数</span><br><span class="line">    ADR  x0, so_path          // x0 = &quot;/data/local/tmp/inject.so&quot;</span><br><span class="line">    MOV  x1, #2               // x1 = RTLD_NOW</span><br><span class="line">    LDR  x16, dlopen_addr</span><br><span class="line">    BLR  x16                  // dlopen(path, RTLD_NOW)</span><br><span class="line">    </span><br><span class="line">    // 调用注入 SO 的入口函数</span><br><span class="line">    ADR  x0, entry_name       // x0 = &quot;entry&quot;</span><br><span class="line">    MOV  x1, x19              // x1 = 返回的 handle</span><br><span class="line">    LDR  x16, dlsym_addr</span><br><span class="line">    BLR  x16                  // dlsym(handle, &quot;entry&quot;)</span><br><span class="line">    BLR  x0                   // entry()</span><br><span class="line">    </span><br><span class="line">    // 触发断点通知注入进程完成</span><br><span class="line">    BRK  #0</span><br><span class="line">    </span><br><span class="line">    // 恢复现场</span><br><span class="line">    // ...</span><br><span class="line">    </span><br><span class="line">so_path:    .asciz &quot;/data/local/tmp/inject.so&quot;</span><br><span class="line">entry_name: .asciz &quot;entry&quot;</span><br><span class="line">dlopen_addr: .quad 0x0       // 需在注入前填充真实地址</span><br><span class="line">dlsym_addr:  .quad 0x0</span><br></pre></td></tr></table></figure>
+
+<p><strong>限制</strong>：Android 10+ 对非系统进程的 ptrace 附加有更严格的限制。普通应用进程无法 ptrace attach 其他应用进程（受 seccomp 和 SELinux 限制）。此方法主要用于 root 设备或系统级进程。</p>
+<h3 id="14-2-proc-pid-maps-注入法"><a href="#14-2-proc-pid-maps-注入法" class="headerlink" title="14.2 &#x2F;proc&#x2F;pid&#x2F;maps 注入法"></a>14.2 &#x2F;proc&#x2F;pid&#x2F;maps 注入法</h3><p><strong>原理</strong>：通过修改目标进程的 <code>/proc/pid/mem</code> 和 <code>/proc/pid/maps</code> 来实现代码注入。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">流程:</span><br><span class="line">1. 解析 /proc/pid/maps，找到 libc.so 的加载地址</span><br><span class="line">2. 在 libc.so 中查找 dlopen 和 dlsym 的函数偏移</span><br><span class="line">3. 通过 /proc/pid/mem 写入 shellcode 和注入 SO 路径字符串</span><br><span class="line">4. 需要某种方式触发执行（如利用信号处理函数、或配合 ptrace）</span><br></pre></td></tr></table></figure>
+
+<p><strong>限制</strong>：<code>/proc/pid/mem</code> 写入在 Android 上受到 SELinux 严格限制，非特权进程通常无法写入其他进程的内存。</p>
+<h3 id="14-3-Linker-级注入（LD-PRELOAD-等效）"><a href="#14-3-Linker-级注入（LD-PRELOAD-等效）" class="headerlink" title="14.3 Linker 级注入（LD_PRELOAD 等效）"></a>14.3 Linker 级注入（LD_PRELOAD 等效）</h3><p>Linux 上的 <code>LD_PRELOAD</code> 环境变量在 Android 上<strong>不直接生效</strong>（Android linker 忽略该环境变量）。但等效方法仍然存在：</p>
+<p><strong>方法一：wrap.sh（Android O+）</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 在应用 APK 的 lib/&lt;abi&gt;/ 目录下放置 wrap.sh</span></span><br><span class="line"><span class="comment">#!/system/bin/sh</span></span><br><span class="line"><span class="built_in">export</span> LD_PRELOAD=/data/data/com.example/lib/libhook.so</span><br><span class="line"><span class="built_in">exec</span> <span class="string">&quot;<span class="variable">$@</span>&quot;</span></span><br></pre></td></tr></table></figure>
+<p>Android O (8.0) 引入 <code>wrap.sh</code> 机制：如果 APK 中包含 <code>lib/&lt;abi&gt;/wrap.sh</code>，系统会在启动应用进程前执行该脚本。但 Android 10+ 限制了 <code>wrap.sh</code> 的使用范围（仅 debuggable 应用可用）。</p>
+<p><strong>方法二：修改 linker 的全局 SO 列表</strong><br>Root 设备上可以：</p>
+<ol>
+<li>通过 ptrace 修改 linker 内存中的 <code>g_soinfo_list</code> 链表</li>
+<li>将注入 SO 的 soinfo 插入到目标 SO 的依赖链中</li>
+<li>触发目标 SO 的初始化函数执行</li>
+</ol>
+<p><strong>方法三：Zygote 注入</strong><br>在 Zygote 进程 fork 应用进程之前注入：</p>
+<ol>
+<li>Root 设备上修改 <code>init.rc</code> 中的 Zygote 启动参数</li>
+<li>或使用 Magisk 模块（<code>ZYGISK</code> 模式）在 Zygote 启动时注入</li>
+<li>所有应用进程启动时都会自动加载注入 SO</li>
+</ol>
+<p><strong>方法四：App 进程自注入（Xposed&#x2F;LSPosed 方式）</strong></p>
+<ol>
+<li>使用 <code>XposedBridge.jar</code> 通过 <code>System.loadLibrary()</code> 加载 native hook 库</li>
+<li>在 <code>JNI_OnLoad</code> 中执行 inline hook 或 PLT hook</li>
+<li>无需 ptrace 或 root，但需要 Xposed 框架环境</li>
+</ol>
+<h3 id="14-4-Android-安全机制对抗总结"><a href="#14-4-Android-安全机制对抗总结" class="headerlink" title="14.4 Android 安全机制对抗总结"></a>14.4 Android 安全机制对抗总结</h3><table>
+<thead>
+<tr>
+<th>Android 版本</th>
+<th>安全机制</th>
+<th>对 SO 注入的影响</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>5.0+</td>
+<td>PIE 强制</td>
+<td>注入 SO 必须编译为 PIE（ET_DYN）</td>
+</tr>
+<tr>
+<td>6.0+</td>
+<td>FULL RELRO + GOT 只读</td>
+<td>GOT Hook 失效，必须 inline hook</td>
+</tr>
+<tr>
+<td>7.0+</td>
+<td>Linker namespace 隔离</td>
+<td>注入 SO 不能直接链接平台私有库</td>
+</tr>
+<tr>
+<td>8.0+</td>
+<td>CFI (Control Flow Integrity)</td>
+<td>间接调用被硬件保护，限制 inline hook</td>
+</tr>
+<tr>
+<td>10+</td>
+<td>ptrace 限制</td>
+<td>普通应用无法 ptrace attach 其他进程</td>
+</tr>
+<tr>
+<td>10+</td>
+<td>系统分区只读 (APEX)</td>
+<td>无法修改 &#x2F;system 下文件进行注入</td>
+</tr>
+<tr>
+<td>12+</td>
+<td>MTE (Memory Tagging Extension)</td>
+<td>内存标记位增加 shellcode 注入难度</td>
+</tr>
+<tr>
+<td>13+</td>
+<td>更严格的 seccomp 策略</td>
+<td>限制可用的系统调用集合</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="十五、完整-Python-ELF-解析器"><a href="#十五、完整-Python-ELF-解析器" class="headerlink" title="十五、完整 Python ELF 解析器"></a>十五、完整 Python ELF 解析器</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;ELF 解析器 for Android .so files&quot;&quot;&quot;</span></span><br><span class="line"><span class="keyword">import</span> struct</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"></span><br><span class="line"><span class="comment"># Architecture constants</span></span><br><span class="line">EM_AARCH64 = <span class="number">183</span></span><br><span class="line">EM_ARM = <span class="number">40</span></span><br><span class="line">EM_X86_64 = <span class="number">62</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Program header types</span></span><br><span class="line">PT_LOAD = <span class="number">1</span></span><br><span class="line">PT_DYNAMIC = <span class="number">2</span></span><br><span class="line">PT_INTERP = <span class="number">3</span></span><br><span class="line">PT_GNU_RELRO = <span class="number">0x6474E552</span></span><br><span class="line">PT_GNU_STACK = <span class="number">0x6474E551</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Dynamic tags</span></span><br><span class="line">DT_NEEDED = <span class="number">1</span></span><br><span class="line">DT_SONAME = <span class="number">14</span></span><br><span class="line">DT_STRTAB = <span class="number">5</span></span><br><span class="line">DT_SYMTAB = <span class="number">6</span></span><br><span class="line">DT_STRSZ = <span class="number">10</span></span><br><span class="line">DT_GNU_HASH = <span class="number">0x6FFFFEF5</span></span><br><span class="line">DT_INIT_ARRAY = <span class="number">25</span></span><br><span class="line">DT_FINI_ARRAY = <span class="number">26</span></span><br><span class="line">DT_BIND_NOW = <span class="number">24</span></span><br><span class="line">DT_FLAGS_1 = <span class="number">0x6FFFFFFB</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Section types</span></span><br><span class="line">SHT_DYNSYM = <span class="number">11</span></span><br><span class="line">SHT_STRTAB = <span class="number">3</span></span><br><span class="line"></span><br><span class="line">EI_CLASS_64 = <span class="number">2</span></span><br><span class="line">EI_DATA_LSB = <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ELFParser</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, path</span>):</span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(path, <span class="string">&#x27;rb&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">            <span class="variable language_">self</span>.data = f.read()</span><br><span class="line">        <span class="variable language_">self</span>.is_64 = <span class="variable language_">self</span>.data[<span class="number">4</span>] == EI_CLASS_64</span><br><span class="line">        <span class="variable language_">self</span>.is_le = <span class="variable language_">self</span>.data[<span class="number">5</span>] == EI_DATA_LSB</span><br><span class="line">        <span class="variable language_">self</span>.endian = <span class="string">&#x27;&lt;&#x27;</span> <span class="keyword">if</span> <span class="variable language_">self</span>.is_le <span class="keyword">else</span> <span class="string">&#x27;&gt;&#x27;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">parse_header</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="keyword">if</span> <span class="variable language_">self</span>.is_64:</span><br><span class="line">            fmt = <span class="string">f&#x27;<span class="subst">&#123;self.endian&#125;</span>16sHHIIQQQIHHHHHH&#x27;</span></span><br><span class="line">            fields = struct.unpack_from(fmt, <span class="variable language_">self</span>.data, <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">return</span> &#123;</span><br><span class="line">                <span class="string">&#x27;e_type&#x27;</span>: fields[<span class="number">1</span>], <span class="string">&#x27;e_machine&#x27;</span>: fields[<span class="number">2</span>],</span><br><span class="line">                <span class="string">&#x27;e_entry&#x27;</span>: fields[<span class="number">4</span>], <span class="string">&#x27;e_phoff&#x27;</span>: fields[<span class="number">5</span>],</span><br><span class="line">                <span class="string">&#x27;e_shoff&#x27;</span>: fields[<span class="number">6</span>], <span class="string">&#x27;e_phnum&#x27;</span>: fields[<span class="number">12</span>],</span><br><span class="line">                <span class="string">&#x27;e_shnum&#x27;</span>: fields[<span class="number">14</span>], <span class="string">&#x27;e_shstrndx&#x27;</span>: fields[<span class="number">15</span>],</span><br><span class="line">            &#125;</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="comment"># 32-bit ELF</span></span><br><span class="line">            fmt = <span class="string">f&#x27;<span class="subst">&#123;self.endian&#125;</span>16sHHIIIIIHHHHHH&#x27;</span></span><br><span class="line">            fields = struct.unpack_from(fmt, <span class="variable language_">self</span>.data, <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">return</span> &#123;</span><br><span class="line">                <span class="string">&#x27;e_type&#x27;</span>: fields[<span class="number">1</span>], <span class="string">&#x27;e_machine&#x27;</span>: fields[<span class="number">2</span>],</span><br><span class="line">                <span class="string">&#x27;e_entry&#x27;</span>: fields[<span class="number">4</span>], <span class="string">&#x27;e_phoff&#x27;</span>: fields[<span class="number">5</span>],</span><br><span class="line">                <span class="string">&#x27;e_shoff&#x27;</span>: fields[<span class="number">6</span>], <span class="string">&#x27;e_phnum&#x27;</span>: fields[<span class="number">11</span>],</span><br><span class="line">                <span class="string">&#x27;e_shnum&#x27;</span>: fields[<span class="number">13</span>], <span class="string">&#x27;e_shstrndx&#x27;</span>: fields[<span class="number">14</span>],</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">parse_program_headers</span>(<span class="params">self, hdr</span>):</span><br><span class="line">        phdrs = []</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(hdr[<span class="string">&#x27;e_phnum&#x27;</span>]):</span><br><span class="line">            <span class="keyword">if</span> <span class="variable language_">self</span>.is_64:</span><br><span class="line">                off = hdr[<span class="string">&#x27;e_phoff&#x27;</span>] + i * <span class="number">56</span></span><br><span class="line">                typ, flags, f_off, vaddr, paddr, fsz, msz, align = \</span><br><span class="line">                    struct.unpack_from(<span class="string">f&#x27;<span class="subst">&#123;self.endian&#125;</span>IIQQQQQQ&#x27;</span>, <span class="variable language_">self</span>.data, off)</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                off = hdr[<span class="string">&#x27;e_phoff&#x27;</span>] + i * <span class="number">32</span></span><br><span class="line">                typ, f_off, vaddr, paddr, fsz, msz, flags, align = \</span><br><span class="line">                    struct.unpack_from(<span class="string">f&#x27;<span class="subst">&#123;self.endian&#125;</span>IIIIIIII&#x27;</span>, <span class="variable language_">self</span>.data, off)</span><br><span class="line">            <span class="keyword">if</span> typ <span class="keyword">in</span> [PT_LOAD, PT_DYNAMIC, PT_GNU_RELRO, PT_GNU_STACK]:</span><br><span class="line">                phdrs.append(&#123;</span><br><span class="line">                    <span class="string">&#x27;type&#x27;</span>: typ, <span class="string">&#x27;flags&#x27;</span>: flags, <span class="string">&#x27;vaddr&#x27;</span>: vaddr,</span><br><span class="line">                    <span class="string">&#x27;filesz&#x27;</span>: fsz, <span class="string">&#x27;memsz&#x27;</span>: msz, <span class="string">&#x27;offset&#x27;</span>: f_off,</span><br><span class="line">                &#125;)</span><br><span class="line">        <span class="keyword">return</span> phdrs</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">parse_sections</span>(<span class="params">self, hdr</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;解析 section names 并列出关键 section&quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">if</span> hdr[<span class="string">&#x27;e_shoff&#x27;</span>] == <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">return</span> &#123;&#125;  <span class="comment"># stripped，没有 section headers</span></span><br><span class="line">        <span class="keyword">if</span> <span class="variable language_">self</span>.is_64:</span><br><span class="line">            entry_size = <span class="number">64</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            entry_size = <span class="number">40</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 先读取 .shstrtab 获取 section 名</span></span><br><span class="line">        shstr_off = hdr[<span class="string">&#x27;e_shoff&#x27;</span>] + hdr[<span class="string">&#x27;e_shstrndx&#x27;</span>] * entry_size</span><br><span class="line">        <span class="keyword">if</span> <span class="variable language_">self</span>.is_64:</span><br><span class="line">            _, _, _, _, sh_offset, sh_size = struct.unpack_from(</span><br><span class="line">                <span class="string">f&#x27;<span class="subst">&#123;self.endian&#125;</span>IIQQQQ&#x27;</span>, <span class="variable language_">self</span>.data, shstr_off)[:<span class="number">6</span>]</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            _, _, _, sh_offset, sh_size = struct.unpack_from(</span><br><span class="line">                <span class="string">f&#x27;<span class="subst">&#123;self.endian&#125;</span>IIIII&#x27;</span>, <span class="variable language_">self</span>.data, shstr_off)[:<span class="number">5</span>]</span><br><span class="line"></span><br><span class="line">        sections = &#123;&#125;</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(hdr[<span class="string">&#x27;e_shnum&#x27;</span>]):</span><br><span class="line">            s_off = hdr[<span class="string">&#x27;e_shoff&#x27;</span>] + i * entry_size</span><br><span class="line">            <span class="keyword">if</span> <span class="variable language_">self</span>.is_64:</span><br><span class="line">                name_off, shtype, _, addr, offset, size = \</span><br><span class="line">                    struct.unpack_from(<span class="string">f&#x27;<span class="subst">&#123;self.endian&#125;</span>IIQQQQ&#x27;</span>, <span class="variable language_">self</span>.data, s_off)[:<span class="number">6</span>]</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                name_off, shtype, _, addr, offset, size = \</span><br><span class="line">                    struct.unpack_from(<span class="string">f&#x27;<span class="subst">&#123;self.endian&#125;</span>IIIII&#x27;</span>, <span class="variable language_">self</span>.data, s_off)[:<span class="number">5</span>]</span><br><span class="line">            <span class="keyword">if</span> size &gt; <span class="number">0</span> <span class="keyword">and</span> shtype <span class="keyword">in</span> [SHT_DYNSYM, SHT_STRTAB]:</span><br><span class="line">                name = <span class="variable language_">self</span>._read_str(<span class="variable language_">self</span>.data, sh_offset + name_off)</span><br><span class="line">                sections[name] = &#123;<span class="string">&#x27;addr&#x27;</span>: addr, <span class="string">&#x27;offset&#x27;</span>: offset, <span class="string">&#x27;size&#x27;</span>: size&#125;</span><br><span class="line">        <span class="keyword">return</span> sections</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">parse_dynamic</span>(<span class="params">self, hdr</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;解析 .dynamic section 获取依赖和符号表信息&quot;&quot;&quot;</span></span><br><span class="line">        phdrs = <span class="variable language_">self</span>.parse_program_headers(hdr)</span><br><span class="line">        dyn_info = &#123;<span class="string">&#x27;needed&#x27;</span>: [], <span class="string">&#x27;strtab&#x27;</span>: <span class="number">0</span>, <span class="string">&#x27;symtab&#x27;</span>: <span class="number">0</span>, <span class="string">&#x27;strsz&#x27;</span>: <span class="number">0</span>&#125;</span><br><span class="line">        dyn_off = <span class="literal">None</span></span><br><span class="line">        <span class="keyword">for</span> p <span class="keyword">in</span> phdrs:</span><br><span class="line">            <span class="keyword">if</span> p[<span class="string">&#x27;type&#x27;</span>] == PT_DYNAMIC:</span><br><span class="line">                dyn_off = p[<span class="string">&#x27;offset&#x27;</span>]</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">        <span class="keyword">if</span> dyn_off <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            <span class="keyword">return</span> dyn_info</span><br><span class="line"></span><br><span class="line">        entry_size = <span class="number">16</span> <span class="keyword">if</span> <span class="variable language_">self</span>.is_64 <span class="keyword">else</span> <span class="number">8</span></span><br><span class="line">        i = <span class="number">0</span></span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            d_off = dyn_off + i * entry_size</span><br><span class="line">            <span class="keyword">if</span> <span class="variable language_">self</span>.is_64:</span><br><span class="line">                d_tag, d_val = struct.unpack_from(<span class="string">f&#x27;<span class="subst">&#123;self.endian&#125;</span>QQ&#x27;</span>, <span class="variable language_">self</span>.data, d_off)</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                d_tag, d_val = struct.unpack_from(<span class="string">f&#x27;<span class="subst">&#123;self.endian&#125;</span>II&#x27;</span>, <span class="variable language_">self</span>.data, d_off)</span><br><span class="line">            <span class="keyword">if</span> d_tag == <span class="number">0</span>:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            <span class="keyword">if</span> d_tag == DT_NEEDED:</span><br><span class="line">                dyn_info[<span class="string">&#x27;needed&#x27;</span>].append(d_val)  <span class="comment"># offset in .dynstr</span></span><br><span class="line">            <span class="keyword">elif</span> d_tag == DT_STRTAB:</span><br><span class="line">                dyn_info[<span class="string">&#x27;strtab&#x27;</span>] = d_val</span><br><span class="line">            <span class="keyword">elif</span> d_tag == DT_SYMTAB:</span><br><span class="line">                dyn_info[<span class="string">&#x27;symtab&#x27;</span>] = d_val</span><br><span class="line">            <span class="keyword">elif</span> d_tag == DT_STRSZ:</span><br><span class="line">                dyn_info[<span class="string">&#x27;strsz&#x27;</span>] = d_val</span><br><span class="line">            i += <span class="number">1</span></span><br><span class="line">        <span class="keyword">return</span> dyn_info</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_read_str</span>(<span class="params">self, data, offset</span>):</span><br><span class="line">        end = data.index(<span class="number">0</span>, offset)</span><br><span class="line">        <span class="keyword">return</span> data[offset:end].decode(<span class="string">&#x27;ascii&#x27;</span>, errors=<span class="string">&#x27;replace&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">dump</span>(<span class="params">self</span>):</span><br><span class="line">        hdr = <span class="variable language_">self</span>.parse_header()</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;ELF Type: <span class="subst">&#123;<span class="string">&#x27;64-bit&#x27;</span> <span class="keyword">if</span> self.is_64 <span class="keyword">else</span> <span class="string">&#x27;32-bit&#x27;</span>&#125;</span>&quot;</span>)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;Machine:  <span class="subst">&#123;hdr[<span class="string">&#x27;e_machine&#x27;</span>]&#125;</span> (<span class="subst">&#123;<span class="string">&#x27;ARM64&#x27;</span> <span class="keyword">if</span> hdr[<span class="string">&#x27;e_machine&#x27;</span>]==EM_AARCH64 <span class="keyword">else</span> <span class="string">&#x27;ARM&#x27;</span> <span class="keyword">if</span> hdr[<span class="string">&#x27;e_machine&#x27;</span>]==EM_ARM <span class="keyword">else</span> <span class="string">&#x27;x86-64&#x27;</span> <span class="keyword">if</span> hdr[<span class="string">&#x27;e_machine&#x27;</span>]==EM_X86_64 <span class="keyword">else</span> <span class="string">&#x27;?&#x27;</span>&#125;</span>)&quot;</span>)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;Entry:    0x<span class="subst">&#123;hdr[<span class="string">&#x27;e_entry&#x27;</span>]:X&#125;</span>&quot;</span>)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;PHdr:     <span class="subst">&#123;hdr[<span class="string">&#x27;e_phnum&#x27;</span>]&#125;</span> headers @ 0x<span class="subst">&#123;hdr[<span class="string">&#x27;e_phoff&#x27;</span>]:X&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">        phdrs = <span class="variable language_">self</span>.parse_program_headers(hdr)</span><br><span class="line">        <span class="keyword">for</span> p <span class="keyword">in</span> phdrs:</span><br><span class="line">            names = &#123;PT_LOAD: <span class="string">&#x27;LOAD&#x27;</span>, PT_DYNAMIC: <span class="string">&#x27;DYNAMIC&#x27;</span>,</span><br><span class="line">                     PT_GNU_RELRO: <span class="string">&#x27;GNU_RELRO&#x27;</span>, PT_GNU_STACK: <span class="string">&#x27;GNU_STACK&#x27;</span>&#125;</span><br><span class="line">            name = names.get(p[<span class="string">&#x27;type&#x27;</span>], <span class="string">f&quot;0x<span class="subst">&#123;p[<span class="string">&#x27;type&#x27;</span>]:X&#125;</span>&quot;</span>)</span><br><span class="line">            flags = <span class="string">&#x27;&#x27;</span></span><br><span class="line">            <span class="keyword">if</span> p[<span class="string">&#x27;flags&#x27;</span>] &amp; <span class="number">4</span>: flags += <span class="string">&#x27;R&#x27;</span></span><br><span class="line">            <span class="keyword">if</span> p[<span class="string">&#x27;flags&#x27;</span>] &amp; <span class="number">2</span>: flags += <span class="string">&#x27;W&#x27;</span></span><br><span class="line">            <span class="keyword">if</span> p[<span class="string">&#x27;flags&#x27;</span>] &amp; <span class="number">1</span>: flags += <span class="string">&#x27;X&#x27;</span></span><br><span class="line">            <span class="built_in">print</span>(<span class="string">f&quot;  <span class="subst">&#123;name:<span class="number">12</span>&#125;</span> vaddr=0x<span class="subst">&#123;p[<span class="string">&#x27;vaddr&#x27;</span>]:X&#125;</span> filesz=0x<span class="subst">&#123;p[<span class="string">&#x27;filesz&#x27;</span>]:X&#125;</span> memsz=0x<span class="subst">&#123;p[<span class="string">&#x27;memsz&#x27;</span>]:X&#125;</span> <span class="subst">&#123;flags&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">        dyn = <span class="variable language_">self</span>.parse_dynamic(hdr)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;\nDT_NEEDED: <span class="subst">&#123;dyn[<span class="string">&#x27;needed&#x27;</span>]&#125;</span>&quot;</span>)</span><br><span class="line">        <span class="comment"># 通过 .dynstr 解析依赖 SO 名称</span></span><br><span class="line">        <span class="keyword">if</span> dyn[<span class="string">&#x27;strtab&#x27;</span>] <span class="keyword">and</span> dyn[<span class="string">&#x27;needed&#x27;</span>]:</span><br><span class="line">            strtab_base = dyn[<span class="string">&#x27;strtab&#x27;</span>]</span><br><span class="line">            <span class="keyword">for</span> offset <span class="keyword">in</span> dyn[<span class="string">&#x27;needed&#x27;</span>]:</span><br><span class="line">                name = <span class="variable language_">self</span>._read_str(<span class="variable language_">self</span>.data, strtab_base + offset)</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">f&quot;  → <span class="subst">&#123;name&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 检查 FULL RELRO</span></span><br><span class="line">        <span class="comment"># 需要遍历 .dynamic segment 来找 DT_BIND_NOW 或 DF_1_NOW</span></span><br><span class="line">        relro = <span class="string">&quot;Unknown&quot;</span></span><br><span class="line">        <span class="keyword">if</span> <span class="variable language_">self</span>.is_64:</span><br><span class="line">            entry_size = <span class="number">16</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            entry_size = <span class="number">8</span></span><br><span class="line">        <span class="comment"># Find PT_DYNAMIC first to get the file offset of .dynamic</span></span><br><span class="line">        <span class="keyword">for</span> p <span class="keyword">in</span> <span class="variable language_">self</span>.parse_program_headers(hdr):</span><br><span class="line">            <span class="keyword">if</span> p[<span class="string">&#x27;type&#x27;</span>] == PT_DYNAMIC:</span><br><span class="line">                dyn_file_off = p[<span class="string">&#x27;offset&#x27;</span>]</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            dyn_file_off = <span class="literal">None</span></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> dyn_file_off:</span><br><span class="line">            i = <span class="number">0</span></span><br><span class="line">            <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">                d_off = dyn_file_off + i * entry_size</span><br><span class="line">                <span class="keyword">if</span> <span class="variable language_">self</span>.is_64:</span><br><span class="line">                    d_tag, d_val = struct.unpack_from(<span class="string">f&#x27;<span class="subst">&#123;self.endian&#125;</span>QQ&#x27;</span>, <span class="variable language_">self</span>.data, d_off)</span><br><span class="line">                <span class="keyword">else</span>:</span><br><span class="line">                    d_tag, d_val = struct.unpack_from(<span class="string">f&#x27;<span class="subst">&#123;self.endian&#125;</span>II&#x27;</span>, <span class="variable language_">self</span>.data, d_off)</span><br><span class="line">                <span class="keyword">if</span> d_tag == <span class="number">0</span>:</span><br><span class="line">                    <span class="keyword">break</span></span><br><span class="line">                <span class="keyword">if</span> d_tag == DT_BIND_NOW:</span><br><span class="line">                    relro = <span class="string">&quot;FULL RELRO&quot;</span></span><br><span class="line">                    <span class="keyword">break</span></span><br><span class="line">                <span class="keyword">if</span> d_tag == DT_FLAGS_1 <span class="keyword">and</span> (d_val &amp; <span class="number">1</span>):</span><br><span class="line">                    relro = <span class="string">&quot;FULL RELRO (DF_1_NOW)&quot;</span></span><br><span class="line">                    <span class="keyword">break</span></span><br><span class="line">                i += <span class="number">1</span></span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;\nRELRO: <span class="subst">&#123;relro&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    parser = ELFParser(sys.argv[<span class="number">1</span>] <span class="keyword">if</span> <span class="built_in">len</span>(sys.argv) &gt; <span class="number">1</span> <span class="keyword">else</span> <span class="string">&#x27;libnative.so&#x27;</span>)</span><br><span class="line">    parser.dump()</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="十六、逆向实战"><a href="#十六、逆向实战" class="headerlink" title="十六、逆向实战"></a>十六、逆向实战</h2><h3 id="16-1-函数定位与符号恢复"><a href="#16-1-函数定位与符号恢复" class="headerlink" title="16.1 函数定位与符号恢复"></a>16.1 函数定位与符号恢复</h3><p>发布版 SO 通常 strip 了 <code>.symtab</code> 和 <code>.strtab</code>，但 <strong><code>.dynsym</code> 始终保留</strong>（动态链接需要）。通过 <code>.dynsym</code> 可以恢复所有导出&#x2F;导入的 JNI 函数名。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 查看导入的 libc 函数</span></span><br><span class="line">readelf -r libnative.so | grep <span class="string">&quot;LIBC&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看 JNI 导出函数 (静态注册)</span></span><br><span class="line">readelf -s libnative.so | grep <span class="string">&quot;Java_&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>对于动态注册的 JNI，函数名不在符号表中，需要反汇编 <code>JNI_OnLoad</code> 找到 <code>RegisterNatives</code> 调用。</p>
+<h3 id="16-2-Inline-Hook-原理"><a href="#16-2-Inline-Hook-原理" class="headerlink" title="16.2 Inline Hook 原理"></a>16.2 Inline Hook 原理</h3><p>由于 FULL RELRO 保护了 GOT，modern Hook 框架使用 inline hook：</p>
+<ol>
+<li>在目标函数开头保存前 N 条指令（N ≥ 4，ARM64 指令 4 字节）</li>
+<li>用 <code>LDR X17, #8; BR X17; .quad hook_addr</code>（3 条指令 &#x3D; 12 字节）覆写函数开头</li>
+<li>当目标函数被调用时，跳转到 hook 函数</li>
+<li>hook 函数内部调用被保存的原始指令 + 跳回原函数继续执行</li>
+</ol>
+<h3 id="16-3-SO-加固检测"><a href="#16-3-SO-加固检测" class="headerlink" title="16.3 SO 加固检测"></a>16.3 SO 加固检测</h3><p>加固 SO 的常见特征：</p>
+<ul>
+<li><code>.init_array</code> 中有解密&#x2F;反调试函数</li>
+<li>存在非标准的 segment（自定义 PT_LOAD 类型）</li>
+<li><code>.dynamic</code> 被修改或缺少某些预期 tag</li>
+<li><code>.text</code> 段在文件中和内存中内容不一致（运行时解密）</li>
+<li><code>p_filesz != p_memsz</code> 的 LOAD segment 异常大</li>
+</ul>
+<hr>
+<h2 id="面试常考问题"><a href="#面试常考问题" class="headerlink" title="面试常考问题"></a>面试常考问题</h2><p><strong>Q1: Android 上 ELF 和 Linux ELF 的主要差异是什么？</strong><br>A: (1) Android 统一使用 ET_DYN 类型，无 ET_EXEC；(2) 引入 RELR 压缩重定位格式（DT_ANDROID_RELR）；(3) linker 实现 namespace 隔离机制，限制应用访问非 NDK 系统符号；(4) 不支持 <code>LD_PRELOAD</code> 环境变量（linker 在 Android 7.0+ 中忽略 <code>DT_RPATH</code>&#x2F;<code>LD_LIBRARY_PATH</code> 的应用设置）；(5) 强制 FULL RELRO + PIE。</p>
+<p><strong>Q2: ELF 加载时，<code>.bss</code> 段为什么在文件中不占空间？</strong><br>A: <code>.bss</code> 包含未初始化的全局变量（值均为 0）。Program Header 中 <code>.bss</code> 的 <code>p_filesz=0</code> 而 <code>p_memsz&gt;0</code>，linker 在 <code>mmap</code> 时通过 <code>MAP_ANONYMOUS</code> 为多出的内存分配零填充页，避免浪费磁盘空间。</p>
+<p><strong>Q3: FULL RELRO 下还如何实现 Native Hook？</strong><br>A: GOT 不可写后，三种方法：(1) <strong>Inline hook</strong> — 直接修改目标函数的前几条指令，跳转到 hook 桩代码；(2) <strong>PLT hook via dlopen</strong> — 用 <code>dlsym</code> 获取函数地址，再用 inline hook；(3) <strong>linker-based hook</strong> — Hook <code>__loader_dlopen</code> 或 <code>do_dlopen</code> 等 linker 内部函数，在加载时改写符号解析结果。</p>
+<p><strong>Q4: <code>.rela.dyn</code> 与 <code>.rela.plt</code> 的区别？</strong><br>A: <code>.rela.dyn</code> 包含非 PLT 重定位：全局数据指针（如 C++ vtable、字符串指针）和作为数据引用的函数指针。这些在加载时必须立即解析（<code>R_AARCH64_RELATIVE</code>），与 BIND_NOW&#x2F;Lazy 无关。<code>.rela.plt</code> 包含 PLT 函数重定位（如 <code>printf</code>, <code>malloc</code>），由 <code>R_AARCH64_JUMP_SLOT</code> 描述，在 lazy binding 下延迟解析。FULL RELRO 下两者在加载时都全部解析。</p>
+<p><strong>Q5: 如何从 tombstone 中的 PC 地址定位到源码行？</strong><br>A: tombstone 中的 PC 是运行时的虚拟地址。需要：(1) 从 tombstone 的 memory map 区域找到崩溃 SO 的基址；(2) 计算 <code>偏移 = PC - 基址</code>；(3) 使用 <code>addr2line -e obj/local/arm64-v8a/libxxx.so &lt;偏移&gt;</code> 转换到源码行。注意必须使用<strong>未 strip 的带符号 SO</strong>（<code>obj/local/&lt;abi&gt;/</code> 下的文件，而非 <code>libs/&lt;abi&gt;/</code> 下 strip 后的产物）。</p>
+<p><strong>Q6: R_AARCH64_JUMP_SLOT 和 R_AARCH64_GLOB_DAT 有什么本质区别？</strong><br>A: 两者都设置 GOT 条目，但用途和来源不同：JUMP_SLOT (1026) 来自 <code>.rela.plt</code>，用于 PLT 函数调用 (<code>func()</code>)，在 Partial RELRO 下可延迟解析；GLOB_DAT (1025) 来自 <code>.rela.dyn</code>，用于数据引用（如 <code>&amp;func</code> 取函数地址赋给全局变量），<strong>始终在加载时立即解析</strong>。<code>.rela.dyn</code> 的处理独立于 <code>BIND_NOW</code> 标志。</p>
+<p><strong>Q7: Android linke 符号版本化中，VER_NDX_LOCAL 和 STV_HIDDEN 的作用有何不同？</strong><br>A: 两者都限制符号可见性，但作用层级不同：(1) <strong>VER_NDX_LOCAL</strong>（<code>.gnu.version</code> 中值为 0）在运行时查找阶段过滤，linker 在 BFS 搜索时跳过这些符号，是 GNU ELF 的版本化机制；(2) <strong>STV_HIDDEN</strong>（<code>st_other</code> 字段）更底层：编译器和静态链接器就不允许外部引用 HIDDEN 符号，直接报链接错误。两者叠加时效果一致，但作用时机不同。</p>
+<p><strong>Q8: soinfo 的 load_bias 和 base 是什么关系？</strong><br>A: <code>base</code> 是 linker 调用 <code>mmap</code> 返回的加载基址（由 kernel ASLR 随机化）。<code>load_bias = base - min(所有 PT_LOAD 的 p_vaddr)</code>。对于首个 LOAD 段 p_vaddr&#x3D;0 的 SO，load_bias &#x3D;&#x3D; base；对于首个 LOAD 段 p_vaddr 不为 0 的 SO，load_bias !&#x3D; base。所有 ELF 内地址的运行时转换公式为 <code>runtime_addr = p_vaddr + load_bias</code>。</p>
+<hr>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li>AOSP: <code>bionic/linker/linker.cpp</code> — Android 动态链接器核心实现（<code>dlopen</code>, <code>dlsym</code>, <code>do_dlopen</code>, <code>find_library</code>, <code>link_library</code>）</li>
+<li>AOSP: <code>bionic/linker/linker_soinfo.h</code> — <code>soinfo</code> 结构体完整定义（含所有字段和标志位）</li>
+<li>AOSP: <code>bionic/libc/kernel/uapi/linux/elf.h</code> — ELF 结构定义（<code>Elf64_Ehdr</code>, <code>Elf64_Phdr</code>, <code>Elf64_Shdr</code>, <code>Elf64_Sym</code>, <code>Elf64_Rela</code>, <code>Elf64_Dyn</code>）</li>
+<li>AOSP: <code>bionic/libc/kernel/uapi/asm-arm64/asm/elf.h</code> — ARM64 重定位类型定义（<code>R_AARCH64_RELATIVE</code>, <code>R_AARCH64_ABS64</code> 等）</li>
+<li>AOSP: <code>bionic/linker/linker_relocs.h</code> — 重定位处理实现（<code>process_relocation</code>）</li>
+<li>AOSP: <code>bionic/linker/linker_gnu_hash.cpp</code> — GNU hash 表查找和符号版本匹配（<code>check_symbol_version</code>）</li>
+<li>AOSP: <code>bionic/linker/linker_namespaces.cpp</code> — Namespace 隔离实现（<code>android_namespace_t</code>, namespace 创建和链接规则）</li>
+<li>AOSP: <code>bionic/linker/arch/arm64/begin.S</code> — ARM64 PLT resolver stub 汇编实现（<code>_dl_runtime_resolve</code> 入口）</li>
+<li>AOSP: <code>bionic/libc/include/android/dlext.h</code> — <code>android_dlopen_ext</code> 和 <code>ANDROID_DLEXT_*</code> 标志定义</li>
+<li>AOSP: <code>bionic/linker/linker_phdr.cpp</code> — ELF Program Header 解析和 LOAD segment mmap 实现</li>
+<li>ELF Specification: <code>http://www.sco.com/developers/gabi/latest/contents.html</code></li>
+<li>ARM ELF64 (AAELF64): <code>https://developer.arm.com/documentation/ihi0056</code></li>
+<li>RELR 压缩重定位: <code>https://groups.google.com/g/generic-abi/c/bX460iggiKg</code></li>
+</ul>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F/">文件格式    </a><a class="post-meta__tags" href="/tags/%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8/">逆向安全    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/05/25/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%9F%BA%E7%A1%80%E7%AF%87%E3%80%91resource.arsc%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【逆向安全技术-基础篇】resource.arsc文件格式解析</span></div></a></div><div class="next-post pull_right"><a href="/2021/05/15/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E9%80%86%E5%90%91%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF-%E5%9F%BA%E7%A1%80%E7%AF%87%E3%80%91AndroidManifest.xml%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【逆向安全技术-基础篇】AndroidManifest.xml文件格式解析</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2021/06/01/高级Android-【逆向安全技术-基础篇】dex文件格式解析/" title="【逆向安全技术-基础篇】dex文件格式解析"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【逆向安全技术-基础篇】dex文件格式解析</div></a></div><div class="relatedPosts_item"><a href="/2021/05/25/高级Android-【逆向安全技术-基础篇】resource.arsc文件格式解析/" title="【逆向安全技术-基础篇】resource.arsc文件格式解析"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【逆向安全技术-基础篇】resource.arsc文件格式解析</div></a></div><div class="relatedPosts_item"><a href="/2021/05/15/高级Android-【逆向安全技术-基础篇】AndroidManifest.xml文件格式解析/" title="【逆向安全技术-基础篇】AndroidManifest.xml文件格式解析"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【逆向安全技术-基础篇】AndroidManifest.xml文件格式解析</div></a></div><div class="relatedPosts_item"><a href="/2021/03/01/重拾Android-【深入理解JVM字节码】第一篇、class文件结构/" title="【深入理解JVM字节码】第一篇、class文件结构"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/247.jpg"><div class="relatedPosts_title">【深入理解JVM字节码】第一篇、class文件结构</div></a></div><div class="relatedPosts_item"><a href="/2022/09/01/重拾Android-【实战系列】IO之AES加密加固/" title="【实战系列】IO之AES加密加固"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/dilyara-garifullina-PxuncMFiuvg-unsplash.jpg"><div class="relatedPosts_title">【实战系列】IO之AES加密加固</div></a></div><div class="relatedPosts_item"><a href="/2021/06/10/高级Android-【逆向安全技术-基础篇】NDK开发技巧/" title="【逆向安全技术-基础篇】NDK开发技巧"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">【逆向安全技术-基础篇】NDK开发技巧</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

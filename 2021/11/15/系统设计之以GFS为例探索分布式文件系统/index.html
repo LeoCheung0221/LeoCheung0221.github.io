@@ -1,0 +1,414 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>以GFS为例探索分布式文件系统 | ONE·PIECE</title><meta name="description" content="以GFS为例探索分布式文件系统"><meta name="keywords" content="Google"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="以GFS为例探索分布式文件系统"><meta name="twitter:description" content="以GFS为例探索分布式文件系统"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/253.jpg"><meta property="og:type" content="article"><meta property="og:title" content="以GFS为例探索分布式文件系统"><meta property="og:url" content="http://tufusi.com/2021/11/15/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%BB%A5GFS%E4%B8%BA%E4%BE%8B%E6%8E%A2%E7%B4%A2%E5%88%86%E5%B8%83%E5%BC%8F%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="以GFS为例探索分布式文件系统"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/253.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2021/11/15/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%BB%A5GFS%E4%B8%BA%E4%BE%8B%E6%8E%A2%E7%B4%A2%E5%88%86%E5%B8%83%E5%BC%8F%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/"><link rel="prev" title="系统设计之爬虫系统与搜索建议系统" href="http://tufusi.com/2021/11/20/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E7%88%AC%E8%99%AB%E7%B3%BB%E7%BB%9F%E4%B8%8E%E6%90%9C%E7%B4%A2%E5%BB%BA%E8%AE%AE%E7%B3%BB%E7%BB%9F/"><link rel="next" title="一致性哈希算法&amp;设计短网址系统" href="http://tufusi.com/2021/11/10/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C%E7%AE%97%E6%B3%95-%E8%AE%BE%E8%AE%A1%E7%9F%AD%E7%BD%91%E5%9D%80%E7%B3%BB%E7%BB%9F/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81GFS%E7%9A%84%E8%AE%BE%E8%AE%A1%E7%9B%AE%E6%A0%87%E4%B8%8E%E5%81%87%E8%AE%BE"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、GFS的设计目标与假设</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E4%BB%8EGoogle%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%E7%90%86%E8%A7%A3%E8%AE%BE%E8%AE%A1%E5%8F%96%E8%88%8D"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">从Google的应用场景理解设计取舍</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81GFS%E7%9A%84%E6%9E%B6%E6%9E%84"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、GFS的架构</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#GFS%E6%9E%B6%E6%9E%84%E7%9A%84ASCII%E7%A4%BA%E6%84%8F%E5%9B%BE"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">GFS架构的ASCII示意图</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%8D%95%E4%B8%80Master%E6%9E%B6%E6%9E%84%E7%9A%84%E6%B7%B1%E5%BA%A6%E5%89%96%E6%9E%90"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">单一Master架构的深度剖析</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81%E8%AF%BB%E6%93%8D%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、读操作流程</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%BC%93%E5%AD%98%E4%B8%8E%E4%B8%80%E8%87%B4%E6%80%A7%E7%AA%97%E5%8F%A3"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">客户端缓存与一致性窗口</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E5%86%99%E6%93%8D%E4%BD%9C%E4%B8%8E%E7%A7%9F%E7%BA%A6%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、写操作与租约机制</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%A7%9F%E7%BA%A6%E6%9C%BA%E5%88%B6%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%8E%9F%E7%90%86"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">租约机制的设计原理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%B5%81%E6%B0%B4%E7%BA%BF%E6%95%B0%E6%8D%AE%E6%8E%A8%E9%80%81%E7%9A%84%E5%B8%A6%E5%AE%BD%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">流水线数据推送的带宽分析</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81%E5%8E%9F%E5%AD%90%E8%BF%BD%E5%8A%A0%E8%AE%B0%E5%BD%95"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、原子追加记录</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8E%9F%E5%AD%90%E8%BF%BD%E5%8A%A0%E5%A6%82%E6%AD%A4%E9%87%8D%E8%A6%81"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">为什么原子追加如此重要</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#At-Least-Once%E8%AF%AD%E4%B9%89%E4%B8%8E%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E7%9A%84%E9%85%8D%E5%90%88"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">At-Least-Once语义与应用程序的配合</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、垃圾回收</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%83%B0%E6%80%A7%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%9A%84%E6%B7%B1%E5%B1%82%E8%AE%BE%E8%AE%A1%E8%80%83%E9%87%8F"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">惰性垃圾回收的深层设计考量</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E9%AB%98%E5%8F%AF%E7%94%A8%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%AE%8C%E6%95%B4%E6%80%A7"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、高可用与数据完整性</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%9C%BA%E6%9E%B6%E6%84%9F%E7%9F%A5%E7%9A%84%E5%89%AF%E6%9C%AC%E6%94%BE%E7%BD%AE%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">机架感知的副本放置策略</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E9%9D%99%E9%BB%98%E6%95%B0%E6%8D%AE%E6%8D%9F%E5%9D%8F%E4%B8%8E%E6%A0%A1%E9%AA%8C%E5%92%8C"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">静默数据损坏与校验和</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81GFS%E7%9A%84%E5%B1%80%E9%99%90%E4%B8%8EHDFS%E7%9A%84%E6%94%B9%E8%BF%9B"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、GFS的局限与HDFS的改进</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#GFS-HDFS%E4%B8%8ECeph-MinIO%E7%9A%84%E6%9E%B6%E6%9E%84%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">GFS&#x2F;HDFS与Ceph&#x2F;MinIO的架构对比</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#GFS%E7%9A%84At-Least-Once%E4%B8%80%E8%87%B4%E6%80%A7%E4%B8%8E%E7%8E%B0%E4%BB%A3%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">GFS的At-Least-Once一致性与现代系统的对比</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81GFS%E5%9C%A8%E7%8E%B0%E4%BB%A3%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83%E7%9A%84%E6%BC%94%E8%BF%9B"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、GFS在现代数据中心的演进</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81%E7%BA%A0%E5%88%A0%E7%A0%81%EF%BC%88Erasure-Coding%EF%BC%89%E4%B8%8E%E5%A4%9A%E5%89%AF%E6%9C%AC%E7%9A%84%E6%95%B0%E5%AD%A6%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">十、纠删码（Erasure Coding）与多副本的数学对比</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#HDFS%E7%BA%A0%E5%88%A0%E7%A0%81%E7%9A%84%E5%AE%9E%E7%8E%B0%E6%9E%B6%E6%9E%84"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">HDFS纠删码的实现架构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#GFS-HDFS%E4%B8%8ECeph%E7%9A%84%E6%9E%B6%E6%9E%84%E5%93%B2%E5%AD%A6%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">GFS&#x2F;HDFS与Ceph的架构哲学对比</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E5%88%86%E5%B8%83%E5%BC%8F%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%9C%A8%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E4%B8%AD%E7%9A%84%E8%BF%90%E7%BB%B4%E5%AE%9E%E8%B7%B5"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">十一、分布式文件系统在生产环境中的运维实践</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%95%B0%E6%8D%AE%E5%86%8D%E5%B9%B3%E8%A1%A1%EF%BC%88Rebalancing%EF%BC%89"><span class="toc_mobile_items-number">11.1.</span> <span class="toc_mobile_items-text">数据再平衡（Rebalancing）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E8%8A%82%E7%82%B9%E9%80%80%E5%BD%B9%EF%BC%88Decommissioning%EF%BC%89"><span class="toc_mobile_items-number">11.2.</span> <span class="toc_mobile_items-text">节点退役（Decommissioning）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%B0%8F%E6%96%87%E4%BB%B6%E9%97%AE%E9%A2%98%E7%9A%84%E5%B7%A5%E7%A8%8B%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc_mobile_items-number">11.3.</span> <span class="toc_mobile_items-text">小文件问题的工程解决方案</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%A7%81%E8%BF%BD%E9%97%AE"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">十二、面试常见追问</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%89%E3%80%81Snapshot%EF%BC%88%E5%BF%AB%E7%85%A7%EF%BC%89%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%86%99%E6%97%B6%E5%A4%8D%E5%88%B6"><span class="toc_mobile_items-number">13.</span> <span class="toc_mobile_items-text">十三、Snapshot（快照）机制与写时复制</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#GFS-Snapshot%E7%9A%84%E5%AE%9E%E7%8E%B0%E6%B5%81%E7%A8%8B"><span class="toc_mobile_items-number">13.1.</span> <span class="toc_mobile_items-text">GFS Snapshot的实现流程</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Snapshot%E5%9C%A8%E6%95%B0%E6%8D%AE%E4%BF%9D%E6%8A%A4%E4%B8%AD%E7%9A%84%E8%A7%92%E8%89%B2"><span class="toc_mobile_items-number">13.2.</span> <span class="toc_mobile_items-text">Snapshot在数据保护中的角色</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%89%A9%E5%B1%95%E9%98%85%E8%AF%BB%EF%BC%9A%E5%88%86%E5%B8%83%E5%BC%8F%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%AD%A6%E6%9C%AF%E6%BC%94%E8%BF%9B"><span class="toc_mobile_items-number">13.3.</span> <span class="toc_mobile_items-text">扩展阅读：分布式文件系统的学术演进</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#GFS%E5%AF%B9%E7%8E%B0%E4%BB%A3%E4%BA%91%E5%AD%98%E5%82%A8%E7%9A%84%E6%B7%B1%E8%BF%9C%E5%BD%B1%E5%93%8D"><span class="toc_mobile_items-number">13.4.</span> <span class="toc_mobile_items-text">GFS对现代云存储的深远影响</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#GFS%E8%AE%BE%E8%AE%A1%E4%B8%AD%E7%9A%84%E5%B7%A5%E7%A8%8B%E5%93%B2%E5%AD%A6%E5%90%AF%E7%A4%BA"><span class="toc_mobile_items-number">13.5.</span> <span class="toc_mobile_items-text">GFS设计中的工程哲学启示</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#GFS%E7%9A%84Master%E6%93%8D%E4%BD%9C%E6%97%A5%E5%BF%97%E4%B8%8ECheckpoint%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">13.6.</span> <span class="toc_mobile_items-text">GFS的Master操作日志与Checkpoint详解</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#GFS%E7%9A%84%E5%BA%94%E7%94%A8%E5%AE%9E%E4%BE%8B%EF%BC%9A%E5%A6%82%E4%BD%95%E5%AD%98%E5%82%A8%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E%E7%9A%84%E5%80%92%E6%8E%92%E7%B4%A2%E5%BC%95"><span class="toc_mobile_items-number">13.7.</span> <span class="toc_mobile_items-text">GFS的应用实例：如何存储搜索引擎的倒排索引</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#GFS%E8%AE%BE%E8%AE%A1%E4%B8%8E%E8%BF%90%E7%BB%B4%E4%B8%AD%E7%9A%84%E5%B7%A5%E7%A8%8B%E7%BB%8F%E9%AA%8C%E6%95%99%E8%AE%AD"><span class="toc_mobile_items-number">13.8.</span> <span class="toc_mobile_items-text">GFS设计与运维中的工程经验教训</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#GFS%E8%AE%BA%E6%96%87%E4%B8%AD%E7%9A%84%E7%BB%8F%E5%85%B8%E5%BC%95%E7%94%A8%E4%B8%8E%E5%85%B3%E9%94%AE%E6%95%B0%E6%8D%AE"><span class="toc_mobile_items-number">13.9.</span> <span class="toc_mobile_items-text">GFS论文中的经典引用与关键数据</span></a></li></ol></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81GFS%E7%9A%84%E8%AE%BE%E8%AE%A1%E7%9B%AE%E6%A0%87%E4%B8%8E%E5%81%87%E8%AE%BE"><span class="toc-number">1.</span> <span class="toc-text">一、GFS的设计目标与假设</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8EGoogle%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%E7%90%86%E8%A7%A3%E8%AE%BE%E8%AE%A1%E5%8F%96%E8%88%8D"><span class="toc-number">1.1.</span> <span class="toc-text">从Google的应用场景理解设计取舍</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81GFS%E7%9A%84%E6%9E%B6%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">二、GFS的架构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#GFS%E6%9E%B6%E6%9E%84%E7%9A%84ASCII%E7%A4%BA%E6%84%8F%E5%9B%BE"><span class="toc-number">2.1.</span> <span class="toc-text">GFS架构的ASCII示意图</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E4%B8%80Master%E6%9E%B6%E6%9E%84%E7%9A%84%E6%B7%B1%E5%BA%A6%E5%89%96%E6%9E%90"><span class="toc-number">2.2.</span> <span class="toc-text">单一Master架构的深度剖析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E8%AF%BB%E6%93%8D%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-number">3.</span> <span class="toc-text">三、读操作流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%BC%93%E5%AD%98%E4%B8%8E%E4%B8%80%E8%87%B4%E6%80%A7%E7%AA%97%E5%8F%A3"><span class="toc-number">3.1.</span> <span class="toc-text">客户端缓存与一致性窗口</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%86%99%E6%93%8D%E4%BD%9C%E4%B8%8E%E7%A7%9F%E7%BA%A6%E6%9C%BA%E5%88%B6"><span class="toc-number">4.</span> <span class="toc-text">四、写操作与租约机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A7%9F%E7%BA%A6%E6%9C%BA%E5%88%B6%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%8E%9F%E7%90%86"><span class="toc-number">4.1.</span> <span class="toc-text">租约机制的设计原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%81%E6%B0%B4%E7%BA%BF%E6%95%B0%E6%8D%AE%E6%8E%A8%E9%80%81%E7%9A%84%E5%B8%A6%E5%AE%BD%E5%88%86%E6%9E%90"><span class="toc-number">4.2.</span> <span class="toc-text">流水线数据推送的带宽分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%8E%9F%E5%AD%90%E8%BF%BD%E5%8A%A0%E8%AE%B0%E5%BD%95"><span class="toc-number">5.</span> <span class="toc-text">五、原子追加记录</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8E%9F%E5%AD%90%E8%BF%BD%E5%8A%A0%E5%A6%82%E6%AD%A4%E9%87%8D%E8%A6%81"><span class="toc-number">5.1.</span> <span class="toc-text">为什么原子追加如此重要</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#At-Least-Once%E8%AF%AD%E4%B9%89%E4%B8%8E%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E7%9A%84%E9%85%8D%E5%90%88"><span class="toc-number">5.2.</span> <span class="toc-text">At-Least-Once语义与应用程序的配合</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6"><span class="toc-number">6.</span> <span class="toc-text">六、垃圾回收</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%83%B0%E6%80%A7%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%9A%84%E6%B7%B1%E5%B1%82%E8%AE%BE%E8%AE%A1%E8%80%83%E9%87%8F"><span class="toc-number">6.1.</span> <span class="toc-text">惰性垃圾回收的深层设计考量</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E9%AB%98%E5%8F%AF%E7%94%A8%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%AE%8C%E6%95%B4%E6%80%A7"><span class="toc-number">7.</span> <span class="toc-text">七、高可用与数据完整性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%BA%E6%9E%B6%E6%84%9F%E7%9F%A5%E7%9A%84%E5%89%AF%E6%9C%AC%E6%94%BE%E7%BD%AE%E7%AD%96%E7%95%A5"><span class="toc-number">7.1.</span> <span class="toc-text">机架感知的副本放置策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%99%E9%BB%98%E6%95%B0%E6%8D%AE%E6%8D%9F%E5%9D%8F%E4%B8%8E%E6%A0%A1%E9%AA%8C%E5%92%8C"><span class="toc-number">7.2.</span> <span class="toc-text">静默数据损坏与校验和</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81GFS%E7%9A%84%E5%B1%80%E9%99%90%E4%B8%8EHDFS%E7%9A%84%E6%94%B9%E8%BF%9B"><span class="toc-number">8.</span> <span class="toc-text">八、GFS的局限与HDFS的改进</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#GFS-HDFS%E4%B8%8ECeph-MinIO%E7%9A%84%E6%9E%B6%E6%9E%84%E5%AF%B9%E6%AF%94"><span class="toc-number">8.1.</span> <span class="toc-text">GFS&#x2F;HDFS与Ceph&#x2F;MinIO的架构对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GFS%E7%9A%84At-Least-Once%E4%B8%80%E8%87%B4%E6%80%A7%E4%B8%8E%E7%8E%B0%E4%BB%A3%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc-number">8.2.</span> <span class="toc-text">GFS的At-Least-Once一致性与现代系统的对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81GFS%E5%9C%A8%E7%8E%B0%E4%BB%A3%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83%E7%9A%84%E6%BC%94%E8%BF%9B"><span class="toc-number">9.</span> <span class="toc-text">九、GFS在现代数据中心的演进</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E7%BA%A0%E5%88%A0%E7%A0%81%EF%BC%88Erasure-Coding%EF%BC%89%E4%B8%8E%E5%A4%9A%E5%89%AF%E6%9C%AC%E7%9A%84%E6%95%B0%E5%AD%A6%E5%AF%B9%E6%AF%94"><span class="toc-number">10.</span> <span class="toc-text">十、纠删码（Erasure Coding）与多副本的数学对比</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HDFS%E7%BA%A0%E5%88%A0%E7%A0%81%E7%9A%84%E5%AE%9E%E7%8E%B0%E6%9E%B6%E6%9E%84"><span class="toc-number">10.1.</span> <span class="toc-text">HDFS纠删码的实现架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GFS-HDFS%E4%B8%8ECeph%E7%9A%84%E6%9E%B6%E6%9E%84%E5%93%B2%E5%AD%A6%E5%AF%B9%E6%AF%94"><span class="toc-number">10.2.</span> <span class="toc-text">GFS&#x2F;HDFS与Ceph的架构哲学对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E5%88%86%E5%B8%83%E5%BC%8F%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%9C%A8%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E4%B8%AD%E7%9A%84%E8%BF%90%E7%BB%B4%E5%AE%9E%E8%B7%B5"><span class="toc-number">11.</span> <span class="toc-text">十一、分布式文件系统在生产环境中的运维实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%86%8D%E5%B9%B3%E8%A1%A1%EF%BC%88Rebalancing%EF%BC%89"><span class="toc-number">11.1.</span> <span class="toc-text">数据再平衡（Rebalancing）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8A%82%E7%82%B9%E9%80%80%E5%BD%B9%EF%BC%88Decommissioning%EF%BC%89"><span class="toc-number">11.2.</span> <span class="toc-text">节点退役（Decommissioning）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%8F%E6%96%87%E4%BB%B6%E9%97%AE%E9%A2%98%E7%9A%84%E5%B7%A5%E7%A8%8B%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">11.3.</span> <span class="toc-text">小文件问题的工程解决方案</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%A7%81%E8%BF%BD%E9%97%AE"><span class="toc-number">12.</span> <span class="toc-text">十二、面试常见追问</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%89%E3%80%81Snapshot%EF%BC%88%E5%BF%AB%E7%85%A7%EF%BC%89%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%86%99%E6%97%B6%E5%A4%8D%E5%88%B6"><span class="toc-number">13.</span> <span class="toc-text">十三、Snapshot（快照）机制与写时复制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#GFS-Snapshot%E7%9A%84%E5%AE%9E%E7%8E%B0%E6%B5%81%E7%A8%8B"><span class="toc-number">13.1.</span> <span class="toc-text">GFS Snapshot的实现流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Snapshot%E5%9C%A8%E6%95%B0%E6%8D%AE%E4%BF%9D%E6%8A%A4%E4%B8%AD%E7%9A%84%E8%A7%92%E8%89%B2"><span class="toc-number">13.2.</span> <span class="toc-text">Snapshot在数据保护中的角色</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A9%E5%B1%95%E9%98%85%E8%AF%BB%EF%BC%9A%E5%88%86%E5%B8%83%E5%BC%8F%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%AD%A6%E6%9C%AF%E6%BC%94%E8%BF%9B"><span class="toc-number">13.3.</span> <span class="toc-text">扩展阅读：分布式文件系统的学术演进</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GFS%E5%AF%B9%E7%8E%B0%E4%BB%A3%E4%BA%91%E5%AD%98%E5%82%A8%E7%9A%84%E6%B7%B1%E8%BF%9C%E5%BD%B1%E5%93%8D"><span class="toc-number">13.4.</span> <span class="toc-text">GFS对现代云存储的深远影响</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GFS%E8%AE%BE%E8%AE%A1%E4%B8%AD%E7%9A%84%E5%B7%A5%E7%A8%8B%E5%93%B2%E5%AD%A6%E5%90%AF%E7%A4%BA"><span class="toc-number">13.5.</span> <span class="toc-text">GFS设计中的工程哲学启示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GFS%E7%9A%84Master%E6%93%8D%E4%BD%9C%E6%97%A5%E5%BF%97%E4%B8%8ECheckpoint%E8%AF%A6%E8%A7%A3"><span class="toc-number">13.6.</span> <span class="toc-text">GFS的Master操作日志与Checkpoint详解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GFS%E7%9A%84%E5%BA%94%E7%94%A8%E5%AE%9E%E4%BE%8B%EF%BC%9A%E5%A6%82%E4%BD%95%E5%AD%98%E5%82%A8%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E%E7%9A%84%E5%80%92%E6%8E%92%E7%B4%A2%E5%BC%95"><span class="toc-number">13.7.</span> <span class="toc-text">GFS的应用实例：如何存储搜索引擎的倒排索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GFS%E8%AE%BE%E8%AE%A1%E4%B8%8E%E8%BF%90%E7%BB%B4%E4%B8%AD%E7%9A%84%E5%B7%A5%E7%A8%8B%E7%BB%8F%E9%AA%8C%E6%95%99%E8%AE%AD"><span class="toc-number">13.8.</span> <span class="toc-text">GFS设计与运维中的工程经验教训</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GFS%E8%AE%BA%E6%96%87%E4%B8%AD%E7%9A%84%E7%BB%8F%E5%85%B8%E5%BC%95%E7%94%A8%E4%B8%8E%E5%85%B3%E9%94%AE%E6%95%B0%E6%8D%AE"><span class="toc-number">13.9.</span> <span class="toc-text">GFS论文中的经典引用与关键数据</span></a></li></ol></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/253.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">以GFS为例探索分布式文件系统</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-11-15<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">系统设计</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">12.7k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 39 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、GFS的设计目标与假设"><a href="#一、GFS的设计目标与假设" class="headerlink" title="一、GFS的设计目标与假设"></a>一、GFS的设计目标与假设</h2><p>Google File System（GFS）是Google在2003年发表的开创性分布式文件系统论文中描述的系统。它专为Google的核心业务场景设计——存储爬虫抓取的网页内容、搜索引擎的倒排索引、用户行为日志等海量数据。</p>
+<p>GFS的设计建立在一系列明确的目标和假设之上。第一，系统由数千台廉价PC组成，硬件故障是常态。磁盘损坏、网络断开、电源故障等都是日常事件，系统必须内置容错机制。第二，系统存储少量的大文件，典型大小在数百MB到数GB，小文件也支持但未做特别优化。第三，文件主要被大块顺序读取（数百KB到MB级别的读取）和追加写入（Append），随机写入极其罕见。第四，文件写入通常是大量数据的一次性追加，写入后很少修改。第五，系统需要支持高吞吐量的并发追加写——多个客户端可能同时向同一个文件追加数据。第六，高带宽比低延迟更重要——Google的批处理任务（如MapReduce）更关注整体吞吐量而非单次操作的延迟。</p>
+<h3 id="从Google的应用场景理解设计取舍"><a href="#从Google的应用场景理解设计取舍" class="headerlink" title="从Google的应用场景理解设计取舍"></a>从Google的应用场景理解设计取舍</h3><p>GFS的每一项设计约束都源于Google的真实业务需求。搜索引擎的爬虫系统需要持续抓取数十亿网页，将HTML内容写入GFS进行存储。每个网页的大小在几十KB到几MB不等，每天新增数十亿个网页。MapReduce作业以这些网页为输入，进行倒排索引构建、PageRank计算等大规模批处理。这些场景的共同特征是：大量顺序读写、追加写入、极少随机修改、对吞吐量的要求远高于对延迟的要求。</p>
+<p>另一个关键背景是20世纪初的硬件条件。2003年，Google的数据中心主要由廉价IDE硬盘（7200RPM，顺序读写约50到80MB&#x2F;s，随机IOPS约100到200）、百兆&#x2F;千兆以太网（单机带宽约100MB&#x2F;s）、配备几百MB到几GB内存的x86服务器组成。在这样的硬件条件下，将随机写转化为顺序写、将网络传输批量化、容忍频繁的硬件故障，成为系统设计的核心主题。</p>
+<h2 id="二、GFS的架构"><a href="#二、GFS的架构" class="headerlink" title="二、GFS的架构"></a>二、GFS的架构</h2><p>GFS采用单一Master加多个ChunkServer的架构，这个设计影响了后续几乎所有分布式文件系统（包括HDFS）。</p>
+<p><strong>Master</strong>：GFS集群只有一台Master（可以有多台Shadow Master作为热备）。Master维护所有文件系统的元数据，包括：文件和Chunk的命名空间、文件到Chunk的映射关系、每个Chunk副本的物理位置。Master不存储任何实际的数据块——所有数据都在ChunkServer上。Master将元数据全部保存在内存中（约64字节元数据对应一个64MB的Chunk），这使得Master可以快速响应客户端的元数据查询请求。以64MB的Chunk大小计算，如果Master有64GB内存，可以管理约64PB的数据（100万个Chunk）。元数据通过操作日志（Operation Log）持久化到磁盘并复制到远程机器，保证Master故障后可恢复。</p>
+<p><strong>ChunkServer</strong>：集群中有数百到上千个ChunkServer，每个ChunkServer运行在普通的Linux机器上。ChunkServer将Chunk存储为本地文件系统中的普通文件（Linux的ext3&#x2F;ext4）。每个Chunk被复制到多个ChunkServer上（默认三副本），分布在不同的机架上。</p>
+<p><strong>Chunk</strong>：GFS将文件切分为固定大小的Chunk（64MB，HDFS默认为128MB）。每个Chunk由一个全局唯一的64位Chunk Handle标识，由Master在Chunk创建时分配。Chunk大小是一个关键的设计权衡：Chunk越小，文件被划分得越细，同一文件的读取可以跨越更多的ChunkServer获得更高的并行度；但Chunk越大，Master需要管理的元数据越少，客户端与Master的交互频率越低（因为一个Chunk足够大，客户端可以在一个Chunk内完成大量操作而不需要再次访问Master）。</p>
+<p>选择64MB这样一个远大于传统文件系统块（Linux的4KB）的块大小，基于如下考虑：减少Master元数据规模（PB级数据也只需要百万级别的Chunk）；减少客户端与Master的交互次数（客户端可以在与Master的一次交互后，缓存Chunk位置信息，完成大量的顺序读写）；将网络开销分摊到大的数据块传输上。</p>
+<p><strong>客户端</strong>：GFS客户端是链接到应用程序的库。客户端与Master交互只做元数据操作（如打开文件、获取Chunk位置），所有数据读写直接与ChunkServer交互，Master不会成为数据流量的瓶颈。客户端会缓存从Master获取的元数据，避免频繁的Master交互。</p>
+<h3 id="GFS架构的ASCII示意图"><a href="#GFS架构的ASCII示意图" class="headerlink" title="GFS架构的ASCII示意图"></a>GFS架构的ASCII示意图</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌─────────────────────────────────────────────────────────┐</span><br><span class="line">│                     GFS Master                           │</span><br><span class="line">│  ┌──────────────────────────────────────────────────┐   │</span><br><span class="line">│  │  内存: 命名空间 / 文件→Chunk映射 / 副本位置       │   │</span><br><span class="line">│  │  磁盘: 操作日志 (WAL) + Checkpoint               │   │</span><br><span class="line">│  └──────────────────────────────────────────────────┘   │</span><br><span class="line">│                         │                                │</span><br><span class="line">│          心跳/状态上报  │  元数据查询(文件名,偏移量→Chunk位置) │</span><br><span class="line">│                         │                                │</span><br><span class="line">└────────┬────────────────┼────────────────────┬───────────┘</span><br><span class="line">         │                │                    │</span><br><span class="line">    ┌────▼────┐      ┌────▼────┐         ┌────▼────┐</span><br><span class="line">    │ChunkServer1│   │ChunkServer2│       │ChunkServer3│</span><br><span class="line">    │(Linux FS) │   │(Linux FS) │       │(Linux FS) │</span><br><span class="line">    │           │   │           │       │           │</span><br><span class="line">    │ Chunk A   │   │ Chunk B   │       │ Chunk C   │</span><br><span class="line">    │ Chunk E   │   │ Chunk A&#x27;  │       │ Chunk B&#x27;  │</span><br><span class="line">    │ Chunk F   │   │ Chunk D   │       │ Chunk C&#x27;  │</span><br><span class="line">    │    ...    │   │    ...    │       │    ...    │</span><br><span class="line">    └───────────┘   └───────────┘       └───────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="单一Master架构的深度剖析"><a href="#单一Master架构的深度剖析" class="headerlink" title="单一Master架构的深度剖析"></a>单一Master架构的深度剖析</h3><p>单一Master架构是GFS最受争议的设计选择。为什么Google选择这个看似有”单点瓶颈”的设计？原因如下：</p>
+<p>第一，Master不参与数据流。客户端的所有数据读写直接与ChunkServer交互，Master只在元数据操作时介入。数据流量通常是元数据流量的数百到数千倍，Master的网络带宽不是瓶颈。</p>
+<p>第二，Master的所有元数据都在内存中。64MB的Chunk大小意味着PB级数据只需要数十GB内存的Master（相比之下，如果Chunk大小是4KB，同样的PB级数据需要TB级内存）。内存中的元数据使得Master可以在微秒级别响应查询，不像传统文件系统需要磁盘I&#x2F;O。</p>
+<p>第三，集中式元数据管理大大简化了系统设计。Master可以轻松实现全局一致的命名空间、原子性的命名空间操作（如文件创建必须在全局唯一的路径下）、副本放置策略（需要全局视角了解机架拓扑和ChunkServer负载）、垃圾回收的孤儿Chunk检测（需要全局视角对比元数据和实际存储）。</p>
+<p>第四，影子Master（Shadow Master）提供了降级的读可用性。虽然写操作依赖唯一Master，但在Master故障时，Shadow Master仍可以提供只读服务，满足批处理作业的输入读取需求。</p>
+<h2 id="三、读操作流程"><a href="#三、读操作流程" class="headerlink" title="三、读操作流程"></a>三、读操作流程</h2><p>客户端读取GFS文件的流程设计得非常精简，最大化数据吞吐量：</p>
+<p>第一步，客户端将文件名和要读取的字节偏移量转换为文件内的Chunk索引（<code>chunk_index = byte_offset / 64MB</code>）。客户端向Master发送请求，包含文件名和Chunk索引。</p>
+<p>第二步，Master返回该Chunk的Handle以及所有副本所在的ChunkServer地址列表。Master按某种策略（通常是网络距离最短）对ChunkServer排序。</p>
+<p>第三步，客户端缓存这些位置信息（以备后续读取同一Chunk的其他部分），然后向最近的ChunkServer发送读取请求。读取请求包含Chunk Handle和字节范围。</p>
+<p>第四步，ChunkServer从本地磁盘读取数据返回给客户端。</p>
+<p>如果读取量超过一个Chunk的边界，客户端会在内部拆分为多个Chunk的读取请求，可以并发向不同的ChunkServer发出。</p>
+<p>后续对同一Chunk的读取不需要再联系Master，直到缓存的信息过期或者Chunk被重新分配。这大大减少了Master的负载——在典型的读取工作负载中，超过99%的读取操作不需要与Master交互。</p>
+<h3 id="客户端缓存与一致性窗口"><a href="#客户端缓存与一致性窗口" class="headerlink" title="客户端缓存与一致性窗口"></a>客户端缓存与一致性窗口</h3><p>客户端缓存的Chunk位置信息存在过期风险（因为Master可能迁移Chunk或者ChunkServer可能下线）。GFS的处理方式是：客户端缓存有一个软过期时间（如几分钟），过期后重新向Master查询。如果客户端使用过期缓存发送读取请求到错误的ChunkServer（该ChunkServer不再持有该Chunk），ChunkServer返回错误，客户端清空缓存，重新向Master查询。</p>
+<p>这个设计体现了GFS对一致性的实用主义态度——宁可偶尔重试查询，也不在每次读取前都向Master确认（那样会增加Master负载）。在MapReduce的典型读取场景中，输入文件在作业开始后不会变化，因此缓存过期导致的额外查询极少。</p>
+<h2 id="四、写操作与租约机制"><a href="#四、写操作与租约机制" class="headerlink" title="四、写操作与租约机制"></a>四、写操作与租约机制</h2><p>GFS的写入设计是其最独特的特性。为了在保持多副本一致性的同时避免Master成为瓶颈，GFS引入了<strong>租约（Lease）</strong>机制。</p>
+<p>对于每次Mutation操作（写入或追加），Master将租约授予某个Chunk的某个副本，该副本成为临时的”主副本”（Primary）。Primary对此次Mutation的所有副本更新进行排序。租约初始有效期为60秒，Primary可以通过心跳续约。如果Master与Primary失去联系，租约到期后Master可以安全地将租约授予另一个副本。</p>
+<p><strong>写入流程</strong>（以三副本为例）：</p>
+<p>第一步，客户端向Master询问当前哪个ChunkServer持有该Chunk的租约，以及其他副本的位置。如果当前没有租约持有者（首次写入该Chunk），Master选择一个副本授予租约。</p>
+<p>第二步，Master返回Primary和Secondary的身份信息给客户端。客户端缓存这些信息。</p>
+<p>第三步，客户端将数据推送到所有副本（Primary和所有Secondary）。这一步只是将数据暂存到ChunkServer的内存缓冲区中，不实际写入磁盘。客户端按网络距离排序推送，可以以流水线方式（Pipeline）进行——客户端将数据发送给最近的副本S1，S1在接收的同时转发给S2，S2转发给S3。这样充分利用了每个机器的出站带宽。</p>
+<p>第四步，所有副本确认数据接收后，客户端向Primary发送写请求。Primary为这个写操作分配一个序列号，将序列号应用到本地状态，然后将写请求（连同序列号）转发给所有Secondary。</p>
+<p>第五步，所有Secondary完成写操作后，向Primary回复确认。Primary统计回复结果，向客户端返回操作结果。如果任何Secondary写入失败（如磁盘满或宕机），Primary向客户端返回错误。客户端收到错误后重试（从第一步重新开始）。注意，这时失败副本上的数据处于不一致状态，但GFS并不立即修复，而是在后续的正常写入中通过Chunk版本号（Chunk Version Number）检测并处理。</p>
+<p>这个流程的关键设计在于<strong>数据流与控制流的分离</strong>：数据从客户端按流水线方式推送到所有副本，控制流从客户端到Primary再到Secondary。这使得数据可以按网络拓扑最优的路径传输，而控制流则按租约授权链传递。</p>
+<h3 id="租约机制的设计原理"><a href="#租约机制的设计原理" class="headerlink" title="租约机制的设计原理"></a>租约机制的设计原理</h3><p>租约（Lease）是分布式系统中用于授予临时权限的经典模式，GFS引入它是为了在一致性（必须有唯一的排序者）和可用性（Master不应成为每步操作的瓶颈）之间取得平衡。</p>
+<p>如果没有租约，每次Mutation都需要Master来协调所有副本的更新顺序，Master将成为瓶颈（每个Chunk的每次写入都需要Master参与）。有租约后，一次租约授予（通常60秒）可以覆盖该Chunk在此期间的所有写入操作，大大减少了Master的参与。</p>
+<p>租约的过期机制确保了安全性：如果Primary失联，Master只需等待租约过期（最多60秒），就可以安全地将租约授予另一个副本。这比Master需要主动检测Primary故障并收回权限要简单得多——Master依靠”时间”这一自然力量来收回权限。</p>
+<h3 id="流水线数据推送的带宽分析"><a href="#流水线数据推送的带宽分析" class="headerlink" title="流水线数据推送的带宽分析"></a>流水线数据推送的带宽分析</h3><p>流水线推送的核心思想是将全双工网络的带宽充分利用。在传统的星型推送模式中（客户端分别向三个副本发送数据），客户端需要上传三份数据，上行带宽成为瓶颈。在流水线模式中：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">客户端 ──数据──▶ S1 ──数据──▶ S2 ──数据──▶ S3</span><br></pre></td></tr></table></figure>
+
+<p>客户端只发送一份数据到S1，S1在接收的同时将数据转发给S2，S2同理转发给S3。总传输时间约为B&#x2F;带宽 + 2×（B&#x2F;带宽），其中B为数据量。三台机器的出站带宽都得到利用。当副本数量更多时（如跨越多个机架），流水线的优势更加明显。</p>
+<h2 id="五、原子追加记录"><a href="#五、原子追加记录" class="headerlink" title="五、原子追加记录"></a>五、原子追加记录</h2><p>GFS提供了一个特殊的写入原语：<strong>原子追加记录（Atomic Record Append）</strong>。在原子追加中，客户端只需指定要写入的数据，GFS原子地将数据追加到文件的末尾，并返回写入的偏移量。这对于多客户端并发写入同一文件（如多个MapReduce任务并发写入同一个输出文件）至关重要——客户端不需要协调”谁写到哪个偏移量”。</p>
+<p>原子追加的实现：客户端将数据推送到Chunk的所有副本，然后向Primary发送追加请求。Primary检查追加数据是否会导致Chunk超过最大大小（64MB）。如果超出，Primary先将当前Chunk填充到满（填充的是客户端数据的一部分或仅是填充字节），然后要求所有Secondary也做同样操作，回复客户端该Chunk已满，客户端应在下一个Chunk上重试。如果未超出，Primary将数据写入当前末尾位置，要求所有Secondary在相同偏移量写入相同数据。只要有至少一个副本成功写入（通常至少需要法定数量的副本），操作就成功。</p>
+<p>原子追加的一个微妙特性是：在失败重试的情况下，可能导致文件中出现重复记录或填充字节。GFS的论文明确指出，原子追加保证数据被至少写入一次（At-Least-Once），且写入到文件末尾的某个偏移量（偏移量由GFS选择），但不保证字节级别的幂等——失败的追加可能被重试，导致相同数据在文件中出现多次。应用程序必须能够处理这些情况，例如在数据记录中包含校验和或唯一标识符以便在读取时去重。</p>
+<h3 id="为什么原子追加如此重要"><a href="#为什么原子追加如此重要" class="headerlink" title="为什么原子追加如此重要"></a>为什么原子追加如此重要</h3><p>在没有原子追加的分布式文件系统中，多个客户端并发写入同一个文件需要外部协调（如ZooKeeper分布式锁），这严重限制了写入吞吐。MapReduce的Reduce阶段需要多个Reduce任务并发写入同一个输出文件（或同一个目录下的不同文件），如果每次写入都需要分布式锁，性能将大打折扣。</p>
+<p>有了原子追加，每个Reduce任务只需调用<code>record append(data)</code>，GFS保障数据至少被写入一次，Reduce任务无需任何协调。读取时，应用程序通过校验和和记录ID去重。这种将复杂性从应用程序推到文件系统的设计，是GFS”为应用场景定制”哲学的典型体现。</p>
+<h3 id="At-Least-Once语义与应用程序的配合"><a href="#At-Least-Once语义与应用程序的配合" class="headerlink" title="At-Least-Once语义与应用程序的配合"></a>At-Least-Once语义与应用程序的配合</h3><p>At-Least-Once语义要求应用程序具备幂等消费能力。以MapReduce为例，Reduce任务的输出通常是一个键值对序列，每条记录包含键、值和分隔符。如果出现重复记录，下游的读取程序可以通过以下方式处理：</p>
+<ol>
+<li>校验和过滤：每条记录附带CRC-32校验和，读取时验证校验和，丢弃损坏的重复记录</li>
+<li>应用层去重：在记录中包含序列号或唯一ID，下游系统按ID去重</li>
+<li>填充字节忽略：GFS在Chunk边界填充的字节可以通过记录格式中的长度前缀来识别和跳过</li>
+</ol>
+<h2 id="六、垃圾回收"><a href="#六、垃圾回收" class="headerlink" title="六、垃圾回收"></a>六、垃圾回收</h2><p>GFS没有采用传统的即时删除机制，而是采用惰性垃圾回收（Lazy Garbage Collection）。当用户删除一个文件时，Master立即将文件重命名（在命名空间中添加删除时间戳），使其对普通文件操作不可见。经过一定的保留期（默认三天），Master在定期的后台扫描中真正删除这些文件，回收其Chunk。这种设计简单而健壮——即使客户端误删文件，在保留期内仍可通过重命名恢复；也避免了ChunkServer因网络问题暂时不可达时误判Chunk为孤儿而错误回收。</p>
+<p>对于因写入失败或ChunkServer失联而产生的孤儿Chunk（Master的元数据中不再引用的Chunk），Master通过定期的心跳交互收集每个ChunkServer持有的所有Chunk信息，对比元数据识别出孤儿，向ChunkServer发送删除指令。</p>
+<h3 id="惰性垃圾回收的深层设计考量"><a href="#惰性垃圾回收的深层设计考量" class="headerlink" title="惰性垃圾回收的深层设计考量"></a>惰性垃圾回收的深层设计考量</h3><p>为什么GFS选择惰性回收而非即时回收？即时回收方案存在以下问题：</p>
+<p>第一，分布式环境下的删除确认复杂性。即时删除需要所有持有该Chunk副本的ChunkServer确认删除成功，如果某个ChunkServer暂时不可达（网络抖动、临时重启），Master需要重试或决定单方面认为删除已完成。惰性回收避免了这个问题——Master定期扫描，只要在扫描时ChunkServer可达，就发送删除指令；如果不可达，下次扫描再试。</p>
+<p>第二，误删除恢复的便利性。在拥有数千台机器的集群中，操作失误（运维脚本错误删除目录、程序bug误删文件）难以避免。三天的保留期为恢复提供了宝贵的时间窗口。</p>
+<p>第三，批量回收的效率。Master在后台定期执行垃圾回收扫描，可以批量识别出应该删除的Chunk，合并为批量删除指令发送给ChunkServer，比单个文件删除时逐一通知效率更高。</p>
+<h2 id="七、高可用与数据完整性"><a href="#七、高可用与数据完整性" class="headerlink" title="七、高可用与数据完整性"></a>七、高可用与数据完整性</h2><p><strong>Master的高可用</strong>：Master的元数据通过操作日志持久化。每次元数据变更（如创建文件、创建Chunk）都先写入本地磁盘的操作日志，然后批量复制到远程的备份机器上。只有当操作日志在本地磁盘和远程副本上都持久化后，Master才向客户端确认操作成功。Master定期创建检查点（Checkpoint），将当前完整的命名空间状态序列化到磁盘（类似数据库的全量备份+增量日志）。Master故障恢复时，加载最近的检查点，然后重放检查点之后的操作日志。</p>
+<p>阴影Master（Shadow Master）提供只读的元数据访问，在Master故障时提供降级服务。Shadow Master通过滞后地重放操作日志来保持与Master的状态同步（通常滞后数百毫秒到数秒）。</p>
+<p><strong>ChunkServer的高可用</strong>：Chunk的多个副本分布在不同的机架上（机架感知放置策略）。如果一个机架的网络交换机故障，其他机架上的副本仍然可用。Master定期扫描所有Chunk的副本状态，如果某个Chunk的副本数低于阈值（如2），自动触发再复制——选择其他ChunkServer创建新的副本。</p>
+<p><strong>快速恢复</strong>：GFS设计为在秒级内从节点故障中恢复。ChunkServer可以将自身状态（哪些Chunk存在本地）通过心跳报告给Master。即使ChunkServer整体重启（而非磁盘损坏），它在重启后立即向Master报告其Chunk列表，Master更新元数据，系统快速恢复正常。这与传统RAID需要数小时的磁盘重建形成鲜明对比。</p>
+<p><strong>数据完整性</strong>：GFS使用校验和（Checksum）检测数据静默损坏。每个64KB的数据块有一个32位的校验和（CRC-32C），存储在ChunkServer的内存中，也随日志持久化。ChunkServer在读取数据时验证校验和，如果发现不匹配，向客户端返回错误，客户端转而从其他副本读取。Master随后安排该损坏Chunk的再复制。对于空闲的Chunk，ChunkServer定期扫描和校验，及时发现静默损坏。</p>
+<h3 id="机架感知的副本放置策略"><a href="#机架感知的副本放置策略" class="headerlink" title="机架感知的副本放置策略"></a>机架感知的副本放置策略</h3><p>GFS的副本放置策略不仅考虑节点多样性，更重要的是机架多样性。典型的副本放置策略：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">副本1: 与写入客户端同一机架（减少写入延迟）</span><br><span class="line">副本2: 不同机架（保证机架级容错）</span><br><span class="line">副本3: 同副本2机架的不同节点（平衡分布）</span><br></pre></td></tr></table></figure>
+
+<p>机架感知的重要性：数据中心中，同一个机架内的机器共享同一个网络交换机（ToR Switch, Top-of-Rack Switch）。如果交换机故障，整个机架的机器不可达。将副本分布在不同机架上，保证即使整个机架下线，数据仍然可用。Google的实践表明，机架级故障（交换机故障、电源故障、维护性断电）的频率虽低于单机故障，但绝非罕见。</p>
+<h3 id="静默数据损坏与校验和"><a href="#静默数据损坏与校验和" class="headerlink" title="静默数据损坏与校验和"></a>静默数据损坏与校验和</h3><p>静默数据损坏（Silent Data Corruption）是海量存储系统面临的幽灵般的问题。在PB级别的数据规模下，即使磁盘制造商宣称的不可恢复读错误率（URE, Unrecoverable Read Error）低至10^-15，PB级数据也意味着每读取数十PB就可能遇到一次静默损坏。此外，内存比特翻转（Cosmic Ray导致）、磁盘固件bug、网络传输bit error等也可能导致数据损坏。</p>
+<p>GFS的校验和保护措施：</p>
+<ul>
+<li>每个64KB数据块有32位CRC校验和</li>
+<li>校验和随数据一起写入，读时验证</li>
+<li>ChunkServer在空闲时扫描校验，确保冷数据不被静默腐蚀</li>
+<li>检测到损坏后，客户端自动从其他健康副本读取，Master触发该Chunk的再复制</li>
+</ul>
+<h2 id="八、GFS的局限与HDFS的改进"><a href="#八、GFS的局限与HDFS的改进" class="headerlink" title="八、GFS的局限与HDFS的改进"></a>八、GFS的局限与HDFS的改进</h2><p>GFS的设计深刻地影响了Hadoop的HDFS，但HDFS也做了一些重要改进。HDFS将Chunk大小从64MB增加到128MB（可配置），进一步减少了元数据规模。HDFS支持异构存储（内存、SSD、HDD、归档存储四层），可以按数据温度分层存储。HDFS NameNode支持高可用（Active&#x2F;Standby模式），通过共享的编辑日志（JournalNode集群）实现，比GFS的Shadow Master方案严格性更高。HDFS支持联邦（Federation），多个NameNode各自管理一部分命名空间，解决了单一Master的内存瓶颈。HDFS的权限模型比GFS更丰富（POSIX风格的文件权限+ACL）。</p>
+<p>然而，无论是GFS还是HDFS，都存在一个根本性局限：单一Master架构。虽然Master从不处理数据流（不存在数据吞吐瓶颈），但Master的内存仍然是命名空间大小的硬限制。HDFS Federation虽然通过多NameNode部分缓解了这个问题，但每个分区的命名空间仍然是单一Master管理的。新一代的分布式文件系统（如Ceph、MinIO）采用无Master或伪去中心化架构，从根本上消除了这个瓶颈。</p>
+<h3 id="GFS-HDFS与Ceph-MinIO的架构对比"><a href="#GFS-HDFS与Ceph-MinIO的架构对比" class="headerlink" title="GFS&#x2F;HDFS与Ceph&#x2F;MinIO的架构对比"></a>GFS&#x2F;HDFS与Ceph&#x2F;MinIO的架构对比</h3><p>Ceph采用CRUSH算法（Controlled Replication Under Scalable Hashing），客户端可以直接计算数据所在位置，无需中心化元数据查询。MinIO采用去中心化架构，使用纠删码（Erasure Coding）替代多副本。纠删码以更高的计算开销换取更低的存储成本：RS(6,3)编码（6个数据块+3个校验块）可以实现容忍任意3个块丢失，存储开销仅50%（相比三副本的200%）。但纠删码在故障恢复时需要大量计算和网络传输（需读取至少6个块来重建1个损坏的块），恢复速度远慢于多副本的直接拷贝。</p>
+<h3 id="GFS的At-Least-Once一致性与现代系统的对比"><a href="#GFS的At-Least-Once一致性与现代系统的对比" class="headerlink" title="GFS的At-Least-Once一致性与现代系统的对比"></a>GFS的At-Least-Once一致性与现代系统的对比</h3><p>GFS的At-Least-Once语义是务实的选择，但对于需要强一致性的应用（如数据库底层存储）来说远远不够。现代分布式文件系统（如Azure Storage、AWS S3的强一致性模式）开始提供更强的保证。S3在2020年宣布默认强一致性——任何写入成功后立即对所有后续读取可见。这得益于底层架构的改进（如使用分布式事务日志而非简单的多副本同步）。但强一致性带来了更高的延迟和更低的吞吐量——这再次印证了GFS核心设计权衡的正确性：在Google的批处理场景中，高吞吐比强一致重要得多。</p>
+<h2 id="九、GFS在现代数据中心的演进"><a href="#九、GFS在现代数据中心的演进" class="headerlink" title="九、GFS在现代数据中心的演进"></a>九、GFS在现代数据中心的演进</h2><p>2010年后，Google内部已经用Colossus（GFS的继任者，也称为GFS2）取代了原始GFS。Colossus的主要改进包括：支持分布式元数据（不再有单一Master瓶颈）；支持更小的文件（通过集中式元数据节点处理小文件）；内置纠删码（使用Reed-Solomon编码替代三副本，显著降低存储成本）；自动化数据分层（冷数据自动迁移到高密度但低速的存储介质）。Colossus支撑了Google内部几乎所有存储服务，包括Gmail、YouTube、Google Photos和Cloud Spanner的底层存储。</p>
+<p>Colossus的元数据分布式化是其最关键的架构演进。Colossus将命名空间按目录自动分区（类似HDFS Federation但粒度更细、完全自动化），每个分区由一组元数据服务器（Curator）管理，使用Paxos协议在多个Curator之间保持一致性。客户端缓存目录到Curator的映射，通常一次RPC即可完成元数据查询。</p>
+<h2 id="十、纠删码（Erasure-Coding）与多副本的数学对比"><a href="#十、纠删码（Erasure-Coding）与多副本的数学对比" class="headerlink" title="十、纠删码（Erasure Coding）与多副本的数学对比"></a>十、纠删码（Erasure Coding）与多副本的数学对比</h2><p>GFS使用三副本（3x Replication）实现数据冗余，存储开销为300%（3倍原始数据量）。现代分布式文件系统越来越多地采用纠删码（Erasure Coding）来降低存储成本。</p>
+<p>纠删码的基本原理：将数据块切分为k个数据分片，通过编码生成m个校验分片，总共k+m个分片分布在不同的存储节点上。可以容忍任意m个分片的丢失。常见的配置是RS(6,3)：k&#x3D;6, m&#x3D;3，总共9个分片，存储开销为(6+3)&#x2F;6 &#x3D; 150%，可以容忍任意3个分片丢失。对比三副本的300%存储开销，纠删码节省了一半的存储成本。</p>
+<p>纠删码的代价：</p>
+<ul>
+<li><strong>计算开销</strong>：编码和解码需要矩阵运算（伽罗瓦域上的乘法和加法），CPU开销显著</li>
+<li><strong>恢复开销</strong>：恢复1个丢失的分片需要读取至少k个其他分片，网络传输量是丢失数据量的k倍（多副本方案只需读取1个副本）</li>
+<li><strong>小文件不适用</strong>：对于小于一个Stripe（如64MB）的文件，纠删码的优势消失</li>
+<li><strong>写入放大</strong>：小写入需要Read-Modify-Write周期（读取旧数据，计算新校验，写入数据和校验）</li>
+</ul>
+<p>在GFS&#x2F;Colossus中，纠删码通常用于冷数据（WORM数据，如搜索索引、备份），多副本用于热数据（频繁写入的日志）。HDFS 3.x引入了纠删码支持（HDFS Erasure Coding），推荐用于冷数据存储。</p>
+<h3 id="HDFS纠删码的实现架构"><a href="#HDFS纠删码的实现架构" class="headerlink" title="HDFS纠删码的实现架构"></a>HDFS纠删码的实现架构</h3><p>HDFS的纠删码实现遵循两个核心设计原则：</p>
+<ol>
+<li><strong>在线纠删码（Online EC）</strong>：数据在写入时直接编码，不需要先写三副本再异步转换为纠删码（离线EC）</li>
+<li><strong>客户端编码</strong>：编码在客户端完成（NameNode进行协调），DataNode只负责存储分片，不需要理解EC逻辑</li>
+</ol>
+<p>HDFS纠删码的写入流程：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">客户端 → NameNode: 请求创建EC文件</span><br><span class="line">NameNode → 客户端: 分配 BlockGroup (包含k+m个DataNode)</span><br><span class="line">客户端: 将数据在本地切分为k个数据Stripe，编码生成m个校验Stripe</span><br><span class="line">客户端: 并发将k+m个Stripe写入对应的DataNode</span><br><span class="line">所有DataNode确认 → 写入完成</span><br></pre></td></tr></table></figure>
+
+<p>纠删码的Stripe布局有两种策略：</p>
+<ul>
+<li><strong>连续布局（Contiguous）</strong>：适合大文件顺序写入，每个DataNode上存储连续的Stripe</li>
+<li><strong>条带布局（Striped）</strong>：适合小文件&#x2F;随机写入，每个DataNode上存储交替的Stripe</li>
+</ul>
+<h3 id="GFS-HDFS与Ceph的架构哲学对比"><a href="#GFS-HDFS与Ceph的架构哲学对比" class="headerlink" title="GFS&#x2F;HDFS与Ceph的架构哲学对比"></a>GFS&#x2F;HDFS与Ceph的架构哲学对比</h3><p>GFS&#x2F;HDFS代表集中式元数据架构（Centralized Metadata），Ceph代表去中心化架构（Decentralized）。两者的根本差异：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>GFS&#x2F;HDFS</th>
+<th>Ceph (CRUSH)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>元数据管理</td>
+<td>单一Master（可HA）</td>
+<td>去中心化（CRUSH算法）</td>
+</tr>
+<tr>
+<td>数据定位</td>
+<td>Master查询 → 客户端缓存</td>
+<td>客户端本地计算（CRUSH map）</td>
+</tr>
+<tr>
+<td>一致性</td>
+<td>宽松（At-Least-Once）</td>
+<td>强（Primary-Copy）</td>
+</tr>
+<tr>
+<td>故障检测</td>
+<td>Master心跳</td>
+<td>OSD间相互监控 + Monitor仲裁</td>
+</tr>
+<tr>
+<td>扩展性瓶颈</td>
+<td>Master内存</td>
+<td>几乎无中心瓶颈</td>
+</tr>
+<tr>
+<td>运维复杂度</td>
+<td>简单（Master为中心）</td>
+<td>较高（多组件协调）</td>
+</tr>
+</tbody></table>
+<p>CRUSH算法的核心思想：使用一个集群Map（描述集群的拓扑结构和OSD分布），客户端通过CRUSH(x)函数直接从对象名称计算出数据应存储在哪些OSD上，无需查询任何中心元数据服务。CRUSH Map采用伪随机哈希，保证数据均匀分布，同时在OSD增减时最小化数据迁移量（类似一致性哈希但针对异构设备和层次化拓扑优化）。</p>
+<p>Ceph的RADOS（Reliable Autonomic Distributed Object Store）层使用PG（Placement Group）作为数据管理的中间层：Object → (hash) → PG → (CRUSH) → OSD。PG数量固定（如4096），每个PG在多个OSD上存储（默认为3副本）。PG的引入降低了数据迁移和管理的粒度。</p>
+<h2 id="十一、分布式文件系统在生产环境中的运维实践"><a href="#十一、分布式文件系统在生产环境中的运维实践" class="headerlink" title="十一、分布式文件系统在生产环境中的运维实践"></a>十一、分布式文件系统在生产环境中的运维实践</h2><h3 id="数据再平衡（Rebalancing）"><a href="#数据再平衡（Rebalancing）" class="headerlink" title="数据再平衡（Rebalancing）"></a>数据再平衡（Rebalancing）</h3><p>当向GFS&#x2F;HDFS集群中添加新的ChunkServer&#x2F;DataNode时，新节点初始为空，不承载任何数据。系统需要将现有数据的一部分迁移到新节点上以实现负载均衡。HDFS提供了Balancer工具：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hdfs balancer -threshold 10  # 将各节点存储利用率差异控制在10%以内</span><br></pre></td></tr></table></figure>
+
+<p>Balancer基于贪心算法：计算每个节点的空间利用率与集群平均利用率的偏差；从高利用率节点选择Block迁移到低利用率节点；每次迁移保持目标Block的副本放置策略（不能迁移到同一机架已有副本的节点）；迁移过程中Block仍可正常读写（客户端优先从原始副本读取）。</p>
+<h3 id="节点退役（Decommissioning）"><a href="#节点退役（Decommissioning）" class="headerlink" title="节点退役（Decommissioning）"></a>节点退役（Decommissioning）</h3><p>安全移除一个DataNode需要Graceful Decommissioning（优雅退役）：</p>
+<ol>
+<li>将目标DataNode标记为”退役中（Decommissioning）”</li>
+<li>NameNode不再为该节点分配新的Block</li>
+<li>NameNode为该节点上的每个Block在其他节点创建新副本</li>
+<li>当所有Block的副本数达到要求后，节点标记为”已退役（Decommissioned）”</li>
+<li>可以安全关闭该节点</li>
+</ol>
+<p>这个过程可能需要数小时（取决于数据量和网络带宽），但保证了退役过程中数据不丢失。</p>
+<h3 id="小文件问题的工程解决方案"><a href="#小文件问题的工程解决方案" class="headerlink" title="小文件问题的工程解决方案"></a>小文件问题的工程解决方案</h3><p>GFS和HDFS对小文件支持不佳（每个文件的元数据占用Master内存）。100万个1KB的小文件意味着约100MB的NameNode内存消耗（每个文件约150字节元数据 + Block元数据）。</p>
+<p>工业界的解决方案：</p>
+<ol>
+<li><strong>SequenceFile &#x2F; Avro</strong>：将小文件打包为大文件，附有索引便于查找</li>
+<li><strong>HBase</strong>：将小文件按Row Key存储在HBase中，底层为HFile格式</li>
+<li><strong>Hadoop Archive（HAR）</strong>：将小文件打包为HAR档案，可通过<code>har://</code>协议透明访问</li>
+<li><strong>合并策略</strong>：在业务源头控制（如Spark Streaming写出时增大batch间隔，减少文件数）</li>
+<li><strong>Federation</strong>：将NameNode的命名空间分区，每个NameNode管理的文件数减少</li>
+</ol>
+<h2 id="十二、面试常见追问"><a href="#十二、面试常见追问" class="headerlink" title="十二、面试常见追问"></a>十二、面试常见追问</h2><p><strong>问题一：为什么GFS的Chunk大小选择64MB而非更小或更大？</strong></p>
+<p>这是权衡的结果。当时典型的读取模式是数百MB到数GB的顺序扫描（MapReduce输入），更大的Chunk意味着客户端可以在与Master一次交互后读取更多数据，TCP连接的启动开销被分摊到更多数据上，从而实现更高的吞吐量。更大的Chunk还减少了Master的元数据量（同样的总存储量需要更少的Chunk）。但Chunk过大会导致负载不均衡——如果一个热门文件只有一个Chunk（因为文件本身就小于64MB），所有对该文件的读取都会打到同一个ChunkServer上，成为热点。Google的实践表明，某些包含中间数据的可执行文件或小的文本文件确实会变成热点，解决方案是提高这些文件的复制因子。</p>
+<p><strong>问题二：GFS的一致性模型是怎样的？</strong></p>
+<p>GFS提供的是宽松的一致性模型（Relaxed Consistency）。对于命名空间操作（如创建文件、重命名），GFS提供原子性和正确性保证（通过Master集中管理和操作日志）。对于数据操作：如果一次写入成功且没有并发写入，所有副本在字节级别一致；如果并发写入成功，所有副本在字节级别可能不一致（即不同副本在相同偏移量上可能包含不同的数据）。原子追加保证数据至少被写入一次，字节内容在所有副本一致，但可能包含重复或填充内容。应用程序需要适应这种宽松的一致性：使用校验和验证数据完整性；使用唯一ID识别记录以处理重复；写入时使用追加而非覆盖。</p>
+<p><strong>问题三：GFS如何处理热点问题？</strong></p>
+<p>当某个Chunk被大量客户端同时读取时（如MapReduce的可执行文件、共享库等），存储该Chunk的ChunkServer会成为瓶颈。GFS的解决方案包括：（1）增加热点Chunk的副本数，通过更高的复制因子（如10或更多）分散读流量；（2）客户端缓存读取的数据，减少对ChunkServer的压力——可执行文件通常会被客户端缓存；（3）在调度MapReduce任务时，注意分散依赖相同输入Chunk的任务（数据本地性调度已经自然地做到了这一点）。</p>
+<p><strong>问题四：GFS为什么不实现POSIX接口？</strong></p>
+<p>GFS有意识地偏离了POSIX语义。POSIX文件系统提供强一致性（写入立即对所有读者可见）、支持随机写入、支持目录的严格顺序操作、提供文件锁等。而GFS简化了这些语义以换取更高的性能和可扩展性。例如，GFS不支持文件的随机写入（只支持追加），不支持硬链接，目录操作不是完全原子的（在目录中列出文件和创建文件之间存在竞争窗口）。这种”为特定负载定制API”而非”实现通用POSIX标准”的设计哲学，是GFS成功的关键——它没有被POSIX的历史包袱束缚。</p>
+<p><strong>问题五：GFS的Master如何避免成为性能瓶颈？</strong></p>
+<p>这是GFS设计中最常见的质疑。回答要点：第一，Master只处理元数据操作，不参与数据流。在典型负载下，数据流量通常是元数据流量的数百倍，Master的网络带宽远未饱和。第二，Master将所有元数据保存在内存中（不使用磁盘B+树），单次查询延迟极低（微秒级）。第三，客户端缓存Chunk位置信息，超过99%的读取不需要与Master交互。第四，Chunk大小64MB意味着Master管理的元数据量相对较小——1PB数据仅需约16000个Chunk的元数据（总计约1MB内存）。第五，通过预取和批量操作，Master可以高效地处理来自大量客户端的并发元数据请求。实际瓶颈通常在于Master的内存容量（限制了命名空间的总大小）而非CPU或网络。</p>
+<h2 id="十三、Snapshot（快照）机制与写时复制"><a href="#十三、Snapshot（快照）机制与写时复制" class="headerlink" title="十三、Snapshot（快照）机制与写时复制"></a>十三、Snapshot（快照）机制与写时复制</h2><p>GFS提供了一种高效的Snapshot（快照）机制，基于Copy-on-Write（写时复制）实现。</p>
+<h3 id="GFS-Snapshot的实现流程"><a href="#GFS-Snapshot的实现流程" class="headerlink" title="GFS Snapshot的实现流程"></a>GFS Snapshot的实现流程</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. Master接收到Snapshot请求（源文件路径 → 目标文件路径）</span><br><span class="line">2. Master撤销（Revoke）源文件所有Chunk的当前租约</span><br><span class="line">   - 这是关键步骤：撤销租约后，所有后续写入都必须先联系Master获取新租约</span><br><span class="line">   - 这给了Master控制所有写入的窗口期</span><br><span class="line">3. Master在操作日志中记录Snapshot操作（持久化，保证容错）</span><br><span class="line">4. Master复制源文件的元数据到目标文件路径</span><br><span class="line">   - 此时源文件和目标文件共享相同的Chunk Handle（物理数据未复制！）</span><br><span class="line">5. Master为所有共享Chunk增加引用计数</span><br><span class="line">6. Master重新授予源文件Chunk的租约（恢复写入）</span><br><span class="line"></span><br><span class="line">7. 后续写入时（Copy-on-Write触发）：</span><br><span class="line">   - 客户端向Master请求写入某个Chunk</span><br><span class="line">   - Master发现该Chunk的引用计数 &gt; 1（被多个文件共享）</span><br><span class="line">   - Master分配新Chunk Handle，命令持有该Chunk的ChunkServer将数据复制到新Chunk</span><br><span class="line">   - 更新源文件映射指向新Chunk，原Chunk仍被目标文件（Snapshot）引用</span><br><span class="line">   - 引用计数递减</span><br></pre></td></tr></table></figure>
+
+<p>这个Snapshot机制的特性：创建Snapshot是O(1)操作（仅元数据复制，不涉及数据传输）；Snapshot创建瞬间完成（仅一次操作日志写入 + 租约撤销）；物理数据只在写入时才分裂（Copy-on-Write）；非常适合创建大批量数据的临时副本（如MapReduce作业的输入数据保护）。</p>
+<h3 id="Snapshot在数据保护中的角色"><a href="#Snapshot在数据保护中的角色" class="headerlink" title="Snapshot在数据保护中的角色"></a>Snapshot在数据保护中的角色</h3><p>Google内部使用GFS Snapshot进行：MapReduce作业的输入数据保护（在作业开始前对输入数据做Snapshot，防止作业过程中源数据被修改）；数据恢复（误删文件后从Snapshot恢复）；A&#x2F;B测试（在数据的不同版本上运行不同的分析算法）。这种轻量级的Snapshot机制后来被HDFS Snapshots（HDFS 2.1+）和Amazon EBS Snapshots继承和发扬。</p>
+<h3 id="扩展阅读：分布式文件系统的学术演进"><a href="#扩展阅读：分布式文件系统的学术演进" class="headerlink" title="扩展阅读：分布式文件系统的学术演进"></a>扩展阅读：分布式文件系统的学术演进</h3><p>从GFS（2003）出发，分布式文件系统的关键演进节点：</p>
+<ul>
+<li><strong>2003, GFS</strong>: 奠定了单一Master + 多ChunkServer + 大Chunk + 追加写 + 宽松一致性的范式</li>
+<li><strong>2006, HDFS</strong>: GFS的开源实现，Chunk→Block(128MB)，增加安全模型</li>
+<li><strong>2007, Amazon Dynamo</strong>: 去中心化KV存储，一致性哈希 + 虚拟节点 + Gossip + Hinted Handoff</li>
+<li><strong>2010, Facebook Haystack</strong>: 专为照片存储优化的文件系统，解决小文件问题</li>
+<li><strong>2011, Ceph</strong>: 去中心化统一存储（对象+块+文件），CRUSH算法</li>
+<li><strong>2012, Google Colossus (GFS2)</strong>: 分布式元数据，纠删码，自动化分层</li>
+<li><strong>2015, MinIO</strong>: 轻量级S3兼容对象存储，纠删码，去中心化</li>
+<li><strong>2019, JuiceFS</strong>: 云原生分布式文件系统，元数据在Redis&#x2F;TiKV，数据在对象存储</li>
+</ul>
+<p>每个系统都在GFS奠定的基础上，针对特定场景做了专门优化。理解GFS的设计决策（以及这些决策在20年间的演变），是理解所有分布式存储系统的基础。</p>
+<h3 id="GFS对现代云存储的深远影响"><a href="#GFS对现代云存储的深远影响" class="headerlink" title="GFS对现代云存储的深远影响"></a>GFS对现代云存储的深远影响</h3><p>GFS的设计思想在今天仍然无处不在。AWS S3（2006年推出）虽然不是GFS的直接实现，但其核心设计理念——对象不可变（通过版本化支持更新）、最终一致性（2020年前）、追加写优化——都深受GFS影响。S3的”写后读一致性”限制（2020年前新写入的对象可能短暂不可读）与GFS的一致性模型如出一辙。Azure Blob Storage的Append Blob类型直接对应了GFS的原子追加原语。Google Cloud Storage（GCS）则直接是在Colossus&#x2F;GFS2之上构建的对象存储服务——可以说GCS就是GFS的直系后代，通过HTTP API对外提供服务。</p>
+<p>理解GFS的设计，就能理解为什么云对象存储有”最终一致性”的标签，为什么小文件在对象存储中效率较低（GFS&#x2F;Colossus对大量小文件不友好），以及为什么对象存储通常不支持原地修改（Append-Only设计哲学的直接体现）。</p>
+<h3 id="GFS设计中的工程哲学启示"><a href="#GFS设计中的工程哲学启示" class="headerlink" title="GFS设计中的工程哲学启示"></a>GFS设计中的工程哲学启示</h3><p>回顾GFS论文全文，几个工程哲学值得深思：</p>
+<p><strong>“足够好”的哲学</strong>：GFS不追求完美的一致性，不追求POSIX兼容，不追求对所有工作负载都最优。它只追求对Google的工作负载”足够好”。这种有自知之明的设计是GFS成功的核心。</p>
+<p><strong>“故障是常态”的哲学</strong>：GFS从第一天起就假设硬件会频繁故障。这种假设渗透到每个设计细节——多副本、校验和、快速恢复、租约超时。不对硬件有任何幻想，是GFS能在数千台廉价PC上可靠运行的根本。</p>
+<p><strong>“充分利用应用知识”的哲学</strong>：GFS的API设计利用了Google应用的特征（大文件、顺序读、追加写）。它不是设计一个通用文件系统然后让应用适应它，而是理解应用的需求，让文件系统适配应用。这种”自顶向下”的设计方法在后续Google系统中反复出现。</p>
+<p><strong>“机制与策略分离”的哲学</strong>：Master负责全局策略（副本放置、垃圾回收、容错），ChunkServer负责局部机制（存储、校验和、读&#x2F;写执行）。这种分离使得策略可以独立演进（如改进副本放置算法），而机制保持简单稳定。</p>
+<h3 id="GFS的Master操作日志与Checkpoint详解"><a href="#GFS的Master操作日志与Checkpoint详解" class="headerlink" title="GFS的Master操作日志与Checkpoint详解"></a>GFS的Master操作日志与Checkpoint详解</h3><p>GFS Master的操作日志（Operation Log）是其容错设计的核心。理解操作日志的工作机制，对理解任何分布式系统的WAL模式都有帮助：</p>
+<p><strong>操作日志的结构</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[SeqNo] [Operation] [Parameters] [Timestamp]</span><br><span class="line">1       CREATE     /data/index/file1_chunk0  1000001</span><br><span class="line">2       CREATE     /data/index/file1_chunk1  1000002</span><br><span class="line">3       DELETE     /tmp/scratch_old          1000003</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>每行对应一个元数据变更操作。操作日志按顺序写入（追加），每条记录有唯一的序列号。</p>
+<p><strong>Checkpoint的创建流程</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. Master创建一个新的操作日志文件（切换日志）</span><br><span class="line">2. Master在后台线程中：</span><br><span class="line">   a. 遍历内存中的所有命名空间和文件元数据</span><br><span class="line">   b. 序列化为紧凑的二进制格式（类似B+树的内存Dump）</span><br><span class="line">   c. 写入GFS中的Checkpoint文件</span><br><span class="line">3. Checkpoint完成前的旧操作日志可以在Master重启后清理</span><br></pre></td></tr></table></figure>
+
+<p><strong>故障恢复的时间线</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">T0: Master崩溃</span><br><span class="line">T1: 监控系统检测到Master不可用（约数秒）</span><br><span class="line">T2: 启动备份Master或重启Master进程</span><br><span class="line">T3: Master加载最新的Checkpoint文件（从GFS读取）</span><br><span class="line">    - 加载时间取决于Checkpoint大小（通常数GB，需数十秒）</span><br><span class="line">T4: Master从操作日志中重放Checkpoint之后的所有操作</span><br><span class="line">    - 重放速度约每秒数千到数万条操作</span><br><span class="line">T5: Master与所有ChunkServer重新建立心跳，收集Chunk状态</span><br><span class="line">T6: Master开始接受客户端请求</span><br><span class="line">总恢复时间: 通常1-3分钟 (取决于Checkpoint大小和操作日志长度)</span><br></pre></td></tr></table></figure>
+
+<p>为什么操作日志要写两份（本地磁盘 + 远程副本）？这是为了在Master宕机且本地磁盘不可恢复（如磁盘损坏）时，仍能从远程副本恢复操作日志。这体现了Google”不信任任何单点”的设计理念——即使是Master的本地磁盘也不被完全信任。</p>
+<h3 id="GFS的应用实例：如何存储搜索引擎的倒排索引"><a href="#GFS的应用实例：如何存储搜索引擎的倒排索引" class="headerlink" title="GFS的应用实例：如何存储搜索引擎的倒排索引"></a>GFS的应用实例：如何存储搜索引擎的倒排索引</h3><p>搜索引擎的倒排索引（Inverted Index）是GFS最核心的应用场景之一。倒排索引的数据特征是：大量大文件（整个倒排索引可达PB级），MapReduce生成（批量追加写入），顺序读取（查询时扫描Posting List），极少修改（重新生成整个索引是常态而非增量更新）。</p>
+<p>在GFS上的存储结构：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/data/index/</span><br><span class="line">  ├── term_index/          # 词项字典</span><br><span class="line">  │   ├── part-00000       # 64MB Chunk × N</span><br><span class="line">  │   ├── part-00001</span><br><span class="line">  │   └── ...</span><br><span class="line">  ├── posting_list/        # 倒排列表</span><br><span class="line">  │   ├── part-00000       # 64MB Chunk × N</span><br><span class="line">  │   └── ...</span><br><span class="line">  └── doc_store/           # 文档存储</span><br><span class="line">      └── ...</span><br></pre></td></tr></table></figure>
+
+<p>每个分区的文件可能达到数TB，由MapReduce作业从爬虫产出中生成。原子追加原语允许多个MapReduce任务并发向同一个输出文件追加数据（如多个Reducer向同一个Posting List分区输出），GFS自动管理写入位置，任务之间无需协调。</p>
+<p>读取时，查询服务器通过客户端库读取GFS中的Posting List，利用GFS的大块顺序读取优化（64MB Chunk + 客户端缓存Chunk位置），可以实现每秒数GB的扫描吞吐。</p>
+<h3 id="GFS设计与运维中的工程经验教训"><a href="#GFS设计与运维中的工程经验教训" class="headerlink" title="GFS设计与运维中的工程经验教训"></a>GFS设计与运维中的工程经验教训</h3><p>Google的工程师在GFS的开发和运维中积累了丰富的经验，这些经验对任何分布式系统设计都有借鉴意义：</p>
+<p><strong>教训1：热点Chunk的发现比解决更难</strong>。GFS论文指出，某些可执行文件和共享库意外变成了热点——它们的Chunk被数百个MapReduce任务并发读取。问题的根源不是无法解决（增加副本数即可），而是难以提前发现哪些文件会变成热点。这催生了后续系统中更好的热数据检测和自动副本调整机制。</p>
+<p><strong>教训2：租约机制的微妙之处</strong>。租约超时设置为60秒，但Google发现在某些负载下（如极端网络延迟或Primary节点过载），60秒可能不够。如果租约在Primary处理写入的过程中过期，客户端需要重试整个写入流程。解决方案是让Primary在即将过期时主动续约（Heartbeat机制），但这增加了Master的负载。最终采用了自适应租约时间——根据Primary的负载和网络延迟动态调整。</p>
+<p><strong>教训3：垃圾回收回收期的选择</strong>。默认三天的垃圾回收保留期在某些场景下不够。例如，用户可能在周五删除文件，但整个团队周末不在，周一才发现误删——三天刚好过去。Google后来允许按目录配置不同的保留期（如重要目录保留7天，临时目录保留1天）。</p>
+<p><strong>教训4：校验和开销的隐藏</strong>。校验和验证是纯CPU开销，但Google发现可以通过流水线隐藏这个开销——在数据从磁盘读取到内存的过程中（DMA传输），CPU同时计算校验和（因为磁盘I&#x2F;O远慢于CPU）。当数据完全加载到内存时，校验和已经计算完毕。</p>
+<p><strong>教训5：从GFS到Colossus的过渡</strong>。GFS最初是为批处理设计的，但Google后来的许多实时服务（如Gmail、YouTube、Google Docs）也需要文件存储。这些服务要求低延迟、强一致性、随机写入支持——这些都不是GFS的强项。Colossus（GFS2）在保持GFS架构优势的同时，增加了对低延迟随机访问、细粒度一致性控制和多租户隔离的支持。</p>
+<p>这些经验表明，即使是一个设计精良的系统，在面对新的使用场景时也需要持续演进。GFS的核心设计原则——大块、追加写、分离控制流与数据流、容忍硬件故障——仍然有效，但在不同的延迟&#x2F;一致性&#x2F;访问模式约束下，实现方式需要调整。</p>
+<h3 id="GFS论文中的经典引用与关键数据"><a href="#GFS论文中的经典引用与关键数据" class="headerlink" title="GFS论文中的经典引用与关键数据"></a>GFS论文中的经典引用与关键数据</h3><p>GFS论文（2003 SOSP）包含了一些在系统设计面试中经常被引用的数据点，这些数据有助于建立你的量化直觉：</p>
+<ul>
+<li><strong>集群规模</strong>：单个GFS集群通常有数百到数千个ChunkServer，存储数百TB到数PB的数据</li>
+<li><strong>Chunk复制</strong>：默认3副本，分布在至少2个机架上</li>
+<li><strong>Master元数据</strong>：每个Chunk约64字节元数据。64PB数据仅需1GB Master内存</li>
+<li><strong>读操作效率</strong>：超过99%的读操作不需要与Master交互（客户端缓存）</li>
+<li><strong>原子追加吞吐</strong>：在GFS论文的实验中，16个客户端并发追加时达到约100MB&#x2F;s的总吞吐</li>
+<li><strong>恢复速度</strong>：ChunkServer重启后，其Chunk在秒级内重新可用（不需要数据重建，仅元数据同步）</li>
+<li><strong>校验和覆盖</strong>：每个64KB数据块一个32位CRC。在Google的集群中，校验和检测到的静默损坏率约为每读取10^15位出现一次</li>
+<li><strong>垃圾回收</strong>：文件删除后保留3天，期间可恢复</li>
+</ul>
+<p>这些数字在面试中进行容量估算时非常有用——它们不仅是参考值，更重要的是展示了GFS设计者在各项指标之间的权衡逻辑。例如，3副本 vs 纠删码的选择：3副本意味着3倍存储开销但恢复时只需读1个副本（极快的恢复速度）；纠删码意味着1.5倍存储开销但恢复时需读6个分片（较慢但安全）。GFS选择3副本，因为”20世纪初Google的瓶颈是CPU时间和恢复速度，而非磁盘成本”。</p>
+<p>GFS的论文至今仍然是分布式系统领域的必读文献。它的影响力不仅在于技术本身，更在于它展示了一种”为现实世界需求设计系统”的工程方法——理解你的工作负载、清晰声明你的假设、拥抱故障而非逃避故障、最大化简单性而非完备性。这些原则在二十年后仍然指导着新一代分布式系统的设计。</p>
+<p>最后，用GFS论文的第一作者Sanjay Ghemawat的话来总结：”分布式系统设计的艺术不在于解决所有问题，而在于前瞻性地决定哪些问题不需要解决。”GFS选择了不解决POSIX兼容性、随机写入优化、强一致性这些问题——正是这些”不解决”的选择，让它成为一个成功而优雅的系统。而这种”务实的克制”，恰恰是每个系统设计者在任何时代都应该学习的核心能力。</p>
+<hr>
+<p><em>本文涵盖了GFS的设计目标、架构、读写流程、容错机制、一致性模型、垃圾回收、高可用、以及与HDFS&#x2F;Ceph等现代系统的对比。理解GFS不仅是为了通过系统设计面试，更是为了掌握分布式存储系统设计的核心思想——这些思想在对象存储、NewSQL数据库、事件溯源架构等领域持续发挥作用。</em></p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2021/11/15/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%BB%A5GFS%E4%B8%BA%E4%BE%8B%E6%8E%A2%E7%B4%A2%E5%88%86%E5%B8%83%E5%BC%8F%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">http://tufusi.com/2021/11/15/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%BB%A5GFS%E4%B8%BA%E4%BE%8B%E6%8E%A2%E7%B4%A2%E5%88%86%E5%B8%83%E5%BC%8F%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Google/">Google    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/253.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/11/20/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E7%88%AC%E8%99%AB%E7%B3%BB%E7%BB%9F%E4%B8%8E%E6%90%9C%E7%B4%A2%E5%BB%BA%E8%AE%AE%E7%B3%BB%E7%BB%9F/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>系统设计之爬虫系统与搜索建议系统</span></div></a></div><div class="next-post pull_right"><a href="/2021/11/10/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C%E7%AE%97%E6%B3%95-%E8%AE%BE%E8%AE%A1%E7%9F%AD%E7%BD%91%E5%9D%80%E7%B3%BB%E7%BB%9F/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>一致性哈希算法&amp;设计短网址系统</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2021/12/05/系统设计之以Big-Table为例探索分布式数据库/" title="以Big Table为例探索分布式数据库"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><div class="relatedPosts_title">以Big Table为例探索分布式数据库</div></a></div><div class="relatedPosts_item"><a href="/2019/11/17/机器学习篇-机器学习指南-译文/" title="机器学习篇-机器学习指南[译文]"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_diamond_paint.jpg"><div class="relatedPosts_title">机器学习篇-机器学习指南[译文]</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/253.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

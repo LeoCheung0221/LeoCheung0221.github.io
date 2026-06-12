@@ -1,0 +1,698 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>JetPack全家桶（一）之JetPack配置 | ONE·PIECE</title><meta name="description" content="JetPack全家桶（一）之JetPack配置"><meta name="keywords" content="Jetpack"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="JetPack全家桶（一）之JetPack配置"><meta name="twitter:description" content="JetPack全家桶（一）之JetPack配置"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/图片7.jpg"><meta property="og:type" content="article"><meta property="og:title" content="JetPack全家桶（一）之JetPack配置"><meta property="og:url" content="http://tufusi.com/2019/07/01/%E9%87%8D%E6%8B%BEAndroid-JetPack%E5%85%A8%E5%AE%B6%E6%A1%B6%EF%BC%88%E4%B8%80%EF%BC%89%E4%B9%8BJetPack%E9%85%8D%E7%BD%AE/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="JetPack全家桶（一）之JetPack配置"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/图片7.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2019/07/01/%E9%87%8D%E6%8B%BEAndroid-JetPack%E5%85%A8%E5%AE%B6%E6%A1%B6%EF%BC%88%E4%B8%80%EF%BC%89%E4%B9%8BJetPack%E9%85%8D%E7%BD%AE/"><link rel="prev" title="JetPack全家桶（二）之LifeCycle生命周期感知组件" href="http://tufusi.com/2019/07/05/%E9%87%8D%E6%8B%BEAndroid-JetPack%E5%85%A8%E5%AE%B6%E6%A1%B6%EF%BC%88%E4%BA%8C%EF%BC%89%E4%B9%8BLifeCycle%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E6%84%9F%E7%9F%A5%E7%BB%84%E4%BB%B6/"><link rel="next" title="【必知必会SDK】之Glide" href="http://tufusi.com/2019/06/25/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E5%BF%85%E7%9F%A5%E5%BF%85%E4%BC%9ASDK%E3%80%91%E4%B9%8BGlide/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81Jetpack-%E6%A6%82%E8%BF%B0"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、Jetpack 概述</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-Jetpack"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">1.1 为什么需要 Jetpack</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-2-Jetpack-%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">1.2 Jetpack 的设计原则</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-3-Jetpack-%E7%BB%84%E4%BB%B6%E5%85%A8%E6%99%AF%E5%9B%BE"><span class="toc_mobile_items-number">1.3.</span> <span class="toc_mobile_items-text">1.3 Jetpack 组件全景图</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#Architecture%EF%BC%88%E6%9E%B6%E6%9E%84%E7%BB%84%E4%BB%B6%EF%BC%89"><span class="toc_mobile_items-number">1.3.1.</span> <span class="toc_mobile_items-text">Architecture（架构组件）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#Foundation%EF%BC%88%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6%EF%BC%89"><span class="toc_mobile_items-number">1.3.2.</span> <span class="toc_mobile_items-text">Foundation（基础组件）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#Behavior%EF%BC%88%E8%A1%8C%E4%B8%BA%E7%BB%84%E4%BB%B6%EF%BC%89"><span class="toc_mobile_items-number">1.3.3.</span> <span class="toc_mobile_items-text">Behavior（行为组件）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-4"><a class="toc_mobile_items-link" href="#UI%EF%BC%88%E7%95%8C%E9%9D%A2%E7%BB%84%E4%BB%B6%EF%BC%89"><span class="toc_mobile_items-number">1.3.4.</span> <span class="toc_mobile_items-text">UI（界面组件）</span></a></li></ol></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81AndroidX-%E8%BF%81%E7%A7%BB%E5%AE%8C%E5%85%A8%E6%8C%87%E5%8D%97"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、AndroidX 迁移完全指南</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-Support-Library-%E5%88%B0-AndroidX-%E7%9A%84%E8%83%8C%E6%99%AF"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 Support Library 到 AndroidX 的背景</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E5%85%B3%E9%94%AE%E5%8C%85%E5%90%8D%E6%98%A0%E5%B0%84%E8%A1%A8"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 关键包名映射表</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-%E7%BB%84%E4%BB%B6-Artifact-%E6%98%A0%E5%B0%84%E8%A1%A8"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 组件 Artifact 映射表</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-4-Jetifier-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">2.4 Jetifier 深度解析</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-5-Android-Studio-%E8%87%AA%E5%8A%A8%E8%BF%81%E7%A7%BB%E5%B7%A5%E5%85%B7"><span class="toc_mobile_items-number">2.5.</span> <span class="toc_mobile_items-text">2.5 Android Studio 自动迁移工具</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81%E6%9E%84%E5%BB%BA%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、构建系统配置</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-Gradle-Build-%E8%84%9A%E6%9C%AC%E9%85%8D%E7%BD%AE"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 Gradle Build 脚本配置</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-Version-Catalog%EF%BC%88libs-versions-toml%EF%BC%89"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 Version Catalog（libs.versions.toml）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-BOM%EF%BC%88Bill-of-Materials%EF%BC%89%E7%BB%9F%E4%B8%80%E7%89%88%E6%9C%AC%E7%AE%A1%E7%90%86"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 BOM（Bill of Materials）统一版本管理</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-buildSrc-%E7%BA%A6%E5%AE%9A%E6%8F%92%E4%BB%B6"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">3.4 buildSrc 约定插件</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E5%A4%9A%E6%A8%A1%E5%9D%97%E9%A1%B9%E7%9B%AE%E6%9E%B6%E6%9E%84"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、多模块项目架构</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E6%8E%A8%E8%8D%90%E7%9A%84%E6%A8%A1%E5%9D%97%E5%88%92%E5%88%86"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 推荐的模块划分</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E6%A8%A1%E5%9D%97%E4%BE%9D%E8%B5%96%E5%85%B3%E7%B3%BB"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 模块依赖关系</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-%E6%AF%8F%E4%B8%AA%E6%A8%A1%E5%9D%97%E7%9A%84-build-gradle-kts-%E7%A4%BA%E4%BE%8B"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 每个模块的 build.gradle.kts 示例</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81Compose-vs-View-%E4%BD%93%E7%B3%BB%E5%86%B3%E7%AD%96%E6%8C%87%E5%8D%97"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、Compose vs View 体系决策指南</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E4%BD%95%E6%97%B6%E9%80%89%E6%8B%A9-Jetpack-Compose"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 何时选择 Jetpack Compose</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-%E4%BD%95%E6%97%B6%E4%BF%9D%E7%95%99-View-%E4%BD%93%E7%B3%BB"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 何时保留 View 体系</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-%E6%B8%90%E8%BF%9B%E5%BC%8F%E8%BF%81%E7%A7%BB%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 渐进式迁移策略</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-4-%E5%85%BC%E5%AE%B9%E6%80%A7%E6%A1%A5%E6%8E%A5%E4%BB%A3%E7%A0%81"><span class="toc_mobile_items-number">5.4.</span> <span class="toc_mobile_items-text">5.4 兼容性桥接代码</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E9%A1%B9%E7%9B%AE%E5%88%9D%E5%A7%8B%E5%8C%96-Checklist"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、项目初始化 Checklist</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 环境准备</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-%E5%9F%BA%E7%A1%80%E9%85%8D%E7%BD%AE"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 基础配置</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-%E6%9E%B6%E6%9E%84%E6%90%AD%E5%BB%BA"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">6.3 架构搭建</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-4-%E4%BB%A3%E7%A0%81%E8%A7%84%E8%8C%83"><span class="toc_mobile_items-number">6.4.</span> <span class="toc_mobile_items-text">6.4 代码规范</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%80%83%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">面试常考问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81ProGuard-R8-%E4%B8%8E-Jetpack-%E9%85%8D%E7%BD%AE"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">七、ProGuard &#x2F; R8 与 Jetpack 配置</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-Jetpack-%E7%BB%84%E4%BB%B6%E7%9A%84-ProGuard-%E8%A7%84%E5%88%99"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">7.1 Jetpack 组件的 ProGuard 规则</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-R8-%E5%AE%8C%E5%85%A8%E6%A8%A1%E5%BC%8F"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">7.2 R8 完全模式</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81Kotlin-Multiplatform-%E4%B8%8E-Jetpack-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">八、Kotlin Multiplatform 与 Jetpack 的关系</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-%E7%8E%B0%E7%8A%B6%E4%B8%8E%E8%B6%8B%E5%8A%BF"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">8.1 现状与趋势</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-%E8%B7%A8%E5%B9%B3%E5%8F%B0%E5%85%B1%E4%BA%AB%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">8.2 跨平台共享策略</span></a></li></ol></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81Jetpack-%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">一、Jetpack 概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-Jetpack"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 为什么需要 Jetpack</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Jetpack-%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 Jetpack 的设计原则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-Jetpack-%E7%BB%84%E4%BB%B6%E5%85%A8%E6%99%AF%E5%9B%BE"><span class="toc-number">1.3.</span> <span class="toc-text">1.3 Jetpack 组件全景图</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Architecture%EF%BC%88%E6%9E%B6%E6%9E%84%E7%BB%84%E4%BB%B6%EF%BC%89"><span class="toc-number">1.3.1.</span> <span class="toc-text">Architecture（架构组件）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Foundation%EF%BC%88%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6%EF%BC%89"><span class="toc-number">1.3.2.</span> <span class="toc-text">Foundation（基础组件）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Behavior%EF%BC%88%E8%A1%8C%E4%B8%BA%E7%BB%84%E4%BB%B6%EF%BC%89"><span class="toc-number">1.3.3.</span> <span class="toc-text">Behavior（行为组件）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#UI%EF%BC%88%E7%95%8C%E9%9D%A2%E7%BB%84%E4%BB%B6%EF%BC%89"><span class="toc-number">1.3.4.</span> <span class="toc-text">UI（界面组件）</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81AndroidX-%E8%BF%81%E7%A7%BB%E5%AE%8C%E5%85%A8%E6%8C%87%E5%8D%97"><span class="toc-number">2.</span> <span class="toc-text">二、AndroidX 迁移完全指南</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Support-Library-%E5%88%B0-AndroidX-%E7%9A%84%E8%83%8C%E6%99%AF"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 Support Library 到 AndroidX 的背景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%85%B3%E9%94%AE%E5%8C%85%E5%90%8D%E6%98%A0%E5%B0%84%E8%A1%A8"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 关键包名映射表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E7%BB%84%E4%BB%B6-Artifact-%E6%98%A0%E5%B0%84%E8%A1%A8"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 组件 Artifact 映射表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Jetifier-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 Jetifier 深度解析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-Android-Studio-%E8%87%AA%E5%8A%A8%E8%BF%81%E7%A7%BB%E5%B7%A5%E5%85%B7"><span class="toc-number">2.5.</span> <span class="toc-text">2.5 Android Studio 自动迁移工具</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%9E%84%E5%BB%BA%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE"><span class="toc-number">3.</span> <span class="toc-text">三、构建系统配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Gradle-Build-%E8%84%9A%E6%9C%AC%E9%85%8D%E7%BD%AE"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 Gradle Build 脚本配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Version-Catalog%EF%BC%88libs-versions-toml%EF%BC%89"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 Version Catalog（libs.versions.toml）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-BOM%EF%BC%88Bill-of-Materials%EF%BC%89%E7%BB%9F%E4%B8%80%E7%89%88%E6%9C%AC%E7%AE%A1%E7%90%86"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 BOM（Bill of Materials）统一版本管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-buildSrc-%E7%BA%A6%E5%AE%9A%E6%8F%92%E4%BB%B6"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 buildSrc 约定插件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%A4%9A%E6%A8%A1%E5%9D%97%E9%A1%B9%E7%9B%AE%E6%9E%B6%E6%9E%84"><span class="toc-number">4.</span> <span class="toc-text">四、多模块项目架构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E6%8E%A8%E8%8D%90%E7%9A%84%E6%A8%A1%E5%9D%97%E5%88%92%E5%88%86"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 推荐的模块划分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%A8%A1%E5%9D%97%E4%BE%9D%E8%B5%96%E5%85%B3%E7%B3%BB"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 模块依赖关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E6%AF%8F%E4%B8%AA%E6%A8%A1%E5%9D%97%E7%9A%84-build-gradle-kts-%E7%A4%BA%E4%BE%8B"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 每个模块的 build.gradle.kts 示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Compose-vs-View-%E4%BD%93%E7%B3%BB%E5%86%B3%E7%AD%96%E6%8C%87%E5%8D%97"><span class="toc-number">5.</span> <span class="toc-text">五、Compose vs View 体系决策指南</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E4%BD%95%E6%97%B6%E9%80%89%E6%8B%A9-Jetpack-Compose"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 何时选择 Jetpack Compose</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E4%BD%95%E6%97%B6%E4%BF%9D%E7%95%99-View-%E4%BD%93%E7%B3%BB"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 何时保留 View 体系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E6%B8%90%E8%BF%9B%E5%BC%8F%E8%BF%81%E7%A7%BB%E7%AD%96%E7%95%A5"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 渐进式迁移策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E5%85%BC%E5%AE%B9%E6%80%A7%E6%A1%A5%E6%8E%A5%E4%BB%A3%E7%A0%81"><span class="toc-number">5.4.</span> <span class="toc-text">5.4 兼容性桥接代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E9%A1%B9%E7%9B%AE%E5%88%9D%E5%A7%8B%E5%8C%96-Checklist"><span class="toc-number">6.</span> <span class="toc-text">六、项目初始化 Checklist</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 环境准备</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%9F%BA%E7%A1%80%E9%85%8D%E7%BD%AE"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 基础配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E6%9E%B6%E6%9E%84%E6%90%AD%E5%BB%BA"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 架构搭建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E4%BB%A3%E7%A0%81%E8%A7%84%E8%8C%83"><span class="toc-number">6.4.</span> <span class="toc-text">6.4 代码规范</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%80%83%E9%97%AE%E9%A2%98"><span class="toc-number">7.</span> <span class="toc-text">面试常考问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81ProGuard-R8-%E4%B8%8E-Jetpack-%E9%85%8D%E7%BD%AE"><span class="toc-number">8.</span> <span class="toc-text">七、ProGuard &#x2F; R8 与 Jetpack 配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-Jetpack-%E7%BB%84%E4%BB%B6%E7%9A%84-ProGuard-%E8%A7%84%E5%88%99"><span class="toc-number">8.1.</span> <span class="toc-text">7.1 Jetpack 组件的 ProGuard 规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-R8-%E5%AE%8C%E5%85%A8%E6%A8%A1%E5%BC%8F"><span class="toc-number">8.2.</span> <span class="toc-text">7.2 R8 完全模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81Kotlin-Multiplatform-%E4%B8%8E-Jetpack-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">9.</span> <span class="toc-text">八、Kotlin Multiplatform 与 Jetpack 的关系</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E7%8E%B0%E7%8A%B6%E4%B8%8E%E8%B6%8B%E5%8A%BF"><span class="toc-number">9.1.</span> <span class="toc-text">8.1 现状与趋势</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E8%B7%A8%E5%B9%B3%E5%8F%B0%E5%85%B1%E4%BA%AB%E7%AD%96%E7%95%A5"><span class="toc-number">9.2.</span> <span class="toc-text">8.2 跨平台共享策略</span></a></li></ol></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/图片7.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">JetPack全家桶（一）之JetPack配置</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2019-07-01<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">6.3k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 28 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>自从 Google 在2018年推出 Jetpack 之后，它就成为了 Android 未来发展的风向标。同时 Google 也希望借助 Jetpack 统一开发者开发规范，可以说，如果还想在 Android 界驰骋沙场，Jetpack 是我们必须要掌握的杀招。</p>
+<span id="more"></span>
+
+<h2 id="一、Jetpack-概述"><a href="#一、Jetpack-概述" class="headerlink" title="一、Jetpack 概述"></a>一、Jetpack 概述</h2><h3 id="1-1-为什么需要-Jetpack"><a href="#1-1-为什么需要-Jetpack" class="headerlink" title="1.1 为什么需要 Jetpack"></a>1.1 为什么需要 Jetpack</h3><p>在 Jetpack 诞生之前，Android 开发面临几个核心痛点：</p>
+<p><strong>碎片化问题</strong>：Android 生态中设备碎片化、API 级别碎片化、开发模式碎片化。同一功能（如后台任务）在不同 API 级别上需要不同的实现方式（AlarmManager、JobScheduler、Firebase JobDispatcher 等），开发者需要编写大量兼容性代码。</p>
+<p><strong>生命周期管理困难</strong>：Activity&#x2F;Fragment 的生命周期极其复杂，在配置变更（屏幕旋转、语言切换）时数据容易丢失，异步任务回调时 Activity 可能已销毁，导致 NPE 崩溃和内存泄露。</p>
+<p><strong>样板代码泛滥</strong>：<code>findViewById</code>、手动管理 <code>FragmentTransaction</code> 返回栈、SQLiteOpenHelper 编写重复的 CRUD 代码、为保留配置变更数据手动覆写 <code>onSaveInstanceState</code> 等，大量低价值的模板代码占据了开发时间。</p>
+<p><strong>架构不统一</strong>：缺乏官方推荐的架构指导，MVC、MVP、MVVM 各阵营争执不下，新人上手成本高，不同项目间的代码风格差异巨大。</p>
+<p>Jetpack 正是在此背景下诞生：Google 将 Support Library 重构为 AndroidX，并在此基础上推出了一系列涵盖架构、UI、行为、基础四个领域的组件库集合，统称为 Jetpack。</p>
+<h3 id="1-2-Jetpack-的设计原则"><a href="#1-2-Jetpack-的设计原则" class="headerlink" title="1.2 Jetpack 的设计原则"></a>1.2 Jetpack 的设计原则</h3><p>Jetpack 的设计遵循四个核心原则：</p>
+<ol>
+<li><p><strong>向后兼容</strong>：绝大部分 Jetpack 组件兼容至 API 14（Android 4.0），个别组件（如 CameraX）需要 API 21+。Jetpack 通过内部兼容性封装，让开发者在旧设备上也能使用新 API 行为。</p>
+</li>
+<li><p><strong>生命周期感知</strong>：Lifecycle 是 Jetpack 的基石。LiveData、ViewModel、WorkManager 等都是生命周期感知的，框架自动管理订阅&#x2F;取消订阅，开发者无需关心生命周期同步问题。</p>
+</li>
+<li><p><strong>模块化与解耦</strong>：每个 Jetpack 组件独立发布、独立语义化版本（Semantic Versioning）。开发者按需引入，不会因为引入一个组件而被强制升级整个套件。</p>
+</li>
+<li><p><strong>最佳实践内置</strong>：Jetpack 组件封装了经过大量实战验证的最佳实践。例如 Room 在编译期验证 SQL 语法、Paging 内置了 DiffUtil 增量更新、WorkManager 自动选择最优调度器。</p>
+</li>
+</ol>
+<h3 id="1-3-Jetpack-组件全景图"><a href="#1-3-Jetpack-组件全景图" class="headerlink" title="1.3 Jetpack 组件全景图"></a>1.3 Jetpack 组件全景图</h3><p>Jetpack 组件按功能分为四大类别：</p>
+<h4 id="Architecture（架构组件）"><a href="#Architecture（架构组件）" class="headerlink" title="Architecture（架构组件）"></a>Architecture（架构组件）</h4><table>
+<thead>
+<tr>
+<th>组件</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Lifecycle</strong></td>
+<td>生命周期感知基类，所有生命周期感知组件的基石</td>
+</tr>
+<tr>
+<td><strong>LiveData</strong></td>
+<td>生命周期感知的可观察数据持有者</td>
+</tr>
+<tr>
+<td><strong>ViewModel</strong></td>
+<td>管理 UI 数据，在配置变更时存活</td>
+</tr>
+<tr>
+<td><strong>Room</strong></td>
+<td>SQLite 对象映射库，编译期 SQL 验证</td>
+</tr>
+<tr>
+<td><strong>Paging</strong></td>
+<td>分页加载库，支持本地&#x2F;网络混合数据源</td>
+</tr>
+<tr>
+<td><strong>Navigation</strong></td>
+<td>Fragment&#x2F;Compose 导航管理</td>
+</tr>
+<tr>
+<td><strong>WorkManager</strong></td>
+<td>后台任务调度（保证执行）</td>
+</tr>
+<tr>
+<td><strong>DataStore</strong></td>
+<td>替代 SharedPreferences 的键值&#x2F;类型安全存储</td>
+</tr>
+<tr>
+<td><strong>DataBinding</strong></td>
+<td>声明式 UI 数据绑定</td>
+</tr>
+</tbody></table>
+<h4 id="Foundation（基础组件）"><a href="#Foundation（基础组件）" class="headerlink" title="Foundation（基础组件）"></a>Foundation（基础组件）</h4><table>
+<thead>
+<tr>
+<th>组件</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>AppCompat</strong></td>
+<td>向后兼容的 Activity&#x2F;Fragment 基类</td>
+</tr>
+<tr>
+<td><strong>Android KTX</strong></td>
+<td>Kotlin 扩展函数集，简化 API 调用</td>
+</tr>
+<tr>
+<td><strong>Multidex</strong></td>
+<td>突破 64K 方法数限制</td>
+</tr>
+<tr>
+<td><strong>Test</strong></td>
+<td>Android 测试库</td>
+</tr>
+<tr>
+<td><strong>Security</strong></td>
+<td>加密 SharedPreferences 和文件</td>
+</tr>
+<tr>
+<td><strong>Startup</strong></td>
+<td>应用启动时初始化依赖</td>
+</tr>
+</tbody></table>
+<h4 id="Behavior（行为组件）"><a href="#Behavior（行为组件）" class="headerlink" title="Behavior（行为组件）"></a>Behavior（行为组件）</h4><table>
+<thead>
+<tr>
+<th>组件</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>CameraX</strong></td>
+<td>相机 API 封装，向后兼容</td>
+</tr>
+<tr>
+<td><strong>DownloadManager</strong></td>
+<td>长时间下载任务管理</td>
+</tr>
+<tr>
+<td><strong>Media &amp; Playback</strong></td>
+<td>媒体播放（Media3&#x2F;ExoPlayer）</td>
+</tr>
+<tr>
+<td><strong>Notifications</strong></td>
+<td>通知栏管理与样式化</td>
+</tr>
+<tr>
+<td><strong>Permissions</strong></td>
+<td>权限请求封装</td>
+</tr>
+<tr>
+<td><strong>Preferences&#x2F;Settings</strong></td>
+<td>用户偏好设置</td>
+</tr>
+<tr>
+<td><strong>Sharing</strong></td>
+<td>分享操作</td>
+</tr>
+</tbody></table>
+<h4 id="UI（界面组件）"><a href="#UI（界面组件）" class="headerlink" title="UI（界面组件）"></a>UI（界面组件）</h4><table>
+<thead>
+<tr>
+<th>组件</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Fragment</strong></td>
+<td>模块化 UI 容器</td>
+</tr>
+<tr>
+<td><strong>Layout (ConstraintLayout)</strong></td>
+<td>高性能布局</td>
+</tr>
+<tr>
+<td><strong>Animation &amp; Transitions</strong></td>
+<td>动画与过渡</td>
+</tr>
+<tr>
+<td><strong>Emoji</strong></td>
+<td>新版 Emoji 兼容</td>
+</tr>
+<tr>
+<td><strong>WebView</strong></td>
+<td>系统 WebView 封装</td>
+</tr>
+<tr>
+<td><strong>Compose</strong></td>
+<td>声明式 UI 工具包（下一代 UI 框架）</td>
+</tr>
+<tr>
+<td><strong>Palette</strong></td>
+<td>从图片提取配色方案</td>
+</tr>
+</tbody></table>
+<h2 id="二、AndroidX-迁移完全指南"><a href="#二、AndroidX-迁移完全指南" class="headerlink" title="二、AndroidX 迁移完全指南"></a>二、AndroidX 迁移完全指南</h2><h3 id="2-1-Support-Library-到-AndroidX-的背景"><a href="#2-1-Support-Library-到-AndroidX-的背景" class="headerlink" title="2.1 Support Library 到 AndroidX 的背景"></a>2.1 Support Library 到 AndroidX 的背景</h3><p>从 Android 1.0 开始，Google 提供了 <code>android.support.*</code> 包（Support Library）来向旧版本设备提供新 API 功能。但随着时间推移，Support Library 暴露出严重问题：</p>
+<ul>
+<li><strong>统一版本号枷锁</strong>：所有 Support Library 库共享同一个版本号（如 <code>28.0.0</code>），即使某个库没有变更也必须跟着升级。</li>
+<li><strong>包名与系统类冲突</strong>：<code>android.support.v4.app.Fragment</code> 与系统 <code>android.app.Fragment</code> 名称相似，容易混淆。</li>
+<li><strong>维护成本高</strong>：Support Library 被大量第三方库依赖，升级一个库可能触发连锁依赖冲突。</li>
+</ul>
+<p>AndroidX 是 Support Library 的重写版本，使用 <code>androidx.*</code> 包命名空间，每个组件独立语义化版本控制。AndroidX 从 Android 9.0（API 28）开始被积极推广，Support Library 28.0.0 是最后一个版本，之后停止维护。</p>
+<h3 id="2-2-关键包名映射表"><a href="#2-2-关键包名映射表" class="headerlink" title="2.2 关键包名映射表"></a>2.2 关键包名映射表</h3><p>从 Support Library 迁移到 AndroidX 最核心的工作是包名替换：</p>
+<table>
+<thead>
+<tr>
+<th>Support Library 包名</th>
+<th>AndroidX 包名</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>android.support.v4.app.Fragment</code></td>
+<td><code>androidx.fragment.app.Fragment</code></td>
+</tr>
+<tr>
+<td><code>android.support.v4.app.FragmentActivity</code></td>
+<td><code>androidx.fragment.app.FragmentActivity</code></td>
+</tr>
+<tr>
+<td><code>android.support.v7.app.AppCompatActivity</code></td>
+<td><code>androidx.appcompat.app.AppCompatActivity</code></td>
+</tr>
+<tr>
+<td><code>android.support.v7.widget.RecyclerView</code></td>
+<td><code>androidx.recyclerview.widget.RecyclerView</code></td>
+</tr>
+<tr>
+<td><code>android.support.v7.widget.Toolbar</code></td>
+<td><code>androidx.appcompat.widget.Toolbar</code></td>
+</tr>
+<tr>
+<td><code>android.support.v7.widget.CardView</code></td>
+<td><code>androidx.cardview.widget.CardView</code></td>
+</tr>
+<tr>
+<td><code>android.support.design.widget.CoordinatorLayout</code></td>
+<td><code>androidx.coordinatorlayout.widget.CoordinatorLayout</code></td>
+</tr>
+<tr>
+<td><code>android.support.design.widget.FloatingActionButton</code></td>
+<td><code>com.google.android.material.floatingactionbutton.FloatingActionButton</code></td>
+</tr>
+<tr>
+<td><code>android.support.constraint.ConstraintLayout</code></td>
+<td><code>androidx.constraintlayout.widget.ConstraintLayout</code></td>
+</tr>
+<tr>
+<td><code>android.support.v4.content.LocalBroadcastManager</code></td>
+<td><code>androidx.localbroadcastmanager.content.LocalBroadcastManager</code></td>
+</tr>
+<tr>
+<td><code>android.support.test.runner.AndroidJUnitRunner</code></td>
+<td><code>androidx.test.runner.AndroidJUnitRunner</code></td>
+</tr>
+<tr>
+<td><code>android.support.v4.view.ViewPager</code></td>
+<td><code>androidx.viewpager.widget.ViewPager</code></td>
+</tr>
+<tr>
+<td><code>android.support.v4.widget.SwipeRefreshLayout</code></td>
+<td><code>androidx.swiperefreshlayout.widget.SwipeRefreshLayout</code></td>
+</tr>
+<tr>
+<td><code>android.arch.lifecycle.LiveData</code></td>
+<td><code>androidx.lifecycle.LiveData</code></td>
+</tr>
+<tr>
+<td><code>android.arch.lifecycle.ViewModel</code></td>
+<td><code>androidx.lifecycle.ViewModel</code></td>
+</tr>
+<tr>
+<td><code>android.arch.persistence.room.RoomDatabase</code></td>
+<td><code>androidx.room.RoomDatabase</code></td>
+</tr>
+</tbody></table>
+<h3 id="2-3-组件-Artifact-映射表"><a href="#2-3-组件-Artifact-映射表" class="headerlink" title="2.3 组件 Artifact 映射表"></a>2.3 组件 Artifact 映射表</h3><p>除了包名变化外，Gradle 的依赖坐标也需要对应迁移：</p>
+<table>
+<thead>
+<tr>
+<th>Support Library Artifact</th>
+<th>AndroidX Artifact</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>com.android.support:appcompat-v7:28.0.0</code></td>
+<td><code>androidx.appcompat:appcompat:1.7.0</code></td>
+</tr>
+<tr>
+<td><code>com.android.support:recyclerview-v7:28.0.0</code></td>
+<td><code>androidx.recyclerview:recyclerview:1.3.2</code></td>
+</tr>
+<tr>
+<td><code>com.android.support:cardview-v7:28.0.0</code></td>
+<td><code>androidx.cardview:cardview:1.0.0</code></td>
+</tr>
+<tr>
+<td><code>com.android.support:design:28.0.0</code></td>
+<td><code>com.google.android.material:material:1.12.0</code></td>
+</tr>
+<tr>
+<td><code>com.android.support:support-v4:28.0.0</code></td>
+<td><code>androidx.legacy:legacy-support-v4:1.0.0</code></td>
+</tr>
+<tr>
+<td><code>com.android.support.constraint:constraint-layout:1.1.3</code></td>
+<td><code>androidx.constraintlayout:constraintlayout:2.1.4</code></td>
+</tr>
+<tr>
+<td><code>com.android.support:multidex:1.0.3</code></td>
+<td><code>androidx.multidex:multidex:2.0.1</code></td>
+</tr>
+<tr>
+<td><code>android.arch.lifecycle:extensions:1.1.1</code></td>
+<td><code>androidx.lifecycle:lifecycle-extensions:2.2.0</code>（已废弃，改用具体组件）</td>
+</tr>
+<tr>
+<td><code>android.arch.persistence.room:runtime:1.1.1</code></td>
+<td><code>androidx.room:room-runtime:2.6.1</code></td>
+</tr>
+<tr>
+<td><code>android.arch.navigation:navigation-fragment:1.0.0</code></td>
+<td><code>androidx.navigation:navigation-fragment:2.7.7</code></td>
+</tr>
+</tbody></table>
+<p>注意 Design 库的迁移路径：<code>com.android.support:design</code> 不仅改了包名，还改了 GroupId —— 变成 <code>com.google.android.material:material</code>。这是 Google 将 Material Design 组件从 AppCompat 中独立出来的产物。</p>
+<h3 id="2-4-Jetifier-深度解析"><a href="#2-4-Jetifier-深度解析" class="headerlink" title="2.4 Jetifier 深度解析"></a>2.4 Jetifier 深度解析</h3><p>Jetifier 是 Android Gradle Plugin（AGP）内置的一个构建期字节码转换工具。当启用 <code>android.enableJetifier=true</code> 后，AGP 在编译过程中会扫描所有依赖（包括 AAR 和 JAR）的字节码，将 Support Library 类名、包名、资源引用自动迁移到 AndroidX 对应项。</p>
+<p><strong>Jetifier 的工作原理：</strong></p>
+<ol>
+<li>解析所有传递依赖的 <code>.jar</code> 和 <code>.aar</code> 文件</li>
+<li>对每个 class 文件执行 ASM 字节码扫描</li>
+<li>匹配预定义的转换规则表（由 Google 维护）</li>
+<li>改写类名、方法签名、字段类型中的 Support 引用</li>
+<li>改写布局 XML 和资源引用</li>
+<li>输出转换后的依赖给后续编译流程</li>
+</ol>
+<p><strong>Jetifier 的配置：</strong></p>
+<figure class="highlight properties"><table><tr><td class="code"><pre><span class="line"><span class="comment"># gradle.properties</span></span><br><span class="line"><span class="attr">android.useAndroidX</span>=<span class="string">true</span></span><br><span class="line"><span class="attr">android.enableJetifier</span>=<span class="string">true</span></span><br></pre></td></tr></table></figure>
+
+<p>注意：Jetifier 会增加构建时间（每个依赖都需要扫描转换），因此一旦项目中所有依赖都已原生支持 AndroidX，应该关闭 Jetifier：</p>
+<figure class="highlight properties"><table><tr><td class="code"><pre><span class="line"><span class="attr">android.enableJetifier</span>=<span class="string">false</span></span><br></pre></td></tr></table></figure>
+
+<p>可以通过 Gradle 的 <code>dependencies</code> 任务检查是否有依赖仍引用 Support Library：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">./gradlew :app:dependencies --configuration releaseRuntimeClasspath | grep <span class="string">&quot;com.android.support&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-5-Android-Studio-自动迁移工具"><a href="#2-5-Android-Studio-自动迁移工具" class="headerlink" title="2.5 Android Studio 自动迁移工具"></a>2.5 Android Studio 自动迁移工具</h3><p>Android Studio 提供了 “Refactor → Migrate to AndroidX” 一键迁移功能。该工具会：</p>
+<ul>
+<li>将所有依赖坐标从 Support 替换为 AndroidX</li>
+<li>替换源代码中所有 import 语句和类引用</li>
+<li>替换 XML 布局中的控件类名</li>
+<li>替换 Gradle 文件中的依赖声明</li>
+<li>生成 <code>.idea/migrateToAndroidX.xml</code> 记录迁移状态</li>
+</ul>
+<p>迁移前务必：</p>
+<ol>
+<li>将项目完全 commit 到版本控制</li>
+<li>备份 <code>gradle.properties</code></li>
+<li>更新 AGP 到 3.2.0 以上</li>
+<li>确保 compileSdkVersion &gt;&#x3D; 28</li>
+</ol>
+<p>迁移后验证：</p>
+<ol>
+<li>检查 <code>build.gradle</code> 中是否仍有 <code>com.android.support</code> 坐标</li>
+<li>搜索源代码中是否仍有 <code>android.support</code> import</li>
+<li>搜索布局 XML 中是否仍有 <code>android.support.*</code> 类名</li>
+<li>Gradle Sync + Build 看是否报错</li>
+<li>运行 Lint 检查：<code>./gradlew lint</code></li>
+</ol>
+<h2 id="三、构建系统配置"><a href="#三、构建系统配置" class="headerlink" title="三、构建系统配置"></a>三、构建系统配置</h2><h3 id="3-1-Gradle-Build-脚本配置"><a href="#3-1-Gradle-Build-脚本配置" class="headerlink" title="3.1 Gradle Build 脚本配置"></a>3.1 Gradle Build 脚本配置</h3><p><strong>根项目 build.gradle.kts：</strong></p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 根项目 build.gradle.kts</span></span><br><span class="line">plugins &#123;</span><br><span class="line">    id(<span class="string">&quot;com.android.application&quot;</span>) version <span class="string">&quot;8.5.0&quot;</span> apply <span class="literal">false</span></span><br><span class="line">    id(<span class="string">&quot;com.android.library&quot;</span>) version <span class="string">&quot;8.5.0&quot;</span> apply <span class="literal">false</span></span><br><span class="line">    id(<span class="string">&quot;org.jetbrains.kotlin.android&quot;</span>) version <span class="string">&quot;2.0.0&quot;</span> apply <span class="literal">false</span></span><br><span class="line">    id(<span class="string">&quot;org.jetbrains.kotlin.plugin.serialization&quot;</span>) version <span class="string">&quot;2.0.0&quot;</span> apply <span class="literal">false</span></span><br><span class="line">    id(<span class="string">&quot;com.google.dagger.hilt.android&quot;</span>) version <span class="string">&quot;2.51.1&quot;</span> apply <span class="literal">false</span></span><br><span class="line">    id(<span class="string">&quot;androidx.navigation.safeargs.kotlin&quot;</span>) version <span class="string">&quot;2.7.7&quot;</span> apply <span class="literal">false</span></span><br><span class="line">    id(<span class="string">&quot;com.google.devtools.ksp&quot;</span>) version <span class="string">&quot;2.0.0-1.0.22&quot;</span> apply <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">tasks.register(<span class="string">&quot;clean&quot;</span>, Delete::<span class="keyword">class</span>) &#123;</span><br><span class="line">    delete(rootProject.layout.buildDirectory)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>gradle.properties 关键配置：</strong></p>
+<figure class="highlight properties"><table><tr><td class="code"><pre><span class="line"><span class="comment"># AndroidX 必需</span></span><br><span class="line"><span class="attr">android.useAndroidX</span>=<span class="string">true</span></span><br><span class="line"><span class="attr">android.enableJetifier</span>=<span class="string">false</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"># Kotlin 编译选项</span></span><br><span class="line"><span class="attr">kotlin.code.style</span>=<span class="string">official</span></span><br><span class="line"><span class="attr">kotlin.daemon.jvmargs</span>=<span class="string">-Xmx2g</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"># Gradle 性能优化</span></span><br><span class="line"><span class="attr">org.gradle.jvmargs</span>=<span class="string">-Xmx4g -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError</span></span><br><span class="line"><span class="attr">org.gradle.parallel</span>=<span class="string">true</span></span><br><span class="line"><span class="attr">org.gradle.caching</span>=<span class="string">true</span></span><br><span class="line"><span class="attr">org.gradle.configuration-cache</span>=<span class="string">true</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"># Android 构建配置</span></span><br><span class="line"><span class="attr">android.nonTransitiveRClass</span>=<span class="string">true</span></span><br><span class="line"><span class="attr">android.enableR8.fullMode</span>=<span class="string">true</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-Version-Catalog（libs-versions-toml）"><a href="#3-2-Version-Catalog（libs-versions-toml）" class="headerlink" title="3.2 Version Catalog（libs.versions.toml）"></a>3.2 Version Catalog（libs.versions.toml）</h3><p>Gradle 7.0+ 引入 Version Catalog 作为官方推荐的依赖版本管理方案。在 <code>gradle/libs.versions.toml</code> 中集中管理：</p>
+<figure class="highlight toml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># gradle/libs.versions.toml</span></span><br><span class="line"><span class="section">[versions]</span></span><br><span class="line"><span class="attr">agp</span> = <span class="string">&quot;8.5.0&quot;</span></span><br><span class="line"><span class="attr">kotlin</span> = <span class="string">&quot;2.0.0&quot;</span></span><br><span class="line"><span class="attr">ksp</span> = <span class="string">&quot;2.0.0-1.0.22&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># AndroidX Core</span></span><br><span class="line"><span class="attr">core-ktx</span> = <span class="string">&quot;1.13.1&quot;</span></span><br><span class="line"><span class="attr">activity-ktx</span> = <span class="string">&quot;1.9.0&quot;</span></span><br><span class="line"><span class="attr">fragment-ktx</span> = <span class="string">&quot;1.8.1&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Jetpack Architecture</span></span><br><span class="line"><span class="attr">lifecycle</span> = <span class="string">&quot;2.8.3&quot;</span></span><br><span class="line"><span class="attr">navigation</span> = <span class="string">&quot;2.7.7&quot;</span></span><br><span class="line"><span class="attr">room</span> = <span class="string">&quot;2.6.1&quot;</span></span><br><span class="line"><span class="attr">paging</span> = <span class="string">&quot;3.3.0&quot;</span></span><br><span class="line"><span class="attr">work</span> = <span class="string">&quot;2.9.0&quot;</span></span><br><span class="line"><span class="attr">datastore</span> = <span class="string">&quot;1.1.1&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Jetpack UI</span></span><br><span class="line"><span class="attr">appcompat</span> = <span class="string">&quot;1.7.0&quot;</span></span><br><span class="line"><span class="attr">material</span> = <span class="string">&quot;1.12.0&quot;</span></span><br><span class="line"><span class="attr">constraintlayout</span> = <span class="string">&quot;2.1.4&quot;</span></span><br><span class="line"><span class="attr">recyclerview</span> = <span class="string">&quot;1.3.2&quot;</span></span><br><span class="line"><span class="attr">viewpager2</span> = <span class="string">&quot;1.1.0&quot;</span></span><br><span class="line"><span class="attr">compose-bom</span> = <span class="string">&quot;2024.06.00&quot;</span></span><br><span class="line"><span class="attr">compose-compiler</span> = <span class="string">&quot;1.5.14&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Network</span></span><br><span class="line"><span class="attr">retrofit</span> = <span class="string">&quot;2.11.0&quot;</span></span><br><span class="line"><span class="attr">okhttp</span> = <span class="string">&quot;4.12.0&quot;</span></span><br><span class="line"><span class="attr">moshi</span> = <span class="string">&quot;1.15.1&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># DI</span></span><br><span class="line"><span class="attr">hilt</span> = <span class="string">&quot;2.51.1&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Image loading</span></span><br><span class="line"><span class="attr">coil</span> = <span class="string">&quot;2.6.0&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Testing</span></span><br><span class="line"><span class="attr">junit</span> = <span class="string">&quot;4.13.2&quot;</span></span><br><span class="line"><span class="attr">mockk</span> = <span class="string">&quot;1.13.12&quot;</span></span><br><span class="line"><span class="attr">turbine</span> = <span class="string">&quot;1.1.0&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">[libraries]</span></span><br><span class="line"><span class="comment"># Core</span></span><br><span class="line"><span class="attr">androidx-core-ktx</span> = &#123; module = <span class="string">&quot;androidx.core:core-ktx&quot;</span>, version.ref = <span class="string">&quot;core-ktx&quot;</span> &#125;</span><br><span class="line"><span class="attr">androidx-activity-ktx</span> = &#123; module = <span class="string">&quot;androidx.activity:activity-ktx&quot;</span>, version.ref = <span class="string">&quot;activity-ktx&quot;</span> &#125;</span><br><span class="line"><span class="attr">androidx-fragment-ktx</span> = &#123; module = <span class="string">&quot;androidx.fragment:fragment-ktx&quot;</span>, version.ref = <span class="string">&quot;fragment-ktx&quot;</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># Lifecycle</span></span><br><span class="line"><span class="attr">androidx-lifecycle-runtime-ktx</span> = &#123; module = <span class="string">&quot;androidx.lifecycle:lifecycle-runtime-ktx&quot;</span>, version.ref = <span class="string">&quot;lifecycle&quot;</span> &#125;</span><br><span class="line"><span class="attr">androidx-lifecycle-viewmodel-ktx</span> = &#123; module = <span class="string">&quot;androidx.lifecycle:lifecycle-viewmodel-ktx&quot;</span>, version.ref = <span class="string">&quot;lifecycle&quot;</span> &#125;</span><br><span class="line"><span class="attr">androidx-lifecycle-livedata-ktx</span> = &#123; module = <span class="string">&quot;androidx.lifecycle:lifecycle-livedata-ktx&quot;</span>, version.ref = <span class="string">&quot;lifecycle&quot;</span> &#125;</span><br><span class="line"><span class="attr">androidx-lifecycle-runtime-compose</span> = &#123; module = <span class="string">&quot;androidx.lifecycle:lifecycle-runtime-compose&quot;</span>, version.ref = <span class="string">&quot;lifecycle&quot;</span> &#125;</span><br><span class="line"><span class="attr">androidx-lifecycle-viewmodel-compose</span> = &#123; module = <span class="string">&quot;androidx.lifecycle:lifecycle-viewmodel-compose&quot;</span>, version.ref = <span class="string">&quot;lifecycle&quot;</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># Navigation</span></span><br><span class="line"><span class="attr">androidx-navigation-fragment-ktx</span> = &#123; module = <span class="string">&quot;androidx.navigation:navigation-fragment-ktx&quot;</span>, version.ref = <span class="string">&quot;navigation&quot;</span> &#125;</span><br><span class="line"><span class="attr">androidx-navigation-ui-ktx</span> = &#123; module = <span class="string">&quot;androidx.navigation:navigation-ui-ktx&quot;</span>, version.ref = <span class="string">&quot;navigation&quot;</span> &#125;</span><br><span class="line"><span class="attr">androidx-navigation-compose</span> = &#123; module = <span class="string">&quot;androidx.navigation:navigation-compose&quot;</span>, version.ref = <span class="string">&quot;navigation&quot;</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># Room</span></span><br><span class="line"><span class="attr">androidx-room-runtime</span> = &#123; module = <span class="string">&quot;androidx.room:room-runtime&quot;</span>, version.ref = <span class="string">&quot;room&quot;</span> &#125;</span><br><span class="line"><span class="attr">androidx-room-ktx</span> = &#123; module = <span class="string">&quot;androidx.room:room-ktx&quot;</span>, version.ref = <span class="string">&quot;room&quot;</span> &#125;</span><br><span class="line"><span class="attr">androidx-room-compiler</span> = &#123; module = <span class="string">&quot;androidx.room:room-compiler&quot;</span>, version.ref = <span class="string">&quot;room&quot;</span> &#125;</span><br><span class="line"><span class="attr">androidx-room-paging</span> = &#123; module = <span class="string">&quot;androidx.room:room-paging&quot;</span>, version.ref = <span class="string">&quot;room&quot;</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># Paging</span></span><br><span class="line"><span class="attr">androidx-paging-runtime-ktx</span> = &#123; module = <span class="string">&quot;androidx.paging:paging-runtime-ktx&quot;</span>, version.ref = <span class="string">&quot;paging&quot;</span> &#125;</span><br><span class="line"><span class="attr">androidx-paging-compose</span> = &#123; module = <span class="string">&quot;androidx.paging:paging-compose&quot;</span>, version.ref = <span class="string">&quot;paging&quot;</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># WorkManager</span></span><br><span class="line"><span class="attr">androidx-work-runtime-ktx</span> = &#123; module = <span class="string">&quot;androidx.work:work-runtime-ktx&quot;</span>, version.ref = <span class="string">&quot;work&quot;</span> &#125;</span><br><span class="line"><span class="attr">androidx-work-testing</span> = &#123; module = <span class="string">&quot;androidx.work:work-testing&quot;</span>, version.ref = <span class="string">&quot;work&quot;</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># DataStore</span></span><br><span class="line"><span class="attr">androidx-datastore-preferences</span> = &#123; module = <span class="string">&quot;androidx.datastore:datastore-preferences&quot;</span>, version.ref = <span class="string">&quot;datastore&quot;</span> &#125;</span><br><span class="line"><span class="attr">androidx-datastore-proto</span> = &#123; module = <span class="string">&quot;androidx.datastore:datastore-proto&quot;</span>, version.ref = <span class="string">&quot;datastore&quot;</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># UI</span></span><br><span class="line"><span class="attr">androidx-appcompat</span> = &#123; module = <span class="string">&quot;androidx.appcompat:appcompat&quot;</span>, version.ref = <span class="string">&quot;appcompat&quot;</span> &#125;</span><br><span class="line"><span class="attr">material</span> = &#123; module = <span class="string">&quot;com.google.android.material:material&quot;</span>, version.ref = <span class="string">&quot;material&quot;</span> &#125;</span><br><span class="line"><span class="attr">androidx-constraintlayout</span> = &#123; module = <span class="string">&quot;androidx.constraintlayout:constraintlayout&quot;</span>, version.ref = <span class="string">&quot;constraintlayout&quot;</span> &#125;</span><br><span class="line"><span class="attr">androidx-recyclerview</span> = &#123; module = <span class="string">&quot;androidx.recyclerview:recyclerview&quot;</span>, version.ref = <span class="string">&quot;recyclerview&quot;</span> &#125;</span><br><span class="line"><span class="attr">androidx-viewpager2</span> = &#123; module = <span class="string">&quot;androidx.viewpager2:viewpager2&quot;</span>, version.ref = <span class="string">&quot;viewpager2&quot;</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># Compose BOM</span></span><br><span class="line"><span class="attr">compose-bom</span> = &#123; module = <span class="string">&quot;androidx.compose:compose-bom&quot;</span>, version.ref = <span class="string">&quot;compose-bom&quot;</span> &#125;</span><br><span class="line"><span class="attr">compose-ui</span> = &#123; module = <span class="string">&quot;androidx.compose.ui:ui&quot;</span> &#125;</span><br><span class="line"><span class="attr">compose-ui-tooling</span> = &#123; module = <span class="string">&quot;androidx.compose.ui:ui-tooling&quot;</span> &#125;</span><br><span class="line"><span class="attr">compose-ui-tooling-preview</span> = &#123; module = <span class="string">&quot;androidx.compose.ui:ui-tooling-preview&quot;</span> &#125;</span><br><span class="line"><span class="attr">compose-material3</span> = &#123; module = <span class="string">&quot;androidx.compose.material3:material3&quot;</span> &#125;</span><br><span class="line"><span class="attr">compose-material-icons-extended</span> = &#123; module = <span class="string">&quot;androidx.compose.material:material-icons-extended&quot;</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># Network</span></span><br><span class="line"><span class="attr">retrofit</span> = &#123; module = <span class="string">&quot;com.squareup.retrofit2:retrofit&quot;</span>, version.ref = <span class="string">&quot;retrofit&quot;</span> &#125;</span><br><span class="line"><span class="attr">retrofit-converter-moshi</span> = &#123; module = <span class="string">&quot;com.squareup.retrofit2:converter-moshi&quot;</span>, version.ref = <span class="string">&quot;retrofit&quot;</span> &#125;</span><br><span class="line"><span class="attr">okhttp</span> = &#123; module = <span class="string">&quot;com.squareup.okhttp3:okhttp&quot;</span>, version.ref = <span class="string">&quot;okhttp&quot;</span> &#125;</span><br><span class="line"><span class="attr">okhttp-logging</span> = &#123; module = <span class="string">&quot;com.squareup.okhttp3:logging-interceptor&quot;</span>, version.ref = <span class="string">&quot;okhttp&quot;</span> &#125;</span><br><span class="line"><span class="attr">moshi</span> = &#123; module = <span class="string">&quot;com.squareup.moshi:moshi-kotlin&quot;</span>, version.ref = <span class="string">&quot;moshi&quot;</span> &#125;</span><br><span class="line"><span class="attr">moshi-codegen</span> = &#123; module = <span class="string">&quot;com.squareup.moshi:moshi-kotlin-codegen&quot;</span>, version.ref = <span class="string">&quot;moshi&quot;</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># Hilt</span></span><br><span class="line"><span class="attr">hilt-android</span> = &#123; module = <span class="string">&quot;com.google.dagger:hilt-android&quot;</span>, version.ref = <span class="string">&quot;hilt&quot;</span> &#125;</span><br><span class="line"><span class="attr">hilt-compiler</span> = &#123; module = <span class="string">&quot;com.google.dagger:hilt-compiler&quot;</span>, version.ref = <span class="string">&quot;hilt&quot;</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># Image</span></span><br><span class="line"><span class="attr">coil</span> = &#123; module = <span class="string">&quot;io.coil-kt:coil&quot;</span>, version.ref = <span class="string">&quot;coil&quot;</span> &#125;</span><br><span class="line"><span class="attr">coil-compose</span> = &#123; module = <span class="string">&quot;io.coil-kt:coil-compose&quot;</span>, version.ref = <span class="string">&quot;coil&quot;</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># Test</span></span><br><span class="line"><span class="attr">junit</span> = &#123; module = <span class="string">&quot;junit:junit&quot;</span>, version.ref = <span class="string">&quot;junit&quot;</span> &#125;</span><br><span class="line"><span class="attr">mockk</span> = &#123; module = <span class="string">&quot;io.mockk:mockk&quot;</span>, version.ref = <span class="string">&quot;mockk&quot;</span> &#125;</span><br><span class="line"><span class="attr">turbine</span> = &#123; module = <span class="string">&quot;app.cash.turbine:turbine&quot;</span>, version.ref = <span class="string">&quot;turbine&quot;</span> &#125;</span><br><span class="line"><span class="attr">androidx-test-core</span> = &#123; module = <span class="string">&quot;androidx.test:core-ktx&quot;</span>, version = <span class="string">&quot;1.5.0&quot;</span> &#125;</span><br><span class="line"><span class="attr">androidx-test-runner</span> = &#123; module = <span class="string">&quot;androidx.test:runner&quot;</span>, version = <span class="string">&quot;1.5.2&quot;</span> &#125;</span><br><span class="line"><span class="attr">androidx-test-espresso</span> = &#123; module = <span class="string">&quot;androidx.test.espresso:espresso-core&quot;</span>, version = <span class="string">&quot;3.5.1&quot;</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="section">[plugins]</span></span><br><span class="line"><span class="attr">android-application</span> = &#123; id = <span class="string">&quot;com.android.application&quot;</span>, version.ref = <span class="string">&quot;agp&quot;</span> &#125;</span><br><span class="line"><span class="attr">android-library</span> = &#123; id = <span class="string">&quot;com.android.library&quot;</span>, version.ref = <span class="string">&quot;agp&quot;</span> &#125;</span><br><span class="line"><span class="attr">kotlin-android</span> = &#123; id = <span class="string">&quot;org.jetbrains.kotlin.android&quot;</span>, version.ref = <span class="string">&quot;kotlin&quot;</span> &#125;</span><br><span class="line"><span class="attr">kotlin-serialization</span> = &#123; id = <span class="string">&quot;org.jetbrains.kotlin.plugin.serialization&quot;</span>, version.ref = <span class="string">&quot;kotlin&quot;</span> &#125;</span><br><span class="line"><span class="attr">ksp</span> = &#123; id = <span class="string">&quot;com.google.devtools.ksp&quot;</span>, version.ref = <span class="string">&quot;ksp&quot;</span> &#125;</span><br><span class="line"><span class="attr">hilt</span> = &#123; id = <span class="string">&quot;com.google.dagger.hilt.android&quot;</span>, version.ref = <span class="string">&quot;hilt&quot;</span> &#125;</span><br><span class="line"><span class="attr">safeargs</span> = &#123; id = <span class="string">&quot;androidx.navigation.safeargs.kotlin&quot;</span>, version.ref = <span class="string">&quot;navigation&quot;</span> &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-BOM（Bill-of-Materials）统一版本管理"><a href="#3-3-BOM（Bill-of-Materials）统一版本管理" class="headerlink" title="3.3 BOM（Bill of Materials）统一版本管理"></a>3.3 BOM（Bill of Materials）统一版本管理</h3><p>对于 Jetpack 中版本高度耦合的组件（如 Compose、Lifecycle），Google 提供了 BOM 依赖。BOM 本质上是一个 POM 文件，声明了一组库的统一版本：</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 使用 Compose BOM，无需逐个指定 Compose 组件版本</span></span><br><span class="line">dependencies &#123;</span><br><span class="line">    implementation(platform(<span class="string">&quot;androidx.compose:compose-bom:2024.06.00&quot;</span>))</span><br><span class="line">    implementation(<span class="string">&quot;androidx.compose.ui:ui&quot;</span>)                 <span class="comment">// 版本由 BOM 指定</span></span><br><span class="line">    implementation(<span class="string">&quot;androidx.compose.material3:material3&quot;</span>)   <span class="comment">// 版本由 BOM 指定</span></span><br><span class="line">    implementation(<span class="string">&quot;androidx.compose.ui:ui-tooling-preview&quot;</span>) <span class="comment">// 版本由 BOM 指定</span></span><br><span class="line">    androidTestImplementation(platform(<span class="string">&quot;androidx.compose:compose-bom:2024.06.00&quot;</span>))</span><br><span class="line">    debugImplementation(<span class="string">&quot;androidx.compose.ui:ui-tooling&quot;</span>)    <span class="comment">// 版本由 BOM 指定</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Compose 的 BOM 使用 <code>platform()</code> 声明，这样所有 Compose 组件的版本都来自同一个 BOM，保证兼容性。</p>
+<p>Lifecycle 也有类似的 BOM 机制（通过版本号对齐），也可以通过定义 <code>ext</code> 变量的方式批量管理：</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="comment">// build.gradle.kts 中 ext 方式（适用于版本一致的系列）</span></span><br><span class="line"><span class="keyword">val</span> lifecycleVersion = <span class="string">&quot;2.8.3&quot;</span></span><br><span class="line">implementation(<span class="string">&quot;androidx.lifecycle:lifecycle-runtime-ktx:<span class="variable">$lifecycleVersion</span>&quot;</span>)</span><br><span class="line">implementation(<span class="string">&quot;androidx.lifecycle:lifecycle-viewmodel-ktx:<span class="variable">$lifecycleVersion</span>&quot;</span>)</span><br><span class="line">implementation(<span class="string">&quot;androidx.lifecycle:lifecycle-livedata-ktx:<span class="variable">$lifecycleVersion</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-4-buildSrc-约定插件"><a href="#3-4-buildSrc-约定插件" class="headerlink" title="3.4 buildSrc 约定插件"></a>3.4 buildSrc 约定插件</h3><p>对于大型多模块项目，推荐创建 <code>buildSrc</code> 目录管理公共构建配置。但更现代的做法是创建包含约定插件（Convention Plugin）的独立模块。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">.</span><br><span class="line">├── build.gradle.kts</span><br><span class="line">├── settings.gradle.kts</span><br><span class="line">├── gradle/</span><br><span class="line">│   └── libs.versions.toml</span><br><span class="line">├── build-logic/</span><br><span class="line">│   ├── settings.gradle.kts</span><br><span class="line">│   └── convention/</span><br><span class="line">│       ├── build.gradle.kts</span><br><span class="line">│       └── src/main/kotlin/</span><br><span class="line">│           ├── android-application.gradle.kts</span><br><span class="line">│           ├── android-library.gradle.kts</span><br><span class="line">│           ├── android-hilt.gradle.kts</span><br><span class="line">│           └── android-compose.gradle.kts</span><br><span class="line">└── app/</span><br><span class="line">    └── build.gradle.kts</span><br></pre></td></tr></table></figure>
+
+<p><strong>android-application.gradle.kts</strong>（约定插件示例）：</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="comment">// build-logic/convention/src/main/kotlin/android-application.gradle.kts</span></span><br><span class="line">plugins &#123;</span><br><span class="line">    id(<span class="string">&quot;com.android.application&quot;</span>)</span><br><span class="line">    id(<span class="string">&quot;org.jetbrains.kotlin.android&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">android &#123;</span><br><span class="line">    compileSdk = <span class="number">34</span></span><br><span class="line"></span><br><span class="line">    defaultConfig &#123;</span><br><span class="line">        minSdk = <span class="number">24</span></span><br><span class="line">        targetSdk = <span class="number">34</span></span><br><span class="line">        versionCode = <span class="number">1</span></span><br><span class="line">        versionName = <span class="string">&quot;1.0.0&quot;</span></span><br><span class="line"></span><br><span class="line">        testInstrumentationRunner = <span class="string">&quot;androidx.test.runner.AndroidJUnitRunner&quot;</span></span><br><span class="line">        vectorDrawables &#123;</span><br><span class="line">            useSupportLibrary = <span class="literal">true</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    buildTypes &#123;</span><br><span class="line">        release &#123;</span><br><span class="line">            isMinifyEnabled = <span class="literal">true</span></span><br><span class="line">            isShrinkResources = <span class="literal">true</span></span><br><span class="line">            proguardFiles(</span><br><span class="line">                getDefaultProguardFile(<span class="string">&quot;proguard-android-optimize.txt&quot;</span>),</span><br><span class="line">                <span class="string">&quot;proguard-rules.pro&quot;</span></span><br><span class="line">            )</span><br><span class="line">        &#125;</span><br><span class="line">        debug &#123;</span><br><span class="line">            isMinifyEnabled = <span class="literal">false</span></span><br><span class="line">            applicationIdSuffix = <span class="string">&quot;.debug&quot;</span></span><br><span class="line">            versionNameSuffix = <span class="string">&quot;-debug&quot;</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    compileOptions &#123;</span><br><span class="line">        sourceCompatibility = JavaVersion.VERSION_17</span><br><span class="line">        targetCompatibility = JavaVersion.VERSION_17</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    kotlinOptions &#123;</span><br><span class="line">        jvmTarget = <span class="string">&quot;17&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="四、多模块项目架构"><a href="#四、多模块项目架构" class="headerlink" title="四、多模块项目架构"></a>四、多模块项目架构</h2><h3 id="4-1-推荐的模块划分"><a href="#4-1-推荐的模块划分" class="headerlink" title="4.1 推荐的模块划分"></a>4.1 推荐的模块划分</h3><p>Google 推荐的架构中，应将应用划分为多个 Gradle Module：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">:app                    # Application 入口，依赖注入装配</span><br><span class="line">:feature:home           # 首页 Feature</span><br><span class="line">:feature:detail         # 详情页 Feature</span><br><span class="line">:feature:settings       # 设置页 Feature</span><br><span class="line">:core:data              # 数据层（Repository、DataSource）</span><br><span class="line">:core:domain            # 领域层（UseCase、Domain Model）</span><br><span class="line">:core:network           # 网络层（OkHttp、Retrofit 配置）</span><br><span class="line">:core:database          # 数据库层（Room Database、DAO）</span><br><span class="line">:core:ui                # UI 公共组件（主题、通用控件）</span><br><span class="line">:core:model             # 跨模块共享的数据模型</span><br><span class="line">:core:testing           # 测试工具（TestDispatcher、Fake Repository）</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-模块依赖关系"><a href="#4-2-模块依赖关系" class="headerlink" title="4.2 模块依赖关系"></a>4.2 模块依赖关系</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">:app</span><br><span class="line"> ├── :feature:home ──────┐</span><br><span class="line"> ├── :feature:detail ────┤</span><br><span class="line"> └── :feature:settings ──┤</span><br><span class="line">                          │</span><br><span class="line">         ┌────────────────┘</span><br><span class="line">         ▼</span><br><span class="line">    :core:domain ───── :core:model</span><br><span class="line">         │</span><br><span class="line">         ▼</span><br><span class="line">    :core:data ─────── :core:database, :core:network</span><br><span class="line">         │</span><br><span class="line">         ▼</span><br><span class="line">    :core:ui (仅 UI 公共组件)</span><br><span class="line">    :core:testing (testImplementation)</span><br></pre></td></tr></table></figure>
+
+<p>核心约束：</p>
+<ul>
+<li><code>:feature:*</code> 模块只依赖 <code>:core:domain</code> 和 <code>:core:ui</code></li>
+<li><code>:core:domain</code> 不依赖任何 Android 框架（纯 Kotlin&#x2F;Java 模块）</li>
+<li><code>:core:data</code> 实现 <code>:core:domain</code> 中定义的接口（依赖反转）</li>
+<li><code>:app</code> 通过 Hilt 完成依赖注入的装配</li>
+</ul>
+<h3 id="4-3-每个模块的-build-gradle-kts-示例"><a href="#4-3-每个模块的-build-gradle-kts-示例" class="headerlink" title="4.3 每个模块的 build.gradle.kts 示例"></a>4.3 每个模块的 build.gradle.kts 示例</h3><p><strong><code>:core:domain</code>（纯 Kotlin 模块）：</strong></p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line">plugins &#123;</span><br><span class="line">    alias(libs.plugins.kotlin.android) <span class="comment">// 或者直接 id(&quot;kotlin&quot;)</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    implementation(libs.kotlin.stdlib)</span><br><span class="line">    implementation(libs.kotlinx.coroutines.core)</span><br><span class="line">    testImplementation(libs.junit)</span><br><span class="line">    testImplementation(libs.mockk)</span><br><span class="line">    testImplementation(libs.turbine)</span><br><span class="line">    testImplementation(libs.kotlinx.coroutines.test)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong><code>:core:data</code>（Android Library）：</strong></p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line">plugins &#123;</span><br><span class="line">    alias(libs.plugins.android.library)</span><br><span class="line">    alias(libs.plugins.kotlin.android)</span><br><span class="line">    alias(libs.plugins.ksp)</span><br><span class="line">    alias(libs.plugins.hilt)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">android &#123;</span><br><span class="line">    namespace = <span class="string">&quot;com.example.core.data&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    implementation(project(<span class="string">&quot;:core:domain&quot;</span>))</span><br><span class="line">    implementation(project(<span class="string">&quot;:core:database&quot;</span>))</span><br><span class="line">    implementation(project(<span class="string">&quot;:core:network&quot;</span>))</span><br><span class="line"></span><br><span class="line">    implementation(libs.androidx.room.runtime)</span><br><span class="line">    implementation(libs.androidx.room.ktx)</span><br><span class="line">    ksp(libs.androidx.room.compiler)</span><br><span class="line"></span><br><span class="line">    implementation(libs.retrofit)</span><br><span class="line">    implementation(libs.moshi)</span><br><span class="line">    ksp(libs.moshi.codegen)</span><br><span class="line"></span><br><span class="line">    implementation(libs.hilt.android)</span><br><span class="line">    ksp(libs.hilt.compiler)</span><br><span class="line"></span><br><span class="line">    implementation(libs.androidx.datastore.preferences)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="五、Compose-vs-View-体系决策指南"><a href="#五、Compose-vs-View-体系决策指南" class="headerlink" title="五、Compose vs View 体系决策指南"></a>五、Compose vs View 体系决策指南</h2><h3 id="5-1-何时选择-Jetpack-Compose"><a href="#5-1-何时选择-Jetpack-Compose" class="headerlink" title="5.1 何时选择 Jetpack Compose"></a>5.1 何时选择 Jetpack Compose</h3><p><strong>适合 Compose 的场景：</strong></p>
+<ul>
+<li>全新项目，没有历史遗留代码</li>
+<li>UI 复杂度高，状态管理需求突出</li>
+<li>需要大量动画与自定义绘制</li>
+<li>团队已熟悉 Kotlin 与声明式 UI 范式</li>
+<li>需要跨平台（Compose Multiplatform）</li>
+</ul>
+<p><strong>Compose 的核心优势：</strong></p>
+<ul>
+<li>声明式 UI：描述 UI 应该是什么样，框架负责增量更新</li>
+<li>无 XML：代码即 UI，减少文件跳转，重构更安全</li>
+<li>强大的状态管理：<code>remember</code>、<code>mutableStateOf</code>、<code>StateFlow.collectAsState()</code></li>
+<li>原生性能：Compose 编译器将 Composable 编译为高效的树更新逻辑</li>
+<li>与 View 互操作：<code>AndroidView</code> &#x2F; <code>ComposeView</code> 双向嵌入</li>
+</ul>
+<h3 id="5-2-何时保留-View-体系"><a href="#5-2-何时保留-View-体系" class="headerlink" title="5.2 何时保留 View 体系"></a>5.2 何时保留 View 体系</h3><p><strong>适合传统 View 体系的场景：</strong></p>
+<ul>
+<li>大型存量项目，已有大量 XML 布局和自定义 View</li>
+<li>团队尚未掌握 Compose（学习曲线）</li>
+<li>需要使用尚未 Compose 友好的第三方库（如某些地图 SDK）</li>
+<li>需要 WebView 重交互场景（Compose 的 WebView 封装仍不够完善）</li>
+<li>有大量使用 DataBinding 的已有代码</li>
+</ul>
+<h3 id="5-3-渐进式迁移策略"><a href="#5-3-渐进式迁移策略" class="headerlink" title="5.3 渐进式迁移策略"></a>5.3 渐进式迁移策略</h3><p><strong>从 View 向 Compose 渐进迁移的路线图：</strong></p>
+<ol>
+<li><strong>底部 Sheet &#x2F; 弹窗</strong>：先用 Compose 编写 Dialog、BottomSheet，通过 <code>DialogFragment</code> + <code>ComposeView</code> 桥接。</li>
+<li><strong>列表 Item</strong>：在 RecyclerView 中通过 <code>ComposeView</code> 渲染单个 item。</li>
+<li><strong>独立页面</strong>：新建功能页面直接用 Compose Fragment（<code>fragment-compose</code> 提供了 <code>ComponentActivity.setContent</code> 等价物）。</li>
+<li><strong>主页面</strong>：将主要的 Fragment 逐步替换为 Compose。</li>
+<li><strong>Navigation</strong>：迁移到 <code>navigation-compose</code>，告别 Fragment。</li>
+</ol>
+<h3 id="5-4-兼容性桥接代码"><a href="#5-4-兼容性桥接代码" class="headerlink" title="5.4 兼容性桥接代码"></a>5.4 兼容性桥接代码</h3><p><strong>在 XML 中嵌入 Compose：</strong></p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">androidx.compose.ui.platform.ComposeView</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:id</span>=<span class="string">&quot;@+id/compose_view&quot;</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:layout_width</span>=<span class="string">&quot;match_parent&quot;</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:layout_height</span>=<span class="string">&quot;wrap_content&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line">binding.composeView.setContent &#123;</span><br><span class="line">    MyComposeTheme &#123;</span><br><span class="line">        MyComposableContent()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>在 Compose 中嵌入 View：</strong></p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Composable</span></span><br><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">MyScreen</span><span class="params">()</span></span> &#123;</span><br><span class="line">    AndroidView(</span><br><span class="line">        factory = &#123; context -&gt;</span><br><span class="line">            WebView(context).apply &#123;</span><br><span class="line">                settings.javaScriptEnabled = <span class="literal">true</span></span><br><span class="line">                loadUrl(<span class="string">&quot;https://example.com&quot;</span>)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        update = &#123; webView -&gt;</span><br><span class="line">            webView.evaluateJavascript(<span class="string">&quot;updateContent()&quot;</span>, <span class="literal">null</span>)</span><br><span class="line">        &#125;</span><br><span class="line">    )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="六、项目初始化-Checklist"><a href="#六、项目初始化-Checklist" class="headerlink" title="六、项目初始化 Checklist"></a>六、项目初始化 Checklist</h2><p>启动一个 Jetpack 新项目的完整检查清单：</p>
+<h3 id="6-1-环境准备"><a href="#6-1-环境准备" class="headerlink" title="6.1 环境准备"></a>6.1 环境准备</h3><ul>
+<li><input disabled="" type="checkbox"> Android Studio Hedgehog (2023.1.1) 或更新版本</li>
+<li><input disabled="" type="checkbox"> Gradle 8.5+ &#x2F; AGP 8.5+</li>
+<li><input disabled="" type="checkbox"> Kotlin 2.0+</li>
+<li><input disabled="" type="checkbox"> compileSdk &#x3D; 34, targetSdk &#x3D; 34, minSdk &#x3D; 24</li>
+<li><input disabled="" type="checkbox"> 创建 Version Catalog (<code>gradle/libs.versions.toml</code>)</li>
+</ul>
+<h3 id="6-2-基础配置"><a href="#6-2-基础配置" class="headerlink" title="6.2 基础配置"></a>6.2 基础配置</h3><ul>
+<li><input disabled="" type="checkbox"> <code>gradle.properties</code>：android.useAndroidX&#x3D;true</li>
+<li><input disabled="" type="checkbox"> 引入 AppCompat、Material Design、ConstraintLayout</li>
+<li><input disabled="" type="checkbox"> 引入 Lifecycle + ViewModel + LiveData KTX</li>
+<li><input disabled="" type="checkbox"> 引入 Navigation + Safe Args 插件</li>
+<li><input disabled="" type="checkbox"> 配置 Hilt 依赖注入</li>
+<li><input disabled="" type="checkbox"> KSP 替代 kapt（提升编译速度）</li>
+</ul>
+<h3 id="6-3-架构搭建"><a href="#6-3-架构搭建" class="headerlink" title="6.3 架构搭建"></a>6.3 架构搭建</h3><ul>
+<li><input disabled="" type="checkbox"> 创建多模块目录结构</li>
+<li><input disabled="" type="checkbox"> 配置 build-logic 约定插件</li>
+<li><input disabled="" type="checkbox"> 创建 Application 类，添加 <code>@HiltAndroidApp</code></li>
+<li><input disabled="" type="checkbox"> 实现 Single Activity 架构（MainActivity + NavHost）</li>
+<li><input disabled="" type="checkbox"> 定义 Theme &#x2F; 颜色系统</li>
+<li><input disabled="" type="checkbox"> 配置 CI pipeline（GitHub Actions &#x2F; Jenkins）</li>
+</ul>
+<h3 id="6-4-代码规范"><a href="#6-4-代码规范" class="headerlink" title="6.4 代码规范"></a>6.4 代码规范</h3><ul>
+<li><input disabled="" type="checkbox"> <code>ktlint</code> 或 <code>detekt</code> 静态检查</li>
+<li><input disabled="" type="checkbox"> <code>.editorconfig</code> 统一代码风格</li>
+<li><input disabled="" type="checkbox"> Git hooks pre-commit 检查</li>
+<li><input disabled="" type="checkbox"> 编写 README 与架构文档（建议使用 PlantUML 或 Mermaid）</li>
+</ul>
+<hr>
+<h2 id="面试常考问题"><a href="#面试常考问题" class="headerlink" title="面试常考问题"></a>面试常考问题</h2><p><strong>Q1：AndroidX 与 Support Library 的区别？</strong></p>
+<p>AndroidX 是 Support Library 的升级版，核心区别：</p>
+<ul>
+<li>包名从 <code>android.support.*</code> 变为 <code>androidx.*</code></li>
+<li>独立语义化版本控制，每个组件可独立升级</li>
+<li>Support 28.0.0 之后停止维护</li>
+<li>Jetifier 工具可在编译期将 Support 引用自动转换为 AndroidX</li>
+<li>Design 库拆分为独立的 Material Components（<code>com.google.android.material:material</code>）</li>
+<li>ViewPager 拆分为 ViewPager2（基于 RecyclerView，支持垂直滑动和 RTL）</li>
+</ul>
+<p><strong>Q2：enableJetifier 的作用是什么？</strong></p>
+<p>Jetifier 在构建过程中扫描所有依赖的字节码，将 Support Library 类名、包名、资源引用自动迁移到 AndroidX 对应项：</p>
+<ol>
+<li>解析 AAR&#x2F;JAR 文件中的 class 字节码</li>
+<li>查找 Support Library 类引用（如 <code>android.support.v7.app.AppCompatActivity</code>）</li>
+<li>替换为对应 AndroidX 类引用（如 <code>androidx.appcompat.app.AppCompatActivity</code>）</li>
+<li>同时改写资源引用和布局 XML</li>
+</ol>
+<p>适用于依赖了尚未迁移 AndroidX 的第三方库的场景。当所有依赖都原生支持 AndroidX 后应关闭以提升构建速度。AOSP 源码路径：<code>frameworks/support/</code> 目录（现已整体迁移为 AndroidX 仓库）。</p>
+<p><strong>Q3：Jetpack Compose 与传统 View 体系如何共存？</strong></p>
+<ul>
+<li>Compose → View：通过 <code>ComposeView</code>（一个 ViewGroup 子类）将 Composable 内容嵌入传统布局，调用 <code>composeView.setContent &#123; ... &#125;</code></li>
+<li>View → Compose：通过 <code>AndroidView</code> Composable 将传统 View 嵌入 Compose 树</li>
+<li>Activity：<code>ComponentActivity.setContent &#123; ... &#125;</code> 替代 <code>setContentView()</code></li>
+<li>Fragment：引入 <code>androidx.fragment:fragment-compose</code>，Fragment 中使用 <code>onCreateView</code> 返回 <code>ComposeView</code></li>
+<li>Navigation：<code>navigation-compose</code> 提供 NavHost Composable，无需 Fragment</li>
+<li>推荐策略：新页面用 Compose，存量页面保持 View，通过互操作机制渐进迁移</li>
+</ul>
+<p><strong>Q4：Version Catalog 相比 buildSrc 的优势？</strong></p>
+<p>Version Catalog（<code>libs.versions.toml</code>）是 Gradle 7.0 引入的官方方案：</p>
+<ul>
+<li>声明式配置，无需编译，IDE 自动提示</li>
+<li>Gradle 原生支持，不需要额外插件</li>
+<li>可通过 <code>libs.versions.xxx</code> 在 settings.gradle.kts 中访问</li>
+<li>buildSrc 每次变更都要重新编译整个构建逻辑，Version Catalog 则无需</li>
+<li>两者可以共存：Version Catalog 管理版本号，buildSrc&#x2F;convention plugins 管理构建逻辑</li>
+</ul>
+<p><strong>Q5：DataBinding vs ViewBinding 如何选择？</strong></p>
+<ul>
+<li>ViewBinding：轻量、编译快，仅生成 View 引用类，无布局表达式，适合不需要数据驱动的场景</li>
+<li>DataBinding：功能全（布局表达式、双向绑定、BindingAdapter），构建速度较慢，适合 MVVM 中数据需要驱动 UI 的场景</li>
+<li>底线：如果不需要布局表达式和双向绑定，直接用 ViewBinding，切勿为了 DataBinding 而 DataBinding</li>
+<li>Compose 项目中两者都不需要 —— Compose 本身通过状态驱动 UI 更新</li>
+</ul>
+<p><strong>Q6：KSP 与 kapt 的区别？为何推荐迁移到 KSP？</strong></p>
+<p>KSP（Kotlin Symbol Processing）是 Google 开发的 Kotlin 编译期注解处理器，作为 kapt 的替代方案：</p>
+<ul>
+<li>性能：KSP 比 kapt 快 2~3 倍。kapt 需要先将 Kotlin 代码编译为 Java Stub（为了兼容 Javac 注解处理器），这一步骤非常耗时；KSP 直接解析 Kotlin 源码 AST，无中间产物</li>
+<li>实现语言：kapt 底层是 Java 注解处理器（JSR 269），用 Java 编写处理器；KSP 提供原生 Kotlin API，处理器用 Kotlin 编写</li>
+<li>内存占用：kapt 的 Java Stub 生成阶段占用大量内存；KSP 增量处理，内存开销更小</li>
+<li>支持状态：Google 已明确 KSP 是长期方向，Room 2.5+、Moshi 1.14+ 已支持 KSP</li>
+<li>迁移路径：将 <code>kapt</code> 依赖替换为 <code>ksp</code>，编译器实现从 <code>@AutoService(Processor::class)</code> 改为实现 <code>SymbolProcessor</code> 接口</li>
+</ul>
+<h2 id="七、ProGuard-R8-与-Jetpack-配置"><a href="#七、ProGuard-R8-与-Jetpack-配置" class="headerlink" title="七、ProGuard &#x2F; R8 与 Jetpack 配置"></a>七、ProGuard &#x2F; R8 与 Jetpack 配置</h2><h3 id="7-1-Jetpack-组件的-ProGuard-规则"><a href="#7-1-Jetpack-组件的-ProGuard-规则" class="headerlink" title="7.1 Jetpack 组件的 ProGuard 规则"></a>7.1 Jetpack 组件的 ProGuard 规则</h3><p>大部分 Jetpack 组件在 AAR 中内嵌了 <code>proguard.txt</code>（通过 <code>consumerProguardFiles</code> 声明），AGP 会自动应用这些规则。但以下组件需要手动添加：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Lifecycle - 保持 LifecycleObserver 方法不被混淆</span><br><span class="line">-keep class * implements androidx.lifecycle.LifecycleObserver &#123;</span><br><span class="line">    @androidx.lifecycle.OnLifecycleEvent(...);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># Room - 保持 Entity 和 DAO</span><br><span class="line">-keep class * extends androidx.room.RoomDatabase</span><br><span class="line">-keep @androidx.room.Entity class *</span><br><span class="line">-keep @androidx.room.Dao interface *</span><br><span class="line"></span><br><span class="line"># DataBinding - 保持 BR 类和生成的 Binding 类</span><br><span class="line">-keep class androidx.databinding.DataBindingComponent &#123; *; &#125;</span><br><span class="line">-keep class * extends androidx.databinding.ViewDataBinding</span><br><span class="line">-keepclassmembers class * extends androidx.databinding.ViewDataBinding &#123;</span><br><span class="line">    &lt;init&gt;(...);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># Navigation - 保持 NavArgs</span><br><span class="line">-keep class * extends androidx.navigation.NavArgs</span><br><span class="line"></span><br><span class="line"># Hilt</span><br><span class="line">-keep class dagger.hilt.** &#123; *; &#125;</span><br><span class="line">-keep class javax.inject.** &#123; *; &#125;</span><br><span class="line">-keep class * extends dagger.hilt.android.internal.managers.ViewComponentManager$FragmentContextWrapper &#123; *; &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-2-R8-完全模式"><a href="#7-2-R8-完全模式" class="headerlink" title="7.2 R8 完全模式"></a>7.2 R8 完全模式</h3><p>AGP 7.0+ 默认启用 R8 进行代码压缩、混淆和优化。在 <code>gradle.properties</code> 中开启 R8 完全模式：</p>
+<figure class="highlight properties"><table><tr><td class="code"><pre><span class="line"><span class="attr">android.enableR8.fullMode</span>=<span class="string">true</span></span><br></pre></td></tr></table></figure>
+
+<p>完全模式下 R8 会进行更激进的优化（方法内联、分支裁剪、类合并），但可能与某些反射调用冲突。如果遇到问题，可以通过 <code>-keep</code> 规则保留关键类。 </p>
+<p>Jetpack 组件大多已经过 R8 完全模式测试，但需要注意：</p>
+<ul>
+<li>Room 的 <code>@Entity</code> 和 <code>@ColumnInfo</code> 注解类不应被混淆（AAR 自带规则会处理）</li>
+<li>Paging 使用反射处理 <code>LoadStateAdapter</code>，需要保留相关类</li>
+<li>DataBinding 在运行时通过反射访问生成类，必须 <code>-keep</code></li>
+</ul>
+<h2 id="八、Kotlin-Multiplatform-与-Jetpack-的关系"><a href="#八、Kotlin-Multiplatform-与-Jetpack-的关系" class="headerlink" title="八、Kotlin Multiplatform 与 Jetpack 的关系"></a>八、Kotlin Multiplatform 与 Jetpack 的关系</h2><h3 id="8-1-现状与趋势"><a href="#8-1-现状与趋势" class="headerlink" title="8.1 现状与趋势"></a>8.1 现状与趋势</h3><p>Google 正在将 Jetpack 逐步向 Kotlin Multiplatform (KMP) 迁移：</p>
+<ul>
+<li>**Room 2.7+**：已支持 KMP，可在 Android 和 iOS 上共享数据库层</li>
+<li>**DataStore 1.2+**：支持 KMP Preferences DataStore</li>
+<li><strong>Lifecycle &#x2F; ViewModel</strong>：已有 <code>lifecycle-viewmodel-compose</code> 用于 Compose Multiplatform</li>
+<li><strong>Navigation</strong>：<code>navigation-compose</code> 逐步解耦 Fragment 依赖</li>
+</ul>
+<h3 id="8-2-跨平台共享策略"><a href="#8-2-跨平台共享策略" class="headerlink" title="8.2 跨平台共享策略"></a>8.2 跨平台共享策略</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">shared/                         # KMP 共享模块</span><br><span class="line">├── commonMain/                 # 跨平台共享代码</span><br><span class="line">│   ├── data/                   # Room Database (共享)</span><br><span class="line">│   ├── domain/                 # UseCase (共享)</span><br><span class="line">│   └── util/                   # 工具类 (共享)</span><br><span class="line">├── androidMain/                # Android 平台实现</span><br><span class="line">│   └── di/                     # Hilt 依赖注入 (Android only)</span><br><span class="line">└── iosMain/                    # iOS 平台实现</span><br><span class="line">    └── di/                     # iOS DI（非 Hilt，如 Koin）</span><br><span class="line"></span><br><span class="line">androidApp/                     # Android UI（Jetpack Compose）</span><br><span class="line">iosApp/                         # iOS UI（SwiftUI 或 Compose Multiplatform）</span><br></pre></td></tr></table></figure>
+
+<p>这种架构下，Room Database、Repository、UseCase、数据验证逻辑全部在 <code>shared/commonMain</code> 中实现，Android 和 iOS 两侧共享。UI 层各自用原生框架实现（Android 用 Jetpack Compose，iOS 用 SwiftUI）。</p>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Jetpack/">Jetpack    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/图片7.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2019/07/05/%E9%87%8D%E6%8B%BEAndroid-JetPack%E5%85%A8%E5%AE%B6%E6%A1%B6%EF%BC%88%E4%BA%8C%EF%BC%89%E4%B9%8BLifeCycle%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E6%84%9F%E7%9F%A5%E7%BB%84%E4%BB%B6/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/图片23.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>JetPack全家桶（二）之LifeCycle生命周期感知组件</span></div></a></div><div class="next-post pull_right"><a href="/2019/06/25/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E5%BF%85%E7%9F%A5%E5%BF%85%E4%BC%9ASDK%E3%80%91%E4%B9%8BGlide/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/566.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【必知必会SDK】之Glide</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2022/03/10/解读开源框架系列-Jetpack组件架构设计/" title="解读开源框架系列-Jetpack组件架构设计"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/448.jpg"><div class="relatedPosts_title">解读开源框架系列-Jetpack组件架构设计</div></a></div><div class="relatedPosts_item"><a href="/2019/09/05/重拾Android-【实战系列】MVVM之基于Artifactory和Jetpack高级架构/" title="【实战系列】MVVM之基于Artifactory和Jetpack高级架构"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/280301.jpg"><div class="relatedPosts_title">【实战系列】MVVM之基于Artifactory和Jetpack高级架构</div></a></div><div class="relatedPosts_item"><a href="/2019/08/10/重拾Android-JetPack全家桶（十）之从0到1设计JetPack架构/" title="JetPack全家桶（十）之从0到1设计JetPack架构"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/图片4.jpg"><div class="relatedPosts_title">JetPack全家桶（十）之从0到1设计JetPack架构</div></a></div><div class="relatedPosts_item"><a href="/2019/08/05/重拾Android-JetPack全家桶（九）之DataBinding数据绑定/" title="JetPack全家桶（九）之DataBinding数据绑定"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/图片3.jpg"><div class="relatedPosts_title">JetPack全家桶（九）之DataBinding数据绑定</div></a></div><div class="relatedPosts_item"><a href="/2019/08/01/重拾Android-JetPack全家桶（八）之Navigation导航组件/" title="JetPack全家桶（八）之Navigation导航组件"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/图片22.jpg"><div class="relatedPosts_title">JetPack全家桶（八）之Navigation导航组件</div></a></div><div class="relatedPosts_item"><a href="/2019/07/30/重拾Android-JetPack全家桶（七）之WorkManager任务调度/" title="JetPack全家桶（七）之WorkManager任务调度"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/图片36.jpg"><div class="relatedPosts_title">JetPack全家桶（七）之WorkManager任务调度</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/图片7.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

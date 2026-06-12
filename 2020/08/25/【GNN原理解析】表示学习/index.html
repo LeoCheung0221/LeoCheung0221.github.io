@@ -1,0 +1,487 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【GNN原理解析】表示学习 | ONE·PIECE</title><meta name="description" content="【GNN原理解析】表示学习"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【GNN原理解析】表示学习"><meta name="twitter:description" content="【GNN原理解析】表示学习"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【GNN原理解析】表示学习"><meta property="og:url" content="http://tufusi.com/2020/08/25/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E8%A1%A8%E7%A4%BA%E5%AD%A6%E4%B9%A0/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【GNN原理解析】表示学习"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2020/08/25/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E8%A1%A8%E7%A4%BA%E5%AD%A6%E4%B9%A0/"><link rel="prev" title="【统计学习方法死磕系列Ⅱ】潜在语义分析及概率潜在语义分析" href="http://tufusi.com/2020/09/01/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E2%85%A1%E3%80%91%E6%BD%9C%E5%9C%A8%E8%AF%AD%E4%B9%89%E5%88%86%E6%9E%90%E5%8F%8A%E6%A6%82%E7%8E%87%E6%BD%9C%E5%9C%A8%E8%AF%AD%E4%B9%89%E5%88%86%E6%9E%90/"><link rel="next" title="【GNN原理解析】神经网络基础" href="http://tufusi.com/2020/08/20/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E8%A1%A8%E7%A4%BA%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E6%9C%BA"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、表示学习的动机</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-%E4%BC%A0%E7%BB%9F%E6%96%B9%E6%B3%95%E7%9A%84%E5%B1%80%E9%99%90"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">1.1 传统方法的局限</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-2-%E8%A1%A8%E7%A4%BA%E5%AD%A6%E4%B9%A0%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">1.2 表示学习的核心思想</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81Word2Vec-%E5%9B%9E%E9%A1%BE"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、Word2Vec 回顾</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%88%86%E5%B8%83%E5%BC%8F%E8%A1%A8%E7%A4%BA"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 语言模型与分布式表示</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-Skip-gram-%E6%A8%A1%E5%9E%8B"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 Skip-gram 模型</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-%E8%B4%9F%E9%87%87%E6%A0%B7%EF%BC%88Negative-Sampling%EF%BC%89"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 负采样（Negative Sampling）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-4-%E5%B1%82%E7%BA%A7-Softmax%EF%BC%88Hierarchical-Softmax%EF%BC%89"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">2.4 层级 Softmax（Hierarchical Softmax）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81DeepWalk%EF%BC%9A%E5%9B%BE%E4%B8%8A%E7%9A%84-Skip-gram"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、DeepWalk：图上的 Skip-gram</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 核心思想</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 算法流程</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-DeepWalk-%E7%9A%84%E4%BC%98%E5%8C%96%E7%9B%AE%E6%A0%87"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 DeepWalk 的优化目标</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-%E4%BD%BF%E7%94%A8-PyG-%E4%B8%AD%E7%9A%84-Node2Vec"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">3.4 使用 PyG 中的 Node2Vec</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81Node2Vec%EF%BC%9A%E6%9C%89%E5%81%8F%E9%9A%8F%E6%9C%BA%E6%B8%B8%E8%B5%B0"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、Node2Vec：有偏随机游走</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E4%BB%8E-DeepWalk-%E5%88%B0-Node2Vec"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 从 DeepWalk 到 Node2Vec</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E4%BA%8C%E9%98%B6%E9%9A%8F%E6%9C%BA%E6%B8%B8%E8%B5%B0"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 二阶随机游走</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-BFS-vs-DFS-%E7%9A%84%E7%89%B9%E5%BE%81%E6%8D%95%E6%8D%89"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 BFS vs DFS 的特征捕捉</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81LINE%EF%BC%9A%E5%A4%A7%E8%A7%84%E6%A8%A1%E7%BD%91%E7%BB%9C%E5%B5%8C%E5%85%A5"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、LINE：大规模网络嵌入</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E4%B8%80%E9%98%B6%E9%82%BB%E8%BF%91%E5%BA%A6%EF%BC%88First-order-Proximity%EF%BC%89"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 一阶邻近度（First-order Proximity）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-%E4%BA%8C%E9%98%B6%E9%82%BB%E8%BF%91%E5%BA%A6%EF%BC%88Second-order-Proximity%EF%BC%89"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 二阶邻近度（Second-order Proximity）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-LINE-%E4%B8%8E-DeepWalk-Node2Vec-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 LINE 与 DeepWalk&#x2F;Node2Vec 的关系</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E5%85%B6%E4%BB%96%E7%BB%8F%E5%85%B8%E5%9B%BE%E5%B5%8C%E5%85%A5%E6%96%B9%E6%B3%95"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、其他经典图嵌入方法</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-SDNE%EF%BC%88Structural-Deep-Network-Embedding%EF%BC%89"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 SDNE（Structural Deep Network Embedding）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-TransE%EF%BC%9A%E7%9F%A5%E8%AF%86%E5%9B%BE%E8%B0%B1%E5%B5%8C%E5%85%A5"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 TransE：知识图谱嵌入</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-Metapath2Vec%EF%BC%9A%E5%BC%82%E6%9E%84%E5%9B%BE%E5%B5%8C%E5%85%A5"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">6.3 Metapath2Vec：异构图嵌入</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E4%BB%8E%E8%A1%A8%E7%A4%BA%E5%AD%A6%E4%B9%A0%E5%88%B0-GNN-%E7%9A%84%E6%BC%94%E8%BF%9B"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、从表示学习到 GNN 的演进</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-%E4%BC%A0%E7%BB%9F%E5%9B%BE%E5%B5%8C%E5%85%A5%E7%9A%84%E5%B1%80%E9%99%90"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">7.1 传统图嵌入的局限</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-GNN-%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E8%BF%99%E4%BA%9B%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">7.2 GNN 如何解决这些问题</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81PyG-%E5%AE%8C%E6%95%B4%E5%AE%9E%E7%8E%B0%EF%BC%9ACora-%E4%B8%8A%E7%9A%84-Node2Vec-%E5%88%86%E7%B1%BB"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、PyG 完整实现：Cora 上的 Node2Vec + 分类</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%9D%A2%E8%AF%95-%E8%87%AA%E6%9F%A5%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">面试&#x2F;自查问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E5%9B%BE%E5%B5%8C%E5%85%A5%E6%96%B9%E6%B3%95%E7%9A%84%E7%90%86%E8%AE%BA%E8%81%94%E7%B3%BB"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">九、图嵌入方法的理论联系</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-1-%E7%9F%A9%E9%98%B5%E5%88%86%E8%A7%A3%E8%A7%86%E8%A7%92"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">9.1 矩阵分解视角</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-2-NetMF-%E5%AF%B9-DeepWalk-%E7%9A%84%E7%BB%9F%E4%B8%80"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">9.2 NetMF 对 DeepWalk 的统一</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-3-%E5%B5%8C%E5%85%A5%E8%AF%84%E4%BC%B0%E5%8D%8F%E8%AE%AE"><span class="toc_mobile_items-number">10.3.</span> <span class="toc_mobile_items-text">9.3 嵌入评估协议</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81%E4%BB%8E%E4%BC%A0%E7%BB%9F%E5%9B%BE%E5%B5%8C%E5%85%A5%E5%88%B0-GCN%EF%BC%9A%E5%B9%B3%E6%BB%91%E8%BF%87%E6%B8%A1"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">十、从传统图嵌入到 GCN：平滑过渡</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-1-%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92%E7%BB%9F%E4%B8%80%E7%9A%84%E8%A7%86%E8%A7%92"><span class="toc_mobile_items-number">11.1.</span> <span class="toc_mobile_items-text">10.1 消息传递统一的视角</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-2-%E4%B8%BA%E4%BB%80%E4%B9%88-GNN-%E5%87%A0%E4%B9%8E%E6%80%BB%E6%98%AF%E4%BC%98%E4%BA%8E%E4%BC%A0%E7%BB%9F%E5%B5%8C%E5%85%A5"><span class="toc_mobile_items-number">11.2.</span> <span class="toc_mobile_items-text">10.2 为什么 GNN 几乎总是优于传统嵌入</span></a></li></ol></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%A1%A8%E7%A4%BA%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E6%9C%BA"><span class="toc-number">1.</span> <span class="toc-text">一、表示学习的动机</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E4%BC%A0%E7%BB%9F%E6%96%B9%E6%B3%95%E7%9A%84%E5%B1%80%E9%99%90"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 传统方法的局限</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E8%A1%A8%E7%A4%BA%E5%AD%A6%E4%B9%A0%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 表示学习的核心思想</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Word2Vec-%E5%9B%9E%E9%A1%BE"><span class="toc-number">2.</span> <span class="toc-text">二、Word2Vec 回顾</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%88%86%E5%B8%83%E5%BC%8F%E8%A1%A8%E7%A4%BA"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 语言模型与分布式表示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Skip-gram-%E6%A8%A1%E5%9E%8B"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 Skip-gram 模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E8%B4%9F%E9%87%87%E6%A0%B7%EF%BC%88Negative-Sampling%EF%BC%89"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 负采样（Negative Sampling）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%B1%82%E7%BA%A7-Softmax%EF%BC%88Hierarchical-Softmax%EF%BC%89"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 层级 Softmax（Hierarchical Softmax）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81DeepWalk%EF%BC%9A%E5%9B%BE%E4%B8%8A%E7%9A%84-Skip-gram"><span class="toc-number">3.</span> <span class="toc-text">三、DeepWalk：图上的 Skip-gram</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 核心思想</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 算法流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-DeepWalk-%E7%9A%84%E4%BC%98%E5%8C%96%E7%9B%AE%E6%A0%87"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 DeepWalk 的优化目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E4%BD%BF%E7%94%A8-PyG-%E4%B8%AD%E7%9A%84-Node2Vec"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 使用 PyG 中的 Node2Vec</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Node2Vec%EF%BC%9A%E6%9C%89%E5%81%8F%E9%9A%8F%E6%9C%BA%E6%B8%B8%E8%B5%B0"><span class="toc-number">4.</span> <span class="toc-text">四、Node2Vec：有偏随机游走</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E4%BB%8E-DeepWalk-%E5%88%B0-Node2Vec"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 从 DeepWalk 到 Node2Vec</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E4%BA%8C%E9%98%B6%E9%9A%8F%E6%9C%BA%E6%B8%B8%E8%B5%B0"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 二阶随机游走</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-BFS-vs-DFS-%E7%9A%84%E7%89%B9%E5%BE%81%E6%8D%95%E6%8D%89"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 BFS vs DFS 的特征捕捉</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81LINE%EF%BC%9A%E5%A4%A7%E8%A7%84%E6%A8%A1%E7%BD%91%E7%BB%9C%E5%B5%8C%E5%85%A5"><span class="toc-number">5.</span> <span class="toc-text">五、LINE：大规模网络嵌入</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E4%B8%80%E9%98%B6%E9%82%BB%E8%BF%91%E5%BA%A6%EF%BC%88First-order-Proximity%EF%BC%89"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 一阶邻近度（First-order Proximity）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E4%BA%8C%E9%98%B6%E9%82%BB%E8%BF%91%E5%BA%A6%EF%BC%88Second-order-Proximity%EF%BC%89"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 二阶邻近度（Second-order Proximity）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-LINE-%E4%B8%8E-DeepWalk-Node2Vec-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 LINE 与 DeepWalk&#x2F;Node2Vec 的关系</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%85%B6%E4%BB%96%E7%BB%8F%E5%85%B8%E5%9B%BE%E5%B5%8C%E5%85%A5%E6%96%B9%E6%B3%95"><span class="toc-number">6.</span> <span class="toc-text">六、其他经典图嵌入方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-SDNE%EF%BC%88Structural-Deep-Network-Embedding%EF%BC%89"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 SDNE（Structural Deep Network Embedding）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-TransE%EF%BC%9A%E7%9F%A5%E8%AF%86%E5%9B%BE%E8%B0%B1%E5%B5%8C%E5%85%A5"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 TransE：知识图谱嵌入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-Metapath2Vec%EF%BC%9A%E5%BC%82%E6%9E%84%E5%9B%BE%E5%B5%8C%E5%85%A5"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 Metapath2Vec：异构图嵌入</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E4%BB%8E%E8%A1%A8%E7%A4%BA%E5%AD%A6%E4%B9%A0%E5%88%B0-GNN-%E7%9A%84%E6%BC%94%E8%BF%9B"><span class="toc-number">7.</span> <span class="toc-text">七、从表示学习到 GNN 的演进</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E4%BC%A0%E7%BB%9F%E5%9B%BE%E5%B5%8C%E5%85%A5%E7%9A%84%E5%B1%80%E9%99%90"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 传统图嵌入的局限</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-GNN-%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E8%BF%99%E4%BA%9B%E9%97%AE%E9%A2%98"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 GNN 如何解决这些问题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81PyG-%E5%AE%8C%E6%95%B4%E5%AE%9E%E7%8E%B0%EF%BC%9ACora-%E4%B8%8A%E7%9A%84-Node2Vec-%E5%88%86%E7%B1%BB"><span class="toc-number">8.</span> <span class="toc-text">八、PyG 完整实现：Cora 上的 Node2Vec + 分类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95-%E8%87%AA%E6%9F%A5%E9%97%AE%E9%A2%98"><span class="toc-number">9.</span> <span class="toc-text">面试&#x2F;自查问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E5%9B%BE%E5%B5%8C%E5%85%A5%E6%96%B9%E6%B3%95%E7%9A%84%E7%90%86%E8%AE%BA%E8%81%94%E7%B3%BB"><span class="toc-number">10.</span> <span class="toc-text">九、图嵌入方法的理论联系</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E7%9F%A9%E9%98%B5%E5%88%86%E8%A7%A3%E8%A7%86%E8%A7%92"><span class="toc-number">10.1.</span> <span class="toc-text">9.1 矩阵分解视角</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-NetMF-%E5%AF%B9-DeepWalk-%E7%9A%84%E7%BB%9F%E4%B8%80"><span class="toc-number">10.2.</span> <span class="toc-text">9.2 NetMF 对 DeepWalk 的统一</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-%E5%B5%8C%E5%85%A5%E8%AF%84%E4%BC%B0%E5%8D%8F%E8%AE%AE"><span class="toc-number">10.3.</span> <span class="toc-text">9.3 嵌入评估协议</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E4%BB%8E%E4%BC%A0%E7%BB%9F%E5%9B%BE%E5%B5%8C%E5%85%A5%E5%88%B0-GCN%EF%BC%9A%E5%B9%B3%E6%BB%91%E8%BF%87%E6%B8%A1"><span class="toc-number">11.</span> <span class="toc-text">十、从传统图嵌入到 GCN：平滑过渡</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92%E7%BB%9F%E4%B8%80%E7%9A%84%E8%A7%86%E8%A7%92"><span class="toc-number">11.1.</span> <span class="toc-text">10.1 消息传递统一的视角</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-%E4%B8%BA%E4%BB%80%E4%B9%88-GNN-%E5%87%A0%E4%B9%8E%E6%80%BB%E6%98%AF%E4%BC%98%E4%BA%8E%E4%BC%A0%E7%BB%9F%E5%B5%8C%E5%85%A5"><span class="toc-number">11.2.</span> <span class="toc-text">10.2 为什么 GNN 几乎总是优于传统嵌入</span></a></li></ol></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【GNN原理解析】表示学习</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2020-08-25<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E5%9B%BE%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/">图神经网络</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">5.2k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 20 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>表示学习（Representation Learning）是机器学习的核心范式：与其手工设计特征，不如让模型自动学习数据的低维向量表示。在图神经网络中，表示学习的历史可追溯到 Word2Vec 和早期的图嵌入方法（DeepWalk、Node2Vec）。这些方法是 GNN 的思想先驱，理解它们有助于理解 GNN 为何有效。</p>
+<span id="more"></span>
+
+<h2 id="一、表示学习的动机"><a href="#一、表示学习的动机" class="headerlink" title="一、表示学习的动机"></a>一、表示学习的动机</h2><h3 id="1-1-传统方法的局限"><a href="#1-1-传统方法的局限" class="headerlink" title="1.1 传统方法的局限"></a>1.1 传统方法的局限</h3><p>在深度学习兴起之前，图上的机器学习任务严重依赖手工设计的特征：</p>
+<ul>
+<li><strong>节点的度</strong>：该节点连接了多少条边</li>
+<li><strong>聚类系数</strong>：节点的邻居间互相连接的程度</li>
+<li><strong>PageRank 值</strong>：节点在图中的全局重要性</li>
+<li><strong>路径统计</strong>：节点到其他关键节点的最短路径长度</li>
+<li><strong>子图计数</strong>：节点参与的特定子图（如三角形）的数量</li>
+</ul>
+<p>这些手工特征存在严重问题：</p>
+<ol>
+<li><strong>设计成本高</strong>：每个新任务都需要领域专家设计新特征</li>
+<li><strong>不可迁移</strong>：为社交网络设计的特征对分子图可能毫无意义</li>
+<li><strong>信息瓶颈</strong>：手工设计的特征只能捕捉有限维度的信息</li>
+<li><strong>无法利用大量未标注数据</strong>：传统方法只能利用标注数据进行有监督学习</li>
+</ol>
+<h3 id="1-2-表示学习的核心思想"><a href="#1-2-表示学习的核心思想" class="headerlink" title="1.2 表示学习的核心思想"></a>1.2 表示学习的核心思想</h3><p>表示学习的目标是学习一个映射函数 f: V → R^d，将图中的每个节点映射到一个低维稠密向量空间（通常 d &lt;&lt; |V|），使得在这个向量空间中，结构相似的节点距离近。即：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">f: v ↦ z_v ∈ R^d</span><br></pre></td></tr></table></figure>
+
+<p>这个向量 z_v 就是节点 v 的<strong>嵌入（embedding）</strong>。一个好的嵌入应满足：</p>
+<ul>
+<li><strong>低维性</strong>：d 通常在 64-256 之间，远小于图的节点数 |V|</li>
+<li><strong>稠密性</strong>：向量的每个维度都有信息（不像 one-hot 编码那么稀疏）</li>
+<li><strong>语义性</strong>：语义相似的节点在嵌入空间中距离近，语义相异的节点距离远</li>
+<li><strong>可迁移性</strong>：相同的嵌入可用于多种下游任务（分类、聚类、链接预测、可视化）</li>
+</ul>
+<h2 id="二、Word2Vec-回顾"><a href="#二、Word2Vec-回顾" class="headerlink" title="二、Word2Vec 回顾"></a>二、Word2Vec 回顾</h2><p>DeepWalk 和 Node2Vec 的核心思想来自 Word2Vec。理解 Word2Vec 是理解图嵌入方法的前提。</p>
+<h3 id="2-1-语言模型与分布式表示"><a href="#2-1-语言模型与分布式表示" class="headerlink" title="2.1 语言模型与分布式表示"></a>2.1 语言模型与分布式表示</h3><p>传统 NLP 使用 one-hot 编码表示词汇：每个词是一个 |V|-维的 0&#x2F;1 向量。问题：one-hot 向量无法表示词汇间的语义相似性（”猫”和”狗”的 one-hot 向量与”猫”和”电脑”的 one-hot 向量完全一样”远”）。</p>
+<p>Word2Vec 通过预测任务学习词的分布式表示（distributed representation）：每个词被表示为 d 维稠密向量（通常 d &#x3D; 100-300）。</p>
+<h3 id="2-2-Skip-gram-模型"><a href="#2-2-Skip-gram-模型" class="headerlink" title="2.2 Skip-gram 模型"></a>2.2 Skip-gram 模型</h3><p>Skip-gram 的核心思想：用一个词 w_t 预测其上下文词 w_{t-c}, …, w_{t+c}。</p>
+<p><strong>目标函数：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">最大化平均对数概率：</span><br><span class="line">(1/T) * Σ_&#123;t=1&#125;^T Σ_&#123;-c≤j≤c, j≠0&#125; log P(w_&#123;t+j&#125; | w_t)</span><br></pre></td></tr></table></figure>
+
+<p>其中 P(w_O | w_I) 使用 softmax 定义：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">P(w_O | w_I) = exp(v&#x27;_wO · v_wI) / Σ_&#123;w=1&#125;^W exp(v&#x27;_w · v_wI)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>v_wI：词 w_I 作为”输入词”时的嵌入向量（输入向量）</li>
+<li>v’_wO：词 w_O 作为”输出词”时的嵌入向量（输出向量）</li>
+</ul>
+<p><strong>问题</strong>：分母需要对整个词汇表 W 求和（通常 |W| &gt; 10^5），计算量太大。</p>
+<h3 id="2-3-负采样（Negative-Sampling）"><a href="#2-3-负采样（Negative-Sampling）" class="headerlink" title="2.3 负采样（Negative Sampling）"></a>2.3 负采样（Negative Sampling）</h3><p>为了缓解 softmax 的计算瓶颈，Mikolov 等人提出了负采样：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">log σ(v&#x27;_wO · v_wI) + Σ_&#123;i=1&#125;^k E_&#123;w_i~P_n(w)&#125; [log σ(-v&#x27;_wi · v_wI)]</span><br></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<ul>
+<li>σ(x) &#x3D; 1 &#x2F; (1 + exp(-x))：sigmoid 函数</li>
+<li>k：负样本数量（通常 k &#x3D; 5-20）</li>
+<li>P_n(w)：负样本分布（通常使用词频的 3&#x2F;4 次幂：P_n(w) ∝ U(w)^{3&#x2F;4}）</li>
+</ul>
+<p><strong>直觉</strong>：正样本（真实上下文词）应该与输入词的内积大（sigmoid 输出接近 1），负样本（随机采样词）的内积应该小（sigmoid 输出接近 0）。这本质上是一个二分类问题，计算量从 O(|W|) 降到了 O(k)。</p>
+<h3 id="2-4-层级-Softmax（Hierarchical-Softmax）"><a href="#2-4-层级-Softmax（Hierarchical-Softmax）" class="headerlink" title="2.4 层级 Softmax（Hierarchical Softmax）"></a>2.4 层级 Softmax（Hierarchical Softmax）</h3><p>另一种加速方案：将所有词汇构造成一棵霍夫曼树（Huffman Tree），叶子节点是词汇，每个非叶子节点是一个二分类器。计算 P(w_O | w_I) 只需沿树路径计算 log_2(|W|) 次二分类。DeepWalk 正是使用层级 Softmax 作为优化目标。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Word2Vec Skip-gram 的核心实现（简化版）</span></span><br><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">SkipGram</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, vocab_size, embed_dim</span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.in_embed = nn.Embedding(vocab_size, embed_dim)   <span class="comment"># 输入嵌入</span></span><br><span class="line">        <span class="variable language_">self</span>.out_embed = nn.Embedding(vocab_size, embed_dim)  <span class="comment"># 输出嵌入</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, center_word, context_word, negative_samples</span>):</span><br><span class="line">        <span class="comment"># center_word: 目标词索引</span></span><br><span class="line">        <span class="comment"># context_word: 正样本上下文词索引</span></span><br><span class="line">        <span class="comment"># negative_samples: 负样本词索引</span></span><br><span class="line"></span><br><span class="line">        center_embed = <span class="variable language_">self</span>.in_embed(center_word)       <span class="comment"># (batch, embed_dim)</span></span><br><span class="line">        pos_embed = <span class="variable language_">self</span>.out_embed(context_word)         <span class="comment"># (batch, embed_dim)</span></span><br><span class="line">        neg_embed = <span class="variable language_">self</span>.out_embed(negative_samples)     <span class="comment"># (batch, num_neg, embed_dim)</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 正样本得分</span></span><br><span class="line">        pos_score = torch.<span class="built_in">sum</span>(center_embed * pos_embed, dim=<span class="number">1</span>)  <span class="comment"># (batch,)</span></span><br><span class="line">        pos_loss = -torch.log(torch.sigmoid(pos_score) + <span class="number">1e-10</span>).mean()</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 负样本得分</span></span><br><span class="line">        neg_score = torch.bmm(neg_embed, center_embed.unsqueeze(<span class="number">2</span>)).squeeze(<span class="number">2</span>)  <span class="comment"># (batch, num_neg)</span></span><br><span class="line">        neg_loss = -torch.log(torch.sigmoid(-neg_score) + <span class="number">1e-10</span>).<span class="built_in">sum</span>(dim=<span class="number">1</span>).mean()</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> pos_loss + neg_loss</span><br></pre></td></tr></table></figure>
+
+<h2 id="三、DeepWalk：图上的-Skip-gram"><a href="#三、DeepWalk：图上的-Skip-gram" class="headerlink" title="三、DeepWalk：图上的 Skip-gram"></a>三、DeepWalk：图上的 Skip-gram</h2><h3 id="3-1-核心思想"><a href="#3-1-核心思想" class="headerlink" title="3.1 核心思想"></a>3.1 核心思想</h3><p>DeepWalk（Perozzi et al., KDD 2014）是第一个将 Word2Vec 思想应用于图嵌入的方法。它的核心洞察是：</p>
+<blockquote>
+<p><strong>图中节点的出现模式与自然语言中的词的出现模式高度相似。</strong></p>
+</blockquote>
+<p>具体来说：</p>
+<ul>
+<li>自然语言中，词按序列排列，Skip-gram 用中心词预测上下文词</li>
+<li>图中没有天然的顺序，但如果我们通过<strong>随机游走</strong>生成节点序列，这些序列中节点的出现模式确实遵循幂律分布 —— 这与自然语言中词频的幂律分布（齐夫定律，Zipf’s Law）类似</li>
+</ul>
+<h3 id="3-2-算法流程"><a href="#3-2-算法流程" class="headerlink" title="3.2 算法流程"></a>3.2 算法流程</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">DeepWalk 算法：</span><br><span class="line">1. 输入：图 G = (V, E)，嵌入维度 d，每节点游走次数 γ，游走长度 t，窗口大小 w</span><br><span class="line">2. 从每个节点 v ∈ V 开始，执行 γ 次随机游走，每次长度为 t</span><br><span class="line">3. 将所有游走序列作为&quot;语料&quot;，每一行为一个随机游走序列</span><br><span class="line">4. 使用 Skip-gram + 层级 Softmax 训练节点嵌入</span><br><span class="line">5. 输出：每个节点 v 的 d 维嵌入向量 z_v</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">random_walk</span>(<span class="params">graph, start_node, walk_length</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    从 start_node 出发，随机游走 walk_length 步</span></span><br><span class="line"><span class="string">    graph: dict，邻接表 &#123;node: [neighbors]&#125;</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    walk = [start_node]</span><br><span class="line">    current = start_node</span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(walk_length - <span class="number">1</span>):</span><br><span class="line">        neighbors = graph.get(current, [])</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> neighbors:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        current = random.choice(neighbors)</span><br><span class="line">        walk.append(current)</span><br><span class="line">    <span class="keyword">return</span> walk</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">generate_walks</span>(<span class="params">graph, num_walks_per_node, walk_length</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;从图中每个节点生成指定数量的随机游走序列&quot;&quot;&quot;</span></span><br><span class="line">    nodes = <span class="built_in">list</span>(graph.keys())</span><br><span class="line">    walks = []</span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(num_walks_per_node):</span><br><span class="line">        random.shuffle(nodes)</span><br><span class="line">        <span class="keyword">for</span> node <span class="keyword">in</span> nodes:</span><br><span class="line">            walks.append(random_walk(graph, node, walk_length))</span><br><span class="line">    <span class="keyword">return</span> walks</span><br><span class="line"></span><br><span class="line"><span class="comment"># 示例</span></span><br><span class="line">graph = &#123;</span><br><span class="line">    <span class="number">0</span>: [<span class="number">1</span>, <span class="number">2</span>],</span><br><span class="line">    <span class="number">1</span>: [<span class="number">0</span>, <span class="number">3</span>],</span><br><span class="line">    <span class="number">2</span>: [<span class="number">0</span>, <span class="number">3</span>, <span class="number">4</span>],</span><br><span class="line">    <span class="number">3</span>: [<span class="number">1</span>, <span class="number">2</span>],</span><br><span class="line">    <span class="number">4</span>: [<span class="number">2</span>],</span><br><span class="line">&#125;</span><br><span class="line">walks = generate_walks(graph, num_walks_per_node=<span class="number">5</span>, walk_length=<span class="number">10</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;生成 <span class="subst">&#123;<span class="built_in">len</span>(walks)&#125;</span> 个随机游走序列&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;示例序列: <span class="subst">&#123;walks[<span class="number">0</span>]&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-DeepWalk-的优化目标"><a href="#3-3-DeepWalk-的优化目标" class="headerlink" title="3.3 DeepWalk 的优化目标"></a>3.3 DeepWalk 的优化目标</h3><p>给定随机游走序列 (v_1, v_2, …, v_T)，DeepWalk 最大化：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">max Σ_&#123;t=1&#125;^T Σ_&#123;-w≤j≤w, j≠0&#125; log P(v_&#123;t+j&#125; | v_t)</span><br></pre></td></tr></table></figure>
+
+<p>其中 P(v_j | v_i) 使用层级 Softmax 建模：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">P(v_j | v_i) = Π_&#123;l=1&#125;^&#123;L(v_j)-1&#125; σ( [n(v_j, l+1) = ch(n(v_j, l))] · u^T_&#123;n(v_j,l)&#125; v_i )</span><br></pre></td></tr></table></figure>
+
+<p>这里每个节点 v_j 在霍夫曼树中对应一条路径，路径上的每个非叶子节点 n(v_j, l) 有一个可学习的向量 u。<code>[condition]</code> 在 condition 为真时取 +1，为假时取 -1。</p>
+<h3 id="3-4-使用-PyG-中的-Node2Vec"><a href="#3-4-使用-PyG-中的-Node2Vec" class="headerlink" title="3.4 使用 PyG 中的 Node2Vec"></a>3.4 使用 PyG 中的 Node2Vec</h3><p>PyG 提供了 Node2Vec 的统一实现（Node2Vec 包含 DeepWalk 作为 p&#x3D;1, q&#x3D;1 的特例）：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> torch_geometric.nn <span class="keyword">import</span> Node2Vec</span><br><span class="line"></span><br><span class="line"><span class="comment"># 加载数据</span></span><br><span class="line"><span class="keyword">from</span> torch_geometric.datasets <span class="keyword">import</span> Planetoid</span><br><span class="line">dataset = Planetoid(root=<span class="string">&#x27;/tmp/Cora&#x27;</span>, name=<span class="string">&#x27;Cora&#x27;</span>)</span><br><span class="line">data = dataset[<span class="number">0</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># Node2Vec 模型</span></span><br><span class="line">model = Node2Vec(</span><br><span class="line">    edge_index=data.edge_index,</span><br><span class="line">    embedding_dim=<span class="number">128</span>,</span><br><span class="line">    walk_length=<span class="number">20</span>,</span><br><span class="line">    context_size=<span class="number">10</span>,         <span class="comment"># 窗口大小</span></span><br><span class="line">    walks_per_node=<span class="number">10</span>,</span><br><span class="line">    num_negative_samples=<span class="number">5</span>,  <span class="comment"># 负采样数</span></span><br><span class="line">    p=<span class="number">1.0</span>, q=<span class="number">1.0</span>,            <span class="comment"># p=q=1 就是 DeepWalk</span></span><br><span class="line">    sparse=<span class="literal">True</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 训练</span></span><br><span class="line">optimizer = torch.optim.SparseAdam(model.parameters(), lr=<span class="number">0.01</span>)</span><br><span class="line">loader = model.loader(batch_size=<span class="number">128</span>, shuffle=<span class="literal">True</span>, num_workers=<span class="number">4</span>)</span><br><span class="line"></span><br><span class="line">model.train()</span><br><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">100</span>):</span><br><span class="line">    total_loss = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> pos_rw, neg_rw <span class="keyword">in</span> loader:</span><br><span class="line">        optimizer.zero_grad()</span><br><span class="line">        loss = model.loss(pos_rw, neg_rw)</span><br><span class="line">        loss.backward()</span><br><span class="line">        optimizer.step()</span><br><span class="line">        total_loss += loss.item()</span><br><span class="line">    <span class="keyword">if</span> epoch % <span class="number">20</span> == <span class="number">0</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;Epoch <span class="subst">&#123;epoch&#125;</span>, Loss: <span class="subst">&#123;total_loss:<span class="number">.4</span>f&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取嵌入</span></span><br><span class="line">embeddings = model().detach()   <span class="comment"># shape: (num_nodes, embedding_dim=128)</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="四、Node2Vec：有偏随机游走"><a href="#四、Node2Vec：有偏随机游走" class="headerlink" title="四、Node2Vec：有偏随机游走"></a>四、Node2Vec：有偏随机游走</h2><h3 id="4-1-从-DeepWalk-到-Node2Vec"><a href="#4-1-从-DeepWalk-到-Node2Vec" class="headerlink" title="4.1 从 DeepWalk 到 Node2Vec"></a>4.1 从 DeepWalk 到 Node2Vec</h3><p>DeepWalk 使用<strong>无偏</strong>随机游走（每一步等概率选择邻居）。Node2Vec（Grover &amp; Leskovec, KDD 2016）引入了<strong>有偏</strong>随机游走，通过两个超参数 p 和 q 控制游走策略：</p>
+<ul>
+<li><strong>p（Return parameter）</strong>：控制回退的概率。较小的 p 鼓励游走在局部区域来回探索。</li>
+<li><strong>q（In-out parameter）</strong>：控制向外的概率。较小的 q 鼓励游走远离起始节点（DFS-like），较大的 q 鼓励游走留在局部邻域（BFS-like）。</li>
+</ul>
+<h3 id="4-2-二阶随机游走"><a href="#4-2-二阶随机游走" class="headerlink" title="4.2 二阶随机游走"></a>4.2 二阶随机游走</h3><p>设游走刚从节点 t 到达节点 v，现在要从 v 选择下一步走向节点 x。转移概率为：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">π_vx = α_pq(t, x) · w_vx</span><br><span class="line"></span><br><span class="line">其中非归一化转移权重：</span><br><span class="line">α_pq(t, x) = &#123;</span><br><span class="line">    1/p   if d_tx = 0    (x = t，即回退)</span><br><span class="line">    1     if d_tx = 1    (x 是 t 的邻居)</span><br><span class="line">    1/q   if d_tx = 2    (x 不是 t 的邻居)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中 d_tx 是节点 t 到 x 的最短路径距离。</p>
+<p><strong>直观理解：</strong></p>
+<ul>
+<li>p &lt; 1：游走倾向于回退，产生”来回探索”的微观模式 → BFS-like，捕捉局部结构（同质性）</li>
+<li>q &lt; 1：游走倾向于远离起点 → DFS-like，捕捉全局结构（结构等效性）</li>
+<li>q &gt; 1：游走倾向于留在局部 → BFS-like</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">node2vec_walk</span>(<span class="params">graph, start_node, walk_length, p, q</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    基于 Node2Vec 的二阶随机游走</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    walk = [start_node]</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(walk) == <span class="number">1</span>:</span><br><span class="line">        <span class="comment"># 第一步：无偏随机游走（没有 t 参考）</span></span><br><span class="line">        current = start_node</span><br><span class="line">        next_node = random.choice(graph[current])</span><br><span class="line">        walk.append(next_node)</span><br><span class="line">        current = next_node</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>, walk_length):</span><br><span class="line">        prev = walk[-<span class="number">2</span>]   <span class="comment"># t</span></span><br><span class="line">        curr = walk[-<span class="number">1</span>]   <span class="comment"># v</span></span><br><span class="line"></span><br><span class="line">        neighbors = graph[curr]</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> neighbors:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 计算每个邻居的非归一化转移概率</span></span><br><span class="line">        probs = []</span><br><span class="line">        <span class="keyword">for</span> neighbor <span class="keyword">in</span> neighbors:</span><br><span class="line">            <span class="keyword">if</span> neighbor == prev:           <span class="comment"># d_tx = 0：回退</span></span><br><span class="line">                probs.append(<span class="number">1.0</span> / p)</span><br><span class="line">            <span class="keyword">elif</span> prev <span class="keyword">in</span> graph.get(neighbor, []):  <span class="comment"># d_tx = 1：邻居的邻居</span></span><br><span class="line">                probs.append(<span class="number">1.0</span>)</span><br><span class="line">            <span class="keyword">else</span>:                          <span class="comment"># d_tx = 2：远离</span></span><br><span class="line">                probs.append(<span class="number">1.0</span> / q)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 归一化</span></span><br><span class="line">        probs = np.array(probs)</span><br><span class="line">        probs /= probs.<span class="built_in">sum</span>()</span><br><span class="line"></span><br><span class="line">        current = np.random.choice(neighbors, p=probs)</span><br><span class="line">        walk.append(current)</span><br><span class="line">        current = walk[-<span class="number">1</span>] <span class="keyword">if</span> <span class="built_in">len</span>(walk) &gt; <span class="number">1</span> <span class="keyword">else</span> current</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> walk</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-BFS-vs-DFS-的特征捕捉"><a href="#4-3-BFS-vs-DFS-的特征捕捉" class="headerlink" title="4.3 BFS vs DFS 的特征捕捉"></a>4.3 BFS vs DFS 的特征捕捉</h3><table>
+<thead>
+<tr>
+<th>游走模式</th>
+<th>超参数</th>
+<th>捕捉的特征</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>BFS-like</td>
+<td>p &lt; 1, q &gt; 1</td>
+<td><strong>同质性（Homophily）</strong>：结构相邻的节点嵌入相似</td>
+<td>社交网络中朋友推荐</td>
+</tr>
+<tr>
+<td>DFS-like</td>
+<td>q &lt; 1</td>
+<td><strong>结构等效性（Structural Equivalence）</strong>：有相似图角色的节点嵌入相似，即使它们距离很远</td>
+<td>网络中”桥节点”的检测</td>
+</tr>
+</tbody></table>
+<p><strong>示例</strong>：在社交网络中，两个不同城市的”意见领袖”可能结构等效（都有很多追随者、都是社区桥梁），但它们的图距离很远。Node2Vec 的 DFS 模式能捕捉这种结构等效性。</p>
+<h2 id="五、LINE：大规模网络嵌入"><a href="#五、LINE：大规模网络嵌入" class="headerlink" title="五、LINE：大规模网络嵌入"></a>五、LINE：大规模网络嵌入</h2><h3 id="5-1-一阶邻近度（First-order-Proximity）"><a href="#5-1-一阶邻近度（First-order-Proximity）" class="headerlink" title="5.1 一阶邻近度（First-order Proximity）"></a>5.1 一阶邻近度（First-order Proximity）</h3><p>LINE（Tang et al., WWW 2015）定义了一阶邻近度和二阶邻近度。一阶邻近度即两个节点之间的边权重：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">P_1(v_i, v_j) = 1 / (1 + exp(-u_i^T u_j))    # sigmoid 概率</span><br><span class="line">P̂_1(v_i, v_j) = w_ij / Σ_&#123;(a,b)∈E&#125; w_ab        # 经验概率（归一化边权重）</span><br></pre></td></tr></table></figure>
+
+<p>一阶邻近度的优化目标（最小化 KL 散度）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">O_1 = - Σ_&#123;(i,j)∈E&#125; w_ij log P_1(v_i, v_j)</span><br></pre></td></tr></table></figure>
+
+<p>一阶邻近度的局限性：它只能捕捉直接相连的节点间的相似性，无法捕捉”有共同邻居但不相连”的节点间的相似性。</p>
+<h3 id="5-2-二阶邻近度（Second-order-Proximity）"><a href="#5-2-二阶邻近度（Second-order-Proximity）" class="headerlink" title="5.2 二阶邻近度（Second-order Proximity）"></a>5.2 二阶邻近度（Second-order Proximity）</h3><p>二阶邻近度通过节点的共享邻居来衡量相似性：如果两个节点有相似的邻居分布，那么它们应该是相似的。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">P_2(v_j | v_i) = exp(u&#x27;_j^T u_i) / Σ_&#123;k=1&#125;^&#123;|V|&#125; exp(u&#x27;_k^T u_i)</span><br><span class="line">P̂_2(v_j | v_i) = w_ij / d_i        # 经验概率</span><br></pre></td></tr></table></figure>
+
+<p>二阶邻近度的优化目标（最小化 KL 散度）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">O_2 = - Σ_&#123;(i,j)∈E&#125; w_ij log P_2(v_j | v_i)</span><br></pre></td></tr></table></figure>
+
+<p>二阶邻近度使用<strong>负采样</strong>加速：与 Word2Vec 的负采样类似，每条边采样 k 个负样本。</p>
+<h3 id="5-3-LINE-与-DeepWalk-Node2Vec-的关系"><a href="#5-3-LINE-与-DeepWalk-Node2Vec-的关系" class="headerlink" title="5.3 LINE 与 DeepWalk&#x2F;Node2Vec 的关系"></a>5.3 LINE 与 DeepWalk&#x2F;Node2Vec 的关系</h3><ul>
+<li>LINE 明确地定义和优化了一阶和二阶邻近度，数学上更清晰</li>
+<li>DeepWalk&#x2F;Node2Vec 通过随机游走隐式地优化了高阶邻近度（游走长度 T 内的对称）</li>
+<li>实验表明 DeepWalk 等价于对矩阵 M &#x3D; log(A^2 + A^3 + … + A^T) 的矩阵分解</li>
+<li>LINE 的训练速度更快（不需要生成游走序列），但 DeepWalk&#x2F;Node2Vec 通常质量更好</li>
+</ul>
+<h2 id="六、其他经典图嵌入方法"><a href="#六、其他经典图嵌入方法" class="headerlink" title="六、其他经典图嵌入方法"></a>六、其他经典图嵌入方法</h2><h3 id="6-1-SDNE（Structural-Deep-Network-Embedding）"><a href="#6-1-SDNE（Structural-Deep-Network-Embedding）" class="headerlink" title="6.1 SDNE（Structural Deep Network Embedding）"></a>6.1 SDNE（Structural Deep Network Embedding）</h3><p>SDNE（Wang et al., KDD 2016）使用深度自编码器进行图嵌入。它结合了一阶邻近度（Laplacian Eigenmaps 监督项）和二阶邻近度（自编码器重建损失）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">L = L_2nd + α L_1st + ν L_reg</span><br><span class="line"></span><br><span class="line">L_2nd = Σ_i ||(x̂_i - x_i) ⊙ b_i||^2    # 二阶：邻接向量重建</span><br><span class="line">L_1st = Σ_&#123;(i,j)∈E&#125; s_ij ||y_i - y_j||^2  # 一阶：相似节点嵌入相近</span><br></pre></td></tr></table></figure>
+
+<p>其中 x_i 是节点 i 的邻接向量，y_i 是自编码器的隐层表示。</p>
+<h3 id="6-2-TransE：知识图谱嵌入"><a href="#6-2-TransE：知识图谱嵌入" class="headerlink" title="6.2 TransE：知识图谱嵌入"></a>6.2 TransE：知识图谱嵌入</h3><p>TransE（Bordes et al., NeurIPS 2013）是知识图谱嵌入的代表方法，核心假设：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h + r ≈ t</span><br></pre></td></tr></table></figure>
+
+<p>即头实体向量 h 加上关系向量 r 应接近尾实体向量 t。</p>
+<p><strong>评分函数：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">f(h, r, t) = -||h + r - t||_&#123;L1/L2&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>损失函数（margin-based ranking loss）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">L = Σ_&#123;(h,r,t)∈S&#125; Σ_&#123;(h&#x27;,r,t&#x27;)∈S&#x27;&#125; [γ + f(h,r,t) - f(h&#x27;,r,t&#x27;)]_+</span><br></pre></td></tr></table></figure>
+
+<p>其中 S’ 是负样本（替换头实体或尾实体），γ 是 margin。TransE 简单但有效，是 KG 嵌入的奠基性工作。后续的 TransH、TransR、RotatE 等模型都是对 TransE 的扩展。</p>
+<h3 id="6-3-Metapath2Vec：异构图嵌入"><a href="#6-3-Metapath2Vec：异构图嵌入" class="headerlink" title="6.3 Metapath2Vec：异构图嵌入"></a>6.3 Metapath2Vec：异构图嵌入</h3><p>Metapath2Vec（Dong et al., KDD 2017）处理异构图（有多种类型节点和边的图）。核心创新是在随机游走中使用<strong>元路径（metapath）</strong>约束游走方向。</p>
+<p>例如，学术网络中的元路径”作者-论文-会议”（APA）规定了游走必须按”作者→论文→会议→论文→…”的模式进行，确保生成的序列包含有意义的语义结构。</p>
+<h2 id="七、从表示学习到-GNN-的演进"><a href="#七、从表示学习到-GNN-的演进" class="headerlink" title="七、从表示学习到 GNN 的演进"></a>七、从表示学习到 GNN 的演进</h2><h3 id="7-1-传统图嵌入的局限"><a href="#7-1-传统图嵌入的局限" class="headerlink" title="7.1 传统图嵌入的局限"></a>7.1 传统图嵌入的局限</h3><table>
+<thead>
+<tr>
+<th>局限</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>直推式（Transductive）</strong></td>
+<td>必须看到所有节点才能训练，无法泛化到新节点</td>
+</tr>
+<tr>
+<td><strong>无节点特征</strong></td>
+<td>仅利用图结构，不能利用节点本身的属性信息</td>
+</tr>
+<tr>
+<td><strong>无端到端训练</strong></td>
+<td>嵌入与下游任务分离（先训嵌入，再接分类器），无法端到端优化</td>
+</tr>
+<tr>
+<td><strong>参数量大</strong></td>
+<td>每个节点有独立的嵌入向量，参数量 O(</td>
+</tr>
+<tr>
+<td><strong>无归纳能力</strong></td>
+<td>新节点加入时需重新训练</td>
+</tr>
+</tbody></table>
+<h3 id="7-2-GNN-如何解决这些问题"><a href="#7-2-GNN-如何解决这些问题" class="headerlink" title="7.2 GNN 如何解决这些问题"></a>7.2 GNN 如何解决这些问题</h3><p>GNN 通过消息传递机制实现<strong>归纳式（Inductive）</strong>节点表示：</p>
+<ul>
+<li>GNN 学习的是<strong>聚合函数</strong>而非节点特定的嵌入</li>
+<li>聚合函数的参数在整个图中共享，参数量 O(d^2) 而非 O(|V|·d)</li>
+<li>节点特征（如文本、属性）作为初始输入，与图结构共同驱动表示学习</li>
+<li>新节点加入时，只需将其特征和图结构输入训练好的 GNN 即可获得嵌入（无需重新训练）</li>
+</ul>
+<p>这也就是为什么 GCN、GAT、GraphSAGE 等模型在现代图机器学习中远超 DeepWalk&#x2F;Node2Vec 等传统嵌入方法的原因。</p>
+<hr>
+<h2 id="八、PyG-完整实现：Cora-上的-Node2Vec-分类"><a href="#八、PyG-完整实现：Cora-上的-Node2Vec-分类" class="headerlink" title="八、PyG 完整实现：Cora 上的 Node2Vec + 分类"></a>八、PyG 完整实现：Cora 上的 Node2Vec + 分类</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"><span class="keyword">from</span> torch_geometric.nn <span class="keyword">import</span> Node2Vec</span><br><span class="line"><span class="keyword">from</span> torch_geometric.datasets <span class="keyword">import</span> Planetoid</span><br><span class="line"><span class="keyword">from</span> sklearn.linear_model <span class="keyword">import</span> LogisticRegression</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> accuracy_score</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. 加载数据</span></span><br><span class="line">dataset = Planetoid(root=<span class="string">&#x27;/tmp/Cora&#x27;</span>, name=<span class="string">&#x27;Cora&#x27;</span>)</span><br><span class="line">data = dataset[<span class="number">0</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 训练 Node2Vec</span></span><br><span class="line">device = <span class="string">&#x27;cuda&#x27;</span> <span class="keyword">if</span> torch.cuda.is_available() <span class="keyword">else</span> <span class="string">&#x27;cpu&#x27;</span></span><br><span class="line">model = Node2Vec(</span><br><span class="line">    edge_index=data.edge_index,</span><br><span class="line">    embedding_dim=<span class="number">128</span>,</span><br><span class="line">    walk_length=<span class="number">20</span>,</span><br><span class="line">    context_size=<span class="number">10</span>,</span><br><span class="line">    walks_per_node=<span class="number">10</span>,</span><br><span class="line">    num_negative_samples=<span class="number">5</span>,</span><br><span class="line">    p=<span class="number">1.0</span>, q=<span class="number">1.0</span>,   <span class="comment"># DeepWalk 参数</span></span><br><span class="line">    sparse=<span class="literal">True</span></span><br><span class="line">).to(device)</span><br><span class="line"></span><br><span class="line">optimizer = torch.optim.SparseAdam(model.parameters(), lr=<span class="number">0.01</span>)</span><br><span class="line">loader = model.loader(batch_size=<span class="number">128</span>, shuffle=<span class="literal">True</span>, num_workers=<span class="number">4</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, <span class="number">101</span>):</span><br><span class="line">    model.train()</span><br><span class="line">    total_loss = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> pos_rw, neg_rw <span class="keyword">in</span> loader:</span><br><span class="line">        optimizer.zero_grad()</span><br><span class="line">        loss = model.loss(pos_rw.to(device), neg_rw.to(device))</span><br><span class="line">        loss.backward()</span><br><span class="line">        optimizer.step()</span><br><span class="line">        total_loss += loss.item()</span><br><span class="line">    <span class="keyword">if</span> epoch % <span class="number">20</span> == <span class="number">0</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&#x27;Epoch: <span class="subst">&#123;epoch:03d&#125;</span>, Loss: <span class="subst">&#123;total_loss:<span class="number">.4</span>f&#125;</span>&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 获取嵌入并下游分类</span></span><br><span class="line">model.<span class="built_in">eval</span>()</span><br><span class="line"><span class="keyword">with</span> torch.no_grad():</span><br><span class="line">    embeddings = model().cpu().numpy()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 用 Logistic Regression 评估嵌入质量</span></span><br><span class="line">X_train = embeddings[data.train_mask]</span><br><span class="line">y_train = data.y[data.train_mask].numpy()</span><br><span class="line">X_test = embeddings[data.test_mask]</span><br><span class="line">y_test = data.y[data.test_mask].numpy()</span><br><span class="line"></span><br><span class="line">clf = LogisticRegression(max_iter=<span class="number">1000</span>, multi_class=<span class="string">&#x27;auto&#x27;</span>)</span><br><span class="line">clf.fit(X_train, y_train)</span><br><span class="line">y_pred = clf.predict(X_test)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&#x27;Node2Vec + LogisticRegression Test Accuracy: <span class="subst">&#123;accuracy_score(y_test, y_pred):<span class="number">.4</span>f&#125;</span>&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="面试-自查问题"><a href="#面试-自查问题" class="headerlink" title="面试&#x2F;自查问题"></a>面试&#x2F;自查问题</h2><p><strong>Q1：DeepWalk 的图嵌入方法本质是什么？</strong></p>
+<p>DeepWalk 等价于对某个矩阵 M 的隐式矩阵分解。具体来说，DeepWalk 近似的矩阵是：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">M = log( vol(G) · (1/T) Σ_&#123;t=1&#125;^T (D^&#123;-1&#125; A)^t · D^&#123;-1&#125; )</span><br></pre></td></tr></table></figure>
+<p>其中 (D^{-1} A)^t 是 t 步随机游走的转移矩阵。这表明 DeepWalk 本质上是在分解一个包含了图的 T 步内所有随机游走概率的矩阵。</p>
+<p><strong>Q2：Node2Vec 的 p 和 q 参数如何影响嵌入？</strong></p>
+<ul>
+<li>p &lt; 1：偏好”回退”到来源节点，导致游走在局部来回 → 嵌入更注重局部社区结构</li>
+<li>p &gt; 1：避免回退，鼓励探索新区域 → 更少回头</li>
+<li>q &lt; 1：偏好深入探索（DFS-like），远离起始点 → 捕捉结构等效性</li>
+<li>q &gt; 1：偏好局部探索（BFS-like）→ 捕捉同质性</li>
+</ul>
+<p>当 p &#x3D; q &#x3D; 1 时，Node2Vec 退化为 DeepWalk。</p>
+<h2 id="九、图嵌入方法的理论联系"><a href="#九、图嵌入方法的理论联系" class="headerlink" title="九、图嵌入方法的理论联系"></a>九、图嵌入方法的理论联系</h2><h3 id="9-1-矩阵分解视角"><a href="#9-1-矩阵分解视角" class="headerlink" title="9.1 矩阵分解视角"></a>9.1 矩阵分解视角</h3><p>许多图嵌入方法可以统一为矩阵分解框架。设我们要分解的矩阵为 M，嵌入 U 满足 M ≈ U·U^T 或 M ≈ U·V^T：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>分解的矩阵 M</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Laplacian Eigenmaps</td>
+<td>L (拉普拉斯矩阵)</td>
+<td>使用最小特征向量</td>
+</tr>
+<tr>
+<td>GF (Graph Factorization)</td>
+<td>A (邻接矩阵)</td>
+<td>最早的方法</td>
+</tr>
+<tr>
+<td>GraRep</td>
+<td>log(A^k &#x2F; α) - log β</td>
+<td>捕获 k 阶邻近度</td>
+</tr>
+<tr>
+<td>HOPE</td>
+<td>各种相似性矩阵 (Katz, RPR, …)</td>
+<td>通用高阶邻近度</td>
+</tr>
+<tr>
+<td>DeepWalk</td>
+<td>log( (1&#x2F;T) Σ_{t&#x3D;1}^T (D^{-1}A)^t D^{-1} )</td>
+<td>截断随机游走的对数</td>
+</tr>
+<tr>
+<td>Node2Vec</td>
+<td>log( (1&#x2F;T) Σ_{t&#x3D;1}^T P_{p,q}^t D^{-1} )</td>
+<td>有偏随机游走的对数</td>
+</tr>
+</tbody></table>
+<h3 id="9-2-NetMF-对-DeepWalk-的统一"><a href="#9-2-NetMF-对-DeepWalk-的统一" class="headerlink" title="9.2 NetMF 对 DeepWalk 的统一"></a>9.2 NetMF 对 DeepWalk 的统一</h3><p>Qiu et al. (WSDM 2018) 在 NetMF 中严格证明了 DeepWalk 隐式分解的矩阵是：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">M = log( max( (vol(G) / bT) · (Σ_&#123;r=1&#125;^T P^r) D^&#123;-1&#125;, 1 ) )</span><br></pre></td></tr></table></figure>
+
+<p>其中 P &#x3D; D^{-1}A 是随机游走转移矩阵，b 是负采样数，T 是游走窗口大小。这一发现使得我们可以通过 SVD 直接计算 DeepWalk 的嵌入，而不需要消耗时间的随机游走 + Skip-gram 训练。</p>
+<h3 id="9-3-嵌入评估协议"><a href="#9-3-嵌入评估协议" class="headerlink" title="9.3 嵌入评估协议"></a>9.3 嵌入评估协议</h3><p>图嵌入的质量通常通过下游任务评估：</p>
+<p><strong>节点分类（Node Classification）</strong>：</p>
+<ul>
+<li>使用嵌入作为 logistic regression &#x2F; SVM 的输入特征</li>
+<li>在 Cora&#x2F;CiteSeer&#x2F;PubMed 上报告 Micro-F1 或 Accuracy</li>
+<li>使用标准的 train&#x2F;val&#x2F;test 划分（每类 20 个标记样本）</li>
+</ul>
+<p><strong>链接预测（Link Prediction）</strong>：</p>
+<ul>
+<li>随机遮蔽一定比例的边作为测试集</li>
+<li>使用嵌入计算节点对的相似性（内积、余弦相似度）</li>
+<li>报告 AUC-ROC 或 Hits@K</li>
+</ul>
+<p><strong>聚类（Clustering）</strong>：</p>
+<ul>
+<li>对嵌入执行 K-means</li>
+<li>报告 NMI（Normalized Mutual Information）</li>
+</ul>
+<h2 id="十、从传统图嵌入到-GCN：平滑过渡"><a href="#十、从传统图嵌入到-GCN：平滑过渡" class="headerlink" title="十、从传统图嵌入到 GCN：平滑过渡"></a>十、从传统图嵌入到 GCN：平滑过渡</h2><h3 id="10-1-消息传递统一的视角"><a href="#10-1-消息传递统一的视角" class="headerlink" title="10.1 消息传递统一的视角"></a>10.1 消息传递统一的视角</h3><p>传统图嵌入和 GNN 都可以用”消息传递”的框架来理解：</p>
+<ul>
+<li><strong>DeepWalk</strong>：消息 &#x3D; 随机游走路径中出现的 co-occurrence 统计；聚合 &#x3D; Skip-gram 的梯度更新</li>
+<li><strong>GCN</strong>：消息 &#x3D; 邻居的特征向量 × 可学习权重；聚合 &#x3D; 归一化求和</li>
+</ul>
+<p>关键区别：GCN 的消息和聚合是<strong>端到端可微的</strong>，而传统嵌入方法不是。</p>
+<h3 id="10-2-为什么-GNN-几乎总是优于传统嵌入"><a href="#10-2-为什么-GNN-几乎总是优于传统嵌入" class="headerlink" title="10.2 为什么 GNN 几乎总是优于传统嵌入"></a>10.2 为什么 GNN 几乎总是优于传统嵌入</h3><p>在 Cora 数据集上的典型表现对比：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>测试准确率</th>
+<th>参数量</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DeepWalk (128d)</td>
+<td>~67%</td>
+<td>O(</td>
+</tr>
+<tr>
+<td>Node2Vec (128d)</td>
+<td>~71%</td>
+<td>O(</td>
+</tr>
+<tr>
+<td>GCN (2 layers, 16d)</td>
+<td>~81%</td>
+<td>O(d·H) + O(H·C) &#x3D; 1.4k·16 &#x3D; 22k</td>
+</tr>
+<tr>
+<td>GAT (2 layers, 8 heads)</td>
+<td>~83%</td>
+<td>~100k</td>
+</tr>
+</tbody></table>
+<p>GCN 在参数量减少 100 倍的情况下仍然大幅优于 DeepWalk&#x2F;Node2Vec。差距来自：GCN 利用了节点内容特征（Cora 中每个节点有 1,433 维 TF-IDF 文本特征），而传统嵌入方法忽略了这些信息。</p>
+<p>优势：训练简单，不需要节点特征，小图上非常高效，可解释性强（嵌入&#x3D;矩阵分解）。</p>
+<p>劣势：</p>
+<ul>
+<li>直推式（无法泛化到新节点）</li>
+<li>无法利用节点特征（属性信息被忽略）</li>
+<li>不能端到端训练（嵌入和下游任务分离）</li>
+<li>参数量大（O(|V|d)），大规模图不可行</li>
+<li>新节点加入需重训练或近似（如通过邻居嵌入的聚合）</li>
+</ul>
+<p>在现代实践中，对于有节点特征的图（如引文网络的文本特征、分子图的原子特征），GNN 几乎总是优于传统嵌入方法。</p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2020/08/25/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E8%A1%A8%E7%A4%BA%E5%AD%A6%E4%B9%A0/">http://tufusi.com/2020/08/25/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E8%A1%A8%E7%A4%BA%E5%AD%A6%E4%B9%A0/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2020/09/01/%E3%80%90%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%AD%BB%E7%A3%95%E7%B3%BB%E5%88%97%E2%85%A1%E3%80%91%E6%BD%9C%E5%9C%A8%E8%AF%AD%E4%B9%89%E5%88%86%E6%9E%90%E5%8F%8A%E6%A6%82%E7%8E%87%E6%BD%9C%E5%9C%A8%E8%AF%AD%E4%B9%89%E5%88%86%E6%9E%90/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【统计学习方法死磕系列Ⅱ】潜在语义分析及概率潜在语义分析</span></div></a></div><div class="next-post pull_right"><a href="/2020/08/20/%E3%80%90GNN%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E3%80%91%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【GNN原理解析】神经网络基础</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

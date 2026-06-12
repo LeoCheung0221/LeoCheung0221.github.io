@@ -1,0 +1,463 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【C/C++理论实战技术】编译原理与语法详解 | ONE·PIECE</title><meta name="description" content="【C/C++理论实战技术】编译原理与语法详解"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【C/C++理论实战技术】编译原理与语法详解"><meta name="twitter:description" content="【C/C++理论实战技术】编译原理与语法详解"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【C/C++理论实战技术】编译原理与语法详解"><meta property="og:url" content="http://tufusi.com/2022/04/25/%E9%AB%98%E7%BA%A7Android-%E3%80%90C%20C++%E7%90%86%E8%AE%BA%E5%AE%9E%E6%88%98%E6%8A%80%E6%9C%AF%E3%80%91%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86%E4%B8%8E%E8%AF%AD%E6%B3%95%E8%AF%A6%E8%A7%A3/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【C/C++理论实战技术】编译原理与语法详解"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2022/04/25/%E9%AB%98%E7%BA%A7Android-%E3%80%90C%20C++%E7%90%86%E8%AE%BA%E5%AE%9E%E6%88%98%E6%8A%80%E6%9C%AF%E3%80%91%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86%E4%B8%8E%E8%AF%AD%E6%B3%95%E8%AF%A6%E8%A7%A3/"><link rel="prev" title="NDK实现增量更新" href="http://tufusi.com/2022/05/01/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E5%AE%9E%E6%88%98%E5%BC%80%E5%8F%91%E7%B3%BB%E5%88%97%E3%80%91NDK%E5%AE%9E%E7%8E%B0%E5%A2%9E%E9%87%8F%E6%9B%B4%E6%96%B0/"><link rel="next" title="【C/C++理论实战技术】Linux编程实战" href="http://tufusi.com/2022/04/20/%E9%AB%98%E7%BA%A7Android-%E3%80%90C%20C++%E7%90%86%E8%AE%BA%E5%AE%9E%E6%88%98%E6%8A%80%E6%9C%AF%E3%80%91Linux%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B%E5%85%A8%E6%99%AF"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、编译流程全景</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-%E9%A2%84%E5%A4%84%E7%90%86%EF%BC%88Preprocessing%EF%BC%89"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">1.1 预处理（Preprocessing）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-2-%E7%BC%96%E8%AF%91%EF%BC%88Compilation%EF%BC%89%E2%80%94%E2%80%94%E6%A0%B8%E5%BF%83%E9%98%B6%E6%AE%B5"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">1.2 编译（Compilation）——核心阶段</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-3-%E6%B1%87%E7%BC%96%EF%BC%88Assembly%EF%BC%89"><span class="toc_mobile_items-number">1.3.</span> <span class="toc_mobile_items-text">1.3 汇编（Assembly）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-4-%E9%93%BE%E6%8E%A5%EF%BC%88Linking%EF%BC%89"><span class="toc_mobile_items-number">1.4.</span> <span class="toc_mobile_items-text">1.4 链接（Linking）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-5-%E9%9D%99%E6%80%81%E5%BA%93-vs-%E5%8A%A8%E6%80%81%E5%BA%93"><span class="toc_mobile_items-number">1.5.</span> <span class="toc_mobile_items-text">1.5 静态库 vs 动态库</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-6-%E9%93%BE%E6%8E%A5%E4%B8%8E-Android-NDK"><span class="toc_mobile_items-number">1.6.</span> <span class="toc_mobile_items-text">1.6 链接与 Android NDK</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81Makefile-%E8%AF%AD%E6%B3%95%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、Makefile 语法详解</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-Makefile-%E7%9A%84%E5%9F%BA%E6%9C%AC%E8%A7%84%E5%88%99"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 Makefile 的基本规则</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E8%87%AA%E5%8A%A8%E5%8F%98%E9%87%8F"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 自动变量</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-%E4%BC%AA%E7%9B%AE%E6%A0%87%EF%BC%88Phony-Target%EF%BC%89"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 伪目标（Phony Target）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-4-%E6%9D%A1%E4%BB%B6%E5%88%A4%E6%96%AD"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">2.4 条件判断</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-5-%E5%B8%B8%E7%94%A8%E5%87%BD%E6%95%B0"><span class="toc_mobile_items-number">2.5.</span> <span class="toc_mobile_items-text">2.5 常用函数</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-6-%E5%AE%8C%E6%95%B4%E7%9A%84-Android-NDK-Makefile-%E7%A4%BA%E4%BE%8B"><span class="toc_mobile_items-number">2.6.</span> <span class="toc_mobile_items-text">2.6 完整的 Android NDK Makefile 示例</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81CMake-%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、CMake 详解</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-CMakeLists-txt-%E5%9F%BA%E6%9C%AC%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 CMakeLists.txt 基本结构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E5%B8%B8%E7%94%A8-CMake-%E5%91%BD%E4%BB%A4"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 常用 CMake 命令</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-CMake-vs-Android-mk-vs-Bazel"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 CMake vs Android.mk vs Bazel</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81GCC-vs-Clang-LLVM"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、GCC vs Clang&#x2F;LLVM</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E6%9E%B6%E6%9E%84%E5%B7%AE%E5%BC%82"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 架构差异</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-Clang-%E7%9A%84%E4%BC%98%E5%8A%BF"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 Clang 的优势</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-GCC-%E4%BB%8D%E7%84%B6%E5%AD%98%E5%9C%A8%E7%9A%84%E5%9C%BA%E6%99%AF"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 GCC 仍然存在的场景</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%80%83%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">面试常考问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8F%82%E8%80%83"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">参考</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B%E5%85%A8%E6%99%AF"><span class="toc-number">1.</span> <span class="toc-text">一、编译流程全景</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E9%A2%84%E5%A4%84%E7%90%86%EF%BC%88Preprocessing%EF%BC%89"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 预处理（Preprocessing）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E7%BC%96%E8%AF%91%EF%BC%88Compilation%EF%BC%89%E2%80%94%E2%80%94%E6%A0%B8%E5%BF%83%E9%98%B6%E6%AE%B5"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 编译（Compilation）——核心阶段</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E6%B1%87%E7%BC%96%EF%BC%88Assembly%EF%BC%89"><span class="toc-number">1.3.</span> <span class="toc-text">1.3 汇编（Assembly）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E9%93%BE%E6%8E%A5%EF%BC%88Linking%EF%BC%89"><span class="toc-number">1.4.</span> <span class="toc-text">1.4 链接（Linking）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-%E9%9D%99%E6%80%81%E5%BA%93-vs-%E5%8A%A8%E6%80%81%E5%BA%93"><span class="toc-number">1.5.</span> <span class="toc-text">1.5 静态库 vs 动态库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-6-%E9%93%BE%E6%8E%A5%E4%B8%8E-Android-NDK"><span class="toc-number">1.6.</span> <span class="toc-text">1.6 链接与 Android NDK</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Makefile-%E8%AF%AD%E6%B3%95%E8%AF%A6%E8%A7%A3"><span class="toc-number">2.</span> <span class="toc-text">二、Makefile 语法详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Makefile-%E7%9A%84%E5%9F%BA%E6%9C%AC%E8%A7%84%E5%88%99"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 Makefile 的基本规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E8%87%AA%E5%8A%A8%E5%8F%98%E9%87%8F"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 自动变量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E4%BC%AA%E7%9B%AE%E6%A0%87%EF%BC%88Phony-Target%EF%BC%89"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 伪目标（Phony Target）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E6%9D%A1%E4%BB%B6%E5%88%A4%E6%96%AD"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 条件判断</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E5%B8%B8%E7%94%A8%E5%87%BD%E6%95%B0"><span class="toc-number">2.5.</span> <span class="toc-text">2.5 常用函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-%E5%AE%8C%E6%95%B4%E7%9A%84-Android-NDK-Makefile-%E7%A4%BA%E4%BE%8B"><span class="toc-number">2.6.</span> <span class="toc-text">2.6 完整的 Android NDK Makefile 示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81CMake-%E8%AF%A6%E8%A7%A3"><span class="toc-number">3.</span> <span class="toc-text">三、CMake 详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-CMakeLists-txt-%E5%9F%BA%E6%9C%AC%E7%BB%93%E6%9E%84"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 CMakeLists.txt 基本结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%B8%B8%E7%94%A8-CMake-%E5%91%BD%E4%BB%A4"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 常用 CMake 命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-CMake-vs-Android-mk-vs-Bazel"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 CMake vs Android.mk vs Bazel</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81GCC-vs-Clang-LLVM"><span class="toc-number">4.</span> <span class="toc-text">四、GCC vs Clang&#x2F;LLVM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E6%9E%B6%E6%9E%84%E5%B7%AE%E5%BC%82"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 架构差异</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Clang-%E7%9A%84%E4%BC%98%E5%8A%BF"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 Clang 的优势</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-GCC-%E4%BB%8D%E7%84%B6%E5%AD%98%E5%9C%A8%E7%9A%84%E5%9C%BA%E6%99%AF"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 GCC 仍然存在的场景</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%80%83%E9%97%AE%E9%A2%98"><span class="toc-number">5.</span> <span class="toc-text">面试常考问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">6.</span> <span class="toc-text">参考</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【C/C++理论实战技术】编译原理与语法详解</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2022-04-25<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/NDK/">NDK</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">5.6k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 19 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、编译流程全景"><a href="#一、编译流程全景" class="headerlink" title="一、编译流程全景"></a>一、编译流程全景</h2><p>C&#x2F;C++ 从源码到可执行文件，经历四个阶段：预处理（Preprocessing）→ 编译（Compilation）→ 汇编（Assembly）→ 链接（Linking）。理解每个阶段的工作原理，是掌握构建系统、调试编译错误、实现字节码插桩、编写编译器插件的基础。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source.c → [预处理器 cpp] → source.i → [编译器 cc1] → source.s → [汇编器 as] → source.o → [链接器 ld] → a.out</span><br></pre></td></tr></table></figure>
+
+<p>对于 Android NDK，工具链位于 <code>$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/</code>，使用以 <code>aarch64-linux-android21-</code> 为前缀的 clang 作为编译驱动。</p>
+<h3 id="1-1-预处理（Preprocessing）"><a href="#1-1-预处理（Preprocessing）" class="headerlink" title="1.1 预处理（Preprocessing）"></a>1.1 预处理（Preprocessing）</h3><p>预处理器是一个文本替换引擎。它不关心 C 语义——只做<strong>文本级别的宏替换、文件包含、条件编译</strong>。</p>
+<p><strong>#include 的处理机制</strong></p>
+<p><code>#include</code> 与 <code>#include &quot;...&quot;</code> 的区别在于头文件查找路径：</p>
+<ul>
+<li><code>#include &lt;stdio.h&gt;</code>：按 <code>-I</code> 指定的目录和系统 include 路径顺序搜索</li>
+<li><code>#include &quot;myheader.h&quot;</code>：先在当前源文件所在目录搜索，再按 <code>&lt;...&gt;</code> 方式搜索</li>
+</ul>
+<p>编译器通过 <code>-I</code> 参数追加搜索路径：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">gcc -I./include -I/usr/local/include main.c</span><br></pre></td></tr></table></figure>
+
+<p>对于 NDK，sysroot 的 include 路径在 <code>$NDK/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/</code>。</p>
+<p><strong>宏展开的陷阱</strong></p>
+<p>宏是纯文本替换，不涉及类型检查。经典错误：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> SQUARE(x) x * x</span></span><br><span class="line">SQUARE(<span class="number">1</span> + <span class="number">2</span>)  <span class="comment">// 展开为 1 + 2 * 1 + 2 = 1 + 2 + 2 = 5，而非期望的 (1+2)*(1+2)=9</span></span><br></pre></td></tr></table></figure>
+
+<p>修复方法：为宏的每个参数和使用处加括号。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> SQUARE(x) ((x) * (x))</span></span><br></pre></td></tr></table></figure>
+
+<p>宏的两个特殊操作符：</p>
+<ul>
+<li><code>#</code>（stringification）：将宏参数转为字符串字面量。<code>#define STR(x) #x</code> → <code>STR(hello)</code> 展开为 <code>&quot;hello&quot;</code></li>
+<li><code>##</code>（token pasting）：将两个 token 合并为一个。<code>#define CONCAT(a, b) a##b</code> → <code>CONCAT(my, Var)</code> 展开为 <code>myVar</code></li>
+</ul>
+<p><strong>条件编译</strong></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">if</span> defined(__arm__) &amp;&amp; defined(__aarch64__)</span></span><br><span class="line"><span class="comment">// ARM64 NEON 路径</span></span><br><span class="line"><span class="meta">#<span class="keyword">elif</span> defined(__i386__) || defined(__x86_64__)</span></span><br><span class="line"><span class="comment">// x86 SSE 路径</span></span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">error</span> <span class="string">&quot;unsupported architecture&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> DEBUG</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LOG(msg) __android_log_print(ANDROID_LOG_DEBUG, <span class="string">&quot;native&quot;</span>, <span class="string">&quot;%s&quot;</span>, msg)</span></span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LOG(msg) ((void)0)</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+<p><code>#pragma once</code> vs include guards：两者都防止重复包含，<code>#pragma once</code> 由编译器实现，效率更高（不需要读取完整个头文件），但不是 C 标准的一部分——所有主流编译器都支持，严格可移植代码仍用 include guards。</p>
+<h3 id="1-2-编译（Compilation）——核心阶段"><a href="#1-2-编译（Compilation）——核心阶段" class="headerlink" title="1.2 编译（Compilation）——核心阶段"></a>1.2 编译（Compilation）——核心阶段</h3><p>编译阶段将预处理后的 <code>.i</code> 文件转换为汇编代码 <code>.s</code>，内部可细分为前端和后端。</p>
+<p><strong>词法分析（Lexical Analysis）</strong></p>
+<p>词法分析器将字符流分解为 token 序列。每个 token 包含类型和可选的属性值。</p>
+<p>以 <code>int sum = a + 10;</code> 为例，词法分析输出：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Token: KW_INT     &quot;int&quot;</span><br><span class="line">Token: IDENTIFIER &quot;sum&quot;</span><br><span class="line">Token: OPERATOR   &quot;=&quot;</span><br><span class="line">Token: IDENTIFIER &quot;a&quot;</span><br><span class="line">Token: OPERATOR   &quot;+&quot;</span><br><span class="line">Token: INT_LITERAL &quot;10&quot;</span><br><span class="line">Token: SEMICOLON  &quot;;&quot;</span><br></pre></td></tr></table></figure>
+
+<p>词法分析器通常基于有限自动机实现。正则表达式描述 token 模式，然后转换为 NFA（非确定性有限自动机），再通过子集构造法转为 DFA（确定性有限自动机）。DFA 每个输入字符只需一次状态转移，O(n) 的时间内完成扫描。</p>
+<p><code>flex</code>（Lex 的 GNU 实现）是经典的词法分析器生成器：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">%%</span><br><span class="line">[0-9]+          &#123; yylval = atoi(yytext); return INT_LITERAL; &#125;</span><br><span class="line">[a-zA-Z_][a-zA-Z0-9_]*  &#123; return IDENTIFIER; &#125;</span><br><span class="line">&quot;+&quot;             &#123; return PLUS; &#125;</span><br><span class="line">&quot;int&quot;           &#123; return KW_INT; &#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>语法分析（Syntax Analysis）</strong></p>
+<p>语法分析器接收 token 流，按文法产生式构建抽象语法树。C 语言的文法属于上下文无关文法。</p>
+<p>关键概念——推导与归约。自顶向下（Top-Down）从起始符号出发推导出 token 序列；自底向上（Bottom-Up）从 token 序列归约到起始符号。</p>
+<p>LL(k) 分析法是自顶向下的代表。第一个 L 表示从左到右扫描输入（Left-to-right），第二个 L 表示使用最左推导（Leftmost derivation），k 为前瞻符号数。LL(1) 每步只需看一个 token 即可无歧义地选择产生式。LL(1) 文法要求每个非终结符的各候选式的 FIRST 集互不相交。递归下降分析器就是手写的 LL(1) 分析器。GCC 早期使用手写的递归下降，Clang 也使用递归下降。</p>
+<p>LR 分析法是自底向上的代表，能处理比 LL 更广的文法类。L 表示从左到右扫描，R 表示最右推导的逆过程（Rightmost derivation in reverse）。LR 分析器维护一个状态栈和一个符号栈，根据当前状态和输入符号查 ACTION 表决定移进（shift）或归约（reduce），查 GOTO 表决定归约后的状态跳转。</p>
+<p>四种 LR 变体按表达能力排序：LR(1) &gt; LALR(1) &gt; SLR(1) &gt; LR(0)。LALR(1) 是 LR(1) 的实用近似——将具有相同核心（core）的 LR(1) 状态合并，在保持几乎全部 LR(1) 表达能力的同时将状态数减少到与 SLR(1) 相当。YACC&#x2F;Bison 使用 LALR(1)。</p>
+<p>移进-归约冲突（shift-reduce conflict）：当前既可以移进也可以归约，如经典的悬空 else 问题。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (a) <span class="keyword">if</span> (b) f(); <span class="keyword">else</span> g();</span><br><span class="line"><span class="comment">// else 与哪个 if 配对？shift（与外层 if 配对）vs reduce（与内层 if 配对）</span></span><br></pre></td></tr></table></figure>
+
+<p>解决方式：Bison 中通过 <code>%prec</code> 声明优先级与结合性，或采用”最近未匹配的 if”规则（shift 优先）。</p>
+<p><strong>语义分析（Semantic Analysis）</strong></p>
+<p>语义分析检查程序的语义正确性。核心工作包括：</p>
+<p>类型检查是语义分析的核心。编译器维护一个类型系统，对每个表达式节点推断类型并检查操作数类型是否兼容。C 语言的隐式类型转换规则（usual arithmetic conversions）：向更宽的类型提升，整数提升（integer promotion），浮点提升。</p>
+<p>符号表管理：符号表是编译器的心脏，记录每个标识符的名称、类型、作用域、存储类别（static&#x2F;extern&#x2F;auto&#x2F;register）等信息。作用域可以通过”栈式符号表”实现——进入新作用域时 push 新表，离开时 pop。C 语言的块作用域对应一对花括号。处理得当，名称查找从内层向外层逐级搜索，内层声明遮蔽外层同名声明。</p>
+<p><strong>中间代码生成与优化</strong></p>
+<p>现代编译器（LLVM、GCC）在 AST 之后构建与平台无关的中间表示（IR），在 IR 上进行优化，最后将优化后的 IR 翻译为目标平台代码。这种三段式架构的优点：前端只负责语言解析，后端只负责目标代码生成，增加新语言只需新增前端，增加新平台只需新后端。</p>
+<p>LLVM IR 是 SSA（Static Single Assignment）形式——每个变量只被赋值一次。新值通过创建新版本表示：</p>
+<figure class="highlight llvm"><table><tr><td class="code"><pre><span class="line"><span class="comment">; 原始代码: a = a + 1</span></span><br><span class="line"><span class="comment">; SSA形式:</span></span><br><span class="line"><span class="variable">%a.1</span> <span class="operator">=</span> <span class="keyword">add</span> <span class="type">i32</span> <span class="variable">%a.0</span><span class="punctuation">,</span> <span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<p>SSA 使数据流分析变得极其高效——use-def 链直接编码在变量名中，不需要额外的数据流分析就能确定每个值的使用点和定义点。</p>
+<p>关键优化遍（passes）：</p>
+<p>死代码消除（DCE, Dead Code Elimination）：删除结果不产生任何副作用且不被任何后续代码使用的指令。以 SSA 形式表示的 LLVM IR 中，检查一条指令的所有使用（use）是否为空即可判断是否为死代码。</p>
+<p>常量折叠与传播（Constant Folding &amp; Propagation）：编译期计算常量表达式。在 SSA 形式中，如果某个值的定义是常量操作，则将该常量值替换到所有使用点。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> x = <span class="number">5</span> * <span class="number">3600</span>;  <span class="comment">// 编译期计算为 18000</span></span><br></pre></td></tr></table></figure>
+
+<p>循环不变量外提（LICM, Loop Invariant Code Motion）：将循环内计算结果不变的表达式移到循环外部。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">    <span class="type">double</span> d = <span class="built_in">sqrt</span>(<span class="number">2.0</span>);  <span class="comment">// 每次迭代都计算，但结果不变 → 提到循环外</span></span><br><span class="line">    arr[i] *= d;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>内联（Inlining）：将被调用函数的函数体嵌入调用处，消除调用开销（栈帧建立、参数传递、跳转指令），同时为后续优化创造上下文——内联后的代码可以与其他代码一起被优化。但内联增大代码体积，可能降低指令缓存命中率。编译器通过启发式算法决定是否内联：函数体小（如 &lt; 50 条指令）、调用次数少、包含常量参数利于常量传播时倾向于内联。</p>
+<h3 id="1-3-汇编（Assembly）"><a href="#1-3-汇编（Assembly）" class="headerlink" title="1.3 汇编（Assembly）"></a>1.3 汇编（Assembly）</h3><p>汇编器将汇编代码（<code>.s</code>）翻译为目标文件（<code>.o</code>）中的机器指令。每条汇编指令对应一条机器指令（CISC 架构可以一对多）。</p>
+<p>目标文件（ELF 格式）的组织：</p>
+<ul>
+<li><code>.text</code> section：可执行代码</li>
+<li><code>.rodata</code> section：只读数据（字符串字面量等）</li>
+<li><code>.data</code> section：已初始化的全局变量和静态变量</li>
+<li><code>.bss</code> section：未初始化的全局变量（文件占 0 字节，加载时清零）</li>
+<li>符号表 <code>.symtab</code>：函数和全局变量的名称及地址</li>
+<li>重定位表 <code>.rela.text</code> &#x2F; <code>.rela.dyn</code>：链接时需要修正的地址引用</li>
+</ul>
+<h3 id="1-4-链接（Linking）"><a href="#1-4-链接（Linking）" class="headerlink" title="1.4 链接（Linking）"></a>1.4 链接（Linking）</h3><p>链接器将一个或多个目标文件与库合并为最终的可执行文件或共享库。</p>
+<p>链接的两大任务：</p>
+<p><strong>符号解析</strong>：每个目标文件引用外部符号（未定义符号，UND），链接器在为所有输入目标文件找到每个引用符号的定义。如果找不到定义（或找到多个定义），则报错——“undefined reference to” 或 “multiple definition of”。</p>
+<p><strong>重定位</strong>：编译时目标文件的代码段和数据段地址从 0 开始。链接器将所有目标文件的 section 合并到同一个地址空间，为每个 section 分配最终的运行时地址，然后修改代码中所有地址引用。重定位有两种：</p>
+<ul>
+<li>绝对重定位：将绝对地址修正为最终地址。如 <code>R_AARCH64_ABS64</code> 将 64 位地址字段填充为符号的运行时地址。</li>
+<li>相对重定位：将相对偏移修正。如 <code>R_AARCH64_CALL26</code> 修改 B&#x2F;BL 指令的 26 位偏移域——这在动态链接 PLT 中频繁使用。</li>
+</ul>
+<h3 id="1-5-静态库-vs-动态库"><a href="#1-5-静态库-vs-动态库" class="headerlink" title="1.5 静态库 vs 动态库"></a>1.5 静态库 vs 动态库</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>静态库 <code>.a</code></th>
+<th>动态库 <code>.so</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>链接时机</td>
+<td>编译时</td>
+<td>运行时（由 linker 加载）</td>
+</tr>
+<tr>
+<td>可执行文件体积</td>
+<td>较大（库代码嵌入）</td>
+<td>较小（只引用，不嵌入）</td>
+</tr>
+<tr>
+<td>内存效率</td>
+<td>每个进程一份副本</td>
+<td>所有进程共享同一份物理内存（通过 mmap）</td>
+</tr>
+<tr>
+<td>更新部署</td>
+<td>需重新编译所有依赖者</td>
+<td>二进制兼容时替换 so 即可，不需要重编</td>
+</tr>
+<tr>
+<td>符号冲突</td>
+<td>链接时报错</td>
+<td>运行时通过符号版本化隔离</td>
+</tr>
+</tbody></table>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 静态库</span></span><br><span class="line">gcc -c foo.c -o foo.o</span><br><span class="line">ar rcs libfoo.a foo.o</span><br><span class="line"></span><br><span class="line"><span class="comment"># 动态库</span></span><br><span class="line">gcc -shared -fPIC -o libfoo.so foo.c</span><br></pre></td></tr></table></figure>
+
+<p>关键参数：</p>
+<ul>
+<li><code>-fPIC</code>：生成位置无关代码（Position-Independent Code）。共享库加载地址在每次加载时可能不同（ASLR 随机化），PIC 代码使用 PC 相对寻址访问数据——代码中的地址是相对于当前 PC 值的偏移，不依赖绝对地址。这样多个进程可以加载同一份 <code>.so</code> 到不同虚拟地址，物理内存只占用一份。</li>
+<li><code>-Wl,-rpath</code>：向可执行文件写入一个搜索路径告诉 linker 去哪里找 <code>.so</code></li>
+<li><code>-Wl,-soname</code>：设置 <code>.so</code> 的 SONAME（逻辑名称），用于运行时身份验证</li>
+<li><code>-Wl,--version-script</code>：控制导出符号集——隐藏内部实现细节，只导出公开 API</li>
+</ul>
+<h3 id="1-6-链接与-Android-NDK"><a href="#1-6-链接与-Android-NDK" class="headerlink" title="1.6 链接与 Android NDK"></a>1.6 链接与 Android NDK</h3><p>Android 的动态链接器是 <code>/system/bin/linker</code>（32 位）和 <code>/system/bin/linker64</code>（64 位）。与 GNU&#x2F;Linux 的 ld-linux.so 类似，但有以下差异：</p>
+<p>Android 7.0+ 实施 namespace 隔离——应用不能直接链接到非 NDK 公开 API 的系统库符号。NDK 公开 API 列表在 <code>$NDK/meta/platforms.json</code> 中声明。</p>
+<p>Android 自 API 21 统一使用 <code>ET_DYN</code> 类型的 ELF（Position Independent Executable）。所有可执行文件与共享库使用相同的 ELF 类型，区别在于可执行文件有 <code>INTERP</code> program header（指定 linker 路径）。</p>
+<hr>
+<h2 id="二、Makefile-语法详解"><a href="#二、Makefile-语法详解" class="headerlink" title="二、Makefile 语法详解"></a>二、Makefile 语法详解</h2><p>Make 是最基础的构建工具——没有 Make，就不会有对构建过程的理解，也就难以理解更高级的 CMake、Soong（Android.bp）、Bazel。</p>
+<h3 id="2-1-Makefile-的基本规则"><a href="#2-1-Makefile-的基本规则" class="headerlink" title="2.1 Makefile 的基本规则"></a>2.1 Makefile 的基本规则</h3><p>Makefile 的核心是规则：</p>
+<figure class="highlight makefile"><table><tr><td class="code"><pre><span class="line">target ... : prerequisites ...</span><br><span class="line">    recipe</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>target</code>：通常是一个文件名（可执行文件或目标文件），也可以是一个标签（label），如 <code>clean</code></li>
+<li><code>prerequisites</code>：生成 target 所依赖的文件或其它 target</li>
+<li><code>recipe</code>：shell 命令。<strong>必须以 TAB 开头</strong>，不能用空格。这是 Makefile 最常见的错误源</li>
+</ul>
+<p>Make 如何决定是否需要重新构建 target：检查 prerequisites 的修改时间（mtime，modification time）。如果任一 prerequisite 的 mtime 比 target 的 mtime 新，则认为 target 过期，执行 recipe 重新生成。</p>
+<h3 id="2-2-自动变量"><a href="#2-2-自动变量" class="headerlink" title="2.2 自动变量"></a>2.2 自动变量</h3><p>Make 提供自动变量简化规则书写：</p>
+<table>
+<thead>
+<tr>
+<th>变量</th>
+<th>含义</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>$@</code></td>
+<td>当前规则的目标文件名</td>
+<td>target</td>
+</tr>
+<tr>
+<td><code>$&lt;</code></td>
+<td>第一个 prerequisite 的名称</td>
+<td>第一个依赖</td>
+</tr>
+<tr>
+<td><code>$^</code></td>
+<td>所有 prerequisite 的名称，去重</td>
+<td>所有依赖</td>
+</tr>
+<tr>
+<td><code>$?</code></td>
+<td>所有比 target 更新的 prerequisite</td>
+<td>发生变化的依赖</td>
+</tr>
+<tr>
+<td><code>$*</code></td>
+<td>目标文件名去除后缀的部分（stem）</td>
+<td>模式匹配时的 stem</td>
+</tr>
+</tbody></table>
+<figure class="highlight makefile"><table><tr><td class="code"><pre><span class="line"><span class="section">%.o: %.c</span></span><br><span class="line">    <span class="variable">$(CC)</span> -c <span class="variable">$(CFLAGS)</span> <span class="variable">$&lt;</span> -o <span class="variable">$@</span></span><br><span class="line"><span class="comment"># 等价于: gcc -c -O2 main.c -o main.o</span></span><br></pre></td></tr></table></figure>
+
+<p>此处 <code>%</code> 是通配符，匹配任意非空字符串——相同 stem 的值在 target 和 prerequisite 中保持一致。<code>$&lt;</code> 展开为 <code>main.c</code>，<code>$@</code> 展开为 <code>main.o</code>。</p>
+<h3 id="2-3-伪目标（Phony-Target）"><a href="#2-3-伪目标（Phony-Target）" class="headerlink" title="2.3 伪目标（Phony Target）"></a>2.3 伪目标（Phony Target）</h3><p>有些 target 不对应文件名，如 <code>clean</code>。使用 <code>.PHONY</code> 声明：</p>
+<figure class="highlight makefile"><table><tr><td class="code"><pre><span class="line"><span class="meta"><span class="keyword">.PHONY</span>: clean all install</span></span><br><span class="line"></span><br><span class="line"><span class="section">clean:</span></span><br><span class="line">    rm -rf *.o <span class="variable">$(TARGET)</span></span><br></pre></td></tr></table></figure>
+
+<p>如果不声明 <code>.PHONY</code>，且目录中恰好存在一个文件名为 <code>clean</code>，由于 <code>clean</code> 没有 prerequisites 且 target 文件已存在（mtime 检查认为它是最新的），make 会认为 clean 已经是最新的而不执行 recipe。<code>.PHONY</code> 告诉 make：不管有没有同名文件存在，每次都要执行。</p>
+<h3 id="2-4-条件判断"><a href="#2-4-条件判断" class="headerlink" title="2.4 条件判断"></a>2.4 条件判断</h3><figure class="highlight makefile"><table><tr><td class="code"><pre><span class="line"><span class="keyword">ifeq</span> (<span class="variable">$(DEBUG)</span>, 1)</span><br><span class="line">    CFLAGS += -g -DDEBUG</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    CFLAGS += -O2 -DNDEBUG</span><br><span class="line"><span class="keyword">endif</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">ifdef</span> ANDROID_NDK</span><br><span class="line">    CC := <span class="variable">$(ANDROID_NDK)</span>/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-clang</span><br><span class="line"><span class="keyword">endif</span></span><br></pre></td></tr></table></figure>
+
+<p>条件判断在 Makefile 解析阶段求值——<strong>不在 recipe 执行时</strong>。这与 shell 的 if 语句不在同一层次。条件判断决定哪些 Makefile 规则生效，不决定 shell 命令的控制流。</p>
+<h3 id="2-5-常用函数"><a href="#2-5-常用函数" class="headerlink" title="2.5 常用函数"></a>2.5 常用函数</h3><p>Make 内置大量函数用于字符串和文件名操作：</p>
+<figure class="highlight makefile"><table><tr><td class="code"><pre><span class="line">SRCS = <span class="variable">$(<span class="built_in">wildcard</span> src/*.c)</span>          <span class="comment"># glob匹配: src/main.c src/util.c</span></span><br><span class="line">OBJS = <span class="variable">$(<span class="built_in">patsubst</span> src/%.c, obj/%.o, <span class="variable">$(SRCS)</span>)</span>  <span class="comment"># 模式替换: obj/main.o obj/util.o</span></span><br><span class="line">DIRS = <span class="variable">$(<span class="built_in">sort</span> /usr/local /usr /usr/local)</span>      <span class="comment"># 排序去重: /usr /usr/local</span></span><br><span class="line">FILES = <span class="variable">$(<span class="built_in">notdir</span> src/main.c)</span>                   <span class="comment"># 取文件名: main.c</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-6-完整的-Android-NDK-Makefile-示例"><a href="#2-6-完整的-Android-NDK-Makefile-示例" class="headerlink" title="2.6 完整的 Android NDK Makefile 示例"></a>2.6 完整的 Android NDK Makefile 示例</h3><figure class="highlight makefile"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Android.mk</span></span><br><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_MODULE    := native-lib</span><br><span class="line">LOCAL_SRC_FILES := main.c util.c crypto.c</span><br><span class="line">LOCAL_C_INCLUDES := <span class="variable">$(LOCAL_PATH)</span>/<span class="keyword">include</span></span><br><span class="line">LOCAL_CFLAGS    := -O2 -Wall -Wextra -fvisibility=hidden</span><br><span class="line">LOCAL_LDLIBS    := -llog -landroid -ldl</span><br><span class="line">LOCAL_STATIC_LIBRARIES := libssl_static</span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_SHARED_LIBRARY)</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、CMake-详解"><a href="#三、CMake-详解" class="headerlink" title="三、CMake 详解"></a>三、CMake 详解</h2><p>CMake 是 Android 官方推荐的 NDK 构建系统（自 Android Studio 2.2 起）。它本质上是一个<strong>构建系统生成器</strong>——不直接调用编译器，而是生成 Makefile（或 Ninja 文件），再由 Make&#x2F;Ninja 执行具体构建。</p>
+<h3 id="3-1-CMakeLists-txt-基本结构"><a href="#3-1-CMakeLists-txt-基本结构" class="headerlink" title="3.1 CMakeLists.txt 基本结构"></a>3.1 CMakeLists.txt 基本结构</h3><figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.18</span>.<span class="number">1</span>)</span><br><span class="line"><span class="keyword">project</span>(<span class="string">&quot;nativeapp&quot;</span> LANGUAGES C CXX)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建库</span></span><br><span class="line"><span class="keyword">add_library</span>(native-lib SHARED</span><br><span class="line">    src/main/cpp/native-lib.cpp</span><br><span class="line">    src/main/cpp/crypto.cpp</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查找依赖</span></span><br><span class="line"><span class="keyword">find_library</span>(log-lib log)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 头文件搜索路径</span></span><br><span class="line"><span class="keyword">target_include_directories</span>(native-lib PRIVATE</span><br><span class="line">    <span class="variable">$&#123;CMAKE_CURRENT_SOURCE_DIR&#125;</span>/<span class="keyword">include</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 链接依赖</span></span><br><span class="line"><span class="keyword">target_link_libraries</span>(native-lib</span><br><span class="line">    <span class="variable">$&#123;log-lib&#125;</span></span><br><span class="line">    android</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p><code>PRIVATE</code>、<code>PUBLIC</code>、<code>INTERFACE</code> 的含义：</p>
+<ul>
+<li><code>PRIVATE</code>：仅当前 target 使用</li>
+<li><code>PUBLIC</code>：当前 target 及依赖它的 target 都使用</li>
+<li><code>INTERFACE</code>：仅依赖当前 target 的 target 使用</li>
+</ul>
+<p>这是 CMake 传播性依赖（transitive dependency）控制的核心——选择错误的作用域，要么暴露不需要的内部头文件，要么缺少必要的公开头文件。</p>
+<h3 id="3-2-常用-CMake-命令"><a href="#3-2-常用-CMake-命令" class="headerlink" title="3.2 常用 CMake 命令"></a>3.2 常用 CMake 命令</h3><figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 设置 C++ 标准</span></span><br><span class="line"><span class="keyword">set</span>(CMAKE_CXX_STANDARD <span class="number">17</span>)</span><br><span class="line"><span class="keyword">set</span>(CMAKE_CXX_STANDARD_REQUIRED <span class="keyword">ON</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 条件判断</span></span><br><span class="line"><span class="keyword">if</span>(<span class="variable">$&#123;ANDROID_ABI&#125;</span> <span class="keyword">STREQUAL</span> <span class="string">&quot;arm64-v8a&quot;</span>)</span><br><span class="line">    <span class="keyword">add_definitions</span>(-DARCH_ARM64)</span><br><span class="line"><span class="keyword">elseif</span>(<span class="variable">$&#123;ANDROID_ABI&#125;</span> <span class="keyword">STREQUAL</span> <span class="string">&quot;armeabi-v7a&quot;</span>)</span><br><span class="line">    <span class="keyword">add_definitions</span>(-DARCH_ARM32)</span><br><span class="line"><span class="keyword">endif</span>()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查找预编译库</span></span><br><span class="line"><span class="keyword">add_library</span>(avcodec SHARED IMPORTED)</span><br><span class="line"><span class="keyword">set_target_properties</span>(avcodec PROPERTIES</span><br><span class="line">    IMPORTED_LOCATION <span class="variable">$&#123;CMAKE_SOURCE_DIR&#125;</span>/libs/<span class="variable">$&#123;ANDROID_ABI&#125;</span>/libavcodec.so</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 自定义构建命令</span></span><br><span class="line"><span class="keyword">add_custom_command</span>(</span><br><span class="line">    OUTPUT <span class="variable">$&#123;CMAKE_CURRENT_BINARY_DIR&#125;</span>/generated.h</span><br><span class="line">    <span class="keyword">COMMAND</span> python3 <span class="variable">$&#123;CMAKE_CURRENT_SOURCE_DIR&#125;</span>/gen_header.py</span><br><span class="line">    DEPENDS <span class="variable">$&#123;CMAKE_CURRENT_SOURCE_DIR&#125;</span>/gen_header.py</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-CMake-vs-Android-mk-vs-Bazel"><a href="#3-3-CMake-vs-Android-mk-vs-Bazel" class="headerlink" title="3.3 CMake vs Android.mk vs Bazel"></a>3.3 CMake vs Android.mk vs Bazel</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Android.mk (ndk-build)</th>
+<th>CMake</th>
+<th>Bazel (Soong)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>定位</td>
+<td>NDK 专用，Google 已停止新功能开发</td>
+<td>跨平台，官方推荐</td>
+<td>AOSP 构建系统，Android 平台级使用</td>
+</tr>
+<tr>
+<td>IDE 集成</td>
+<td>差</td>
+<td>Android Studio 原生支持</td>
+<td>不在应用开发中使用</td>
+</tr>
+<tr>
+<td>语言</td>
+<td>Makefile 语法</td>
+<td>自定义脚本语言</td>
+<td>Starlark（Python 子集）</td>
+</tr>
+<tr>
+<td>学习曲线</td>
+<td>中</td>
+<td>中</td>
+<td>较高</td>
+</tr>
+<tr>
+<td>推荐场景</td>
+<td>遗留项目</td>
+<td>新项目首选</td>
+<td>AOSP 平台开发</td>
+</tr>
+</tbody></table>
+<p><strong>结论</strong>：Android 应用开发中，所有新 NDK 项目优先选择 CMake。只有维护遗留的 Android.mk 项目才接触 ndk-build。</p>
+<hr>
+<h2 id="四、GCC-vs-Clang-LLVM"><a href="#四、GCC-vs-Clang-LLVM" class="headerlink" title="四、GCC vs Clang&#x2F;LLVM"></a>四、GCC vs Clang&#x2F;LLVM</h2><p>Android NDK 自 r13（2016 年）起将 Clang 设为默认编译器。自 NDK r18（2018 年）起完全移除 GCC——所有 Android 平台的 C&#x2F;C++ 编译全部由 Clang 完成。</p>
+<h3 id="4-1-架构差异"><a href="#4-1-架构差异" class="headerlink" title="4.1 架构差异"></a>4.1 架构差异</h3><p>GCC 是”一体化”编译器——词法分析、语法分析、语义分析、优化、代码生成在同一个可执行文件 <code>cc1</code> 中完成，内部模块耦合紧密。新增语言支持需要修改大量内部代码。</p>
+<p>Clang&#x2F;LLVM 是”三段式”编译器：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Clang (C/C++/ObjC Frontend)</span><br><span class="line">   ↓ AST</span><br><span class="line">LLVM IR (平台无关中间表示)</span><br><span class="line">   ↓ Optimizations</span><br><span class="line">LLVM IR (优化后)</span><br><span class="line">   ↓ Code Generation</span><br><span class="line">Target Machine Code</span><br></pre></td></tr></table></figure>
+
+<p><strong>三段式的核心优势</strong>：</p>
+<ul>
+<li>增加新语言只需要写新的前端（如 Rust 的 rustc 也计划使用 LLVM 后端）</li>
+<li>增加新平台只需要写新的后端（Android 的 AArch64、RISC-V 等）</li>
+<li>工具复用：Clang 的静态分析器（clang-tidy）、代码格式化（clang-format）、LSP 服务器（clangd）全部共享同一个 AST 解析器</li>
+<li>链接时优化（LTO, Link-Time Optimization）：各个编译单元生成为 LLVM bitcode（而非目标平台的机器码），链接时将 bitcode 合并到一个模块中，对这个整体模块进行跨编译单元的过程间优化，再生成最终机器码</li>
+</ul>
+<h3 id="4-2-Clang-的优势"><a href="#4-2-Clang-的优势" class="headerlink" title="4.2 Clang 的优势"></a>4.2 Clang 的优势</h3><p><strong>错误信息质量</strong>：Clang 的错误信息精确指向出错位置并给出修复建议。这是 Clang 最初设计时最优先考虑的用户体验目标之一。</p>
+<p><strong>编译速度</strong>：对于大多数 C&#x2F;C++ 代码，Clang 的编译速度快于 GCC。原因包括手写递归下降分析器（跳过了解析表生成和查找）、更高效的 AST 内存分配（BumpPtrAllocator——大块分配，批量释放）、增量编译支持更好。</p>
+<p><strong>工具链生态</strong>：基于 Clang 构建的工具远比 GCC 丰富。clang-format（代码格式化）、clang-tidy（lint 与自动修复）、clangd（LSP 语言服务器）、AddressSanitizer&#x2F;MemorySanitizer&#x2F;UndefinedBehaviorSanitizer（运行时错误检测器）在现代工程中不可或缺。</p>
+<h3 id="4-3-GCC-仍然存在的场景"><a href="#4-3-GCC-仍然存在的场景" class="headerlink" title="4.3 GCC 仍然存在的场景"></a>4.3 GCC 仍然存在的场景</h3><ul>
+<li>Linux 内核编译（内核高度依赖 GCC 扩展，尽管 Clang 内核构建也在推进）</li>
+<li>需要特定 GCC 扩展的项目（嵌套函数、computed goto 的特定语义等）</li>
+<li>某些性能场景下 GCC 生成的代码略优于 LLVM（虽然差距在缩小）</li>
+</ul>
+<p>对于 Android NDK 开发，唯一选择的编译器是 Clang。</p>
+<hr>
+<h2 id="面试常考问题"><a href="#面试常考问题" class="headerlink" title="面试常考问题"></a>面试常考问题</h2><p><strong>Q1：编译的四个阶段各做什么？预处理、编译、汇编、链接之间的关系是什么？</strong></p>
+<p>预处理做文本替换（宏、include、条件编译），输出 <code>.i</code>。编译做词法分析→语法分析→语义分析→中间代码生成→优化→汇编代码生成，输出 <code>.s</code>。汇编将汇编指令一一翻译为机器码，输出 <code>.o</code> 目标文件。链接将多个 <code>.o</code> 和库合并，进行符号解析和重定位，输出可执行文件或 <code>.so</code>。各阶段通过中间文件串联；GCC&#x2F;Clang 的 <code>-E</code>、<code>-S</code>、<code>-c</code> 参数分别停在对应阶段。</p>
+<p><strong>Q2：LL 和 LR 分析法的核心区别？为什么 GCC 用递归下降（LL），而 YACC&#x2F;Bison 用 LALR(1)？</strong></p>
+<p>LL 自顶向下推导（从文法开始符号推导到 token 序列），LR 自底向上归约（从 token 序列归约到开始符号）。LL 分析表简单，手写直观；LR 能处理更广的文法类（所有 LL 文法都是 LR 文法，但反之不成立）。手写的递归下降分析器可以给每个产生式添加自定义错误恢复和诊断，产生最好的错误信息——这对编译器尤为重要。Bison 的 LALR(1) 适合”先用现成工具迭代，以后再手写”的项目。</p>
+<p><strong>Q3：静态库和动态库的区别？在 Android 上为什么系统库都是动态链接的？</strong></p>
+<p>静态库在编译时嵌入可执行文件；动态库在运行时由 linker 加载。Android 上，系统库（libc、libm、libdl 等）以动态库形式存在的主要原因：(1) 共享同一个物理内存副本——所有应用进程通过 mmap 共享 <code>libc.so</code> 的代码段，极大节省 RAM；(2) 安全更新只需替换 <code>.so</code> 文件，不需重编译所有依赖它的应用；(3) ASLR 要求库代码是位置无关的（PIC），这天然适合动态库。</p>
+<p><strong>Q4：CMake 中 target_include_directories 的 PRIVATE、PUBLIC、INTERFACE 分别对应什么场景？</strong></p>
+<p>PRIVATE：头文件只用于当前 target 内部实现，不暴露给依赖者。PUBLIC：头文件是当前 target 公开 API 的一部分，依赖者需要使用。INTERFACE：当前 target 是一个纯头文件库（header-only library），实际编译不需要这些头文件，但依赖者需要。正确使用传播性依赖控制可以显著减少不必要的重编译——如果只修改了 PRIVATE 依赖的头文件，依赖者的目标文件不需要重编译。</p>
+<p><strong>Q5：LLVM IR 为什么使用 SSA 形式？</strong></p>
+<p>SSA 要求每个变量只被赋值一次。这极大地简化了数据流分析：use-def 链直接编码在变量名中，优化遍不需要额外维护数据流信息。例如死代码消除只需检查变量的 use list 是否为空；常量传播只需检查定义指令是否为常量操作。代价是需要引入 φ（phi）函数在控制流汇合点合并多个定义——这增加了 SSA 构造的复杂度，但对于后续所有的分析和优化都是净收益。</p>
+<hr>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li>AOSP: <code>prebuilts/clang/host/linux-x86/</code> — Android NDK Clang 预编译工具链</li>
+<li>AOSP: <code>prebuilts/build-tools/</code> — Make, Ninja 等构建工具</li>
+<li>CMake 官方文档: <a target="_blank" rel="noopener" href="https://cmake.org/documentation/">https://cmake.org/documentation/</a></li>
+<li>LLVM 文档: <a target="_blank" rel="noopener" href="https://llvm.org/docs/">https://llvm.org/docs/</a></li>
+<li>GCC Internals Manual: <a target="_blank" rel="noopener" href="https://gcc.gnu.org/onlinedocs/gccint/">https://gcc.gnu.org/onlinedocs/gccint/</a></li>
+<li>《Compilers: Principles, Techniques, and Tools》(Dragon Book) — 第2-4章：词法&#x2F;语法分析</li>
+<li>《Engineering a Compiler》(Cooper &amp; Torczon) — 第8-13章：优化与代码生成</li>
+<li>NDK 构建指南: <a target="_blank" rel="noopener" href="https://developer.android.com/ndk/guides/build">https://developer.android.com/ndk/guides/build</a></li>
+</ul>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2022/05/01/%E9%AB%98%E7%BA%A7Android-%E3%80%90%E5%AE%9E%E6%88%98%E5%BC%80%E5%8F%91%E7%B3%BB%E5%88%97%E3%80%91NDK%E5%AE%9E%E7%8E%B0%E5%A2%9E%E9%87%8F%E6%9B%B4%E6%96%B0/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/331.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>NDK实现增量更新</span></div></a></div><div class="next-post pull_right"><a href="/2022/04/20/%E9%AB%98%E7%BA%A7Android-%E3%80%90C%20C++%E7%90%86%E8%AE%BA%E5%AE%9E%E6%88%98%E6%8A%80%E6%9C%AF%E3%80%91Linux%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/307.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【C/C++理论实战技术】Linux编程实战</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

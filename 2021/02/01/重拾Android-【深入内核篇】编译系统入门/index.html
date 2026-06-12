@@ -1,0 +1,422 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【深入内核篇】编译系统入门 | ONE·PIECE</title><meta name="description" content="【深入内核篇】编译系统入门"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【深入内核篇】编译系统入门"><meta name="twitter:description" content="【深入内核篇】编译系统入门"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286927.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【深入内核篇】编译系统入门"><meta property="og:url" content="http://tufusi.com/2021/02/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F%E5%85%A5%E9%97%A8/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【深入内核篇】编译系统入门"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286927.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2021/02/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F%E5%85%A5%E9%97%A8/"><link rel="prev" title="【深入内核篇】操作系统介绍" href="http://tufusi.com/2021/02/05/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E4%BB%8B%E7%BB%8D/"><link rel="next" title="【深入内核篇】ODEX流程" href="http://tufusi.com/2021/01/20/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91ODEX%E6%B5%81%E7%A8%8B/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81Android-%E6%9E%84%E5%BB%BA%E7%B3%BB%E7%BB%9F%E6%BC%94%E8%BF%9B%E5%8F%B2"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、Android 构建系统演进史</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#1-1-%E6%BC%94%E8%BF%9B%E8%B7%AF%E7%BA%BF%E5%9B%BE"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">1.1 演进路线图</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#1-2-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%94%BE%E5%BC%83-Make"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">1.2 为什么放弃 Make</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#1-3-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%80%89%E6%8B%A9-Ninja"><span class="toc_mobile_items-number">1.3.</span> <span class="toc_mobile_items-text">1.3 为什么选择 Ninja</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81AOSP-%E6%9E%84%E5%BB%BA%E6%B5%81%E7%A8%8B%E5%85%A8%E8%A7%88"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、AOSP 构建流程全览</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-1-%E6%9E%84%E5%BB%BA%E5%85%A5%E5%8F%A3"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 构建入口</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-2-envsetup-sh-%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 envsetup.sh 做了什么</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-3-lunch-%E5%91%BD%E4%BB%A4"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 lunch 命令</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-4-m-%E5%91%BD%E4%BB%A4-%E2%86%92-soong-ui"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">2.4 m 命令 → soong_ui</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81Soong-%E6%9E%84%E5%BB%BA%E7%B3%BB%E7%BB%9F"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、Soong 构建系统</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-1-Soong-%E6%9E%B6%E6%9E%84"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 Soong 架构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-2-Android-bp-%E6%96%87%E4%BB%B6"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 Android.bp 文件</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-3-Soong-%E6%A8%A1%E5%9D%97%E7%B1%BB%E5%9E%8B"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 Soong 模块类型</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-4-Blueprint-%E6%A1%86%E6%9E%B6"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">3.4 Blueprint 框架</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81Ninja-%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、Ninja 执行引擎</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-1-Ninja-%E6%9E%84%E5%BB%BA%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 Ninja 构建文件格式</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-2-Ninja-%E7%9A%84%E5%B9%B6%E8%A1%8C%E8%B0%83%E5%BA%A6"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 Ninja 的并行调度</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-3-Ninja-%E6%96%87%E4%BB%B6%E7%9A%84%E7%94%9F%E6%88%90"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 Ninja 文件的生成</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81%E6%9E%84%E5%BB%BA%E7%9B%AE%E6%A0%87%E4%BA%A7%E5%93%81%E9%85%8D%E7%BD%AE"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、构建目标产品配置</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-1-Product-%E9%85%8D%E7%BD%AE%E4%BD%93%E7%B3%BB"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 Product 配置体系</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-2-lunch-%E9%80%89%E9%A1%B9%E8%A7%A3%E6%9E%90"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 lunch 选项解析</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-3-%E6%9E%84%E5%BB%BA%E5%8F%98%E4%BD%93-Build-Variants"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 构建变体 (Build Variants)</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-4-BoardConfig-mk-%E5%85%B3%E9%94%AE%E9%85%8D%E7%BD%AE"><span class="toc_mobile_items-number">5.4.</span> <span class="toc_mobile_items-text">5.4 BoardConfig.mk 关键配置</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E6%9E%84%E5%BB%BA%E8%BE%93%E5%87%BA%E7%89%A9"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、构建输出物</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-1-%E6%9E%84%E5%BB%BA%E4%BA%A7%E7%89%A9%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 构建产物目录结构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-2-%E6%9E%84%E5%BB%BA%E5%8D%95%E4%B8%AA%E6%A8%A1%E5%9D%97"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 构建单个模块</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81Soong-%E9%AB%98%E7%BA%A7%E7%89%B9%E6%80%A7"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、Soong 高级特性</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#7-1-%E6%9D%A1%E4%BB%B6%E7%BC%96%E8%AF%91"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">7.1 条件编译</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#7-2-Defaults-%E6%A8%A1%E5%9D%97"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">7.2 Defaults 模块</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#7-3-%E7%94%9F%E6%88%90%E5%99%A8%E8%A7%84%E5%88%99-Genrule"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">7.3 生成器规则 (Genrule)</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81Bazel-%E8%BF%81%E7%A7%BB"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、Bazel 迁移</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%90%91-Bazel-%E8%BF%81%E7%A7%BB"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">8.1 为什么向 Bazel 迁移</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-2-Bazel-%E4%B8%8E-Soong-%E7%9A%84%E5%85%B1%E5%AD%98"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">8.2 Bazel 与 Soong 的共存</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E6%A0%B8%E5%BF%83%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、核心面试题</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81Android-%E6%9E%84%E5%BB%BA%E7%B3%BB%E7%BB%9F%E6%BC%94%E8%BF%9B%E5%8F%B2"><span class="toc-number">1.</span> <span class="toc-text">一、Android 构建系统演进史</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-%E6%BC%94%E8%BF%9B%E8%B7%AF%E7%BA%BF%E5%9B%BE"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 演进路线图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%94%BE%E5%BC%83-Make"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 为什么放弃 Make</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-3-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%80%89%E6%8B%A9-Ninja"><span class="toc-number">1.3.</span> <span class="toc-text">1.3 为什么选择 Ninja</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81AOSP-%E6%9E%84%E5%BB%BA%E6%B5%81%E7%A8%8B%E5%85%A8%E8%A7%88"><span class="toc-number">2.</span> <span class="toc-text">二、AOSP 构建流程全览</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-%E6%9E%84%E5%BB%BA%E5%85%A5%E5%8F%A3"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 构建入口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-envsetup-sh-%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 envsetup.sh 做了什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-lunch-%E5%91%BD%E4%BB%A4"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 lunch 命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-4-m-%E5%91%BD%E4%BB%A4-%E2%86%92-soong-ui"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 m 命令 → soong_ui</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81Soong-%E6%9E%84%E5%BB%BA%E7%B3%BB%E7%BB%9F"><span class="toc-number">3.</span> <span class="toc-text">三、Soong 构建系统</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-Soong-%E6%9E%B6%E6%9E%84"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 Soong 架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-Android-bp-%E6%96%87%E4%BB%B6"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 Android.bp 文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-Soong-%E6%A8%A1%E5%9D%97%E7%B1%BB%E5%9E%8B"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 Soong 模块类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-4-Blueprint-%E6%A1%86%E6%9E%B6"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 Blueprint 框架</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Ninja-%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E"><span class="toc-number">4.</span> <span class="toc-text">四、Ninja 执行引擎</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-Ninja-%E6%9E%84%E5%BB%BA%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 Ninja 构建文件格式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-Ninja-%E7%9A%84%E5%B9%B6%E8%A1%8C%E8%B0%83%E5%BA%A6"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 Ninja 的并行调度</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-3-Ninja-%E6%96%87%E4%BB%B6%E7%9A%84%E7%94%9F%E6%88%90"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 Ninja 文件的生成</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%9E%84%E5%BB%BA%E7%9B%AE%E6%A0%87%E4%BA%A7%E5%93%81%E9%85%8D%E7%BD%AE"><span class="toc-number">5.</span> <span class="toc-text">五、构建目标产品配置</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#5-1-Product-%E9%85%8D%E7%BD%AE%E4%BD%93%E7%B3%BB"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 Product 配置体系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-2-lunch-%E9%80%89%E9%A1%B9%E8%A7%A3%E6%9E%90"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 lunch 选项解析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-3-%E6%9E%84%E5%BB%BA%E5%8F%98%E4%BD%93-Build-Variants"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 构建变体 (Build Variants)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-4-BoardConfig-mk-%E5%85%B3%E9%94%AE%E9%85%8D%E7%BD%AE"><span class="toc-number">5.4.</span> <span class="toc-text">5.4 BoardConfig.mk 关键配置</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E6%9E%84%E5%BB%BA%E8%BE%93%E5%87%BA%E7%89%A9"><span class="toc-number">6.</span> <span class="toc-text">六、构建输出物</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#6-1-%E6%9E%84%E5%BB%BA%E4%BA%A7%E7%89%A9%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 构建产物目录结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-2-%E6%9E%84%E5%BB%BA%E5%8D%95%E4%B8%AA%E6%A8%A1%E5%9D%97"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 构建单个模块</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%83%E3%80%81Soong-%E9%AB%98%E7%BA%A7%E7%89%B9%E6%80%A7"><span class="toc-number">7.</span> <span class="toc-text">七、Soong 高级特性</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#7-1-%E6%9D%A1%E4%BB%B6%E7%BC%96%E8%AF%91"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 条件编译</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-2-Defaults-%E6%A8%A1%E5%9D%97"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 Defaults 模块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-3-%E7%94%9F%E6%88%90%E5%99%A8%E8%A7%84%E5%88%99-Genrule"><span class="toc-number">7.3.</span> <span class="toc-text">7.3 生成器规则 (Genrule)</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AB%E3%80%81Bazel-%E8%BF%81%E7%A7%BB"><span class="toc-number">8.</span> <span class="toc-text">八、Bazel 迁移</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#8-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%90%91-Bazel-%E8%BF%81%E7%A7%BB"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 为什么向 Bazel 迁移</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-2-Bazel-%E4%B8%8E-Soong-%E7%9A%84%E5%85%B1%E5%AD%98"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 Bazel 与 Soong 的共存</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E6%A0%B8%E5%BF%83%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="toc-number">9.</span> <span class="toc-text">九、核心面试题</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286927.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【深入内核篇】编译系统入门</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-02-01<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">3.9k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 15 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>Android 构建系统是整个 AOSP 工程的基础设施。从最初的 GNU Make 体系，到 2015 年后逐步引入的 Soong 和 Ninja，再到如今向 Bazel 的迁移，Android 的构建系统经历了一次次彻底的革新。本文将基于 Android 11 (API 30) 的 AOSP 源码，从构建系统演进的历史脉络出发，深入解析 Soong 和 Ninja 的工作原理、Android.bp 的编写规则以及构建流程的每个关键环节。</p>
+<span id="more"></span>
+
+<h1 id="一、Android-构建系统演进史"><a href="#一、Android-构建系统演进史" class="headerlink" title="一、Android 构建系统演进史"></a>一、Android 构建系统演进史</h1><h2 id="1-1-演进路线图"><a href="#1-1-演进路线图" class="headerlink" title="1.1 演进路线图"></a>1.1 演进路线图</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Android 1.0 ~ 6.0 (2008 ~ 2015):</span><br><span class="line">    GNU Make (Android.mk + Makefile)</span><br><span class="line">        问题：递归 make 导致增量编译不稳定、配置文件过于灵活难以分析</span><br><span class="line"></span><br><span class="line">Android 7.0 ~ 8.0 (2016 ~ 2017):</span><br><span class="line">    Make + Ninja 混合</span><br><span class="line">        Android.mk 被翻译为 .ninja 文件</span><br><span class="line">        Ninja 替代 make 作为执行引擎</span><br><span class="line"></span><br><span class="line">Android 8.0 ~ 11.0 (2017 ~ 2020):</span><br><span class="line">    Soong (Android.bp) + Kati + Ninja</span><br><span class="line">        新的构建描述语言（Android.bp）替代 Makefile</span><br><span class="line">        Kati 将剩余的 Makefile 翻译为 .ninja</span><br><span class="line">        Soong 直接生成 .ninja 规则</span><br><span class="line"></span><br><span class="line">Android 11+ ~ 未来:</span><br><span class="line">    Soong + Bazel 迁移</span><br><span class="line">        Google 正逐步将 构建系统迁移到 Bazel</span><br><span class="line">        目标是统一的跨语言构建系统</span><br></pre></td></tr></table></figure>
+
+<h2 id="1-2-为什么放弃-Make"><a href="#1-2-为什么放弃-Make" class="headerlink" title="1.2 为什么放弃 Make"></a>1.2 为什么放弃 Make</h2><p>GNU Make 在 AOSP 中的主要问题：</p>
+<ol>
+<li><strong>增量构建不可靠</strong>：递归 make 中，子目录之间的隐式依赖难以正确追踪</li>
+<li><strong>解析太慢</strong>：完整的 AOSP 有数千个 Android.mk，每一个都需要被 make 解析</li>
+<li><strong>语法灵活性带来问题</strong>：Makefile 是图灵完备的，这意味着无法做静态分析（如列出所有模块）</li>
+<li><strong>并行度受限</strong>：make 的并行是粗粒度的（目录级别），无法充分利用多核 CPU</li>
+</ol>
+<h2 id="1-3-为什么选择-Ninja"><a href="#1-3-为什么选择-Ninja" class="headerlink" title="1.3 为什么选择 Ninja"></a>1.3 为什么选择 Ninja</h2><p>Ninja 是一个极简构建系统（被设计为”构建系统的汇编语言”）：</p>
+<ul>
+<li>仅支持描述依赖关系和构建规则，没有条件判断、函数等</li>
+<li>解析快、并行调度优秀</li>
+<li>被设计为由其他工具生成（而非手写）</li>
+</ul>
+<h1 id="二、AOSP-构建流程全览"><a href="#二、AOSP-构建流程全览" class="headerlink" title="二、AOSP 构建流程全览"></a>二、AOSP 构建流程全览</h1><h2 id="2-1-构建入口"><a href="#2-1-构建入口" class="headerlink" title="2.1 构建入口"></a>2.1 构建入口</h2><p>开发者最常用的构建命令序列：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 1. 设置环境</span></span><br><span class="line"><span class="built_in">source</span> build/envsetup.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 选择构建目标</span></span><br><span class="line">lunch aosp_arm64-userdebug</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 构建</span></span><br><span class="line">m</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-2-envsetup-sh-做了什么"><a href="#2-2-envsetup-sh-做了什么" class="headerlink" title="2.2 envsetup.sh 做了什么"></a>2.2 envsetup.sh 做了什么</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># build/envsetup.sh 核心功能</span></span><br><span class="line"><span class="built_in">source</span> build/envsetup.sh</span><br><span class="line"><span class="comment"># 定义了大量 shell 函数：</span></span><br><span class="line"><span class="comment">#   lunch       — 选择 target product 和 build variant</span></span><br><span class="line"><span class="comment">#   m           — 顶层构建包装器（调用 soong_ui）</span></span><br><span class="line"><span class="comment">#   mm          — 构建当前目录下的模块</span></span><br><span class="line"><span class="comment">#   mma         — 构建当前目录下的模块及其依赖</span></span><br><span class="line"><span class="comment">#   mmm         — 构建指定目录下的模块</span></span><br><span class="line"><span class="comment">#   croot       — 回到 aosp 根目录</span></span><br><span class="line"><span class="comment">#   cgrep       — 在所有 C/C++ 文件中 grep</span></span><br><span class="line"><span class="comment">#   jgrep       — 在所有 Java 文件中 grep</span></span><br><span class="line"><span class="comment">#   godir       — 跳转到包含指定文件的目录</span></span><br><span class="line"><span class="comment">#   add_lunch_combo — 添加 lunch 选项</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="2-3-lunch-命令"><a href="#2-3-lunch-命令" class="headerlink" title="2.3 lunch 命令"></a>2.3 lunch 命令</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># lunch 的核心逻辑（简化版）</span></span><br><span class="line"><span class="keyword">function</span> <span class="function"><span class="title">lunch</span></span>() &#123;</span><br><span class="line">    <span class="comment"># 1. 解析参数：product_name-build_variant</span></span><br><span class="line">    <span class="comment">#    如：aosp_arm64-userdebug</span></span><br><span class="line">    <span class="built_in">local</span> product=<span class="variable">$1</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 2. 设置环境变量</span></span><br><span class="line">    <span class="built_in">export</span> TARGET_PRODUCT=aosp_arm64</span><br><span class="line">    <span class="built_in">export</span> TARGET_BUILD_VARIANT=userdebug</span><br><span class="line">    <span class="built_in">export</span> TARGET_BUILD_TYPE=release</span><br><span class="line">    <span class="built_in">export</span> TARGET_ARCH=arm64</span><br><span class="line">    <span class="built_in">export</span> TARGET_ARCH_VARIANT=armv8-a</span><br><span class="line">    <span class="built_in">export</span> TARGET_CPU_VARIANT=generic</span><br><span class="line">    <span class="built_in">export</span> TARGET_2ND_ARCH=arm</span><br><span class="line">    <span class="built_in">export</span> TARGET_2ND_ARCH_VARIANT=armv7-a-neon</span><br><span class="line">    <span class="built_in">export</span> TARGET_2ND_CPU_VARIANT=generic</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 3. 设置 PATH（包含 host tools）</span></span><br><span class="line">    <span class="comment"># soong_ui 所在的路径</span></span><br><span class="line">    set_stuff_for_environment</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-4-m-命令-→-soong-ui"><a href="#2-4-m-命令-→-soong-ui" class="headerlink" title="2.4 m 命令 → soong_ui"></a>2.4 m 命令 → soong_ui</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># m 命令的实际执行流</span></span><br><span class="line"><span class="keyword">function</span> <span class="function"><span class="title">m</span></span>() &#123;</span><br><span class="line">    <span class="comment"># 调用 soong_ui.bash 并传递参数</span></span><br><span class="line">    <span class="comment"># soong_ui 是 Go 语言编写的构建入口程序</span></span><br><span class="line">    build/soong/soong_ui.bash --make-mode <span class="string">&quot;<span class="variable">$@</span>&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>soong_ui</code> 是构建系统的最顶层入口，它负责：</p>
+<ol>
+<li>设置构建环境</li>
+<li>调用 Kati 将 Makefile 翻译为 Ninja</li>
+<li>调用 Soong 处理 Android.bp 并生成 Ninja 规则</li>
+<li>调用 Ninja 执行实际构建</li>
+<li>处理构建输出（生成 .img 文件等）</li>
+</ol>
+<h1 id="三、Soong-构建系统"><a href="#三、Soong-构建系统" class="headerlink" title="三、Soong 构建系统"></a>三、Soong 构建系统</h1><h2 id="3-1-Soong-架构"><a href="#3-1-Soong-架构" class="headerlink" title="3.1 Soong 架构"></a>3.1 Soong 架构</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">soong_ui (Go)</span><br><span class="line">    ├── 环境设置</span><br><span class="line">    ├── 调用 Kati（Make → Ninja）</span><br><span class="line">    ├── 调用 Soong（Android.bp → Ninja）</span><br><span class="line">    │     └── Blueprint (构建系统框架)</span><br><span class="line">    │           ├── 解析 Android.bp</span><br><span class="line">    │           ├── 依赖分析</span><br><span class="line">    │           └── 生成 .ninja</span><br><span class="line">    └── 调用 Ninja（执行构建）</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-2-Android-bp-文件"><a href="#3-2-Android-bp-文件" class="headerlink" title="3.2 Android.bp 文件"></a>3.2 Android.bp 文件</h2><p>Android.bp 是 JSON-like 的声明式构建描述文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 示例：一个 C++ 二进制模块</span><br><span class="line">cc_binary &#123;</span><br><span class="line">    name: &quot;my_native_daemon&quot;,</span><br><span class="line">    srcs: [</span><br><span class="line">        &quot;main.cpp&quot;,</span><br><span class="line">        &quot;config_parser.cpp&quot;,</span><br><span class="line">    ],</span><br><span class="line">    shared_libs: [</span><br><span class="line">        &quot;libcutils&quot;,</span><br><span class="line">        &quot;libutils&quot;,</span><br><span class="line">        &quot;libbinder&quot;,</span><br><span class="line">    ],</span><br><span class="line">    static_libs: [</span><br><span class="line">        &quot;libbase&quot;,</span><br><span class="line">    ],</span><br><span class="line">    cflags: [</span><br><span class="line">        &quot;-Wall&quot;,</span><br><span class="line">        &quot;-Werror&quot;,</span><br><span class="line">        &quot;-DLOG_TAG=\&quot;MyDaemon\&quot;&quot;,</span><br><span class="line">    ],</span><br><span class="line">    init_rc: [&quot;my_daemon.rc&quot;],</span><br><span class="line">    // 安装到 /system/bin/</span><br><span class="line">    vendor: false,</span><br><span class="line">    owner: &quot;platform&quot;,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 示例：一个 Java 库模块</span><br><span class="line">java_library &#123;</span><br><span class="line">    name: &quot;framework-minus-apex&quot;,</span><br><span class="line">    srcs: [</span><br><span class="line">        &quot;core/java/**/*.java&quot;,</span><br><span class="line">    ],</span><br><span class="line">    libs: [</span><br><span class="line">        &quot;android-hidden-api&quot;,</span><br><span class="line">    ],</span><br><span class="line">    static_libs: [</span><br><span class="line">        &quot;app-compat-annotations&quot;,</span><br><span class="line">    ],</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 示例：预构建模块</span><br><span class="line">prebuilt_etc &#123;</span><br><span class="line">    name: &quot;my_config.xml&quot;,</span><br><span class="line">    src: &quot;my_config.xml&quot;,</span><br><span class="line">    sub_dir: &quot;myapp&quot;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-3-Soong-模块类型"><a href="#3-3-Soong-模块类型" class="headerlink" title="3.3 Soong 模块类型"></a>3.3 Soong 模块类型</h2><table>
+<thead>
+<tr>
+<th>模块类型</th>
+<th>用途</th>
+<th>输出路径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>cc_binary</code></td>
+<td>C&#x2F;C++ 可执行文件</td>
+<td>&#x2F;system&#x2F;bin&#x2F;</td>
+</tr>
+<tr>
+<td><code>cc_library</code></td>
+<td>C&#x2F;C++ 动态库 (.so)</td>
+<td>&#x2F;system&#x2F;lib&#x2F; 或 &#x2F;system&#x2F;lib64&#x2F;</td>
+</tr>
+<tr>
+<td><code>cc_library_static</code></td>
+<td>C&#x2F;C++ 静态库 (.a)</td>
+<td>链接时使用（不安装）</td>
+</tr>
+<tr>
+<td><code>cc_test</code></td>
+<td>C&#x2F;C++ 测试可执行文件</td>
+<td>&#x2F;data&#x2F;nativetest&#x2F;</td>
+</tr>
+<tr>
+<td><code>java_library</code></td>
+<td>Java 库 (.jar)</td>
+<td>&#x2F;system&#x2F;framework&#x2F;</td>
+</tr>
+<tr>
+<td><code>java_library_static</code></td>
+<td>Java 静态库</td>
+<td>编译时使用（不安装）</td>
+</tr>
+<tr>
+<td><code>android_app</code></td>
+<td>Android APK</td>
+<td>&#x2F;system&#x2F;app&#x2F; 或 &#x2F;system&#x2F;priv-app&#x2F;</td>
+</tr>
+<tr>
+<td><code>android_test</code></td>
+<td>Android 测试 APK</td>
+<td>&#x2F;data&#x2F;app&#x2F;</td>
+</tr>
+<tr>
+<td><code>prebuilt_etc</code></td>
+<td>预构建配置文件</td>
+<td>&#x2F;system&#x2F;etc&#x2F;</td>
+</tr>
+<tr>
+<td><code>prebuilt_binary</code></td>
+<td>预构建可执行文件</td>
+<td>&#x2F;system&#x2F;bin&#x2F;</td>
+</tr>
+<tr>
+<td><code>filegroup</code></td>
+<td>文件集合（不构建，仅组织文件）</td>
+<td>N&#x2F;A</td>
+</tr>
+<tr>
+<td><code>genrule</code></td>
+<td>通用生成规则</td>
+<td>自定义</td>
+</tr>
+<tr>
+<td><code>sh_binary</code></td>
+<td>shell 脚本</td>
+<td>&#x2F;system&#x2F;bin&#x2F;</td>
+</tr>
+<tr>
+<td><code>rust_binary</code></td>
+<td>Rust 可执行文件（Android 12+）</td>
+<td>&#x2F;system&#x2F;bin&#x2F;</td>
+</tr>
+<tr>
+<td><code>rust_library</code></td>
+<td>Rust 库（Android 12+）</td>
+<td>&#x2F;system&#x2F;lib&#x2F;</td>
+</tr>
+</tbody></table>
+<h2 id="3-4-Blueprint-框架"><a href="#3-4-Blueprint-框架" class="headerlink" title="3.4 Blueprint 框架"></a>3.4 Blueprint 框架</h2><p>Soong 构建在 Blueprint 之上，Blueprint 提供了 Android.bp 文件的解析基础设施：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Blueprint 的核心概念（build/blueprint/）</span></span><br><span class="line"><span class="comment">// 1. Context：构建上下文（类似 Soong 的 singleton 对象）</span></span><br><span class="line"><span class="comment">// 2. Module：构建模块的基本单元（每个 Android.bp 中的定义对应一个 Module）</span></span><br><span class="line"><span class="comment">// 3. ModuleContext：模块的构建上下文（包含依赖信息）</span></span><br><span class="line"><span class="comment">// 4. Singleton：在模块构建之后运行的全局操作（如生成 image 文件）</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// dependencies 是在 Blueprint 层的核心操作</span></span><br><span class="line"><span class="comment">// 每个 Module 通过 DepsMutator 声明对其他 Module 的依赖</span></span><br></pre></td></tr></table></figure>
+
+<p>Soong 在 Blueprint 之上实现了 Android 特定的模块类型：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="comment">// build/soong/cc/binary.go</span></span><br><span class="line"><span class="comment">// cc_binary 的 Go 实现</span></span><br><span class="line"><span class="keyword">type</span> binaryDecorator <span class="keyword">struct</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(binary *binaryDecorator)</span></span> GenerateAndroidBuildActions(ctx ModuleContext) &#123;</span><br><span class="line">    <span class="comment">// 生成编译、链接、strip 等构建动作</span></span><br><span class="line">    <span class="comment">// 输出：out/soong/.intermediates/&lt;path&gt;/&lt;name&gt;/&lt;name&gt;.so</span></span><br><span class="line">    <span class="comment">// 安装路径：out/target/product/&lt;product&gt;/system/bin/&lt;name&gt;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="四、Ninja-执行引擎"><a href="#四、Ninja-执行引擎" class="headerlink" title="四、Ninja 执行引擎"></a>四、Ninja 执行引擎</h1><h2 id="4-1-Ninja-构建文件格式"><a href="#4-1-Ninja-构建文件格式" class="headerlink" title="4.1 Ninja 构建文件格式"></a>4.1 Ninja 构建文件格式</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Ninja 文件示例（由 Soong/Kati 生成）</span><br><span class="line"># 变量定义</span><br><span class="line">cc = prebuilts/clang/host/linux-x86/clang-r383902/bin/clang</span><br><span class="line">ar = prebuilts/clang/host/linux-x86/clang-r383902/bin/llvm-ar</span><br><span class="line">out = out/target/product/generic_arm64</span><br><span class="line"></span><br><span class="line"># 构建规则</span><br><span class="line">rule cc</span><br><span class="line">    command = $cc $cflags -c $in -o $out</span><br><span class="line">    description = CC $out</span><br><span class="line"></span><br><span class="line">rule ar</span><br><span class="line">    command = $ar cr $out $in</span><br><span class="line">    description = AR $out</span><br><span class="line"></span><br><span class="line">rule link</span><br><span class="line">    command = $cc $ldflags $in -o $out</span><br><span class="line">    description = LINK $out</span><br><span class="line"></span><br><span class="line"># 构建目标（build edge）</span><br><span class="line">build $out/obj/main.o: cc main.cpp</span><br><span class="line">    cflags = -Wall -O2</span><br><span class="line"></span><br><span class="line">build $out/obj/utils.o: cc utils.cpp</span><br><span class="line">    cflags = -Wall -O2</span><br><span class="line"></span><br><span class="line">build $out/libutils.a: ar $out/obj/main.o $out/obj/utils.o</span><br><span class="line"></span><br><span class="line">build $out/my_binary: link $out/obj/main.o $out/libutils.a</span><br><span class="line">    ldflags = -lpthread</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-2-Ninja-的并行调度"><a href="#4-2-Ninja-的并行调度" class="headerlink" title="4.2 Ninja 的并行调度"></a>4.2 Ninja 的并行调度</h2><p>Ninja 的核心调度算法：</p>
+<ol>
+<li>解析 .ninja 文件，构建 DAG（有向无环图）</li>
+<li>识别所有就绪（所有依赖已完成）的构建目标</li>
+<li>按负载分配任务到可用 CPU 核心</li>
+<li>每个任务完成后检查是否有新就绪的目标</li>
+<li>重复直到所有目标完成</li>
+</ol>
+<p>Ninja 相比于 Make 的并行优势：</p>
+<ul>
+<li>细粒度任务（单个编译步骤 vs 整个目录）</li>
+<li>统一的 DAG 视图（不会出现递归 make 的依赖断裂）</li>
+<li>I&#x2F;O 调度优化（自动检测磁盘队列深度）</li>
+</ul>
+<h2 id="4-3-Ninja-文件的生成"><a href="#4-3-Ninja-文件的生成" class="headerlink" title="4.3 Ninja 文件的生成"></a>4.3 Ninja 文件的生成</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 内部流程（soong_ui 调用链）</span></span><br><span class="line"><span class="comment"># 1. kati 将 .mk 文件翻译为 build-&lt;product&gt;.ninja</span></span><br><span class="line"><span class="comment">#    build/make/core/main.mk → kati → out/build-&lt;product&gt;.ninja</span></span><br><span class="line">prebuilts/build-tools/linux-x86/bin/ckati \</span><br><span class="line">    -f build/make/core/main.mk \</span><br><span class="line">    --ninja \</span><br><span class="line">    --ninja_dir=out \</span><br><span class="line">    --ninja_suffix=.ninja</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. soong 处理所有 Android.bp 生成 out/soong/build.ninja</span></span><br><span class="line">out/soong_ui --make-mode</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 生成组合 ninja 文件 out/combined-&lt;product&gt;.ninja</span></span><br></pre></td></tr></table></figure>
+
+<p>最终生成的 Ninja 文件结构：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">out/</span><br><span class="line">├── combined-&lt;product&gt;.ninja    # 主入口（include 其他）</span><br><span class="line">├── build-&lt;product&gt;.ninja       # 来自 Makefile</span><br><span class="line">├── soong/</span><br><span class="line">│   └── build.ninja             # 来自 Soong/Android.bp</span><br><span class="line">└── .ninja_log                  # 构建日志（用于增量构建）</span><br></pre></td></tr></table></figure>
+
+<h1 id="五、构建目标产品配置"><a href="#五、构建目标产品配置" class="headerlink" title="五、构建目标产品配置"></a>五、构建目标产品配置</h1><h2 id="5-1-Product-配置体系"><a href="#5-1-Product-配置体系" class="headerlink" title="5.1 Product 配置体系"></a>5.1 Product 配置体系</h2><p>构建一个具体的 Android 系统镜像涉及三层配置：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Product (产品): aosp_arm64</span><br><span class="line">├── Device (设备): generic_arm64</span><br><span class="line">│   └── BoardConfig.mk — 板级配置</span><br><span class="line">├── Board (板卡): （定义内核、分区大小等）</span><br><span class="line">└── Architecture (架构): arm64 + arm</span><br></pre></td></tr></table></figure>
+
+<h2 id="5-2-lunch-选项解析"><a href="#5-2-lunch-选项解析" class="headerlink" title="5.2 lunch 选项解析"></a>5.2 lunch 选项解析</h2><p><code>lunch</code> 命令展示的选项来自：</p>
+<ul>
+<li><code>device/&lt;vendor&gt;/&lt;device&gt;/AndroidProducts.mk</code> — 定义了 PRODUCT_MAKEFILES</li>
+<li><code>build/make/target/product/</code> — AOSP 通用产品定义</li>
+</ul>
+<p>以 <code>aosp_arm64-userdebug</code> 为例：</p>
+<ul>
+<li><code>aosp_arm64</code>：产品名，对应 <code>build/make/target/product/aosp_arm64.mk</code></li>
+<li><code>userdebug</code>：构建变体</li>
+</ul>
+<h2 id="5-3-构建变体-Build-Variants"><a href="#5-3-构建变体-Build-Variants" class="headerlink" title="5.3 构建变体 (Build Variants)"></a>5.3 构建变体 (Build Variants)</h2><table>
+<thead>
+<tr>
+<th>Variant</th>
+<th>ro.debuggable</th>
+<th>ro.secure</th>
+<th>ADB root</th>
+<th>优化级别</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>user</td>
+<td>false</td>
+<td>true</td>
+<td>No</td>
+<td>全优化</td>
+</tr>
+<tr>
+<td>userdebug</td>
+<td>true</td>
+<td>true</td>
+<td>可授权</td>
+<td>中等优化</td>
+</tr>
+<tr>
+<td>eng</td>
+<td>true</td>
+<td>false</td>
+<td>Yes</td>
+<td>低&#x2F;无优化（调试）</td>
+</tr>
+</tbody></table>
+<h2 id="5-4-BoardConfig-mk-关键配置"><a href="#5-4-BoardConfig-mk-关键配置" class="headerlink" title="5.4 BoardConfig.mk 关键配置"></a>5.4 BoardConfig.mk 关键配置</h2><figure class="highlight makefile"><table><tr><td class="code"><pre><span class="line"><span class="comment"># device/generic/arm64/BoardConfig.mk (示例)</span></span><br><span class="line"><span class="comment"># 架构</span></span><br><span class="line">TARGET_ARCH := arm64</span><br><span class="line">TARGET_ARCH_VARIANT := armv8-a</span><br><span class="line">TARGET_CPU_VARIANT := generic</span><br><span class="line">TARGET_2ND_ARCH := arm</span><br><span class="line">TARGET_2ND_ARCH_VARIANT := armv7-a-neon</span><br><span class="line"></span><br><span class="line"><span class="comment"># 分区大小</span></span><br><span class="line">BOARD_SYSTEMIMAGE_PARTITION_SIZE := 1610612736  <span class="comment"># 1.5GB</span></span><br><span class="line">BOARD_USERDATAIMAGE_PARTITION_SIZE := 576716800 <span class="comment"># 550MB</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 内核</span></span><br><span class="line">TARGET_NO_KERNEL := true  <span class="comment"># 使用预构建内核</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 文件系统</span></span><br><span class="line">TARGET_USERIMAGES_USE_EXT4 := true</span><br><span class="line">BOARD_FLASH_BLOCK_SIZE := 4096</span><br><span class="line"></span><br><span class="line"><span class="comment"># SELinux</span></span><br><span class="line">BOARD_SEPOLICY_DIRS += device/generic/arm64/sepolicy</span><br></pre></td></tr></table></figure>
+
+<h1 id="六、构建输出物"><a href="#六、构建输出物" class="headerlink" title="六、构建输出物"></a>六、构建输出物</h1><h2 id="6-1-构建产物目录结构"><a href="#6-1-构建产物目录结构" class="headerlink" title="6.1 构建产物目录结构"></a>6.1 构建产物目录结构</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">out/target/product/&lt;product_name&gt;/</span><br><span class="line">├── system.img           # 系统镜像（主）</span><br><span class="line">├── vendor.img           # 厂商镜像</span><br><span class="line">├── product.img          # 产品镜像</span><br><span class="line">├── system_ext.img       # system 扩展镜像</span><br><span class="line">├── userdata.img         # 用户数据镜像</span><br><span class="line">├── boot.img             # 启动镜像（kernel + ramdisk）</span><br><span class="line">├── ramdisk.img          # RAM disk</span><br><span class="line">├── recovery.img         # 恢复镜像</span><br><span class="line">├── super.img            # 动态分区超级镜像（Android 10+）</span><br><span class="line">├── vbmeta.img           # Verified Boot 元数据</span><br><span class="line">├── obj/</span><br><span class="line">│   ├── EXECUTABLES/     # 可执行文件中间产物</span><br><span class="line">│   ├── SHARED_LIBRARIES/# .so 中间产物</span><br><span class="line">│   ├── STATIC_LIBRARIES/# .a 中间产物</span><br><span class="line">│   ├── APPS/            # APK 中间产物</span><br><span class="line">│   ├── JAVA_LIBRARIES/  # .jar 中间产物</span><br><span class="line">│   └── PACKAGING/       # 打包中间文件</span><br><span class="line">├── system/              # system 分区文件树</span><br><span class="line">│   ├── bin/</span><br><span class="line">│   ├── lib/</span><br><span class="line">│   ├── lib64/</span><br><span class="line">│   ├── etc/</span><br><span class="line">│   └── framework/</span><br><span class="line">├── root/                # ramdisk 文件树</span><br><span class="line">└── data/                # data 分区文件树</span><br></pre></td></tr></table></figure>
+
+<h2 id="6-2-构建单个模块"><a href="#6-2-构建单个模块" class="headerlink" title="6.2 构建单个模块"></a>6.2 构建单个模块</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 构建当前目录及其子目录中的模块</span></span><br><span class="line">mma</span><br><span class="line"></span><br><span class="line"><span class="comment"># 构建指定目录下的模块</span></span><br><span class="line">mmma &lt;path&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 构建指定模块（需要知道模块名）</span></span><br><span class="line">make &lt;module_name&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 构建并推送到设备</span></span><br><span class="line">make &lt;module_name&gt;</span><br><span class="line">adb <span class="built_in">sync</span></span><br><span class="line"><span class="comment"># 或者</span></span><br><span class="line">make &lt;module_name&gt;</span><br><span class="line">adb push &lt;output_path&gt; /system/...</span><br><span class="line"></span><br><span class="line"><span class="comment"># 构建 boot.img 并快速刷入</span></span><br><span class="line">m bootimage &amp;&amp; adb reboot bootloader &amp;&amp; fastboot flash boot out/.../boot.img</span><br></pre></td></tr></table></figure>
+
+<h1 id="七、Soong-高级特性"><a href="#七、Soong-高级特性" class="headerlink" title="七、Soong 高级特性"></a>七、Soong 高级特性</h1><h2 id="7-1-条件编译"><a href="#7-1-条件编译" class="headerlink" title="7.1 条件编译"></a>7.1 条件编译</h2><p>Android.bp 通过 Go 模板语言支持条件编译：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 使用 boolean 变量</span><br><span class="line">cc_library &#123;</span><br><span class="line">    name: &quot;libfoo&quot;,</span><br><span class="line">    srcs: [&quot;foo.cpp&quot;],</span><br><span class="line">    // 动态启用 neon 优化</span><br><span class="line">    arch: &#123;</span><br><span class="line">        arm: &#123;</span><br><span class="line">            srcs: [&quot;foo_neon.cpp&quot;],</span><br><span class="line">            cflags: [&quot;-mfpu=neon&quot;],</span><br><span class="line">        &#125;,</span><br><span class="line">    &#125;,</span><br><span class="line">    // 根据目标操作系统过滤</span><br><span class="line">    target: &#123;</span><br><span class="line">        android: &#123;</span><br><span class="line">            srcs: [&quot;foo_android.cpp&quot;],</span><br><span class="line">        &#125;,</span><br><span class="line">        linux_glibc: &#123;</span><br><span class="line">            srcs: [&quot;foo_linux.cpp&quot;],</span><br><span class="line">        &#125;,</span><br><span class="line">    &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="7-2-Defaults-模块"><a href="#7-2-Defaults-模块" class="headerlink" title="7.2 Defaults 模块"></a>7.2 Defaults 模块</h2><p>Defaults 模块允许复用公共配置：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 定义公共配置</span><br><span class="line">cc_defaults &#123;</span><br><span class="line">    name: &quot;my_defaults&quot;,</span><br><span class="line">    cflags: [</span><br><span class="line">        &quot;-Wall&quot;,</span><br><span class="line">        &quot;-Werror&quot;,</span><br><span class="line">        &quot;-DANDROID&quot;,</span><br><span class="line">    ],</span><br><span class="line">    shared_libs: [</span><br><span class="line">        &quot;liblog&quot;,</span><br><span class="line">        &quot;libcutils&quot;,</span><br><span class="line">    ],</span><br><span class="line">    header_libs: [</span><br><span class="line">        &quot;libbase_headers&quot;,</span><br><span class="line">    ],</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 使用 defaults</span><br><span class="line">cc_binary &#123;</span><br><span class="line">    name: &quot;my_binary1&quot;,</span><br><span class="line">    defaults: [&quot;my_defaults&quot;],</span><br><span class="line">    srcs: [&quot;binary1.cpp&quot;],</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">cc_binary &#123;</span><br><span class="line">    name: &quot;my_binary2&quot;,</span><br><span class="line">    defaults: [&quot;my_defaults&quot;],</span><br><span class="line">    srcs: [&quot;binary2.cpp&quot;],</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="7-3-生成器规则-Genrule"><a href="#7-3-生成器规则-Genrule" class="headerlink" title="7.3 生成器规则 (Genrule)"></a>7.3 生成器规则 (Genrule)</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">genrule &#123;</span><br><span class="line">    name: &quot;generate_version_header&quot;,</span><br><span class="line">    srcs: [&quot;version.txt&quot;],</span><br><span class="line">    out: [&quot;version.h&quot;],</span><br><span class="line">    cmd: &quot;echo &#x27;static const char* VERSION = \&quot;$(cat $(in))\&quot;&#x27;;&#x27; &gt; $(out)&quot;,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">cc_binary &#123;</span><br><span class="line">    name: &quot;my_app&quot;,</span><br><span class="line">    srcs: [&quot;main.cpp&quot;],</span><br><span class="line">    generated_headers: [&quot;generate_version_header&quot;],</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="八、Bazel-迁移"><a href="#八、Bazel-迁移" class="headerlink" title="八、Bazel 迁移"></a>八、Bazel 迁移</h1><h2 id="8-1-为什么向-Bazel-迁移"><a href="#8-1-为什么向-Bazel-迁移" class="headerlink" title="8.1 为什么向 Bazel 迁移"></a>8.1 为什么向 Bazel 迁移</h2><p>Bazel 是 Google 的内部构建系统 Blaze 的开源版本，Android 正逐步迁移到 Bazel：</p>
+<p><strong>Bazel 的优势：</strong></p>
+<ul>
+<li>真正的增量构建（基于内容哈希的 action cache）</li>
+<li>远程构建缓存和执行（RBE — Remote Build Execution）</li>
+<li>可重现构建（hermetic builds）</li>
+<li>跨语言和多仓库构建的天然支持</li>
+</ul>
+<p><strong>迁移路径：</strong></p>
+<ul>
+<li>Android 11+：部分模块支持用 BUILD 文件替代 Android.bp</li>
+<li>早期迁移：AndroidX、部分 APEX 模块</li>
+<li>长期目标：整个 AOSP 构建由 Bazel 管理</li>
+</ul>
+<h2 id="8-2-Bazel-与-Soong-的共存"><a href="#8-2-Bazel-与-Soong-的共存" class="headerlink" title="8.2 Bazel 与 Soong 的共存"></a>8.2 Bazel 与 Soong 的共存</h2><p>在过渡期间，Bazel 和 Soong 共存。Bazel 可以调用 Soong 模块作为依赖，反之亦然：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Bazel BUILD 文件 → 调用 soong_module() → 引用 Soong/Android.bp 中定义的模块</span><br><span class="line">Soong Android.bp  → 依赖 Bazel 模块 → 通过 bazel_module 引用</span><br></pre></td></tr></table></figure>
+
+<h1 id="九、核心面试题"><a href="#九、核心面试题" class="headerlink" title="九、核心面试题"></a>九、核心面试题</h1><p><strong>Q1：Android.mk 和 Android.bp 可以互相转换吗？为什么要推动从 .mk 向 .bp 的迁移？</strong></p>
+<p>答：(1) Android.mk 文件由 GNU Make 解析，Make 是图灵完备的，导致无法在构建前做静态分析（无法准确列出所有模块依赖关系）。Android.bp 是声明式的，解析器（Blueprint&#x2F;Soong）可以做完整的依赖图分析。(2) Make 的增量构建依赖文件时间戳，这在分布式构建中不可靠；.bp+Ninja 使用内容哈希可以做到精确的增量构建。(3) 自动化工具 <code>androidmk</code> 可以将简单的 Android.mk 转换为 Android.bp，但包含复杂 Make 条件逻辑的 .mk 文件需要手动转换。</p>
+<p><strong>Q2：<code>m</code>、<code>mm</code>、<code>mma</code>、<code>mmm</code>、<code>mmma</code> 命令之间有什么区别？什么时候用哪个？</strong></p>
+<p>答：<code>m</code> 是 make 的顶层入口，构建所有内容。<code>mm</code> 构建当前目录（及子目录）下的所有模块，但不构建依赖（假设依赖已经构建好了）。<code>mma</code> 与 <code>mm</code> 类似但会构建模块所需的依赖项。<code>mmm &lt;path&gt;</code> 和 <code>mmma &lt;path&gt;</code> 与上面类似，但作用于指定路径而非当前目录。建议日常开发使用 <code>mma</code>，它能正确处理依赖变化。如果只想快速编译一个改动的小模块且确定依赖没变，可以用 <code>mm</code> 节省时间。</p>
+<p><strong>Q3：Kati 和 Soong 都生成 .ninja 文件，它们生成的内容是如何合并的？为什么需要两个生成器？</strong></p>
+<p>答：Soong 处理 Android.bp 文件，Kati 处理剩余的 Android.mk &#x2F; Makefile 文件。Soong 生成 <code>out/soong/build.ninja</code>，Kati 生成 <code>out/build-&lt;product&gt;.ninja</code>。soong_ui 会生成 <code>out/combined-&lt;product&gt;.ninja</code> 作为两者的组合入口（通过 Ninja 的 <code>subninja</code> 指令 include 两者）。需要两个生成器的原因是：迁移是渐进的，有大量历史遗留的 .mk 文件（尤其是 device&#x2F; 和 vendor&#x2F; 下的文件），无法一次性全部转换。Soong 最终会完全取代 Kati，但目前两者需要共存。</p>
+<p><strong>Q4：如果 Android 源码构建失败，如何快速定位是哪个模块出了问题？</strong></p>
+<p>答：(1) 查看错误输出中靠近最后的编译命令和错误信息。(2) 使用 <code>m &lt;module_name&gt;</code> 单独编译失败的模块来隔离问题。(3) 查看 <code>out/error.log</code>（如果存在）。(4) 检查 <code>out/.ninja_log</code> 查看最后执行的构建步骤。(5) 如果错误与具体文件相关，检查该文件所在目录的 Android.bp 是否正确定义了依赖。(6) 使用 <code>showcommands</code> 参数查看完整编译命令：<code>make showcommands &lt;module_name&gt;</code>。(7) 对于 OTA 或 image 打包相关的错误，检查 BoardConfig.mk 中的分区大小是否足够。</p>
+<p><strong>Q5：Android 构建系统的”hermetic build”（封闭构建）是什么概念？Soong 是如何实现它的？</strong></p>
+<p>答：Hermetic build（封闭构建）是指构建结果只依赖于明确声明的输入，不受构建机器环境（如已安装的工具版本、环境变量）的影响。Soong 通过以下方式实现：(1) 使用预构建的编译工具链（prebuilts&#x2F;clang&#x2F;、prebuilts&#x2F;build-tools&#x2F;），而非系统安装的版本；(2) 通过 <code>PATH</code> 严格限制为 AOSP 提供的工具；(3) 在构建容器或 chroot 中执行，隔离宿主环境影响；(4) Soong 的沙箱机制可以检测未声明的依赖（如隐式的系统头文件引用）。Hermetic build 是实现可重现构建（reproducible builds）和远程构建缓存（RBE）的基础。</p>
+<p><strong>AOSP 核心路径参考：</strong></p>
+<ul>
+<li><code>build/soong/</code> — Soong 构建系统核心（Go 语言实现）</li>
+<li><code>build/soong/cc/</code> — C&#x2F;C++ 模块类型实现</li>
+<li><code>build/soong/java/</code> — Java 模块类型实现</li>
+<li><code>build/blueprint/</code> — Blueprint 构建系统框架</li>
+<li><code>build/make/</code> — 传统 Make 构建系统及 Kati 翻译</li>
+<li><code>build/make/core/</code> — Make 构建系统核心 .mk 文件</li>
+<li><code>build/make/target/product/</code> — 通用产品定义</li>
+<li><code>build/envsetup.sh</code> — 构建环境设置脚本</li>
+<li><code>build/soong/soong_ui.bash</code> — soong_ui 入口脚本</li>
+<li><code>prebuilts/build-tools/</code> — 预构建的构建工具（kati、ninja 等）</li>
+<li><code>prebuilts/clang/</code> — 预构建的 Clang 工具链</li>
+<li><code>external/ninja/</code> — Ninja 源码</li>
+</ul>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286927.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/02/05/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E4%BB%8B%E7%BB%8D/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286851.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【深入内核篇】操作系统介绍</span></div></a></div><div class="next-post pull_right"><a href="/2021/01/20/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91ODEX%E6%B5%81%E7%A8%8B/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286946.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【深入内核篇】ODEX流程</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286927.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

@@ -1,0 +1,454 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【深入内核篇】ODEX流程 | ONE·PIECE</title><meta name="description" content="【深入内核篇】ODEX流程"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【深入内核篇】ODEX流程"><meta name="twitter:description" content="【深入内核篇】ODEX流程"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286946.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【深入内核篇】ODEX流程"><meta property="og:url" content="http://tufusi.com/2021/01/20/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91ODEX%E6%B5%81%E7%A8%8B/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【深入内核篇】ODEX流程"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286946.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2021/01/20/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91ODEX%E6%B5%81%E7%A8%8B/"><link rel="prev" title="【深入内核篇】编译系统入门" href="http://tufusi.com/2021/02/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F%E5%85%A5%E9%97%A8/"><link rel="next" title="【深入内核篇】JNI" href="http://tufusi.com/2021/01/15/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91JNI/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E4%BB%8E-DEX-%E5%88%B0-OAT%EF%BC%9A%E7%BC%96%E8%AF%91%E6%B5%81%E6%B0%B4%E7%BA%BF"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、从 DEX 到 OAT：编译流水线</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#1-1-%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">1.1 整体流程</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#1-2-dex2oat-%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">1.2 dex2oat 的命令行</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-2-1-%E5%8F%82%E6%95%B0%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">1.2.1.</span> <span class="toc_mobile_items-text">1.2.1 参数详解</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#1-3-dex2oat-%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96%E4%B8%8E%E7%BC%96%E8%AF%91"><span class="toc_mobile_items-number">1.3.</span> <span class="toc_mobile_items-text">1.3 dex2oat 的初始化与编译</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-4-dex2oat-%E7%9A%84%E8%BF%9B%E7%A8%8B%E6%A8%A1%E5%9E%8B"><span class="toc_mobile_items-number">1.3.1.</span> <span class="toc_mobile_items-text">1.4 dex2oat 的进程模型</span></a></li></ol></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81OAT-%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、OAT 文件结构</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-1-OAT-%E6%96%87%E4%BB%B6%E5%A4%B4"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 OAT 文件头</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-2-OatDexFile%E2%80%94%E2%80%94%E6%AF%8F%E4%B8%AA-DEX-%E6%96%87%E4%BB%B6%E7%9A%84%E5%85%83%E6%95%B0%E6%8D%AE"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 OatDexFile——每个 DEX 文件的元数据</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-3-OatClass%E2%80%94%E2%80%94%E6%AF%8F%E4%B8%AA%E7%B1%BB%E7%9A%84%E7%BC%96%E8%AF%91%E7%8A%B6%E6%80%81"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 OatClass——每个类的编译状态</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-4-OatQuickMethodHeader%E2%80%94%E2%80%94%E6%AF%8F%E4%B8%AA%E6%96%B9%E6%B3%95%E7%9A%84%E7%BC%96%E8%AF%91%E4%BB%A3%E7%A0%81%E5%A4%B4"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">2.4 OatQuickMethodHeader——每个方法的编译代码头</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-5-Boot-Image-%E4%B8%8E-art-%E6%96%87%E4%BB%B6"><span class="toc_mobile_items-number">2.5.</span> <span class="toc_mobile_items-text">2.5 Boot Image 与 .art 文件</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81VDEX-%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、VDEX 文件格式</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-Quickening-%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">3.0.1.</span> <span class="toc_mobile_items-text">3.1 Quickening 详解</span></a></li></ol></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81Compilation-Filter%EF%BC%88%E7%BC%96%E8%AF%91%E8%BF%87%E6%BB%A4%E5%99%A8%EF%BC%89"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、Compilation Filter（编译过滤器）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-Profile-Guided-Compilation-%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="toc_mobile_items-number">4.0.1.</span> <span class="toc_mobile_items-text">4.1 Profile-Guided Compilation 的工作原理</span></a></li></ol></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81%E7%B3%BB%E7%BB%9F-OTA-%E5%8D%87%E7%BA%A7%E6%97%B6%E7%9A%84-dexopt"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、系统 OTA 升级时的 dexopt</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-1-OAT-%E6%96%87%E4%BB%B6%E9%AA%8C%E8%AF%81%E4%B8%8E%E5%A4%B1%E6%95%88%E5%88%A4%E6%96%AD"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 OAT 文件验证与失效判断</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E5%AE%89%E8%A3%85%E6%97%B6-dexopt-vs-OTA-dexopt-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、安装时 dexopt vs OTA dexopt 的区别</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-1-Android-10-%E7%9A%84-dexopt-%E5%BB%B6%E8%BF%9F%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 Android 10+ 的 dexopt 延迟策略</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-2-Cloud-Profiles"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 Cloud Profiles</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E6%A0%B8%E5%BF%83%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、核心面试题</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-3-Android-12-%E7%9A%84-ART-%E6%A8%A1%E5%9D%97%E5%8C%96"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">6.3 Android 12+ 的 ART 模块化</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-4-dexlayout-%E4%B8%8E-dex-%E9%87%8D%E6%8E%92"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">6.4 dexlayout 与 dex 重排</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-5-JIT-%E7%BC%96%E8%AF%91%E4%B8%8E-OAT-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">6.5 JIT 编译与 OAT 的关系</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81dex2oat-%E7%9A%84%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B%E6%B7%B1%E5%BA%A6%E5%89%96%E6%9E%90"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、dex2oat 的编译流程深度剖析</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-1-DEX-%E6%96%87%E4%BB%B6%E9%AA%8C%E8%AF%81%E9%98%B6%E6%AE%B5"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">8.1 DEX 文件验证阶段</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-2-Quickening-%E7%9A%84%E5%85%B7%E4%BD%93%E4%BC%98%E5%8C%96%E5%86%85%E5%AE%B9"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">8.2 Quickening 的具体优化内容</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-3-AOT-%E7%BC%96%E8%AF%91%E7%9A%84%E5%85%B7%E4%BD%93%E4%BC%98%E5%8C%96"><span class="toc_mobile_items-number">8.3.</span> <span class="toc_mobile_items-text">8.3 AOT 编译的具体优化</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-4-OAT-%E6%96%87%E4%BB%B6%E7%9A%84-mmap-%E6%98%A0%E5%B0%84"><span class="toc_mobile_items-number">8.4.</span> <span class="toc_mobile_items-text">8.4 OAT 文件的 mmap 映射</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-5-%E8%BF%90%E8%A1%8C%E6%97%B6%E6%96%B9%E6%B3%95%E6%9F%A5%E6%89%BE%E7%9A%84%E5%AE%8C%E6%95%B4%E8%B7%AF%E5%BE%84"><span class="toc_mobile_items-number">8.5.</span> <span class="toc_mobile_items-text">8.5 运行时方法查找的完整路径</span></a></li></ol></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%BB%8E-DEX-%E5%88%B0-OAT%EF%BC%9A%E7%BC%96%E8%AF%91%E6%B5%81%E6%B0%B4%E7%BA%BF"><span class="toc-number">1.</span> <span class="toc-text">一、从 DEX 到 OAT：编译流水线</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 整体流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-dex2oat-%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 dex2oat 的命令行</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-1-%E5%8F%82%E6%95%B0%E8%AF%A6%E8%A7%A3"><span class="toc-number">1.2.1.</span> <span class="toc-text">1.2.1 参数详解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-3-dex2oat-%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96%E4%B8%8E%E7%BC%96%E8%AF%91"><span class="toc-number">1.3.</span> <span class="toc-text">1.3 dex2oat 的初始化与编译</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-dex2oat-%E7%9A%84%E8%BF%9B%E7%A8%8B%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.3.1.</span> <span class="toc-text">1.4 dex2oat 的进程模型</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81OAT-%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">二、OAT 文件结构</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-OAT-%E6%96%87%E4%BB%B6%E5%A4%B4"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 OAT 文件头</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-OatDexFile%E2%80%94%E2%80%94%E6%AF%8F%E4%B8%AA-DEX-%E6%96%87%E4%BB%B6%E7%9A%84%E5%85%83%E6%95%B0%E6%8D%AE"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 OatDexFile——每个 DEX 文件的元数据</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-OatClass%E2%80%94%E2%80%94%E6%AF%8F%E4%B8%AA%E7%B1%BB%E7%9A%84%E7%BC%96%E8%AF%91%E7%8A%B6%E6%80%81"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 OatClass——每个类的编译状态</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-4-OatQuickMethodHeader%E2%80%94%E2%80%94%E6%AF%8F%E4%B8%AA%E6%96%B9%E6%B3%95%E7%9A%84%E7%BC%96%E8%AF%91%E4%BB%A3%E7%A0%81%E5%A4%B4"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 OatQuickMethodHeader——每个方法的编译代码头</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-5-Boot-Image-%E4%B8%8E-art-%E6%96%87%E4%BB%B6"><span class="toc-number">2.5.</span> <span class="toc-text">2.5 Boot Image 与 .art 文件</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81VDEX-%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="toc-number">3.</span> <span class="toc-text">三、VDEX 文件格式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Quickening-%E8%AF%A6%E8%A7%A3"><span class="toc-number">3.0.1.</span> <span class="toc-text">3.1 Quickening 详解</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Compilation-Filter%EF%BC%88%E7%BC%96%E8%AF%91%E8%BF%87%E6%BB%A4%E5%99%A8%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">四、Compilation Filter（编译过滤器）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Profile-Guided-Compilation-%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="toc-number">4.0.1.</span> <span class="toc-text">4.1 Profile-Guided Compilation 的工作原理</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E7%B3%BB%E7%BB%9F-OTA-%E5%8D%87%E7%BA%A7%E6%97%B6%E7%9A%84-dexopt"><span class="toc-number">5.</span> <span class="toc-text">五、系统 OTA 升级时的 dexopt</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#5-1-OAT-%E6%96%87%E4%BB%B6%E9%AA%8C%E8%AF%81%E4%B8%8E%E5%A4%B1%E6%95%88%E5%88%A4%E6%96%AD"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 OAT 文件验证与失效判断</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%AE%89%E8%A3%85%E6%97%B6-dexopt-vs-OTA-dexopt-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">6.</span> <span class="toc-text">六、安装时 dexopt vs OTA dexopt 的区别</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#6-1-Android-10-%E7%9A%84-dexopt-%E5%BB%B6%E8%BF%9F%E7%AD%96%E7%95%A5"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 Android 10+ 的 dexopt 延迟策略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-2-Cloud-Profiles"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 Cloud Profiles</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E6%A0%B8%E5%BF%83%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="toc-number">7.</span> <span class="toc-text">七、核心面试题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#6-3-Android-12-%E7%9A%84-ART-%E6%A8%A1%E5%9D%97%E5%8C%96"><span class="toc-number">7.1.</span> <span class="toc-text">6.3 Android 12+ 的 ART 模块化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-4-dexlayout-%E4%B8%8E-dex-%E9%87%8D%E6%8E%92"><span class="toc-number">7.2.</span> <span class="toc-text">6.4 dexlayout 与 dex 重排</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-5-JIT-%E7%BC%96%E8%AF%91%E4%B8%8E-OAT-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">7.3.</span> <span class="toc-text">6.5 JIT 编译与 OAT 的关系</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AB%E3%80%81dex2oat-%E7%9A%84%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B%E6%B7%B1%E5%BA%A6%E5%89%96%E6%9E%90"><span class="toc-number">8.</span> <span class="toc-text">八、dex2oat 的编译流程深度剖析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#8-1-DEX-%E6%96%87%E4%BB%B6%E9%AA%8C%E8%AF%81%E9%98%B6%E6%AE%B5"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 DEX 文件验证阶段</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-2-Quickening-%E7%9A%84%E5%85%B7%E4%BD%93%E4%BC%98%E5%8C%96%E5%86%85%E5%AE%B9"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 Quickening 的具体优化内容</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-3-AOT-%E7%BC%96%E8%AF%91%E7%9A%84%E5%85%B7%E4%BD%93%E4%BC%98%E5%8C%96"><span class="toc-number">8.3.</span> <span class="toc-text">8.3 AOT 编译的具体优化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-4-OAT-%E6%96%87%E4%BB%B6%E7%9A%84-mmap-%E6%98%A0%E5%B0%84"><span class="toc-number">8.4.</span> <span class="toc-text">8.4 OAT 文件的 mmap 映射</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-5-%E8%BF%90%E8%A1%8C%E6%97%B6%E6%96%B9%E6%B3%95%E6%9F%A5%E6%89%BE%E7%9A%84%E5%AE%8C%E6%95%B4%E8%B7%AF%E5%BE%84"><span class="toc-number">8.5.</span> <span class="toc-text">8.5 运行时方法查找的完整路径</span></a></li></ol></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286946.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【深入内核篇】ODEX流程</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-01-20<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">5.2k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 19 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>ODEX（Optimized DEX）和 VDEX（Verifiable DEX）是 Android 运行时性能的关键组件。从 APK 安装时触发的 dex2oat 编译，到 OAT 文件的结构、编译过滤器（compiler filter）的选择，再到系统 OTA 升级时的全局 dexopt——本文完整解析 Android DEX 优化流程。</p>
+<span id="more"></span>
+
+<h1 id="一、从-DEX-到-OAT：编译流水线"><a href="#一、从-DEX-到-OAT：编译流水线" class="headerlink" title="一、从 DEX 到 OAT：编译流水线"></a>一、从 DEX 到 OAT：编译流水线</h1><h2 id="1-1-整体流程"><a href="#1-1-整体流程" class="headerlink" title="1.1 整体流程"></a>1.1 整体流程</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">APK 中的 classes.dex（Dalvik Executable 字节码）</span><br><span class="line">        │</span><br><span class="line">        ▼</span><br><span class="line">┌─────────────────────────────────────┐</span><br><span class="line">│          dex2oat 编译器               │</span><br><span class="line">│  ┌─────────────────────────────────┐ │</span><br><span class="line">│  │ 1. 解析 DEX 文件                 │ │</span><br><span class="line">│  │ 2. 验证字节码                     │ │</span><br><span class="line">│  │ 3. 优化字节码（Quickening）       │ │</span><br><span class="line">│  │ 4. 编译为机器码（AOT Compilation）│ │</span><br><span class="line">│  │ 5. 输出 OAT + VDEX 文件          │ │</span><br><span class="line">│  └─────────────────────────────────┘ │</span><br><span class="line">└─────────────────────────────────────┘</span><br><span class="line">        │</span><br><span class="line">        ▼</span><br><span class="line">┌───────────────────────────────────────────────┐</span><br><span class="line">│   /data/dalvik-cache/ (或 /data/app/&lt;pkg&gt;/oat/)│</span><br><span class="line">│   ├── &lt;pkg&gt;.odex  (OAT 文件)                    │</span><br><span class="line">│   └── &lt;pkg&gt;.vdex  (VDEX 文件)                   │</span><br><span class="line">└───────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p>AOSP 核心路径：</p>
+<ul>
+<li><code>art/dex2oat/</code> — dex2oat 编译器源码</li>
+<li><code>art/runtime/oat_file.h</code> 和 <code>art/runtime/oat_file.cc</code> — OAT 文件结构</li>
+<li><code>art/runtime/oat_file_assistant.h</code> — OAT 文件查找和验证</li>
+<li><code>art/libdexfile/dex/</code> — DEX 文件解析库</li>
+</ul>
+<h2 id="1-2-dex2oat-的命令行"><a href="#1-2-dex2oat-的命令行" class="headerlink" title="1.2 dex2oat 的命令行"></a>1.2 dex2oat 的命令行</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 典型调用（由 installd 发起）</span></span><br><span class="line">dex2oat \</span><br><span class="line">  --dex-file=/data/app/com.example.app-xxx/base.apk \</span><br><span class="line">  --oat-file=/data/app/com.example.app-xxx/oat/arm64/base.odex \</span><br><span class="line">  --compiler-filter=speed-profile \</span><br><span class="line">  --instruction-set=arm64 \</span><br><span class="line">  --android-root=/system \</span><br><span class="line">  --app-image-file=/data/app/com.example.app-xxx/oat/arm64/base.art</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-1-参数详解"><a href="#1-2-1-参数详解" class="headerlink" title="1.2.1 参数详解"></a>1.2.1 参数详解</h3><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--dex-file</code></td>
+<td>输入 DEX 文件的路径（可以是 APK 文件也可以是独立的 .dex 文件）</td>
+</tr>
+<tr>
+<td><code>--oat-file</code></td>
+<td>输出 OAT 文件的路径</td>
+</tr>
+<tr>
+<td><code>--compiler-filter</code></td>
+<td>编译过滤器，控制编译粒度</td>
+</tr>
+<tr>
+<td><code>--instruction-set</code></td>
+<td>目标 CPU 指令集（arm&#x2F;arm64&#x2F;x86&#x2F;x86_64）</td>
+</tr>
+<tr>
+<td><code>--app-image-file</code></td>
+<td>应用映像文件（用于存储 AOT 编译后的类对象）</td>
+</tr>
+<tr>
+<td><code>--classpath-dir</code></td>
+<td>Boot classpath 目录</td>
+</tr>
+<tr>
+<td><code>--profile-file</code></td>
+<td>Profile 文件路径（用于 speed-profile 过滤器）</td>
+</tr>
+</tbody></table>
+<h2 id="1-3-dex2oat-的初始化与编译"><a href="#1-3-dex2oat-的初始化与编译" class="headerlink" title="1.3 dex2oat 的初始化与编译"></a>1.3 dex2oat 的初始化与编译</h2><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// art/dex2oat/dex2oat.cc</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span>** argv)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 解析命令行参数</span></span><br><span class="line">    <span class="keyword">auto</span> dex2oat = std::<span class="built_in">make_unique</span>&lt;Dex2Oat&gt;(&amp;parser);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. 创建 Runtime（ART 运行时实例，用于编译）</span></span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">CreateRuntime</span>(dex2oat.<span class="built_in">get</span>(), &amp;args)) &#123;</span><br><span class="line">        <span class="keyword">return</span> EXIT_FAILURE;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 3. 加载 DEX 文件和 Class 验证</span></span><br><span class="line">    dex2oat-&gt;<span class="built_in">LoadClassProfileDescriptors</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 4. 执行编译</span></span><br><span class="line">    dex2oat-&gt;<span class="built_in">Compile</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 5. 输出 OAT + VDEX 文件</span></span><br><span class="line">    dex2oat-&gt;<span class="built_in">WriteOatFiles</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> EXIT_SUCCESS;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// art/dex2oat/dex2oat.cc</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">Dex2Oat::Compile</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 遍历 class_defs，对每类进行编译</span></span><br><span class="line">    <span class="function">TimingLogger::ScopedTiming <span class="title">t</span><span class="params">(<span class="string">&quot;dex2oat Compile&quot;</span>, timings_)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 打开所有 DEX 文件</span></span><br><span class="line">    <span class="built_in">OpenDexFiles</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 根据 compiler filter 决定编译粒度</span></span><br><span class="line">    CompilerFilter::Filter filter = compiler_options_-&gt;<span class="built_in">GetCompilerFilter</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 对 DEX 中的类进行编译</span></span><br><span class="line">    driver_-&gt;<span class="built_in">CompileAll</span>(class_loader, dex_files_, timings_);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-4-dex2oat-的进程模型"><a href="#1-4-dex2oat-的进程模型" class="headerlink" title="1.4 dex2oat 的进程模型"></a>1.4 dex2oat 的进程模型</h3><p>dex2oat 不是以线程的方式在 system_server 中运行，而是由 <code>installd</code> 守护进程 fork 出独立进程。这样做的原因：</p>
+<ol>
+<li><strong>内存隔离</strong>：dex2oat 编译过程中会创建 ART Runtime，占用大量内存（首次编译可能需 100MB+），独立的进程在编译完成后可完全释放内存。</li>
+<li><strong>崩溃隔离</strong>：如果 dex2oat 因 OOM 或其他原因 crash，不会影响 system_server（AMS、PKMS 等）。</li>
+<li><strong>安全隔离</strong>：dex2oat 运行在 <code>installd</code> 的 selinux domain 下，不与 system_server 共享权限。</li>
+</ol>
+<h1 id="二、OAT-文件结构"><a href="#二、OAT-文件结构" class="headerlink" title="二、OAT 文件结构"></a>二、OAT 文件结构</h1><h2 id="2-1-OAT-文件头"><a href="#2-1-OAT-文件头" class="headerlink" title="2.1 OAT 文件头"></a>2.1 OAT 文件头</h2><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// art/runtime/oat.h</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">OatHeader</span> &#123;</span><br><span class="line">    <span class="type">uint8_t</span> magic_[<span class="number">4</span>];           <span class="comment">// &quot;oat\n&quot;</span></span><br><span class="line">    <span class="type">uint8_t</span> version_[<span class="number">4</span>];         <span class="comment">// OAT 版本号（如 0x00e3）</span></span><br><span class="line">    <span class="type">uint32_t</span> adler32_checksum_;  <span class="comment">// 文件完整性校验</span></span><br><span class="line"></span><br><span class="line">    InstructionSet instruction_set_;  <span class="comment">// 目标指令集（arm64, x86_64 等）</span></span><br><span class="line">    <span class="type">uint32_t</span> instruction_set_features_bitmap_;</span><br><span class="line"></span><br><span class="line">    <span class="type">uint32_t</span> dex_file_count_;         <span class="comment">// 包含的 DEX 文件数</span></span><br><span class="line">    <span class="type">uint32_t</span> oat_dex_files_offset_;   <span class="comment">// OatDexFile 数组的偏移量</span></span><br><span class="line">    <span class="type">uint32_t</span> executable_offset_;      <span class="comment">// 可执行代码开始偏移</span></span><br><span class="line">    <span class="type">uint32_t</span> jni_dlsym_lookup_offset_;<span class="comment">// JNI dlsym 查找表偏移</span></span><br><span class="line">    <span class="type">uint32_t</span> quick_generic_jni_trampoline_offset_;</span><br><span class="line">    <span class="type">uint32_t</span> quick_imt_conflict_trampoline_offset_;</span><br><span class="line">    <span class="type">uint32_t</span> quick_resolution_trampoline_offset_;</span><br><span class="line">    <span class="type">uint32_t</span> quick_to_interpreter_bridge_offset_;</span><br><span class="line"></span><br><span class="line">    <span class="type">int32_t</span> image_patch_delta_;       <span class="comment">// 如果是 boot.oat，此字段非零</span></span><br><span class="line"></span><br><span class="line">    <span class="type">uint32_t</span> image_file_location_oat_checksum_;</span><br><span class="line">    <span class="type">uint32_t</span> image_file_location_oat_data_begin_;</span><br><span class="line"></span><br><span class="line">    <span class="type">uint32_t</span> key_value_store_size_;   <span class="comment">// 键值对元数据存储大小</span></span><br><span class="line">    <span class="comment">// 后面跟着 key_value_store_ 数据（如 classpath 信息、安全补丁日期等）</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><strong>magic 字段的作用</strong>：<code>&quot;oat\n&quot;</code> 这个 4 字节的魔数用于快速识别文件类型。如果文件格式不兼容，版本号会变更，ART 在加载时检测并拒绝加载。</p>
+<p><strong>key_value_store</strong>：一个字符串键值对列表，存储编译时的环境信息。如：</p>
+<ul>
+<li><code>debuggable</code> → “true”&#x2F;“false”</li>
+<li><code>classpath</code> → “&#x2F;system&#x2F;framework&#x2F;…”</li>
+<li><code>compiler-filter</code> → “speed-profile”</li>
+</ul>
+<h2 id="2-2-OatDexFile——每个-DEX-文件的元数据"><a href="#2-2-OatDexFile——每个-DEX-文件的元数据" class="headerlink" title="2.2 OatDexFile——每个 DEX 文件的元数据"></a>2.2 OatDexFile——每个 DEX 文件的元数据</h2><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// art/runtime/oat_file.h</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">OatDexFile</span> &#123;</span><br><span class="line">    <span class="comment">// 原始 DEX 文件的路径</span></span><br><span class="line">    std::string dex_file_location_;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// DEX 文件的 checksum</span></span><br><span class="line">    <span class="type">uint32_t</span> dex_file_location_checksum_;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 对应 DEX 文件在 OAT 中的偏移量</span></span><br><span class="line">    <span class="type">uint32_t</span> dex_file_offset_;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 此 DEX 文件中所有类的 OatClass 查找表</span></span><br><span class="line">    <span class="comment">// 格式：lookup_table[num_class_defs]</span></span><br><span class="line">    <span class="comment">// lookup_table[i] 指向第 i 个类的 OatClass 的状态/偏移量</span></span><br><span class="line">    <span class="type">const</span> <span class="type">uint32_t</span>* lookup_table_data_;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>OAT 文件中 DEX 文件偏移的格式是 <code>0xPPPPNNNN</code>，其中 <code>PPPP</code> 是 OAT 内部的偏移页，<code>NNNN</code> 标识具体位置。</p>
+<h2 id="2-3-OatClass——每个类的编译状态"><a href="#2-3-OatClass——每个类的编译状态" class="headerlink" title="2.3 OatClass——每个类的编译状态"></a>2.3 OatClass——每个类的编译状态</h2><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// art/runtime/oat_file.h</span></span><br><span class="line"><span class="keyword">enum class</span> <span class="title class_">OatClassType</span> : <span class="type">uint8_t</span> &#123;</span><br><span class="line">    kOatClassAllCompiled = <span class="number">0</span>,     <span class="comment">// 所有方法都编译为 native 代码</span></span><br><span class="line">    kOatClassSomeCompiled = <span class="number">1</span>,    <span class="comment">// 部分方法编译</span></span><br><span class="line">    kOatClassNoneCompiled = <span class="number">2</span>,    <span class="comment">// 无编译（解释执行）</span></span><br><span class="line">    kOatClassMax = <span class="number">3</span>,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">OatClass</span> &#123;</span><br><span class="line">    OatClassType type_;</span><br><span class="line">    <span class="type">uint32_t</span> methods_pointer_offset_;  <span class="comment">// 方法偏移表的偏移量</span></span><br><span class="line">    <span class="comment">// 如果 type_ == kOatClassSomeCompiled：</span></span><br><span class="line">    <span class="comment">//   后面跟着方法和代码的 bitmap + offset 表</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>对于 <code>kOatClassSomeCompiled</code> 的类，每个方法有一个 32-bit 的偏移量（相对于 OAT 文件起始位置），指向其在 OAT 中的编译代码。运行时使用 <code>lookup_table[method_idx]</code> 快速定位方法代码。</p>
+<h2 id="2-4-OatQuickMethodHeader——每个方法的编译代码头"><a href="#2-4-OatQuickMethodHeader——每个方法的编译代码头" class="headerlink" title="2.4 OatQuickMethodHeader——每个方法的编译代码头"></a>2.4 OatQuickMethodHeader——每个方法的编译代码头</h2><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// art/runtime/oat_quick_method_header.h</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">OatQuickMethodHeader</span> &#123;</span><br><span class="line">    <span class="type">uint32_t</span> vmap_table_offset_;         <span class="comment">// 虚拟映射表偏移</span></span><br><span class="line">    <span class="type">uint32_t</span> code_size_;                 <span class="comment">// 编译代码的大小</span></span><br><span class="line">    <span class="comment">// 后面跟着实际的机器码</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>vmap_table 是 stack map（也称作 GC map），用于 GC 时解析栈帧——确定哪些寄存器&#x2F;栈位置包含对象引用。</p>
+<h2 id="2-5-Boot-Image-与-art-文件"><a href="#2-5-Boot-Image-与-art-文件" class="headerlink" title="2.5 Boot Image 与 .art 文件"></a>2.5 Boot Image 与 .art 文件</h2><p>从 Android 5.0（ART 第一个正式版本）开始，系统预编译 boot classpath 中的类并存储在 <code>/system/framework/arm64/boot.art</code> 中。boot.art 是一个映像文件（image file），包含预初始化的类对象和它们的 AOT 代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">boot.art = 类对象的内存快照 + AOT 编译代码</span><br></pre></td></tr></table></figure>
+
+<p>运行时，ART 直接 mmap boot.art 文件，避免了重新解析和编译 framework 类的大量工作。应用级别的 .art 文件（如 base.art）存储了应用自身的预加载类。</p>
+<h1 id="三、VDEX-文件格式"><a href="#三、VDEX-文件格式" class="headerlink" title="三、VDEX 文件格式"></a>三、VDEX 文件格式</h1><p>Android 8.0 引入了 VDEX 格式，包含：</p>
+<ol>
+<li><strong>未压缩的 DEX 文件</strong>：供运行时快速加载，无需从 APK zip 中解压</li>
+<li><strong>Quickening 信息</strong>：预优化的字节码（如将虚方法调用的 method_idx 替换为 vtable index）</li>
+<li><strong>验证信息</strong>：DEX 字节码验证结果，运行时加载时可直接信任</li>
+</ol>
+<p>VDEX 的设计目标：将 DEX 验证和部分优化工作从 APK 首次启动时（Runtime）前置到安装时（dex2oat），从而显著减少应用的冷启动时间。</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// art/runtime/vdex_file.h</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">VdexFile</span> &#123;</span><br><span class="line">    <span class="comment">// VDEX 文件头</span></span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">VdexFileHeader</span> &#123;</span><br><span class="line">        <span class="type">uint8_t</span> magic_[<span class="number">4</span>];       <span class="comment">// &quot;vdex&quot;</span></span><br><span class="line">        <span class="type">uint8_t</span> version_[<span class="number">4</span>];     <span class="comment">// VDEX 版本号</span></span><br><span class="line">        <span class="type">uint32_t</span> number_of_sections_;</span><br><span class="line">        <span class="comment">// sections_: 包含 DEX 文件段、Quickening 信息段、验证依赖段</span></span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取未压缩的 DEX 文件</span></span><br><span class="line">    <span class="function"><span class="type">const</span> <span class="type">uint8_t</span>* <span class="title">GetNextDexFileData</span><span class="params">(<span class="type">const</span> <span class="type">uint8_t</span>* cursor)</span> <span class="type">const</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取 Quickening 信息</span></span><br><span class="line">    <span class="function"><span class="type">const</span> <span class="type">uint8_t</span>* <span class="title">GetQuickeningInfo</span><span class="params">()</span> <span class="type">const</span></span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-1-Quickening-详解"><a href="#3-1-Quickening-详解" class="headerlink" title="3.1 Quickening 详解"></a>3.1 Quickening 详解</h3><p>Quickening 是面向 DEX 字节码的优化，不需要编译成机器码。具体优化包括：</p>
+<ol>
+<li><strong>虚方法调用优化</strong>：将 <code>invoke-virtual &#123;v0, v1&#125;, method@idx</code> 中的 method_idx 替换为 vtable_index，运行时直接通过 vtable 跳转。</li>
+<li><strong>字段访问优化</strong>：将 <code>iget</code>&#x2F;<code>iput</code>（实例字段访问）和 <code>sget</code>&#x2F;<code>sput</code>（静态字段访问）的 field_idx 替换为字节偏移量。</li>
+<li><strong>内联简单方法</strong>：getter&#x2F;setter 等单行方法直接在字节码层面内联，避免方法调用开销。</li>
+</ol>
+<p>Quickening 的优势：</p>
+<ul>
+<li><strong>编译速度极快</strong>：不需要生成目标机器的指令，只是修改 DEX 字节码的某些字段</li>
+<li><strong>文件体积增长小</strong>：比 AOT 编译的 .odex 小得多（约为原始 DEX 的 1.1-1.3x）</li>
+<li><strong>与 Profile-Guided JIT 互补</strong>：Quickening 优化了所有方法的基础路径，JIT 再进一步优化热点方法</li>
+</ul>
+<h1 id="四、Compilation-Filter（编译过滤器）"><a href="#四、Compilation-Filter（编译过滤器）" class="headerlink" title="四、Compilation Filter（编译过滤器）"></a>四、Compilation Filter（编译过滤器）</h1><p>dex2oat 支持多种编译过滤器，控制 AOT 编译的粒度。由 <code>compiler-filter</code> 参数指定：</p>
+<table>
+<thead>
+<tr>
+<th>Filter</th>
+<th>行为</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>verify</strong></td>
+<td>仅验证 DEX 字节码，不编译任何方法</td>
+<td>开发调试阶段</td>
+</tr>
+<tr>
+<td><strong>quicken</strong></td>
+<td>优化字节码（Quickening），不编译为机器码</td>
+<td>存储空间受限的设备</td>
+</tr>
+<tr>
+<td><strong>speed-profile</strong></td>
+<td>基于 Profile 指导编译：热方法 AOT，冷方法解释&#x2F;JIT</td>
+<td>生产环境推荐（平衡性能与空间）</td>
+</tr>
+<tr>
+<td><strong>speed</strong></td>
+<td>编译所有方法（full AOT）</td>
+<td>对性能极致要求的场景</td>
+</tr>
+<tr>
+<td><strong>everything</strong></td>
+<td>编译所有方法 + 运行时特殊路径（如 JNI stub）</td>
+<td>极少使用（空间开销巨大）</td>
+</tr>
+<tr>
+<td><strong>extract</strong></td>
+<td>从 APK 中提取并验证 DEX，不做任何编译</td>
+<td>Android 11+ 新增，依赖 JIT</td>
+</tr>
+<tr>
+<td><strong>verify-none</strong></td>
+<td>最低开销，跳过所有验证和编译</td>
+<td>特殊场景（已预验证）</td>
+</tr>
+</tbody></table>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/services/core/java/com/android/server/pm/PackageManagerService.java</span></span><br><span class="line"><span class="comment">// 安装时指定编译过滤器</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">performDexopt</span><span class="params">(List&lt;PackageSetting&gt; pkgSettings, ...)</span> &#123;</span><br><span class="line">    String compilerFilter;</span><br><span class="line">    <span class="keyword">if</span> (isSystemApp) &#123;</span><br><span class="line">        compilerFilter = <span class="string">&quot;speed&quot;</span>;          <span class="comment">// 系统应用全 AOT</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isProfileGuidedCompile) &#123;</span><br><span class="line">        compilerFilter = <span class="string">&quot;speed-profile&quot;</span>;  <span class="comment">// 第三方应用 profile guided</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        compilerFilter = <span class="string">&quot;quicken&quot;</span>;        <span class="comment">// 仅 quickening</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 调用 installd 执行</span></span><br><span class="line">    mInstaller.dexopt(pkgPath, ..., compilerFilter, ...);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// art/dex2oat/compiler_filter.h</span></span><br><span class="line"><span class="keyword">enum class</span> <span class="title class_">Filter</span> &#123;</span><br><span class="line">    kVerify,          <span class="comment">// 仅验证，无任何优化</span></span><br><span class="line">    kQuicken,         <span class="comment">// Quickening 优化</span></span><br><span class="line">    kSpeedProfile,    <span class="comment">// 基于 profile 的 AOT</span></span><br><span class="line">    kSpeed,           <span class="comment">// 全 AOT</span></span><br><span class="line">    kEverything,      <span class="comment">// 全编译</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 判断某个方法是否需要 AOT 编译</span></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">CompilerFilter::IsAotCompilationEnabled</span><span class="params">(Filter filter)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> filter &gt;= Filter::kSpeedProfile;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-1-Profile-Guided-Compilation-的工作原理"><a href="#4-1-Profile-Guided-Compilation-的工作原理" class="headerlink" title="4.1 Profile-Guided Compilation 的工作原理"></a>4.1 Profile-Guided Compilation 的工作原理</h3><p><code>speed-profile</code> 过滤器依赖应用运行时的 Profile 数据。工作流程：</p>
+<ol>
+<li><strong>运行时</strong>：ART JIT 编译热点方法，同时记录这些方法的 ID 到 profile 文件</li>
+<li><strong>空闲时</strong>：<code>BackgroundDexOptService</code> 触发 <code>dex2oat --compiler-filter=speed-profile --profile-file=...</code></li>
+<li><strong>dex2oat</strong>：只编译 profile 中记录的那些热方法（通常是全部方法的 10%-20%），其余方法保留为解释&#x2F;JIT</li>
+</ol>
+<p>这称为 <strong>Profile-Guided Optimization (PGO)</strong> 在 Android 上的应用。场景评估：启动时常用路径约几千个方法被编译，90%+ 的非关键路径方法保有解释&#x2F;JIT 覆盖，OAT 文件大小缩减到全 AOT 的约 20%。</p>
+<h1 id="五、系统-OTA-升级时的-dexopt"><a href="#五、系统-OTA-升级时的-dexopt" class="headerlink" title="五、系统 OTA 升级时的 dexopt"></a>五、系统 OTA 升级时的 dexopt</h1><p>当系统 OTA 升级完成后，framework 的 boot classpath 发生变化，需要重新编译所有应用的 OAT 文件。这个操作由 <code>ota-dexopt</code> 触发：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/services/core/java/com/android/server/pm/BackgroundDexOptService.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BackgroundDexOptService</span> <span class="keyword">extends</span> <span class="title class_">Service</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">onStartCommand</span><span class="params">(Intent intent, <span class="type">int</span> flags, <span class="type">int</span> startId)</span> &#123;</span><br><span class="line">        <span class="comment">// 在充电 + 空闲时，后台执行 dexopt</span></span><br><span class="line">        <span class="comment">// 常用于 OTA 升级后为所有应用重新编译</span></span><br><span class="line">        mDexOptHandler.post(() -&gt; &#123;</span><br><span class="line">            performBackgroundDexOpt(packageName);</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="keyword">return</span> START_STICKY;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>系统升级后的 dexopt 路径：</p>
+<ol>
+<li><code>ota-dexopt</code> 或 <code>bg-dexopt</code> 脚本被触发</li>
+<li><code>installd</code> 收到指令，遍历 <code>/data/app/</code> 下所有应用</li>
+<li>对每个应用调用 <code>dex2oat</code>，根据其当前的 compiler filter 重新编译</li>
+<li>新生成的 <code>.odex</code> 和 <code>.vdex</code> 文件覆盖旧的</li>
+</ol>
+<h2 id="5-1-OAT-文件验证与失效判断"><a href="#5-1-OAT-文件验证与失效判断" class="headerlink" title="5.1 OAT 文件验证与失效判断"></a>5.1 OAT 文件验证与失效判断</h2><p>ART 加载 OAT 文件时，通过 <code>OatFileAssistant</code> 进行多项检查：</p>
+<ol>
+<li><strong>DEX checksum 匹配</strong>：当前 DEX 的 checksum 必须与 OAT 记录的一致</li>
+<li><strong>Boot classpath 匹配</strong>：OAT 编译时的 boot.art checksum 必须与当前系统的匹配</li>
+<li><strong>版本号匹配</strong>：OAT 文件版本必须与 ART 支持的版本兼容</li>
+</ol>
+<p>如果 boot classpath 在 OTA 后发生变化（framework 方法被修改），所有依赖旧 boot classpath 的 AOT 编译代码都失效——其中内联了旧版本的 framework 方法。这也是为什么 OTA 需要重新 dexopt。</p>
+<h1 id="六、安装时-dexopt-vs-OTA-dexopt-的区别"><a href="#六、安装时-dexopt-vs-OTA-dexopt-的区别" class="headerlink" title="六、安装时 dexopt vs OTA dexopt 的区别"></a>六、安装时 dexopt vs OTA dexopt 的区别</h1><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>安装时 dexopt</th>
+<th>OTA dexopt</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>触发时机</td>
+<td>APK 安装完成时（PackageInstallerSession.commit）</td>
+<td>系统 OTA 升级后</td>
+</tr>
+<tr>
+<td>范围</td>
+<td>仅新安装&#x2F;更新的应用</td>
+<td>所有已安装应用</td>
+</tr>
+<tr>
+<td>编译过滤器</td>
+<td>新应用默认 speed-profile</td>
+<td>继承原有 filter</td>
+</tr>
+<tr>
+<td>执行环境</td>
+<td>可与前台安装并行（后台线程）</td>
+<td>通常在充电且空闲时执行</td>
+</tr>
+<tr>
+<td>实现类</td>
+<td>PackageManagerService.performDexopt</td>
+<td>BackgroundDexOptService &#x2F; otapreopt</td>
+</tr>
+<tr>
+<td>优先级</td>
+<td>中等</td>
+<td>低（不影响前台使用）</td>
+</tr>
+</tbody></table>
+<h2 id="6-1-Android-10-的-dexopt-延迟策略"><a href="#6-1-Android-10-的-dexopt-延迟策略" class="headerlink" title="6.1 Android 10+ 的 dexopt 延迟策略"></a>6.1 Android 10+ 的 dexopt 延迟策略</h2><p>Android 10 引入了 staged-dexopt——新安装应用不立即完全 dexopt，而是先做最小编译（verify 或 extract），待设备空闲&#x2F;充电时再做完整 speed-profile 编译。这减少了安装等待时间。</p>
+<h2 id="6-2-Cloud-Profiles"><a href="#6-2-Cloud-Profiles" class="headerlink" title="6.2 Cloud Profiles"></a>6.2 Cloud Profiles</h2><p>Android 10+ 引入了 Cloud Profiles（云配置文件），允许 Google Play 从云端下发应用的默认 profile。当用户首次安装应用时，即使没有本地 profile，也可以使用云端提供的 profile 指导 <code>speed-profile</code> 编译——这是基于”同型号设备上相似用户行为相似”的假设。</p>
+<h1 id="七、核心面试题"><a href="#七、核心面试题" class="headerlink" title="七、核心面试题"></a>七、核心面试题</h1><p><strong>Q1：什么是 Quickening？它和 AOT 编译有什么区别？</strong></p>
+<p>Quickening 是在 DEX 字节码层面进行的优化，而 AOT 是将 DEX 字节码编译为机器码。Quickening 包括：将虚方法调用的 method_idx 替换为 vtable index、优化字段访问为偏移量查找、内联简单的 getter&#x2F;setter 字节码。它不需要生成机器码，因此编译速度极快，文件体积增长小。AOT 编译则完全生成本地机器指令，执行速度快但编译时间长、输出文件大。Android 采用分层编译：默认 Quickening + JIT（热方法被 JIT 编译为机器码），通过 profile 记录热点，在后台 dexopt 时对这些热方法做 AOT。</p>
+<p><strong>Q2：VDEX 文件相比纯 OAT 有什么优势？为什么不直接全部放 OAT？</strong></p>
+<p>VDEX 包含未压缩的 DEX 文件和 quickening 信息，与 OAT 分离有几个好处：(1) 当系统 OTA 升级（boot classpath 变化）时，OAT 需要重编译（因为 AOT 代码内联了 Framework 方法），但 VDEX 中的 DEX 和 quickening 信息仍然有效，可以继续用来解释执行。(2) 未压缩的 DEX 可以直接 mmap，无需从 APK zip 中解压，减少了冷启动时的 I&#x2F;O。(3) VDEX 分离也方便独立更新 DEX 验证结果。</p>
+<p><strong>Q3：dex2oat 在安装时被触发，如何确保不影响系统响应？</strong></p>
+<p>dex2oat 不是在 SystemServer 进程中直接执行，而是通过 installd 守护进程 fork 出独立的 dex2oat 进程执行。installd 以低 I&#x2F;O 优先级（ionice）和低 CPU 优先级（nice）运行 dex2oat，而且 <code>PackageManagerService</code> 使用 <code>BackgroundDexOptService</code> 管理编译队列，确保同一时间只运行有限数量的 dex2oat 进程（通常 1-2 个），避免资源争用影响前台应用。</p>
+<p><strong>Q4：为什么 OTA 升级后需要对所有应用重新 dexopt？</strong></p>
+<p>AOT 编译过程中，dex2oat 会将 framework 方法内联（inline）到应用的编译代码中。当 OTA 升级修改了 framework（boot classpath），所有内联了旧 framework 方法的 AOT 代码都处于不一致状态（调用的可能已经不存在的指令偏移或已修改的方法体）。OAT 文件通过记录编译时的 boot.art checksum 来检测 boot classpath 是否发生变化——如果发生变化，OAT 文件被标记为无效，需要重新编译。</p>
+<p><strong>Q5：Cloud Profiles 是如何解决”冷启动无 Profile”问题的？</strong></p>
+<p>传统 Profile-Guided Compilation 需要用户先使用应用，JIT 收集热点方法后生成 profile。但新用户或新安装时没有 profile，只能使用较低级别的过滤（如 quicken）。Cloud Profiles 通过聚合大量设备上的匿名 profile 数据，提取出”最常见的执行路径”，形成云端默认 profile。当用户安装应用时，Google Play 同时下发这个 profile，dex2oat 使用它进行 speed-profile 编译——实现了”首次安装即可获得 profile 指导的编译效果”。</p>
+<h2 id="6-3-Android-12-的-ART-模块化"><a href="#6-3-Android-12-的-ART-模块化" class="headerlink" title="6.3 Android 12+ 的 ART 模块化"></a>6.3 Android 12+ 的 ART 模块化</h2><p>Android 12 引入了 Mainline 模块化的 ART（通过 Google Play System Updates）。这意味着：</p>
+<ul>
+<li>ART 运行时（包括 dex2oat）可以作为独立的 APEX 模块更新，而不用等待完整的系统 OTA</li>
+<li>更新周期从原来的一年缩短到几个月甚至几周</li>
+<li>新的 ODEX（.odex）文件格式与 ART 模块绑定的版本，确保一致性</li>
+</ul>
+<p>APEX 模块更新后，系统会触发一次针对所有已安装应用的重新 dexopt（类似于 OTA dexopt 但范围更小——仅 ART 模块变更时触发）。</p>
+<h2 id="6-4-dexlayout-与-dex-重排"><a href="#6-4-dexlayout-与-dex-重排" class="headerlink" title="6.4 dexlayout 与 dex 重排"></a>6.4 dexlayout 与 dex 重排</h2><p>Android 10 引入了 dexlayout 工具，在编译时优化 DEX 文件中方法和类的排列顺序：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">dexlayout 工作原理：</span><br><span class="line">1. 读取 profile 中的热方法列表</span><br><span class="line">2. 将热方法移动到 DEX 文件的前部（页面对齐）</span><br><span class="line">3. 将热方法调用的依赖数据（如方法 ID 表）也重排到前部</span><br><span class="line">4. 运行时 mmap 后，热方法集中在少数页面中，减少 TLB miss 和页面错误</span><br></pre></td></tr></table></figure>
+
+<p>这称为 Profile-Guided Layout Optimization。重排后的 DEX 文件写入 VDEX 中。</p>
+<h2 id="6-5-JIT-编译与-OAT-的关系"><a href="#6-5-JIT-编译与-OAT-的关系" class="headerlink" title="6.5 JIT 编译与 OAT 的关系"></a>6.5 JIT 编译与 OAT 的关系</h2><p>ART JIT 编译在运行时产生临时的机器码，存储在进程的 JIT code cache 中（非文件）。JIT 的数据流：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">解释执行 → 热点检测（方法调用计数 + 循环回边计数）</span><br><span class="line">  → JIT 编译（生成机器码到 JIT code cache）</span><br><span class="line">    → 执行 JIT 编译的代码</span><br><span class="line">      → 记录这些&quot;热方法&quot;到 profile</span><br><span class="line">        → 空闲时 dex2oat 根据 profile 做 AOT 编译（写入 OAT）</span><br><span class="line">          → 下次冷启动直接使用 OAT 中的 AOT 代码</span><br></pre></td></tr></table></figure>
+
+<p>关键关系：JIT 是短期优化（运行时即时编译），OAT 是长期优化（持久化存储）。两者通过 profile 文件协同工作——JIT 标记哪些方法值得 AOT，dex2oat 在空闲时执行这些方法的 AOT 编译。</p>
+<p><strong>AOSP 核心路径参考：</strong></p>
+<ul>
+<li><code>art/dex2oat/dex2oat.cc</code> — dex2oat 编译器入口</li>
+<li><code>art/dex2oat/compiler_filter.h</code> — 编译过滤器定义</li>
+<li><code>art/runtime/oat_file.h</code> &#x2F; <code>art/runtime/oat_file.cc</code> — OAT 文件定义</li>
+<li><code>art/runtime/oat_header.h</code> — OAT 文件头结构</li>
+<li><code>art/runtime/vdex_file.h</code> — VDEX 文件定义</li>
+<li><code>art/runtime/oat_file_assistant.h</code> — OAT 文件查找与验证</li>
+<li><code>art/libdexfile/dex/</code> — DEX 文件解析库</li>
+<li><code>frameworks/base/services/core/java/com/android/server/pm/BackgroundDexOptService.java</code></li>
+<li><code>frameworks/native/cmds/installd/</code> — installd 守护进程</li>
+</ul>
+<h1 id="八、dex2oat-的编译流程深度剖析"><a href="#八、dex2oat-的编译流程深度剖析" class="headerlink" title="八、dex2oat 的编译流程深度剖析"></a>八、dex2oat 的编译流程深度剖析</h1><h2 id="8-1-DEX-文件验证阶段"><a href="#8-1-DEX-文件验证阶段" class="headerlink" title="8.1 DEX 文件验证阶段"></a>8.1 DEX 文件验证阶段</h2><p>dex2oat 的验证阶段检查 DEX 字节码的正确性：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">验证内容：</span><br><span class="line">1. 结构验证：DEX header 的 magic、checksum、文件大小</span><br><span class="line">2. 类验证：每个类的继承关系、方法签名、字段类型正确性</span><br><span class="line">3. 字节码验证：每条指令的格式、操作数类型、控制流完整性</span><br><span class="line">4. 类型安全验证：方法调用参数类型匹配、字段访问类型匹配</span><br></pre></td></tr></table></figure>
+
+<p>验证通过后生成 VDEX 文件中的 verification info。此后运行时加载时可以直接信任这些验证结果，跳过验证步骤——这是 VDEX 加速冷启动的核心。</p>
+<h2 id="8-2-Quickening-的具体优化内容"><a href="#8-2-Quickening-的具体优化内容" class="headerlink" title="8.2 Quickening 的具体优化内容"></a>8.2 Quickening 的具体优化内容</h2><p>Quickening 是在 DEX 字节码层面进行的优化，不编译成机器码：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Quickening 优化项：</span><br><span class="line">1. invoke-virtual → invoke-virtual-quick：将 method_idx 替换为 vtable_index</span><br><span class="line">2. invoke-interface → invoke-interface-quick：缓存接口方法表索引</span><br><span class="line">3. iget/iput → iget-quick/iput-quick：将 field_idx 替换为字节偏移量</span><br><span class="line">4. sget/sput → sget-volatile/sput-volatile：针对 volatile 字段的优化</span><br><span class="line">5. check-cast 消除：如果前一条指令已经验证了类型，消除重复的 check-cast</span><br><span class="line">6. instance-of 优化：缓存类标志位以便快速判断</span><br></pre></td></tr></table></figure>
+
+<p>Quickening 的编译速度极快（通常几毫秒到几十毫秒），因为它不涉及任何指令集相关的代码生成——只做索引替换。</p>
+<h2 id="8-3-AOT-编译的具体优化"><a href="#8-3-AOT-编译的具体优化" class="headerlink" title="8.3 AOT 编译的具体优化"></a>8.3 AOT 编译的具体优化</h2><p>AOT 编译产生目标机器的本地代码时，进行的优化包括：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">AOT 优化项（与 LLVM/Clang 编译优化类似）：</span><br><span class="line">1. 方法内联（Method Inlining）：</span><br><span class="line">   - 内联短小的方法体（getter/setter/callback）</span><br><span class="line">   - 内联 framework 方法（需要重新编译 OAT 当 framework 变更时）</span><br><span class="line">2. 循环优化（Loop Optimization）：</span><br><span class="line">   - 循环不变量外提（LICM）</span><br><span class="line">   - 循环展开（Loop Unrolling）</span><br><span class="line">   - 归纳变量优化（Induction Variable Optimization）</span><br><span class="line">3. 死代码消除（Dead Code Elimination）</span><br><span class="line">4. 常量折叠（Constant Folding）</span><br><span class="line">5. 逃逸分析（Escape Analysis）</span><br><span class="line">6. 寄存器分配（Register Allocation）：</span><br><span class="line">   - 针对 ARM64（31 个通用寄存器）的寄存器分配</span><br></pre></td></tr></table></figure>
+
+<h2 id="8-4-OAT-文件的-mmap-映射"><a href="#8-4-OAT-文件的-mmap-映射" class="headerlink" title="8.4 OAT 文件的 mmap 映射"></a>8.4 OAT 文件的 mmap 映射</h2><p>运行时加载 OAT 文件的关键是 mmap：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// art/runtime/oat_file.cc</span></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">OatFile::Load</span><span class="params">(<span class="type">const</span> std::string&amp; oat_filename, ...)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 打开 OAT 文件</span></span><br><span class="line">    <span class="type">int</span> fd = <span class="built_in">open</span>(oat_filename.<span class="built_in">c_str</span>(), O_RDONLY);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. mmap 整个文件到进程地址空间</span></span><br><span class="line">    <span class="type">void</span>* mapped = <span class="built_in">mmap</span>(<span class="literal">nullptr</span>, file_size, PROT_READ | PROT_EXEC, MAP_PRIVATE, fd, <span class="number">0</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 3. 解析 OatHeader（从 mmap 的内存中直接读取，无需 read 系统调用）</span></span><br><span class="line">    OatHeader* header = <span class="built_in">reinterpret_cast</span>&lt;OatHeader*&gt;(mapped);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 4. 查找方法代码：</span></span><br><span class="line">    <span class="comment">//    OatDexFile → OatClass → OatMethod → OatQuickMethodHeader → native code</span></span><br><span class="line">    <span class="type">const</span> <span class="type">void</span>* method_code = <span class="built_in">GetOatMethod</span>(method_index);</span><br><span class="line">    <span class="comment">// 直接跳转执行 method_code（指向 mmap 映射区域中的 native 代码）</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>mmap 的核心优势</strong>：</p>
+<ul>
+<li>零拷贝访问：文件内容直接映射到进程地址空间，无需 read() 系统调用</li>
+<li>按需加载：操作系统按 page fault 加载必要的页（惰性加载）</li>
+<li>页面共享：同一个 OAT 文件被多个进程 mmap 时，物理内存页共享（节省 RAM）</li>
+<li>可执行权限：通过 PROT_EXEC 标记，mmap 的页面可直接执行 native 代码</li>
+</ul>
+<h2 id="8-5-运行时方法查找的完整路径"><a href="#8-5-运行时方法查找的完整路径" class="headerlink" title="8.5 运行时方法查找的完整路径"></a>8.5 运行时方法查找的完整路径</h2><p>当 ART 需要执行一个 Java 方法时：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. 获取 method_index（在 DEX 中的方法编号）</span><br><span class="line">2. 找到 OatDexFile（对应此 DEX 文件）</span><br><span class="line">3. 通过 lookup_table[method_index] 获取 OatClass 偏移</span><br><span class="line">4. 检查 OatClass 类型：</span><br><span class="line">   a. kOatClassAllCompiled：所有方法有偏移表</span><br><span class="line">   b. kOatClassSomeCompiled：部分方法有偏移表（带 bitmap 过滤）</span><br><span class="line">   c. kOatClassNoneCompiled：走解释器或 JIT</span><br><span class="line">5. 如果有 AOT 代码：跳转到 mmap 区域中的 native 代码地址</span><br><span class="line">6. 如果无 AOT 代码：</span><br><span class="line">   a. 检查 JIT code cache（是否有 JIT 编译的版本）</span><br><span class="line">   b. 如果无 JIT：进入解释器（interpreter）</span><br></pre></td></tr></table></figure>
+
+<p><strong>AOSP 核心路径参考续：</strong></p>
+<ul>
+<li><code>art/runtime/oat_file.cc</code> — OAT 文件加载与 mmap</li>
+<li><code>art/runtime/interpreter/interpreter.cc</code> — ART 解释器</li>
+<li><code>art/compiler/optimizing/</code> — AOT 编译优化器</li>
+</ul>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286946.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/02/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F%E5%85%A5%E9%97%A8/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286927.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【深入内核篇】编译系统入门</span></div></a></div><div class="next-post pull_right"><a href="/2021/01/15/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91JNI/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286820.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【深入内核篇】JNI</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286946.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

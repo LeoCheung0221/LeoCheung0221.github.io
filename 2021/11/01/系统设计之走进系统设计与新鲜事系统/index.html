@@ -1,0 +1,412 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>走进系统设计与新鲜事系统 | ONE·PIECE</title><meta name="description" content="走进系统设计与新鲜事系统"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="走进系统设计与新鲜事系统"><meta name="twitter:description" content="走进系统设计与新鲜事系统"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/794.jpg"><meta property="og:type" content="article"><meta property="og:title" content="走进系统设计与新鲜事系统"><meta property="og:url" content="http://tufusi.com/2021/11/01/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E8%B5%B0%E8%BF%9B%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B8%8E%E6%96%B0%E9%B2%9C%E4%BA%8B%E7%B3%BB%E7%BB%9F/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="走进系统设计与新鲜事系统"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/794.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2021/11/01/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E8%B5%B0%E8%BF%9B%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B8%8E%E6%96%B0%E9%B2%9C%E4%BA%8B%E7%B3%BB%E7%BB%9F/"><link rel="prev" title="系统设计之从用户系统中理解数据库与缓存" href="http://tufusi.com/2021/11/05/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%BB%8E%E7%94%A8%E6%88%B7%E7%B3%BB%E7%BB%9F%E4%B8%AD%E7%90%86%E8%A7%A3%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%8E%E7%BC%93%E5%AD%98/"><link rel="next" title="【吃透源码系列】之Activity" href="http://tufusi.com/2021/10/25/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E5%90%83%E9%80%8F%E6%BA%90%E7%A0%81%E7%B3%BB%E5%88%97%E3%80%91%E4%B9%8BActivity/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E9%9D%A2%E8%AF%95"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、什么是系统设计面试</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E9%9D%A2%E8%AF%95%E7%9A%84%E8%AF%84%E5%88%86%E7%BB%B4%E5%BA%A6"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">系统设计面试的评分维度</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E9%9D%A2%E8%AF%95%E4%B8%AD%E5%B8%B8%E8%A7%81%E7%9A%84%E9%99%B7%E9%98%B1%E5%92%8C%E5%BA%94%E5%AF%B9"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">面试中常见的陷阱和应对</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81%E7%94%A8%E6%88%B7%E5%85%B3%E7%B3%BB%E5%9B%BE%E7%9A%84%E5%AD%98%E5%82%A8"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、用户关系图的存储</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%85%B3%E7%B3%BB%E5%9B%BE%E7%9A%84%E5%AD%98%E5%82%A8%E5%8F%8C%E5%86%99%E4%B8%8E%E5%8F%8D%E5%90%91%E7%B4%A2%E5%BC%95"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">关系图的存储双写与反向索引</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%A4%A7V%E7%B2%89%E4%B8%9D%E5%88%97%E8%A1%A8%E7%9A%84%E5%AD%98%E5%82%A8%E4%BC%98%E5%8C%96"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">大V粉丝列表的存储优化</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81Feed%E7%94%9F%E6%88%90%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%A8%A1%E5%BC%8F"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、Feed生成的两种模式</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%8E%A8%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%86%99%E6%94%BE%E5%A4%A7%E9%97%AE%E9%A2%98%E7%9A%84%E5%AE%9A%E9%87%8F%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">推模式的写放大问题的定量分析</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%8E%A8%E6%8B%89%E9%98%88%E5%80%BC%E7%9A%84%E5%8A%A8%E6%80%81%E9%80%89%E6%8B%A9"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">推拉阈值的动态选择</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%8E%A8%E6%8B%89%E7%BB%93%E5%90%88%E7%9A%84%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">推拉结合的实现细节</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#K-way%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F%E7%9A%84%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">K-way归并排序的性能分析</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E6%97%B6%E9%97%B4%E7%BA%BF%E6%9C%8D%E5%8A%A1%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、时间线服务的设计</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Redis-Sorted-Set%E5%BA%95%E5%B1%82%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E8%AF%A6%E8%A7%A3"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">Redis Sorted Set底层数据结构详解</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%B8%B8%E6%A0%87%E5%88%86%E9%A1%B5-vs-%E5%81%8F%E7%A7%BB%E9%87%8F%E5%88%86%E9%A1%B5"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">游标分页 vs 偏移量分页</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%97%B6%E9%97%B4%E7%BA%BF%E8%A3%81%E5%89%AA%E4%B8%8E%E6%B7%98%E6%B1%B0%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">时间线裁剪与淘汰策略</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81%E5%8A%A8%E6%80%81%E5%86%85%E5%AE%B9%E7%9A%84%E5%AD%98%E5%82%A8"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、动态内容的存储</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%8A%A8%E6%80%81ID%E7%9A%84%E5%85%A8%E5%B1%80%E5%94%AF%E4%B8%80%E7%94%9F%E6%88%90"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">动态ID的全局唯一生成</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6%E7%9A%84%E5%88%86%E5%8F%91%E9%93%BE%E8%B7%AF"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">媒体文件的分发链路</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84%E6%80%BB%E8%A7%88"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、系统架构总览</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84%E7%9A%84ASCII%E7%A4%BA%E6%84%8F%E5%9B%BE"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">系统架构的ASCII示意图</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%90%84%E6%9C%8D%E5%8A%A1%E7%9A%84%E9%83%A8%E7%BD%B2%E4%B8%8E%E6%89%A9%E5%B1%95%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">各服务的部署与扩展策略</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E4%B8%80%E8%87%B4%E6%80%A7%E6%A8%A1%E5%9E%8B%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、一致性模型与数据同步</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%89%A9%E6%95%A3%E6%9C%8D%E5%8A%A1%E7%9A%84%E4%B8%80%E8%87%B4%E6%80%A7%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">扩散服务的一致性问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%8F%96%E5%85%B3%E6%B8%85%E7%90%86%E7%9A%84%E5%BC%82%E6%AD%A5%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">取关清理的异步实现</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81%E5%A4%84%E7%90%86%E7%83%AD%E7%82%B9%E4%B8%8E%E7%BC%93%E5%AD%98%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、处理热点与缓存策略</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%83%AD%E7%82%B9Feed%E7%9A%84%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E4%B8%8E%E5%93%8D%E5%BA%94"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">热点Feed的自动检测与响应</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98%E7%9A%84TTL%E9%98%B6%E6%A2%AF%E8%AE%BE%E8%AE%A1"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">多级缓存的TTL阶梯设计</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E5%BC%82%E6%AD%A5%E6%89%A9%E6%95%A3%E4%B8%8E%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、异步扩散与消息队列</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%89%A9%E6%95%A3%E7%9A%84%E6%B5%81%E6%8E%A7%E4%B8%8E%E5%89%8A%E5%B3%B0"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">扩散的流控与削峰</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%89%A9%E6%95%A3%E5%A4%B1%E8%B4%A5%E7%9A%84%E9%87%8D%E8%AF%95%E4%B8%8E%E6%AD%BB%E4%BF%A1%E5%A4%84%E7%90%86"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">扩散失败的重试与死信处理</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81%E6%96%B0%E9%B2%9C%E4%BA%8B%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%8E%92%E5%BA%8F%E4%B8%8E%E4%B8%AA%E6%80%A7%E5%8C%96"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">十、新鲜事系统的排序与个性化</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E9%9D%9E%E6%97%B6%E9%97%B4%E6%8E%92%E5%BA%8F%E5%AF%B9%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">非时间排序对系统架构的影响</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#Feed%E6%8E%92%E5%BA%8F%E4%B8%AD%E7%9A%84%E7%89%B9%E5%BE%81%E8%AE%BE%E8%AE%A1"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">Feed排序中的特征设计</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%AE%9E%E6%97%B6%E7%89%B9%E5%BE%81%E4%B8%8E%E7%A6%BB%E7%BA%BF%E7%89%B9%E5%BE%81%E7%9A%84%E5%88%86%E5%B7%A5"><span class="toc_mobile_items-number">10.3.</span> <span class="toc_mobile_items-text">实时特征与离线特征的分工</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E6%96%B0%E9%B2%9C%E4%BA%8B%E7%B3%BB%E7%BB%9F%E7%9A%84%E7%94%9F%E4%BA%A7%E7%BA%A7%E8%BF%90%E7%BB%B4%E4%B8%8E%E7%9B%91%E6%8E%A7"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">十一、新鲜事系统的生产级运维与监控</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%A0%B8%E5%BF%83%E7%9B%91%E6%8E%A7%E6%8C%87%E6%A0%87"><span class="toc_mobile_items-number">11.1.</span> <span class="toc_mobile_items-text">核心监控指标</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E5%91%8A%E8%AD%A6%E4%B8%8E%E9%99%8D%E7%BA%A7%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">11.2.</span> <span class="toc_mobile_items-text">告警与降级策略</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E7%81%B0%E5%BA%A6%E5%8F%91%E5%B8%83%E4%B8%8EA-B%E6%B5%8B%E8%AF%95"><span class="toc_mobile_items-number">11.3.</span> <span class="toc_mobile_items-text">灰度发布与A&#x2F;B测试</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%A7%81%E8%BF%BD%E9%97%AE"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">十二、面试常见追问</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%89%A9%E5%B1%95%E9%98%85%E8%AF%BB%EF%BC%9A%E6%96%B0%E9%B2%9C%E4%BA%8B%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%B7%A5%E4%B8%9A%E7%95%8C%E6%BC%94%E8%BF%9B%E5%8F%B2"><span class="toc_mobile_items-number">12.1.</span> <span class="toc_mobile_items-text">扩展阅读：新鲜事系统的工业界演进史</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#%E6%96%B0%E9%B2%9C%E4%BA%8B%E7%B3%BB%E7%BB%9F%E9%9D%A2%E8%AF%95%E7%9A%84%E8%AE%A8%E8%AE%BA%E6%A1%86%E6%9E%B6"><span class="toc_mobile_items-number">12.2.</span> <span class="toc_mobile_items-text">新鲜事系统面试的讨论框架</span></a></li></ol></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E9%9D%A2%E8%AF%95"><span class="toc-number">1.</span> <span class="toc-text">一、什么是系统设计面试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E9%9D%A2%E8%AF%95%E7%9A%84%E8%AF%84%E5%88%86%E7%BB%B4%E5%BA%A6"><span class="toc-number">1.1.</span> <span class="toc-text">系统设计面试的评分维度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E4%B8%AD%E5%B8%B8%E8%A7%81%E7%9A%84%E9%99%B7%E9%98%B1%E5%92%8C%E5%BA%94%E5%AF%B9"><span class="toc-number">1.2.</span> <span class="toc-text">面试中常见的陷阱和应对</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%94%A8%E6%88%B7%E5%85%B3%E7%B3%BB%E5%9B%BE%E7%9A%84%E5%AD%98%E5%82%A8"><span class="toc-number">2.</span> <span class="toc-text">二、用户关系图的存储</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E7%B3%BB%E5%9B%BE%E7%9A%84%E5%AD%98%E5%82%A8%E5%8F%8C%E5%86%99%E4%B8%8E%E5%8F%8D%E5%90%91%E7%B4%A2%E5%BC%95"><span class="toc-number">2.1.</span> <span class="toc-text">关系图的存储双写与反向索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%A7V%E7%B2%89%E4%B8%9D%E5%88%97%E8%A1%A8%E7%9A%84%E5%AD%98%E5%82%A8%E4%BC%98%E5%8C%96"><span class="toc-number">2.2.</span> <span class="toc-text">大V粉丝列表的存储优化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Feed%E7%94%9F%E6%88%90%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%A8%A1%E5%BC%8F"><span class="toc-number">3.</span> <span class="toc-text">三、Feed生成的两种模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A8%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%86%99%E6%94%BE%E5%A4%A7%E9%97%AE%E9%A2%98%E7%9A%84%E5%AE%9A%E9%87%8F%E5%88%86%E6%9E%90"><span class="toc-number">3.1.</span> <span class="toc-text">推模式的写放大问题的定量分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A8%E6%8B%89%E9%98%88%E5%80%BC%E7%9A%84%E5%8A%A8%E6%80%81%E9%80%89%E6%8B%A9"><span class="toc-number">3.2.</span> <span class="toc-text">推拉阈值的动态选择</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A8%E6%8B%89%E7%BB%93%E5%90%88%E7%9A%84%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="toc-number">3.3.</span> <span class="toc-text">推拉结合的实现细节</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#K-way%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F%E7%9A%84%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90"><span class="toc-number">3.4.</span> <span class="toc-text">K-way归并排序的性能分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%97%B6%E9%97%B4%E7%BA%BF%E6%9C%8D%E5%8A%A1%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="toc-number">4.</span> <span class="toc-text">四、时间线服务的设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Redis-Sorted-Set%E5%BA%95%E5%B1%82%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E8%AF%A6%E8%A7%A3"><span class="toc-number">4.1.</span> <span class="toc-text">Redis Sorted Set底层数据结构详解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B8%B8%E6%A0%87%E5%88%86%E9%A1%B5-vs-%E5%81%8F%E7%A7%BB%E9%87%8F%E5%88%86%E9%A1%B5"><span class="toc-number">4.2.</span> <span class="toc-text">游标分页 vs 偏移量分页</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%B6%E9%97%B4%E7%BA%BF%E8%A3%81%E5%89%AA%E4%B8%8E%E6%B7%98%E6%B1%B0%E7%AD%96%E7%95%A5"><span class="toc-number">4.3.</span> <span class="toc-text">时间线裁剪与淘汰策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%8A%A8%E6%80%81%E5%86%85%E5%AE%B9%E7%9A%84%E5%AD%98%E5%82%A8"><span class="toc-number">5.</span> <span class="toc-text">五、动态内容的存储</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A8%E6%80%81ID%E7%9A%84%E5%85%A8%E5%B1%80%E5%94%AF%E4%B8%80%E7%94%9F%E6%88%90"><span class="toc-number">5.1.</span> <span class="toc-text">动态ID的全局唯一生成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6%E7%9A%84%E5%88%86%E5%8F%91%E9%93%BE%E8%B7%AF"><span class="toc-number">5.2.</span> <span class="toc-text">媒体文件的分发链路</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84%E6%80%BB%E8%A7%88"><span class="toc-number">6.</span> <span class="toc-text">六、系统架构总览</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84%E7%9A%84ASCII%E7%A4%BA%E6%84%8F%E5%9B%BE"><span class="toc-number">6.1.</span> <span class="toc-text">系统架构的ASCII示意图</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%84%E6%9C%8D%E5%8A%A1%E7%9A%84%E9%83%A8%E7%BD%B2%E4%B8%8E%E6%89%A9%E5%B1%95%E7%AD%96%E7%95%A5"><span class="toc-number">6.2.</span> <span class="toc-text">各服务的部署与扩展策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E4%B8%80%E8%87%B4%E6%80%A7%E6%A8%A1%E5%9E%8B%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5"><span class="toc-number">7.</span> <span class="toc-text">七、一致性模型与数据同步</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A9%E6%95%A3%E6%9C%8D%E5%8A%A1%E7%9A%84%E4%B8%80%E8%87%B4%E6%80%A7%E9%97%AE%E9%A2%98"><span class="toc-number">7.1.</span> <span class="toc-text">扩散服务的一致性问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%96%E5%85%B3%E6%B8%85%E7%90%86%E7%9A%84%E5%BC%82%E6%AD%A5%E5%AE%9E%E7%8E%B0"><span class="toc-number">7.2.</span> <span class="toc-text">取关清理的异步实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%A4%84%E7%90%86%E7%83%AD%E7%82%B9%E4%B8%8E%E7%BC%93%E5%AD%98%E7%AD%96%E7%95%A5"><span class="toc-number">8.</span> <span class="toc-text">八、处理热点与缓存策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%83%AD%E7%82%B9Feed%E7%9A%84%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E4%B8%8E%E5%93%8D%E5%BA%94"><span class="toc-number">8.1.</span> <span class="toc-text">热点Feed的自动检测与响应</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98%E7%9A%84TTL%E9%98%B6%E6%A2%AF%E8%AE%BE%E8%AE%A1"><span class="toc-number">8.2.</span> <span class="toc-text">多级缓存的TTL阶梯设计</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E5%BC%82%E6%AD%A5%E6%89%A9%E6%95%A3%E4%B8%8E%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97"><span class="toc-number">9.</span> <span class="toc-text">九、异步扩散与消息队列</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A9%E6%95%A3%E7%9A%84%E6%B5%81%E6%8E%A7%E4%B8%8E%E5%89%8A%E5%B3%B0"><span class="toc-number">9.1.</span> <span class="toc-text">扩散的流控与削峰</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A9%E6%95%A3%E5%A4%B1%E8%B4%A5%E7%9A%84%E9%87%8D%E8%AF%95%E4%B8%8E%E6%AD%BB%E4%BF%A1%E5%A4%84%E7%90%86"><span class="toc-number">9.2.</span> <span class="toc-text">扩散失败的重试与死信处理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E6%96%B0%E9%B2%9C%E4%BA%8B%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%8E%92%E5%BA%8F%E4%B8%8E%E4%B8%AA%E6%80%A7%E5%8C%96"><span class="toc-number">10.</span> <span class="toc-text">十、新鲜事系统的排序与个性化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%9E%E6%97%B6%E9%97%B4%E6%8E%92%E5%BA%8F%E5%AF%B9%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="toc-number">10.1.</span> <span class="toc-text">非时间排序对系统架构的影响</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Feed%E6%8E%92%E5%BA%8F%E4%B8%AD%E7%9A%84%E7%89%B9%E5%BE%81%E8%AE%BE%E8%AE%A1"><span class="toc-number">10.2.</span> <span class="toc-text">Feed排序中的特征设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E6%97%B6%E7%89%B9%E5%BE%81%E4%B8%8E%E7%A6%BB%E7%BA%BF%E7%89%B9%E5%BE%81%E7%9A%84%E5%88%86%E5%B7%A5"><span class="toc-number">10.3.</span> <span class="toc-text">实时特征与离线特征的分工</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E6%96%B0%E9%B2%9C%E4%BA%8B%E7%B3%BB%E7%BB%9F%E7%9A%84%E7%94%9F%E4%BA%A7%E7%BA%A7%E8%BF%90%E7%BB%B4%E4%B8%8E%E7%9B%91%E6%8E%A7"><span class="toc-number">11.</span> <span class="toc-text">十一、新鲜事系统的生产级运维与监控</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E7%9B%91%E6%8E%A7%E6%8C%87%E6%A0%87"><span class="toc-number">11.1.</span> <span class="toc-text">核心监控指标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%91%8A%E8%AD%A6%E4%B8%8E%E9%99%8D%E7%BA%A7%E7%AD%96%E7%95%A5"><span class="toc-number">11.2.</span> <span class="toc-text">告警与降级策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%81%B0%E5%BA%A6%E5%8F%91%E5%B8%83%E4%B8%8EA-B%E6%B5%8B%E8%AF%95"><span class="toc-number">11.3.</span> <span class="toc-text">灰度发布与A&#x2F;B测试</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E9%9D%A2%E8%AF%95%E5%B8%B8%E8%A7%81%E8%BF%BD%E9%97%AE"><span class="toc-number">12.</span> <span class="toc-text">十二、面试常见追问</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A9%E5%B1%95%E9%98%85%E8%AF%BB%EF%BC%9A%E6%96%B0%E9%B2%9C%E4%BA%8B%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%B7%A5%E4%B8%9A%E7%95%8C%E6%BC%94%E8%BF%9B%E5%8F%B2"><span class="toc-number">12.1.</span> <span class="toc-text">扩展阅读：新鲜事系统的工业界演进史</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B0%E9%B2%9C%E4%BA%8B%E7%B3%BB%E7%BB%9F%E9%9D%A2%E8%AF%95%E7%9A%84%E8%AE%A8%E8%AE%BA%E6%A1%86%E6%9E%B6"><span class="toc-number">12.2.</span> <span class="toc-text">新鲜事系统面试的讨论框架</span></a></li></ol></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/794.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">走进系统设计与新鲜事系统</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-11-01<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">系统设计</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">10.9k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 34 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、什么是系统设计面试"><a href="#一、什么是系统设计面试" class="headerlink" title="一、什么是系统设计面试"></a>一、什么是系统设计面试</h2><p>系统设计面试是高级工程师面试的核心环节，考察候选人面对海量数据和高并发场景时的架构能力。与算法面试不同，系统设计没有标准答案——面试官关注的是你如何权衡（trade-off）、如何拆解问题、如何在CAP定理的约束下做出合理的工程选择。</p>
+<p>典型的系统设计面试流程分为四个步骤。第一步是需求澄清（Requirements Clarification），你需要主动向面试官提问：系统有多少日活用户？读写比例是多少？需要支持哪些核心功能？延迟要求是什么？第二步是容量估算（Back-of-the-envelope Estimation），快速估算QPS、存储量、带宽需求，这个过程展示了你的量化思维。第三步是高层设计（High-Level Design），画出系统架构图，明确核心组件和它们之间的数据流。第四步是深度设计（Deep Dive），针对关键组件深入讨论数据结构、存储方案、扩展策略。</p>
+<p>以新鲜事系统为例，我们设计的社交信息流每日活跃用户假设为一亿，平均每个用户关注二百人，每天发布约五亿条新动态。读操作远多于写操作，读写比例约为一百比一。核心功能包括：用户发布动态（文字、图片、视频）、用户查看关注者的新鲜事时间线、点赞和评论。非功能需求包括：新鲜事加载延迟小于二百毫秒，系统可用性达到四个九（99.99%），数据最终一致性可接受。</p>
+<h3 id="系统设计面试的评分维度"><a href="#系统设计面试的评分维度" class="headerlink" title="系统设计面试的评分维度"></a>系统设计面试的评分维度</h3><p>面试官在系统设计环节通常从以下维度评分。<strong>问题分解能力</strong>：能否将模糊的需求拆解为清晰的功能和非功能需求，是否有条理地组织讨论。<strong>容量估算能力</strong>：能否基于合理的假设快速估算QPS、存储、带宽，数字是否在合理数量级内。<strong>架构设计能力</strong>：能否画出清晰的系统架构图，明确组件边界、数据流、协议选择。<strong>深挖能力</strong>：当面试官追问某个组件时，能否深入数据结构、算法、扩展策略的具体细节。<strong>权衡分析能力</strong>：能否列出多个方案并分析各自的优劣，明确做出选择的理由。<strong>沟通能力</strong>：能否清晰表达设计思路，在面试官的引导下调整设计方向。</p>
+<h3 id="面试中常见的陷阱和应对"><a href="#面试中常见的陷阱和应对" class="headerlink" title="面试中常见的陷阱和应对"></a>面试中常见的陷阱和应对</h3><p>新手在系统设计面试中容易踩入以下陷阱。<strong>过早陷入细节</strong>：还没有确定整体架构就开始讨论某个数据结构的实现细节。正确做法是先搭框架再深入。<strong>忽略非功能需求</strong>：只关注功能实现而完全忽略延迟、可用性、扩展性等非功能需求。<strong>没有量化思维</strong>：只说”数据量很大”而不给出具体的数字估算。<strong>不了解常见系统的规模量级</strong>：比如声称单台MySQL可以支撑一亿DAU的读写。<strong>不主动讨论权衡</strong>：每个设计决策都有代价，主动展示你对这些代价的认知。</p>
+<h2 id="二、用户关系图的存储"><a href="#二、用户关系图的存储" class="headerlink" title="二、用户关系图的存储"></a>二、用户关系图的存储</h2><p>社交网络本质上是一个有向图。用户A关注了用户B，意味着存在一条从A指向B的有向边。我们需要高效存储和查询两种关系：关注列表（Following List，我关注了谁）和粉丝列表（Follower List，谁关注了我）。</p>
+<p>对于用户关系图，我们有两类存储选择。第一类是关系型数据库，使用一张关注关系表：<code>follow(follower_id, followee_id, created_at)</code>，以<code>follower_id</code>为分片键（sharding key）。查询”我关注了谁”是单分片操作，效率较高；但查询”谁关注了我”需要扫描所有分片，适合做异步索引。第二类是图数据库，如Neo4j或采用Redis的有向图结构，但互联网公司通常选择MySQL分片方案，因为运维成熟、团队熟悉。</p>
+<p>针对大V用户（粉丝数超过百万的超级节点），查询其粉丝列表成本极高。实践中，我们不会实时查询大V的完整粉丝列表，而是在写操作（发布动态）时采用异步扩散（fanout on write），读操作时直接读取预先计算好的时间线。普通用户的动态则可以根据场景选择推模式或拉模式。</p>
+<p>数据库分片策略：以<code>user_id</code>为分片键，按<code>user_id % 1024</code>或一致性哈希分配到不同MySQL实例。每个分片包含多个库，每个库包含多张表，形成”分片到库到表”的三层路由。如果用户量达到十亿级别，1024个分片每个承载约一百万用户，单分片数据量可控。</p>
+<h3 id="关系图的存储双写与反向索引"><a href="#关系图的存储双写与反向索引" class="headerlink" title="关系图的存储双写与反向索引"></a>关系图的存储双写与反向索引</h3><p>社交关系图的一个经典挑战是双向查询——既要高效查询”我关注了谁”，也要高效查询”谁关注了我”。单表方案（以<code>follower_id</code>为分片键）对正向查询友好，但反向查询需要scatter-gather到所有分片。工业界的解决方案是双写：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">-- 正向表 (以follower_id为分片键,查询&quot;我关注了谁&quot;)</span><br><span class="line">CREATE TABLE follow_forward (</span><br><span class="line">    follower_id BIGINT NOT NULL,</span><br><span class="line">    followee_id BIGINT NOT NULL,</span><br><span class="line">    created_at DATETIME NOT NULL,</span><br><span class="line">    PRIMARY KEY (follower_id, followee_id)</span><br><span class="line">) ENGINE=InnoDB;</span><br><span class="line"></span><br><span class="line">-- 反向表 (以followee_id为分片键,查询&quot;谁关注了我&quot;)</span><br><span class="line">CREATE TABLE follow_reverse (</span><br><span class="line">    followee_id BIGINT NOT NULL,</span><br><span class="line">    follower_id BIGINT NOT NULL,</span><br><span class="line">    created_at DATETIME NOT NULL,</span><br><span class="line">    PRIMARY KEY (followee_id, follower_id)</span><br><span class="line">) ENGINE=InnoDB;</span><br></pre></td></tr></table></figure>
+
+<p>双写的挑战在于保持两张表的一致性。由于跨分片事务的复杂性，通常采用异步双写：先写正向表（用户直接的操作确认），然后通过消息队列异步写入反向表。在极短的窗口期内，反向表可能落后于正向表，但这对于社交关系场景是可接受的最终一致性。</p>
+<h3 id="大V粉丝列表的存储优化"><a href="#大V粉丝列表的存储优化" class="headerlink" title="大V粉丝列表的存储优化"></a>大V粉丝列表的存储优化</h3><p>对于粉丝数超过百万的大V，正向存储全量粉丝列表在查询时成本极高。优化策略：大V的粉丝列表不分页全量加载，而是在扩散时使用游标分批读取。具体做法是，将大V的粉丝列表以<code>followee_id + follower_id</code>为行键存储在HBase中，扩散服务使用Scan操作分批消费粉丝ID，每批处理1000到5000个粉丝。这种方式避免了MySQL分页查询在大偏移量下的性能衰减问题。</p>
+<h2 id="三、Feed生成的两种模式"><a href="#三、Feed生成的两种模式" class="headerlink" title="三、Feed生成的两种模式"></a>三、Feed生成的两种模式</h2><p>Feed流生成是新鲜事系统的核心技术决策，主要有两种模式：推模式（Fanout on Write）和拉模式（Fanout on Read）。</p>
+<p>推模式的核心思想是：当用户发布一条动态时，立即将这条动态”推送”到所有粉丝的时间线中。优点是读操作极为简单——用户打开App时，直接从自己的时间线存储中按时间倒序拉取即可，延迟极低。缺点是写操作成本高昂——如果某用户拥有一百万粉丝，一次发布就需要执行一百万次写入操作，这在工程上是不可接受的。此外，对于不活跃的粉丝，这些写入是纯粹的浪费。推模式适用于粉丝数量较少的普通用户。</p>
+<p>拉模式的核心思想是：用户打开App时，实时查询其所有关注者的最新动态，合并排序后返回。优点是没有额外的写扩散开销，存储节省；缺点是读操作延迟高，尤其是当用户关注了数千人时，需要查询数千个用户的时间线并归并排序。拉模式适用于关注数较少的用户或者粉丝数极多的超级大V。</p>
+<p>工业界的最佳实践是<strong>推拉结合</strong>。对于普通用户（粉丝数小于某个阈值，如一万），使用推模式，将动态写入所有粉丝的时间线。对于大V用户（粉丝数超过阈值），使用拉模式，不主动扩散，而是在粉丝打开时间线时，从大V的”发件箱”中拉取动态，与已推送的普通用户动态合并。Twitter在早期使用纯推模式，后来因为名人用户（如奥巴马）发布一条推文需要写入数千万条时间线记录，才逐步演进为推拉结合的混合架构。新浪微博也采用了类似的策略，普通用户的微博写入所有粉丝的收件箱，大V的微博只在用户请求时从大V的发件箱拉取。</p>
+<h3 id="推模式的写放大问题的定量分析"><a href="#推模式的写放大问题的定量分析" class="headerlink" title="推模式的写放大问题的定量分析"></a>推模式的写放大问题的定量分析</h3><p>推模式的写放大可以用以下公式量化：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">写放大因子 = 平均粉丝数</span><br><span class="line">总写入次数 = 发布量 × 平均粉丝数</span><br></pre></td></tr></table></figure>
+
+<p>假设一个有一亿DAU的系统，平均粉丝数200人，每天发布5亿条动态。如果纯推模式，总写入次数为：5亿 × 200 &#x3D; 1000亿次。即每天需要向Redis写入1000亿条记录。以每毫秒一次写入计算，需要约116台机器全天满负荷运行。存储方面，每个用户时间线存储最近1000条动态ID（每条约50字节），一亿用户约需5TB内存。如果考虑推模式给每个粉丝都存一份，存储量乘以平均粉丝数，变成1000TB，这显然不可行。</p>
+<p>这就是为什么推拉结合势在必行——将占发布量约1%但拥有99%粉丝的大V切换为拉模式，整体写入量可以下降一个数量级。</p>
+<h3 id="推拉阈值的动态选择"><a href="#推拉阈值的动态选择" class="headerlink" title="推拉阈值的动态选择"></a>推拉阈值的动态选择</h3><p>阈值（普通用户 vs 大V的分界线）不是固定值，应该根据系统当前负载动态调整。如果当前Redis集群写入负载较高，可以调低阈值（如从10000粉丝降至5000），让更多用户切换到拉模式，减轻写入压力。如果系统写入负载在安全线以下而读延迟有所上升，可以调高阈值，让更多用户享受推模式的低读延迟。实际实现中，阈值作为配置中心（如Apollo或Consul）中的一个动态参数，由运维根据监控指标实时调整。</p>
+<h3 id="推拉结合的实现细节"><a href="#推拉结合的实现细节" class="headerlink" title="推拉结合的实现细节"></a>推拉结合的实现细节</h3><p>当用户A发布一条动态时：</p>
+<ol>
+<li>查询用户A的粉丝数（从Redis缓存获取，O(1)操作）</li>
+<li>如果粉丝数 &lt; 阈值（如10000），走推模式：从反向表中分批读取粉丝列表，批量写入每个粉丝的Redis收件箱（Sorted Set）</li>
+<li>如果粉丝数 &gt;&#x3D; 阈值，走拉模式：仅将动态ID写入用户A自己的Redis发件箱（<code>outbox:&#123;userA_id&#125;</code>）</li>
+</ol>
+<p>当用户B加载时间线时：</p>
+<ol>
+<li>从B的关注列表中识别哪些是大V（从Redis缓存获取每个关注者的粉丝数标记）</li>
+<li>从B的Redis收件箱拉取普通用户的动态ID列表（已推入的）</li>
+<li>从每个大V关注者的Redis发件箱拉取动态ID列表（并发拉取）</li>
+<li>将所有动态ID合并、按时间戳排序（使用K-way merge，K &#x3D; 大V数量 + 1），取Top N条</li>
+<li>批量根据动态ID获取完整内容</li>
+<li>返回组装后的时间线</li>
+</ol>
+<h3 id="K-way归并排序的性能分析"><a href="#K-way归并排序的性能分析" class="headerlink" title="K-way归并排序的性能分析"></a>K-way归并排序的性能分析</h3><p>K-way merge使用最小堆实现，时间复杂度为O(N log K)，其中N为需要归并的总动态数，K为来源数。假设用户关注了10个大V和200个普通用户（推入收件箱），K &#x3D; 11（10个大V发件箱 + 1个自己的收件箱）。每次加载时间线取50条动态，归并操作约需要50 × log(11) ≈ 50 × 3.5 &#x3D; 175次比较，在内存中完成的耗时在微秒级别。</p>
+<h2 id="四、时间线服务的设计"><a href="#四、时间线服务的设计" class="headerlink" title="四、时间线服务的设计"></a>四、时间线服务的设计</h2><p>时间线服务（Timeline Service）是新鲜事系统的核心组件。每个用户拥有一个”收件箱”（Home Timeline），存储按时间倒序排列的动态ID列表。我们使用Redis的Sorted Set来存储每条时间线，其中member是动态ID，score是发布时间戳（Unix毫秒时间戳）。</p>
+<p>Redis Sorted Set的底层实现是跳表（Skip List）加哈希表。插入一条记录的时间复杂度是O(log N)，按score范围查询（ZREVRANGEBYSCORE）也是O(log N + M)，其中M是返回的记录数。对于时间线场景，每次加载通常取最新的20到50条动态，M很小，性能优异。</p>
+<p>时间线数据结构的设计细节：每个用户的时间线是一个独立的Sorted Set，key格式为<code>timeline:&#123;user_id&#125;</code>。当用户发布动态时，如果是推模式，将动态ID和发布时间的映射关系<code>ZADD timeline:&#123;follower_id&#125; &#123;timestamp&#125; &#123;feed_id&#125;</code>写入所有粉丝的时间线。动态的完整内容（文本、图片URL、点赞数等）存储在另一个存储层中，时间线中只存储动态ID。用户加载时间线时，先从Redis获取最新的动态ID列表，再根据ID批量查询动态详情，组装后返回。</p>
+<p>对于大V的”发件箱”（Outbox Feed），同样使用Redis Sorted Set存储，key格式为<code>outbox:&#123;user_id&#125;</code>。当粉丝拉取大V的动态时，从大V的发件箱中获取最新动态ID，然后与普通用户已推送的时间线合并。</p>
+<p>时间线存储容量估算：假设一亿DAU，每个用户的时间线存储最近一千条动态ID。每条动态ID为8字节的Long类型，时间戳8字节，加上Redis内部开销，每条记录约50字节。每个用户的时间线约50KB，一亿用户需要约5TB内存。考虑到Redis是纯内存数据库，成本较高，我们可以采用冷热分离策略：活跃用户（近七天有登录）的时间线保留在Redis中，非活跃用户的冷时间线迁移到SSD存储的Redis Flash或直接使用MySQL存储。</p>
+<h3 id="Redis-Sorted-Set底层数据结构详解"><a href="#Redis-Sorted-Set底层数据结构详解" class="headerlink" title="Redis Sorted Set底层数据结构详解"></a>Redis Sorted Set底层数据结构详解</h3><p>Redis Sorted Set在数据量较小时使用ziplist（压缩列表），数据量较大时使用跳表（skiplist）+ 哈希表（dict）的组合。跳表的期望高度为O(log N)，每一层都是一个有序链表，查找时从最高层开始，逐层下降，平均时间复杂度O(log N)。哈希表存储member到score的映射，用于O(1)的ZSCORE查询和去重。</p>
+<p>跳表相比于平衡树（如AVL或红黑树）在Redis中的优势：实现简单（Redis的跳表约200行C代码）；支持范围查询天然高效（跳表的最底层是一个有序链表，范围查询只需沿链表遍历）；并发环境下更容易实现无锁访问（平衡树的旋转操作影响范围大，跳表的插入只影响局部指针）。</p>
+<h3 id="游标分页-vs-偏移量分页"><a href="#游标分页-vs-偏移量分页" class="headerlink" title="游标分页 vs 偏移量分页"></a>游标分页 vs 偏移量分页</h3><p>时间线API的分页设计直接影响客户端体验和服务端性能。偏移量分页（Offset-based Pagination）使用LIMIT&#x2F;OFFSET，但存在两个问题：当新动态插入时，偏移量会错位（重复或遗漏动态）；大偏移量查询性能差（Redis的ZRANGE需要遍历跳表到指定位置）。游标分页（Cursor-based Pagination）使用时间戳作为游标，客户端首次请求不带游标（获取最新N条），后续请求带上一次返回的最后一条动态的时间戳作为游标。服务端使用ZREVRANGEBYSCORE按时间戳范围查询，避免了偏移量分页的缺陷。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">GET /api/timeline?limit=20                    → 返回最新的20条</span><br><span class="line">GET /api/timeline?limit=20&amp;cursor=1620000000   → 返回时间戳 &lt; 1620000000 的20条</span><br></pre></td></tr></table></figure>
+
+<h3 id="时间线裁剪与淘汰策略"><a href="#时间线裁剪与淘汰策略" class="headerlink" title="时间线裁剪与淘汰策略"></a>时间线裁剪与淘汰策略</h3><p>每个用户的时间线不能无限增长。Redis中的每个Sorted Set限制存储最近N条动态（如1000条）。当新动态写入导致超过限制时，使用<code>ZREMRANGEBYRANK timeline:&#123;user_id&#125; 0 -&#123;N+1&#125;</code>删除最旧的动态。这个操作可以在每次写入时惰性执行。另一种策略是定期扫描，使用Redis的<code>ZREMRANGEBYSCORE</code>按时间戳删除超过一定天数（如90天）的动态。</p>
+<h2 id="五、动态内容的存储"><a href="#五、动态内容的存储" class="headerlink" title="五、动态内容的存储"></a>五、动态内容的存储</h2><p>动态内容（Feed Content）使用MySQL分片存储，以<code>user_id</code>为分片键。表结构设计如下：</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CREATE TABLE</span> feeds (</span><br><span class="line">    feed_id <span class="type">BIGINT</span> <span class="keyword">PRIMARY KEY</span>,</span><br><span class="line">    user_id <span class="type">BIGINT</span> <span class="keyword">NOT NULL</span>,</span><br><span class="line">    content_type TINYINT <span class="keyword">NOT NULL</span>,  <span class="comment">-- 1:文字 2:图片 3:视频</span></span><br><span class="line">    text TEXT,</span><br><span class="line">    media_urls JSON,                <span class="comment">-- 图片/视频URL列表</span></span><br><span class="line">    like_count <span class="type">INT</span> <span class="keyword">DEFAULT</span> <span class="number">0</span>,</span><br><span class="line">    comment_count <span class="type">INT</span> <span class="keyword">DEFAULT</span> <span class="number">0</span>,</span><br><span class="line">    repost_count <span class="type">INT</span> <span class="keyword">DEFAULT</span> <span class="number">0</span>,</span><br><span class="line">    status TINYINT <span class="keyword">DEFAULT</span> <span class="number">1</span>,       <span class="comment">-- 1:正常 2:删除</span></span><br><span class="line">    created_at DATETIME <span class="keyword">NOT NULL</span>,</span><br><span class="line">    INDEX idx_user_time (user_id, created_at)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8mb4;</span><br></pre></td></tr></table></figure>
+
+<p>对于图片和视频等媒体文件，原始文件上传到对象存储（如AWS S3或阿里云OSS），数据库中只存储文件的URL。图片经过CDN分发，不同设备请求不同尺寸的缩略图，由CDN边缘节点实时压缩转换。</p>
+<p>点赞和评论数的更新是高频写操作。如果每次点赞都直接更新主表，会产生大量行锁竞争。实践中采用异步更新策略：点赞操作先写入Redis的计数器（<code>INCR feed:like_count:&#123;feed_id&#125;</code>），定时任务（如每10秒）将Redis中的计数批量同步到MySQL。读取时先查Redis，如果Redis中没有（缓存未命中或已过期），再回源到MySQL并写入缓存。</p>
+<h3 id="动态ID的全局唯一生成"><a href="#动态ID的全局唯一生成" class="headerlink" title="动态ID的全局唯一生成"></a>动态ID的全局唯一生成</h3><p>动态ID在创建时需要全局唯一且趋势递增（便于按时间排序）。Twitter的Snowflake算法是经典选择。但新鲜事系统中，动态ID除了唯一性，有时还需要嵌入分片信息——例如在ID中嵌入<code>user_id</code>的低位，使得从动态ID可以直接推导出所属分片，避免查询分片路由表：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[1位保留][41位时间戳][10位机器ID][12位序列号]</span><br></pre></td></tr></table></figure>
+
+<p>或者采用更简单的一级发号器方案：维护一个全局的Redis计数器（<code>INCR feed:id:generator</code>），每次获取一批ID（如1000个），应用服务器在本地分配。一台应用服务器约每秒钟消耗100个ID，需要约每10秒从Redis获取一批，Redis的QPS约为0.1，开销极小。</p>
+<h3 id="媒体文件的分发链路"><a href="#媒体文件的分发链路" class="headerlink" title="媒体文件的分发链路"></a>媒体文件的分发链路</h3><p>图片和视频从上传到展示的完整链路：</p>
+<ol>
+<li>客户端上传原始文件到对象存储（直接上传，通过预签名URL，不经应用服务器）</li>
+<li>上传完成后，客户端将对象存储返回的URL发送给应用服务器</li>
+<li>应用服务器将URL写入feeds表的media_urls字段</li>
+<li>CDN回源配置指向对象存储的Bucket</li>
+<li>客户端请求图片时，URL指向CDN域名，CDN边缘节点首次回源到对象存储，后续命中缓存</li>
+<li>不同设备尺寸的图片通过CDN的图片处理功能实时生成（如阿里云CDN的图片裁剪参数<code>?x-oss-process=image/resize,w_200</code>）</li>
+</ol>
+<h2 id="六、系统架构总览"><a href="#六、系统架构总览" class="headerlink" title="六、系统架构总览"></a>六、系统架构总览</h2><p>整个新鲜事系统的高层架构包含以下组件：</p>
+<p><strong>API网关层</strong>：负责身份认证、限流、请求路由。客户端通过HTTPS与API网关通信，API网关验证JWT Token后将请求转发到对应的微服务。</p>
+<p><strong>Feed服务</strong>：核心业务逻辑层，处理动态的创建、删除和查询。当用户发布动态时，Feed服务首先将内容写入MySQL，然后调用通知服务（Notification Service）触发异步扩散任务。当用户拉取时间线时，Feed服务从Redis获取动态ID列表，批量查询MySQL获取详情，组装后返回。</p>
+<p><strong>时间线服务</strong>：管理用户收件箱的Redis Sorted Set。提供两个核心接口：<code>addToTimeline(userId, feedId, timestamp)</code>负责将动态ID插入用户时间线；<code>getTimeline(userId, cursor, limit)</code>根据游标分页拉取时间线。</p>
+<p><strong>扩散服务</strong>（Fanout Service）：异步处理推模式的扩散逻辑。从消息队列（如Kafka）消费新动态事件，查询该用户的粉丝列表，批量写入粉丝的Redis时间线。对于粉丝数超过阈值的大V，跳过扩散步骤，仅将动态ID写入大V自己的发件箱。</p>
+<p><strong>通知服务</strong>：当用户发布动态时，通过消息队列通知扩散服务进行处理。消息队列在这里起到了削峰填谷的作用——当热点事件发生时（如明星官宣），发布量瞬时暴增，消息队列缓冲请求，避免后端服务被冲垮。</p>
+<p><strong>计数服务</strong>：管理点赞数、评论数、转发数等计数的读写。使用Redis计数器加异步回写MySQL的架构。</p>
+<p><strong>用户关系服务</strong>：管理关注&#x2F;取关操作，维护关注关系图。关注关系存储在MySQL中，热数据（活跃用户的关系）缓存在Redis中。</p>
+<p><strong>媒体服务</strong>：处理图片&#x2F;视频的上传、转码、缩略图生成，对接对象存储和CDN。</p>
+<h3 id="系统架构的ASCII示意图"><a href="#系统架构的ASCII示意图" class="headerlink" title="系统架构的ASCII示意图"></a>系统架构的ASCII示意图</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">                         ┌──────────────┐</span><br><span class="line">                         │    CDN       │</span><br><span class="line">                         │ (静态资源)    │</span><br><span class="line">                         └──────┬───────┘</span><br><span class="line">                                │</span><br><span class="line">┌──────────┐    ┌──────────────┐    ┌──────────────┐</span><br><span class="line">│  客户端   │─── │  API 网关    │─── │  负载均衡     │</span><br><span class="line">│ (App/Web)│    │ (鉴权/限流)  │    │  (Nginx)     │</span><br><span class="line">└──────────┘    └──────┬───────┘    └──────────────┘</span><br><span class="line">                       │</span><br><span class="line">          ┌────────────┼────────────┐</span><br><span class="line">          │            │            │</span><br><span class="line">    ┌─────▼─────┐ ┌───▼────┐ ┌────▼──────┐</span><br><span class="line">    │ Feed服务   │ │用户服务│ │ 媒体服务   │</span><br><span class="line">    │ (核心逻辑) │ │        │ │           │</span><br><span class="line">    └─────┬─────┘ └────────┘ └───────────┘</span><br><span class="line">          │</span><br><span class="line">    ┌─────┼─────────┬──────────┐</span><br><span class="line">    │     │         │          │</span><br><span class="line">┌───▼──┐ ┌▼───┐ ┌──▼───┐ ┌──▼──────┐</span><br><span class="line">│Kafka │ │扩散 │ │时间线│ │ 计数服务 │</span><br><span class="line">│MQ    │ │服务 │ │服务  │ │          │</span><br><span class="line">└──────┘ └──┬─┘ └──┬───┘ └────┬─────┘</span><br><span class="line">            │       │          │</span><br><span class="line">      ┌─────▼───────▼──────────▼─────┐</span><br><span class="line">      │          Redis Cluster        │</span><br><span class="line">      │  (时间线/计数器/会话/缓存)      │</span><br><span class="line">      └──────────────────────────────┘</span><br><span class="line">                     │</span><br><span class="line">      ┌──────────────▼──────────────┐</span><br><span class="line">      │       MySQL 分片集群         │</span><br><span class="line">      │  (用户数据/动态内容/关系图)   │</span><br><span class="line">      └─────────────────────────────┘</span><br><span class="line">                     │</span><br><span class="line">      ┌──────────────▼──────────────┐</span><br><span class="line">      │      对象存储 (S3/OSS)       │</span><br><span class="line">      │    (图片/视频原始文件)        │</span><br><span class="line">      └─────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="各服务的部署与扩展策略"><a href="#各服务的部署与扩展策略" class="headerlink" title="各服务的部署与扩展策略"></a>各服务的部署与扩展策略</h3><p>Feed服务是无状态的，可以水平扩展。通过Kubernetes部署，根据CPU和请求延迟自动扩缩容。扩散服务是CPU密集型（大量Redis写入），独立部署和扩缩容，资源配额与Feed服务分离。时间线服务本质上是Redis Cluster的代理层，主要做分片路由和数据格式转换，也可以水平扩展。服务间通信使用gRPC（内部RPC，Protobuf序列化）以降低延迟和网络开销。</p>
+<h2 id="七、一致性模型与数据同步"><a href="#七、一致性模型与数据同步" class="headerlink" title="七、一致性模型与数据同步"></a>七、一致性模型与数据同步</h2><p>新鲜事系统对一致性要求不高，最终一致性（Eventual Consistency）即可接受。用户发布一条动态后，粉丝在几百毫秒内看到即可，不需要严格的线性一致性。</p>
+<p>但需要处理几个边界情况。第一，取关后的时间线清理：用户A取关用户B后，B的历史动态应该从A的时间线中移除。实现方式是在A取关B时，异步发送一个”时间线清理”事件，从A的Redis Sorted Set中移除所有B的动态ID（<code>ZREMRANGEBYSCORE</code>无法按member删除，但可以用<code>ZREM timeline:&#123;A_id&#125; feed_id_B1 feed_id_B2 ...</code>）。由于取关操作频率远低于发布操作，这个清理可以异步执行且允许短暂不一致。</p>
+<p>第二，删除动态的处理：用户删除了某条动态，需要从所有粉丝的时间线中移除该动态ID。这本质上也是一个扩散操作，但删除的扩散优先级低于发布的扩散。实践中，可以在查询时间线时做一次过滤——获取动态ID列表后，批量查询动态状态，过滤掉已删除的动态。</p>
+<p>第三，新注册用户的冷启动问题：新用户没有关注任何人，时间线为空。可以在新用户注册时推荐一批热门用户自动关注，或者展示一个全局热门Feed（Hot Feed），由独立的推荐系统计算。</p>
+<h3 id="扩散服务的一致性问题"><a href="#扩散服务的一致性问题" class="headerlink" title="扩散服务的一致性问题"></a>扩散服务的一致性问题</h3><p>在推拉结合模式下，一致性挑战更加微妙。当用户B加载时间线时，B的收件箱包含截止到扩散服务处理完毕时的普通用户动态，但大V的发件箱是最新的（实时拉取）。这意味着在同一时间线上，普通用户的动态可能比大V的动态滞后几百毫秒到几秒（取决于消息队列的延迟）。这个延迟在社交网络场景中完全可接受。</p>
+<p>更严重的一致性问题出现在用户关系变更时。假设用户B刚关注了用户C（一个普通用户），但C最近的动态还没有扩散到B的收件箱中。B刷新时间线时，收件箱是空的（因为扩散尚未完成）。解决方案：在B关注C时，除了写入关注关系，同步触发一个”补扩散”操作——将C最近的N条动态立即写入B的收件箱。</p>
+<h3 id="取关清理的异步实现"><a href="#取关清理的异步实现" class="headerlink" title="取关清理的异步实现"></a>取关清理的异步实现</h3><p>取关清理的详细流程：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. B取关C</span><br><span class="line">2. 用户关系服务更新MySQL（删除关注关系记录）</span><br><span class="line">3. 用户关系服务发送取关事件到Kafka（topic: user_unfollow）</span><br><span class="line">4. 清理服务消费取关事件：</span><br><span class="line">   a. 从C的outbox获取C最近的所有动态ID列表</span><br><span class="line">   b. 从B的timeline中批量删除这些动态ID（ZREM timeline:&#123;B_id&#125; id1 id2 ...）</span><br><span class="line">   c. 如果B的timeline中C的动态很多且分散（因为期间有其他人的动态插入），</span><br><span class="line">      可能需要全量扫描B的timeline并过滤——代价较高</span><br></pre></td></tr></table></figure>
+
+<p>优化方案：在每条动态ID中嵌入发布者user_id的低位（如16位），这样从动态ID可以快速判断发布者。时间线中删除某用户的所有动态时，可以先ZREVRANGE获取所有动态ID，本地过滤出目标用户的动态ID，再ZREM删除。由于时间线只保留最近1000条，这个操作的成本可控。</p>
+<h2 id="八、处理热点与缓存策略"><a href="#八、处理热点与缓存策略" class="headerlink" title="八、处理热点与缓存策略"></a>八、处理热点与缓存策略</h2><p>热点动态（如明星官宣、重大新闻）会带来极端的读写压力。当一条动态的访问量远超普通动态时，单节点缓存可能被打穿。应对策略包括：</p>
+<p>多级缓存架构：浏览器&#x2F;客户端缓存 → CDN边缘缓存 → 反向代理缓存（Nginx）→ 本地缓存（Caffeine&#x2F;Guava Cache）→ 分布式缓存（Redis Cluster）→ 数据库。热度越高的内容，越靠近客户端缓存。</p>
+<p>对于热点Feed详情，可以在Redis中使用多副本策略：同一个key（如<code>feed:detail:&#123;feed_id&#125;</code>）在多个Redis节点上存储副本，读取时随机选择一个节点。这样将读压力分散到多个Redis实例。</p>
+<p>对于时间线的热点问题——超级大V发布动态时，大量粉丝同时刷新时间线。在推拉结合模式下，大V的动态不扩散，粉丝通过拉模式获取。但如果有数百万粉丝同时拉取同一个大V的发件箱，这个大V的<code>outbox</code> Redis key会成为热点。解决方案是将发件箱数据通过CDN分发——大V的动态列表可以缓存到CDN边缘节点，由CDN承担大部分读流量。或者使用Redis的读写分离：主节点写入，多个只读副本提供读取。</p>
+<h3 id="热点Feed的自动检测与响应"><a href="#热点Feed的自动检测与响应" class="headerlink" title="热点Feed的自动检测与响应"></a>热点Feed的自动检测与响应</h3><p>如何自动检测热点？在Feed服务的读取路径上埋点，统计每条Feed在滑动窗口（如最近1分钟）内的访问次数。当访问量超过阈值（如10000次&#x2F;分钟），自动触发热点保护：</p>
+<ol>
+<li>将该Feed标记为”热点”，写入Redis（<code>hot:feed:&#123;feed_id&#125;</code>，TTL&#x3D;10分钟）</li>
+<li>将Feed详情数据同步推送到多副本Redis节点</li>
+<li>将Feed详情的TTL延长（如从10分钟延长到1小时）</li>
+<li>通知CDN预热该Feed的相关资源（图片、视频缩略图）</li>
+<li>对于热点Feed的访问，在API网关层增加本地缓存，缓存时间缩短到秒级（如5秒）</li>
+</ol>
+<h3 id="多级缓存的TTL阶梯设计"><a href="#多级缓存的TTL阶梯设计" class="headerlink" title="多级缓存的TTL阶梯设计"></a>多级缓存的TTL阶梯设计</h3><p>各级缓存的TTL应该形成阶梯，避免所有层级的缓存同时过期：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">客户端缓存（App内存）:      2-5分钟</span><br><span class="line">CDN边缘缓存:               5-15分钟</span><br><span class="line">Nginx反向代理缓存:          1-5分钟</span><br><span class="line">本地缓存（Caffeine）:       1-10分钟</span><br><span class="line">分布式缓存（Redis）:        10-60分钟</span><br></pre></td></tr></table></figure>
+
+<p>此外，TTL应该加上随机偏移量（如基准TTL的10%到20%），避免批量过期引发缓存雪崩。</p>
+<h2 id="九、异步扩散与消息队列"><a href="#九、异步扩散与消息队列" class="headerlink" title="九、异步扩散与消息队列"></a>九、异步扩散与消息队列</h2><p>扩散服务是新鲜事系统中负载最重的异步组件。它从Kafka消费新动态事件，需要查询发布者的粉丝列表并批量写入Redis。</p>
+<h3 id="扩散的流控与削峰"><a href="#扩散的流控与削峰" class="headerlink" title="扩散的流控与削峰"></a>扩散的流控与削峰</h3><p>由于扩散需要大量Redis写入，必须对扩散速度进行流控。实现方式是：扩散服务的每个消费者线程维护一个本地的令牌桶（Token Bucket），控制对Redis的写入速率。当消息队列积压严重时（如大V发布导致扩散量暴增），消费者可以自动降级——将粉丝数超过一定阈值的用户的扩散跳过（这些用户已经很接近大V标准），减少写入量。</p>
+<h3 id="扩散失败的重试与死信处理"><a href="#扩散失败的重试与死信处理" class="headerlink" title="扩散失败的重试与死信处理"></a>扩散失败的重试与死信处理</h3><p>Redis写入可能失败（网络超时、Redis节点繁忙等）。扩散服务对每条扩散任务实现重试机制：失败的任务写入重试队列（如Kafka的死信Topic），延迟一定时间后重新消费。重试次数超过上限（如3次）后，任务进入死信队列（Dead Letter Queue），由人工或自动化脚本处理。</p>
+<p>对于扩散的部分失败（如发布者有1000个粉丝，前800个写入成功，后200个失败），重试时应该只重试失败的200个，而不是重新扩散全部1000个。这就要求扩散服务在扩散时记录进度（粉丝列表的消费游标），支持断点续传。</p>
+<h2 id="十、新鲜事系统的排序与个性化"><a href="#十、新鲜事系统的排序与个性化" class="headerlink" title="十、新鲜事系统的排序与个性化"></a>十、新鲜事系统的排序与个性化</h2><p>大多数现代新鲜事系统不是纯粹按时间倒序排列的——它们使用推荐算法对Feed进行个性化排序。Facebook的EdgeRank、Twitter的Timely Ranking、Instagram的Machine Learning Feed都脱离了简单的时间线模型。</p>
+<h3 id="非时间排序对系统架构的影响"><a href="#非时间排序对系统架构的影响" class="headerlink" title="非时间排序对系统架构的影响"></a>非时间排序对系统架构的影响</h3><p>排序模型的引入对架构有深远影响：</p>
+<p><strong>延迟加载的策略</strong>：在纯时间线模式下，最新N条动态是确定的（时间戳最大）。在个性化排序模式下，”最好的”动态可能隐藏在历史中。系统需要：</p>
+<ol>
+<li>候选生成（Candidate Generation）：从用户关注的所有对象中拉取近期的动态（如最近7天，约数百到数千条）</li>
+<li>特征提取（Feature Extraction）：为每条动态-用户对计算特征（发帖者的亲和度、内容类型偏好、历史互动率、新鲜度衰减等）</li>
+<li>排序（Ranking）：使用学习到的模型对候选打分，选出Top N条</li>
+<li>后处理（Post-Processing）：多样性保证（避免同一发帖者连续多条）、内容安全过滤、广告混排</li>
+</ol>
+<p>这个流程比纯时间线多了数十到数百倍的计算量，需要专门的推荐服务（Ranking Service）处理。但通过混合架构——将轻量排序（基于简单特征，如粉丝数加权、互动率加权）在Feed服务内完成，将重量排序（深度学习模型）在推荐服务异步完成——可以在延迟预算内实现个性化。</p>
+<h3 id="Feed排序中的特征设计"><a href="#Feed排序中的特征设计" class="headerlink" title="Feed排序中的特征设计"></a>Feed排序中的特征设计</h3><p>典型的Feed排序特征包括：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">第一类：上下文特征（Context Features）</span><br><span class="line">  - 请求时间（早/中/晚 → 不同内容偏好）</span><br><span class="line">  - 用户设备/网络（WiFi → 更多视频; 蜂窝 → 更多文字）</span><br><span class="line">  - 用户当前地理位置</span><br><span class="line"></span><br><span class="line">第二类：用户特征（User Features）</span><br><span class="line">  - 用户对各类内容的互动率历史</span><br><span class="line">  - 用户对发帖者的亲和度（互动频率、直接消息频率等）</span><br><span class="line">  - 会话特征（本次打开App的停留时长、滑动深度）</span><br><span class="line"></span><br><span class="line">第三类：内容特征（Content Features）</span><br><span class="line">  - 动态类型（文字/图片/视频/链接）</span><br><span class="line">  - 发布时间距离当前的时间（新鲜度衰减）</span><br><span class="line">  - 已有的互动指标（点赞数、评论数、分享数 → 社会证明）</span><br><span class="line">  - 内容质量评分（通过内容审核模型）</span><br><span class="line"></span><br><span class="line">第四类：交叉特征（Cross Features）</span><br><span class="line">  - 用户-发帖者交互历史（是否密友、互动频率）</span><br><span class="line">  - 内容类型-用户偏好匹配度</span><br></pre></td></tr></table></figure>
+
+<p>这些特征在候选生成阶段（召回层）使用轻量模型（如LR、FM），在排序阶段（精排层）使用深度模型（如DNN、Wide &amp; Deep）。召回层从数千候选筛选到数百，精排层从数百排序到Top 50。</p>
+<h3 id="实时特征与离线特征的分工"><a href="#实时特征与离线特征的分工" class="headerlink" title="实时特征与离线特征的分工"></a>实时特征与离线特征的分工</h3><ul>
+<li><strong>离线特征</strong>（更新频率：小时级到天级）：用户长期兴趣标签、发帖者影响力分数、内容质量历史分布</li>
+<li><strong>近线特征</strong>（更新频率：分钟级）：用户近1小时的互动序列、热门话题趋势</li>
+<li><strong>在线特征</strong>（更新频率：秒级&#x2F;实时）：当前Session的滑动行为、最近点击&#x2F;点赞的动态类型</li>
+</ul>
+<p>这些特征通过Feature Store（特征存储，如Feast或自建Redis）统一管理和服务。排序服务在请求时从Feature Store批量获取特征，模型推理后返回排序结果。</p>
+<h2 id="十一、新鲜事系统的生产级运维与监控"><a href="#十一、新鲜事系统的生产级运维与监控" class="headerlink" title="十一、新鲜事系统的生产级运维与监控"></a>十一、新鲜事系统的生产级运维与监控</h2><h3 id="核心监控指标"><a href="#核心监控指标" class="headerlink" title="核心监控指标"></a>核心监控指标</h3><p>新鲜事系统的健康度通过以下关键指标衡量：</p>
+<p><strong>延迟指标</strong>：</p>
+<ul>
+<li>P50&#x2F;P95&#x2F;P99 时间线加载延迟（目标：P50 &lt; 100ms, P99 &lt; 300ms）</li>
+<li>扩散延迟（从发布到扩散完成的时间，目标：P99 &lt; 3秒）</li>
+<li>Kafka消费延迟（消息在队列中的滞留时间）</li>
+</ul>
+<p><strong>吞吐指标</strong>：</p>
+<ul>
+<li>时间线读取QPS（按服务实例和全局）</li>
+<li>Feed写入QPS</li>
+<li>扩散服务的Redis写入速率</li>
+</ul>
+<p><strong>质量指标</strong>：</p>
+<ul>
+<li>缓存命中率（时间线Redis缓存、Feed详情缓存，目标：&gt;95%）</li>
+<li>扩散成功率（成功写入&#x2F;应写入的比率，目标：&gt;99.9%）</li>
+<li>空时间线比例（新用户&#x2F;冷启动用户占比）</li>
+</ul>
+<p><strong>资源指标</strong>：</p>
+<ul>
+<li>Redis内存使用率（活跃时间线的内存占用）</li>
+<li>Redis CPU使用率（Sorted Set操作的消耗）</li>
+<li>Kafka消费者Lag（扩散延迟的直接反映）</li>
+</ul>
+<h3 id="告警与降级策略"><a href="#告警与降级策略" class="headerlink" title="告警与降级策略"></a>告警与降级策略</h3><p>告警规则和对应的自动降级措施：</p>
+<ul>
+<li>Redis集群内存 &gt; 85%：触发冷数据迁移（将非活跃用户时间线移至磁盘），暂停非关键写入（如点赞数更新缓存）</li>
+<li>扩散延迟 P99 &gt; 10秒：自动降低推模式阈值（减少扩散的粉丝数），更多用户切换到拉模式</li>
+<li>时间线加载 P99 &gt; 500ms：降级为非个性化排序（回退到时间倒序），跳过推荐模型</li>
+<li>Kafka积压 &gt; 1000万条：通知运维扩容消费者，同时开启消费者弹性扩缩</li>
+<li>单个大V发件箱被访问QPS &gt; 10000：自动触发CDN边缘缓存预热</li>
+</ul>
+<h3 id="灰度发布与A-B测试"><a href="#灰度发布与A-B测试" class="headerlink" title="灰度发布与A&#x2F;B测试"></a>灰度发布与A&#x2F;B测试</h3><p>新鲜事系统的每次变更都需要谨慎上线——因为影响的是所有用户看到的核心内容流。灰度发布策略：</p>
+<ol>
+<li>内部员工灰度（1%流量，持续1小时）：验证基本功能</li>
+<li>小流量灰度（5%流量，持续24小时）：对比核心指标（延迟、错误率、用户互动率）</li>
+<li>中流量灰度（25%流量，持续24小时）：观测长尾影响</li>
+<li>全量发布：渐进提升到100%</li>
+</ol>
+<p>A&#x2F;B测试框架：在API网关层根据用户ID的哈希值将用户分配到实验组。同一个用户在一次会话内始终看到相同的版本。实验指标包括：时间线加载延迟、用户互动率（点赞&#x2F;评论&#x2F;分享）、Session时长等。</p>
+<h2 id="十二、面试常见追问"><a href="#十二、面试常见追问" class="headerlink" title="十二、面试常见追问"></a>十二、面试常见追问</h2><p><strong>问题一：如何实现在大V和普通用户同时存在时的时间线归并？</strong></p>
+<p>答案是推拉结合模式下的时间线合并算法。假设用户A关注了200个普通用户（推模式，动态已写入A的时间线）和10个大V（拉模式，需要实时拉取）。加载A的时间线时：第一步，从A的Redis时间线获取最新的N条动态ID；第二步，并发查询10个大V的发件箱，分别获取最新N条动态ID；第三步，将所有动态ID按时间戳归并排序，取前N条；第四步，批量查询动态详情返回。这里的N通常取50到100。归并排序可以使用一个大小为K的最小堆（K &#x3D; 普通用户来源数 + 大V数 &#x3D; 1 + 10 &#x3D; 11），堆顶元素即为下一条最新动态。</p>
+<p><strong>问题二：Redis Sorted Set的内存优化有哪些手段？</strong></p>
+<p>Sorted Set的member存储的是动态ID（Long类型），但Redis内部会将数字字符串也存储为SDS（Simple Dynamic String），内存开销较大。优化手段：使用ziplist编码——当Sorted Set的元素数量较少（默认小于128）且元素长度较短（默认小于64字节）时，Redis使用紧凑的ziplist存储，内存效率远高于跳表。可以通过<code>zset-max-ziplist-entries</code>和<code>zset-max-ziplist-value</code>配置参数调大阈值。对于主要存储最近动态的时间线场景，很多用户的最新几百条动态都可以使用ziplist。另一个优化是定期清理超过一定条数（如1000条）的旧动态，通过<code>ZREMRANGEBYRANK</code>保留最新N条。</p>
+<p><strong>问题三：如何估算系统的QPS和存储容量？</strong></p>
+<p>这是系统设计面试的必考环节。假设DAU为一亿，平均每个用户每天刷新时间线20次，则每日时间线读取请求为20亿次，平均QPS &#x3D; 20亿 &#x2F; 86400 ≈ 23148 QPS。峰值QPS通常取平均的3到5倍，约115K QPS。写操作：每日发布约五亿条新动态，平均写QPS &#x3D; 5亿 &#x2F; 86400 ≈ 5787 QPS。存储估算：每天五亿条动态，每条平均1KB（文本+元数据），每日新增约500GB存储，每年约182TB。加上图片视频等媒体资源，总存储量需根据媒体占比调整。Redis内存估算上文已讨论，约需5TB存储活跃用户时间线。</p>
+<p><strong>问题四：为什么选择Redis Sorted Set而不是MySQL存储时间线？</strong></p>
+<p>MySQL的B+树索引在处理时间线这种高频范围扫描场景时存在性能瓶颈。时间线的典型读取模式是按时间戳降序范围查询（”获取比我上次看到更早的N条动态”），MySQL需要先通过索引定位到时间戳，然后回表读取数据，每次查询涉及多次随机I&#x2F;O。Redis的Sorted Set将数据完全放在内存中，范围查询只需沿跳表的最底层有序链表扫描，纯内存操作延迟在微秒级别。但Redis的成本远高于MySQL（内存 vs 磁盘），因此采用了冷热分离策略：活跃用户的时间线在Redis中（快速访问），非活跃用户的冷时间线归档到MySQL。</p>
+<p><strong>问题五：扩散服务使用Kafka而不是直接RPC调用有什么好处？</strong></p>
+<p>使用消息队列实现扩散有几个关键好处。第一，削峰填谷——当大V发布时，扩散量瞬时暴增，Kafka作为缓冲层吸收流量尖峰，扩散服务的消费者按自己的节奏处理，不会被打垮。第二，解耦——Feed服务发布动态后立即返回，不需要等待扩散完成，用户体验延迟不受扩散耗时的影响（异步化）。第三，容错——如果扩散服务宕机，消息在Kafka中持久化（保留7天），扩散服务恢复后可以继续消费，消息不丢失。第四，有序性保证——按<code>publisher_id</code>分区可以保证同一用户发布的动态扩散顺序与发布顺序一致。但代价是增加了端到端延迟（消息在Kafka中的滞留时间+消费延迟，通常100ms到500ms），以及运维复杂度。</p>
+<h3 id="扩展阅读：新鲜事系统的工业界演进史"><a href="#扩展阅读：新鲜事系统的工业界演进史" class="headerlink" title="扩展阅读：新鲜事系统的工业界演进史"></a>扩展阅读：新鲜事系统的工业界演进史</h3><p>新鲜事系统经历了从简单到复杂的演进，每个阶段都对应着用户规模和技术挑战的跃升：</p>
+<p><strong>Twitter的演进（2006-2015）</strong>：</p>
+<ul>
+<li>2006-2009：纯推模式（Fanout on Write）。所有用户的Tweet直接Fanout到所有粉丝的时间线。单机MySQL存储时间线。</li>
+<li>2009-2011：名人问题（”Obama Problem”）暴露。Obama一条Tweet需要写入2100万条时间线，基础设施瘫痪数小时。引入推拉结合——粉丝&gt;100万的用户切换到拉模式。</li>
+<li>2012-2015：全面重构为混合模式。添加Redis时间线缓存、Manhattan KV存储、Snowflake ID生成器。</li>
+</ul>
+<p><strong>Facebook的演进（2004-2018）</strong>：</p>
+<ul>
+<li>早期（2004-2007）：拉模式为主，用户打开首页时查询所有好友的动态（MySQL JOIN查询）</li>
+<li>中期（2007-2010）：引入Multifeed（预先计算的Feed缓存），为活跃用户预计算Feed</li>
+<li>后期（2010-2018）：引入TAO（The Associations and Objects）图存储层，管理社交图谱；EdgeRank排序模型迭代为机器学习排序</li>
+<li>现代（2018+）：全面ML驱动的Feed排序，候选生成 + 多阶段排序 + 多样性后处理</li>
+</ul>
+<p><strong>微博的演进（2009-2016）</strong>：</p>
+<ul>
+<li>2009-2011：纯推模式。所有微博Fanout到所有粉丝的时间线。</li>
+<li>2012：大V问题严重（姚晨粉丝破千万），引入推拉结合，阈值设置为1万粉丝。</li>
+<li>2014-2016：自研Feed系统，引入Redis Cluster存储时间线、HBase存储Feed内容。多级缓存架构完善。</li>
+</ul>
+<p><strong>共性的教训</strong>：</p>
+<ol>
+<li>没有一个方案适合所有用户——推拉结合是必然选择</li>
+<li>热点大V问题比预想的更严重（符合幂律分布，不到1%的用户产生99%的扩散量）</li>
+<li>存储时间线和存储Feed内容必须分离（时间线只存ID，内容另存）</li>
+<li>异步扩散+消息队列是处理写放大的唯一可行方案</li>
+<li>从纯时间排序到个性化排序是不可逆的趋势，但会显著增加系统复杂度</li>
+</ol>
+<h3 id="新鲜事系统面试的讨论框架"><a href="#新鲜事系统面试的讨论框架" class="headerlink" title="新鲜事系统面试的讨论框架"></a>新鲜事系统面试的讨论框架</h3><p>在系统设计面试中讨论新鲜事&#x2F;Feed系统时，以下框架可以帮助组织你的思考：</p>
+<p><strong>第一层：推还是拉（核心决策）</strong></p>
+<ul>
+<li>纯推：写放大严重，适合粉丝少的用户</li>
+<li>纯拉：读延迟高，适合粉丝数量可控的场景</li>
+<li>推拉结合：工业界方案，需要设定合理的阈值</li>
+</ul>
+<p><strong>第二层：存储选择</strong></p>
+<ul>
+<li>时间线存储：Redis Sorted Set（内存，快） vs SSD-optimized KV（成本低）</li>
+<li>内容存储：MySQL分片（结构化，查询灵活） vs HBase（高写入吞吐）</li>
+<li>媒体存储：对象存储 + CDN</li>
+</ul>
+<p><strong>第三层：扩展策略</strong></p>
+<ul>
+<li>水平分片（按user_id）</li>
+<li>读副本扩展（读写分离）</li>
+<li>多级缓存（客户端→CDN→本地缓存→Redis→DB）</li>
+</ul>
+<p><strong>第四层：一致性权衡</strong></p>
+<ul>
+<li>时间线延迟：发布后多久粉丝能看到（100ms到秒级可接受）</li>
+<li>删除&#x2F;取关清理：异步处理，短暂不一致可接受</li>
+<li>新关注补扩散：同步写入最近的N条动态</li>
+</ul>
+<p><strong>第五层：热点与降级</strong></p>
+<ul>
+<li>大V发件箱：多副本、CDN分发</li>
+<li>热点Feed：缓存副本、延长TTL</li>
+<li>降级策略：Redis不可用时回退到MySQL + 限流</li>
+</ul>
+<p>本篇文章从需求分析出发，系统性地拆解了新鲜事系统的核心设计要点。掌握了推拉结合模式、时间线存储方案、Redis Sorted Set的使用以及扩展策略后，你就可以自信地应对类似系统设计的面试问题了。在实际工程中，还有许多细节需要深入——比如垃圾内容过滤、推荐算法排序、多数据中心同步等，但这些通常不是系统设计面试考察的重点。</p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2021/11/01/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E8%B5%B0%E8%BF%9B%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B8%8E%E6%96%B0%E9%B2%9C%E4%BA%8B%E7%B3%BB%E7%BB%9F/">http://tufusi.com/2021/11/01/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E8%B5%B0%E8%BF%9B%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B8%8E%E6%96%B0%E9%B2%9C%E4%BA%8B%E7%B3%BB%E7%BB%9F/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/794.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/11/05/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%BB%8E%E7%94%A8%E6%88%B7%E7%B3%BB%E7%BB%9F%E4%B8%AD%E7%90%86%E8%A7%A3%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%8E%E7%BC%93%E5%AD%98/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>系统设计之从用户系统中理解数据库与缓存</span></div></a></div><div class="next-post pull_right"><a href="/2021/10/25/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E5%90%83%E9%80%8F%E6%BA%90%E7%A0%81%E7%B3%BB%E5%88%97%E3%80%91%E4%B9%8BActivity/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/300.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【吃透源码系列】之Activity</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/海边风景/794.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

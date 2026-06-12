@@ -1,0 +1,983 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【深入理解JVM字节码】第七篇、javac编译原理 | ONE·PIECE</title><meta name="description" content="【深入理解JVM字节码】第七篇、javac编译原理"><meta name="keywords" content=""><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【深入理解JVM字节码】第七篇、javac编译原理"><meta name="twitter:description" content="【深入理解JVM字节码】第七篇、javac编译原理"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/248.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【深入理解JVM字节码】第七篇、javac编译原理"><meta property="og:url" content="http://tufusi.com/2021/04/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E4%B8%83%E7%AF%87%E3%80%81javac%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【深入理解JVM字节码】第七篇、javac编译原理"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/248.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2021/04/01/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E4%B8%83%E7%AF%87%E3%80%81javac%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/"><link rel="prev" title="【深入理解JVM字节码】第八篇、Kotlin字节码原理" href="http://tufusi.com/2021/04/05/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%85%AB%E7%AF%87%E3%80%81Kotlin%E5%AD%97%E8%8A%82%E7%A0%81%E5%8E%9F%E7%90%86/"><link rel="next" title="【深入理解JVM字节码】第六篇、反射实现原理" href="http://tufusi.com/2021/03/25/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%85%AD%E7%AF%87%E3%80%81%E5%8F%8D%E5%B0%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81javac-%E7%BC%96%E8%AF%91%E6%B5%81%E6%B0%B4%E7%BA%BF%E6%A6%82%E8%A7%88"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、javac 编译流水线概览</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81Parse-%E9%98%B6%E6%AE%B5%EF%BC%9A%E4%BB%8E%E6%BA%90%E7%A0%81%E6%96%87%E6%9C%AC%E5%88%B0-AST"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、Parse 阶段：从源码文本到 AST</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E8%AF%8D%E6%B3%95%E5%88%86%E6%9E%90%EF%BC%9AJavaTokenizer"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 词法分析：JavaTokenizer</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E8%AF%AD%E6%B3%95%E5%88%86%E6%9E%90%EF%BC%9AJavacParser"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 语法分析：JavacParser</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-3-%E6%AD%A7%E4%B9%89%E5%A4%84%E7%90%86%EF%BC%9A%E8%8F%B1%E5%BD%A2%E8%BF%90%E7%AE%97%E7%AC%A6%E4%B8%8E%E6%B3%9B%E5%9E%8B"><span class="toc_mobile_items-number">2.3.</span> <span class="toc_mobile_items-text">2.3 歧义处理：菱形运算符与泛型</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-4-%E9%94%99%E8%AF%AF%E6%81%A2%E5%A4%8D%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">2.4.</span> <span class="toc_mobile_items-text">2.4 错误恢复机制</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-5-%E8%A1%8C%E5%8F%B7%E4%B8%8E%E5%88%97%E5%8F%B7%E7%9A%84%E9%94%99%E8%AF%AF%E6%8A%A5%E5%91%8A"><span class="toc_mobile_items-number">2.5.</span> <span class="toc_mobile_items-text">2.5 行号与列号的错误报告</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81Enter-%E9%98%B6%E6%AE%B5%EF%BC%9A%E7%AC%A6%E5%8F%B7%E8%A1%A8%E7%9A%84%E6%9E%84%E5%BB%BA"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、Enter 阶段：符号表的构建</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E7%AC%A6%E5%8F%B7%E8%A1%A8%E6%9E%B6%E6%9E%84"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 符号表架构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E4%BD%9C%E7%94%A8%E5%9F%9F%E7%9A%84%E5%AE%9E%E7%8E%B0%EF%BC%9AScope"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 作用域的实现：Scope</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-MemberEnter%EF%BC%9A%E9%81%8D%E5%8E%86-AST-%E6%B3%A8%E5%86%8C%E7%AC%A6%E5%8F%B7"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 MemberEnter：遍历 AST 注册符号</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-%E5%BB%B6%E8%BF%9F%E6%88%90%E5%91%98%E8%BE%93%E5%85%A5%EF%BC%88Lazy-Member-Enter%EF%BC%89"><span class="toc_mobile_items-number">3.4.</span> <span class="toc_mobile_items-text">3.4 延迟成员输入（Lazy Member Enter）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81Annotation-Processing-%E9%98%B6%E6%AE%B5"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、Annotation Processing 阶段</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-JSR-269-%E6%B3%A8%E8%A7%A3%E5%A4%84%E7%90%86%E6%A1%86%E6%9E%B6"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 JSR 269 注解处理框架</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E5%A4%84%E7%90%86%E8%BD%AE%E6%AC%A1%EF%BC%88Rounds%EF%BC%89"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 处理轮次（Rounds）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-%E6%B3%A8%E8%A7%A3%E5%A4%84%E7%90%86%E5%99%A8%E7%94%9F%E6%88%90%E4%BB%A3%E7%A0%81%E7%9A%84%E5%86%85%E9%83%A8%E6%B5%81%E7%A8%8B"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 注解处理器生成代码的内部流程</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-4-Android-%E4%B8%AD%E7%9A%84-APT-%E4%B8%8E-KSP"><span class="toc_mobile_items-number">4.4.</span> <span class="toc_mobile_items-text">4.4 Android 中的 APT 与 KSP</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81Attr-%E9%98%B6%E6%AE%B5%EF%BC%9A%E5%B1%9E%E6%80%A7%E6%A0%87%E8%AE%B0%E4%B8%8E%E7%B1%BB%E5%9E%8B%E6%A3%80%E6%9F%A5"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、Attr 阶段：属性标记与类型检查</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-Attr-%E7%9A%84%E8%81%8C%E8%B4%A3"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 Attr 的职责</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-%E7%B1%BB%E5%9E%8B%E6%A3%80%E6%9F%A5%E7%9A%84%E6%A0%B8%E5%BF%83%E6%B5%81%E7%A8%8B"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 类型检查的核心流程</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-%E7%B1%BB%E5%9E%8B%E6%8E%A8%E6%96%AD%E4%B8%8E%E6%B3%9B%E5%9E%8B"><span class="toc_mobile_items-number">5.3.</span> <span class="toc_mobile_items-text">5.3 类型推断与泛型</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81Flow-%E9%98%B6%E6%AE%B5%EF%BC%9A%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、Flow 阶段：数据流分析</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-Flow-%E7%9A%84%E6%95%B4%E4%BD%93%E5%8A%9F%E8%83%BD"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 Flow 的整体功能</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-%E7%A1%AE%E5%AE%9A%E8%B5%8B%E5%80%BC%E5%88%86%E6%9E%90%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 确定赋值分析的实现</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-Effectively-Final-%E6%A3%80%E6%9F%A5"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">6.3 Effectively Final 检查</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-4-%E5%BC%82%E5%B8%B8%E6%A3%80%E6%9F%A5"><span class="toc_mobile_items-number">6.4.</span> <span class="toc_mobile_items-text">6.4 异常检查</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-5-%E5%8F%AF%E8%BE%BE%E6%80%A7%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">6.5.</span> <span class="toc_mobile_items-text">6.5 可达性分析</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81LambdaToMethod%EF%BC%9ALambda-%E7%9A%84%E8%84%B1%E7%B3%96"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、LambdaToMethod：Lambda 的脱糖</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-Lambda-%E5%9C%A8%E5%AD%97%E8%8A%82%E7%A0%81%E4%B8%AD%E7%9A%84%E4%B8%A4%E7%A7%8D%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">7.1 Lambda 在字节码中的两种策略</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-%E5%90%88%E6%88%90%E6%96%B9%E6%B3%95%E7%9A%84%E5%91%BD%E5%90%8D%E8%A7%84%E5%88%99"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">7.2 合成方法的命名规则</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-3-%E6%96%B9%E6%B3%95%E5%BC%95%E7%94%A8%E7%9A%84%E5%A4%84%E7%90%86"><span class="toc_mobile_items-number">7.3.</span> <span class="toc_mobile_items-text">7.3 方法引用的处理</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81Desugar-%E9%98%B6%E6%AE%B5%EF%BC%9A%E8%AF%AD%E6%B3%95%E7%B3%96%E7%9A%84%E8%A7%A3%E7%B3%96"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、Desugar 阶段：语法糖的解糖</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-Lower-%E7%9A%84%E6%95%B4%E4%BD%93%E8%81%8C%E8%B4%A3"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">8.1 Lower 的整体职责</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-%E5%B5%8C%E5%A5%97%E7%B1%BB%E4%B8%8E%E5%8C%BF%E5%90%8D%E7%B1%BB%E7%9A%84%E6%8F%90%E5%8D%87"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">8.2 嵌套类与匿名类的提升</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-3-String-switch-%E7%9A%84%E8%BD%AC%E6%8D%A2"><span class="toc_mobile_items-number">8.3.</span> <span class="toc_mobile_items-text">8.3 String switch 的转换</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-4-try-with-resources-%E7%9A%84%E5%AE%8C%E6%95%B4%E5%B1%95%E5%BC%80"><span class="toc_mobile_items-number">8.4.</span> <span class="toc_mobile_items-text">8.4 try-with-resources 的完整展开</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-5-foreach-%E5%BE%AA%E7%8E%AF%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%B1%95%E5%BC%80"><span class="toc_mobile_items-number">8.5.</span> <span class="toc_mobile_items-text">8.5 foreach 循环的两种展开</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-6-%E5%85%B6%E4%BB%96%E8%AF%AD%E6%B3%95%E7%B3%96%E6%B6%88%E9%99%A4"><span class="toc_mobile_items-number">8.6.</span> <span class="toc_mobile_items-text">8.6 其他语法糖消除</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81Generate-%E9%98%B6%E6%AE%B5%EF%BC%9A%E5%AD%97%E8%8A%82%E7%A0%81%E7%94%9F%E6%88%90"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、Generate 阶段：字节码生成</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-1-Gen-%E7%9A%84%E8%81%8C%E8%B4%A3%E4%B8%8E-Code-%E5%AF%B9%E8%B1%A1"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">9.1 Gen 的职责与 Code 对象</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-2-AST-%E2%86%92-Bytecode-%E7%9A%84%E6%98%A0%E5%B0%84"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">9.2 AST → Bytecode 的映射</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-3-%E5%B8%B8%E9%87%8F%E6%B1%A0%E7%9A%84%E6%9E%84%E5%BB%BA"><span class="toc_mobile_items-number">9.3.</span> <span class="toc_mobile_items-text">9.3 常量池的构建</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-4-max-stack-%E4%B8%8E-max-locals-%E7%9A%84%E8%AE%A1%E7%AE%97"><span class="toc_mobile_items-number">9.4.</span> <span class="toc_mobile_items-text">9.4 max_stack 与 max_locals 的计算</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-5-StackMapTable-%E7%9A%84%E7%94%9F%E6%88%90"><span class="toc_mobile_items-number">9.5.</span> <span class="toc_mobile_items-text">9.5 StackMapTable 的生成</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-6-%E5%BC%82%E5%B8%B8%E8%A1%A8%EF%BC%88Exception-Table%EF%BC%89%E7%9A%84%E7%94%9F%E6%88%90"><span class="toc_mobile_items-number">9.6.</span> <span class="toc_mobile_items-text">9.6 异常表（Exception Table）的生成</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-7-LineNumberTable-%E5%92%8C-LocalVariableTable"><span class="toc_mobile_items-number">9.7.</span> <span class="toc_mobile_items-text">9.7 LineNumberTable 和 LocalVariableTable</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81%E5%AE%8C%E6%95%B4%E7%A4%BA%E4%BE%8B%EF%BC%9A%E8%B7%9F%E8%B8%AA%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%B1%BB%E7%9A%84%E7%BC%96%E8%AF%91%E5%85%A8%E8%BF%87%E7%A8%8B"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">十、完整示例：跟踪一个简单类的编译全过程</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-1-%E6%BA%90%E6%96%87%E4%BB%B6"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">10.1 源文件</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-2-%E9%98%B6%E6%AE%B5-1%EF%BC%9AParse"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">10.2 阶段 1：Parse</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-3-%E9%98%B6%E6%AE%B5-2%EF%BC%9AEnter"><span class="toc_mobile_items-number">10.3.</span> <span class="toc_mobile_items-text">10.3 阶段 2：Enter</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-4-%E9%98%B6%E6%AE%B5-4%EF%BC%9AAttr"><span class="toc_mobile_items-number">10.4.</span> <span class="toc_mobile_items-text">10.4 阶段 4：Attr</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-5-%E9%98%B6%E6%AE%B5-5%EF%BC%9AFlow"><span class="toc_mobile_items-number">10.5.</span> <span class="toc_mobile_items-text">10.5 阶段 5：Flow</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-6-%E9%98%B6%E6%AE%B5-6%EF%BC%9ADesugar"><span class="toc_mobile_items-number">10.6.</span> <span class="toc_mobile_items-text">10.6 阶段 6：Desugar</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-7-%E9%98%B6%E6%AE%B5-7%EF%BC%9AGenerate"><span class="toc_mobile_items-number">10.7.</span> <span class="toc_mobile_items-text">10.7 阶段 7：Generate</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-8-%E6%9C%80%E7%BB%88%E7%9A%84-class-%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">10.8.</span> <span class="toc_mobile_items-text">10.8 最终的 .class 文件结构</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%80%E3%80%81javac-vs-d8%EF%BC%9A%E5%88%86%E5%B7%A5%E8%BE%B9%E7%95%8C%E4%B8%8E%E5%8D%8F%E9%80%9A"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">十一、javac vs d8：分工边界与协通</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E9%9D%A2%E8%AF%95%E9%97%AE%E7%AD%94"><span class="toc_mobile_items-number">12.</span> <span class="toc_mobile_items-text">面试问答</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81javac-%E7%BC%96%E8%AF%91%E6%B5%81%E6%B0%B4%E7%BA%BF%E6%A6%82%E8%A7%88"><span class="toc-number">1.</span> <span class="toc-text">一、javac 编译流水线概览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Parse-%E9%98%B6%E6%AE%B5%EF%BC%9A%E4%BB%8E%E6%BA%90%E7%A0%81%E6%96%87%E6%9C%AC%E5%88%B0-AST"><span class="toc-number">2.</span> <span class="toc-text">二、Parse 阶段：从源码文本到 AST</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E8%AF%8D%E6%B3%95%E5%88%86%E6%9E%90%EF%BC%9AJavaTokenizer"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 词法分析：JavaTokenizer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E8%AF%AD%E6%B3%95%E5%88%86%E6%9E%90%EF%BC%9AJavacParser"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 语法分析：JavacParser</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E6%AD%A7%E4%B9%89%E5%A4%84%E7%90%86%EF%BC%9A%E8%8F%B1%E5%BD%A2%E8%BF%90%E7%AE%97%E7%AC%A6%E4%B8%8E%E6%B3%9B%E5%9E%8B"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 歧义处理：菱形运算符与泛型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E9%94%99%E8%AF%AF%E6%81%A2%E5%A4%8D%E6%9C%BA%E5%88%B6"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 错误恢复机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E8%A1%8C%E5%8F%B7%E4%B8%8E%E5%88%97%E5%8F%B7%E7%9A%84%E9%94%99%E8%AF%AF%E6%8A%A5%E5%91%8A"><span class="toc-number">2.5.</span> <span class="toc-text">2.5 行号与列号的错误报告</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Enter-%E9%98%B6%E6%AE%B5%EF%BC%9A%E7%AC%A6%E5%8F%B7%E8%A1%A8%E7%9A%84%E6%9E%84%E5%BB%BA"><span class="toc-number">3.</span> <span class="toc-text">三、Enter 阶段：符号表的构建</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%AC%A6%E5%8F%B7%E8%A1%A8%E6%9E%B6%E6%9E%84"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 符号表架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E4%BD%9C%E7%94%A8%E5%9F%9F%E7%9A%84%E5%AE%9E%E7%8E%B0%EF%BC%9AScope"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 作用域的实现：Scope</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-MemberEnter%EF%BC%9A%E9%81%8D%E5%8E%86-AST-%E6%B3%A8%E5%86%8C%E7%AC%A6%E5%8F%B7"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 MemberEnter：遍历 AST 注册符号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%BB%B6%E8%BF%9F%E6%88%90%E5%91%98%E8%BE%93%E5%85%A5%EF%BC%88Lazy-Member-Enter%EF%BC%89"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 延迟成员输入（Lazy Member Enter）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Annotation-Processing-%E9%98%B6%E6%AE%B5"><span class="toc-number">4.</span> <span class="toc-text">四、Annotation Processing 阶段</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-JSR-269-%E6%B3%A8%E8%A7%A3%E5%A4%84%E7%90%86%E6%A1%86%E6%9E%B6"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 JSR 269 注解处理框架</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E5%A4%84%E7%90%86%E8%BD%AE%E6%AC%A1%EF%BC%88Rounds%EF%BC%89"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 处理轮次（Rounds）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E6%B3%A8%E8%A7%A3%E5%A4%84%E7%90%86%E5%99%A8%E7%94%9F%E6%88%90%E4%BB%A3%E7%A0%81%E7%9A%84%E5%86%85%E9%83%A8%E6%B5%81%E7%A8%8B"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 注解处理器生成代码的内部流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-Android-%E4%B8%AD%E7%9A%84-APT-%E4%B8%8E-KSP"><span class="toc-number">4.4.</span> <span class="toc-text">4.4 Android 中的 APT 与 KSP</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Attr-%E9%98%B6%E6%AE%B5%EF%BC%9A%E5%B1%9E%E6%80%A7%E6%A0%87%E8%AE%B0%E4%B8%8E%E7%B1%BB%E5%9E%8B%E6%A3%80%E6%9F%A5"><span class="toc-number">5.</span> <span class="toc-text">五、Attr 阶段：属性标记与类型检查</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Attr-%E7%9A%84%E8%81%8C%E8%B4%A3"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 Attr 的职责</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E7%B1%BB%E5%9E%8B%E6%A3%80%E6%9F%A5%E7%9A%84%E6%A0%B8%E5%BF%83%E6%B5%81%E7%A8%8B"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 类型检查的核心流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E7%B1%BB%E5%9E%8B%E6%8E%A8%E6%96%AD%E4%B8%8E%E6%B3%9B%E5%9E%8B"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 类型推断与泛型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81Flow-%E9%98%B6%E6%AE%B5%EF%BC%9A%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90"><span class="toc-number">6.</span> <span class="toc-text">六、Flow 阶段：数据流分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-Flow-%E7%9A%84%E6%95%B4%E4%BD%93%E5%8A%9F%E8%83%BD"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 Flow 的整体功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E7%A1%AE%E5%AE%9A%E8%B5%8B%E5%80%BC%E5%88%86%E6%9E%90%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 确定赋值分析的实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-Effectively-Final-%E6%A3%80%E6%9F%A5"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 Effectively Final 检查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E5%BC%82%E5%B8%B8%E6%A3%80%E6%9F%A5"><span class="toc-number">6.4.</span> <span class="toc-text">6.4 异常检查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-5-%E5%8F%AF%E8%BE%BE%E6%80%A7%E5%88%86%E6%9E%90"><span class="toc-number">6.5.</span> <span class="toc-text">6.5 可达性分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81LambdaToMethod%EF%BC%9ALambda-%E7%9A%84%E8%84%B1%E7%B3%96"><span class="toc-number">7.</span> <span class="toc-text">七、LambdaToMethod：Lambda 的脱糖</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-Lambda-%E5%9C%A8%E5%AD%97%E8%8A%82%E7%A0%81%E4%B8%AD%E7%9A%84%E4%B8%A4%E7%A7%8D%E7%AD%96%E7%95%A5"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 Lambda 在字节码中的两种策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E5%90%88%E6%88%90%E6%96%B9%E6%B3%95%E7%9A%84%E5%91%BD%E5%90%8D%E8%A7%84%E5%88%99"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 合成方法的命名规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E6%96%B9%E6%B3%95%E5%BC%95%E7%94%A8%E7%9A%84%E5%A4%84%E7%90%86"><span class="toc-number">7.3.</span> <span class="toc-text">7.3 方法引用的处理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81Desugar-%E9%98%B6%E6%AE%B5%EF%BC%9A%E8%AF%AD%E6%B3%95%E7%B3%96%E7%9A%84%E8%A7%A3%E7%B3%96"><span class="toc-number">8.</span> <span class="toc-text">八、Desugar 阶段：语法糖的解糖</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-Lower-%E7%9A%84%E6%95%B4%E4%BD%93%E8%81%8C%E8%B4%A3"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 Lower 的整体职责</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E5%B5%8C%E5%A5%97%E7%B1%BB%E4%B8%8E%E5%8C%BF%E5%90%8D%E7%B1%BB%E7%9A%84%E6%8F%90%E5%8D%87"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 嵌套类与匿名类的提升</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-String-switch-%E7%9A%84%E8%BD%AC%E6%8D%A2"><span class="toc-number">8.3.</span> <span class="toc-text">8.3 String switch 的转换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-4-try-with-resources-%E7%9A%84%E5%AE%8C%E6%95%B4%E5%B1%95%E5%BC%80"><span class="toc-number">8.4.</span> <span class="toc-text">8.4 try-with-resources 的完整展开</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-5-foreach-%E5%BE%AA%E7%8E%AF%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%B1%95%E5%BC%80"><span class="toc-number">8.5.</span> <span class="toc-text">8.5 foreach 循环的两种展开</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-6-%E5%85%B6%E4%BB%96%E8%AF%AD%E6%B3%95%E7%B3%96%E6%B6%88%E9%99%A4"><span class="toc-number">8.6.</span> <span class="toc-text">8.6 其他语法糖消除</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81Generate-%E9%98%B6%E6%AE%B5%EF%BC%9A%E5%AD%97%E8%8A%82%E7%A0%81%E7%94%9F%E6%88%90"><span class="toc-number">9.</span> <span class="toc-text">九、Generate 阶段：字节码生成</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-Gen-%E7%9A%84%E8%81%8C%E8%B4%A3%E4%B8%8E-Code-%E5%AF%B9%E8%B1%A1"><span class="toc-number">9.1.</span> <span class="toc-text">9.1 Gen 的职责与 Code 对象</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-AST-%E2%86%92-Bytecode-%E7%9A%84%E6%98%A0%E5%B0%84"><span class="toc-number">9.2.</span> <span class="toc-text">9.2 AST → Bytecode 的映射</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-%E5%B8%B8%E9%87%8F%E6%B1%A0%E7%9A%84%E6%9E%84%E5%BB%BA"><span class="toc-number">9.3.</span> <span class="toc-text">9.3 常量池的构建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-4-max-stack-%E4%B8%8E-max-locals-%E7%9A%84%E8%AE%A1%E7%AE%97"><span class="toc-number">9.4.</span> <span class="toc-text">9.4 max_stack 与 max_locals 的计算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-5-StackMapTable-%E7%9A%84%E7%94%9F%E6%88%90"><span class="toc-number">9.5.</span> <span class="toc-text">9.5 StackMapTable 的生成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-6-%E5%BC%82%E5%B8%B8%E8%A1%A8%EF%BC%88Exception-Table%EF%BC%89%E7%9A%84%E7%94%9F%E6%88%90"><span class="toc-number">9.6.</span> <span class="toc-text">9.6 异常表（Exception Table）的生成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-7-LineNumberTable-%E5%92%8C-LocalVariableTable"><span class="toc-number">9.7.</span> <span class="toc-text">9.7 LineNumberTable 和 LocalVariableTable</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E5%AE%8C%E6%95%B4%E7%A4%BA%E4%BE%8B%EF%BC%9A%E8%B7%9F%E8%B8%AA%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%B1%BB%E7%9A%84%E7%BC%96%E8%AF%91%E5%85%A8%E8%BF%87%E7%A8%8B"><span class="toc-number">10.</span> <span class="toc-text">十、完整示例：跟踪一个简单类的编译全过程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-%E6%BA%90%E6%96%87%E4%BB%B6"><span class="toc-number">10.1.</span> <span class="toc-text">10.1 源文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-%E9%98%B6%E6%AE%B5-1%EF%BC%9AParse"><span class="toc-number">10.2.</span> <span class="toc-text">10.2 阶段 1：Parse</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-3-%E9%98%B6%E6%AE%B5-2%EF%BC%9AEnter"><span class="toc-number">10.3.</span> <span class="toc-text">10.3 阶段 2：Enter</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-4-%E9%98%B6%E6%AE%B5-4%EF%BC%9AAttr"><span class="toc-number">10.4.</span> <span class="toc-text">10.4 阶段 4：Attr</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-5-%E9%98%B6%E6%AE%B5-5%EF%BC%9AFlow"><span class="toc-number">10.5.</span> <span class="toc-text">10.5 阶段 5：Flow</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-6-%E9%98%B6%E6%AE%B5-6%EF%BC%9ADesugar"><span class="toc-number">10.6.</span> <span class="toc-text">10.6 阶段 6：Desugar</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-7-%E9%98%B6%E6%AE%B5-7%EF%BC%9AGenerate"><span class="toc-number">10.7.</span> <span class="toc-text">10.7 阶段 7：Generate</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-8-%E6%9C%80%E7%BB%88%E7%9A%84-class-%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84"><span class="toc-number">10.8.</span> <span class="toc-text">10.8 最终的 .class 文件结构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81javac-vs-d8%EF%BC%9A%E5%88%86%E5%B7%A5%E8%BE%B9%E7%95%8C%E4%B8%8E%E5%8D%8F%E9%80%9A"><span class="toc-number">11.</span> <span class="toc-text">十一、javac vs d8：分工边界与协通</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E9%97%AE%E7%AD%94"><span class="toc-number">12.</span> <span class="toc-text">面试问答</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/248.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【深入理解JVM字节码】第七篇、javac编译原理</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-04-01<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">13.2k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 49 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="一、javac-编译流水线概览"><a href="#一、javac-编译流水线概览" class="headerlink" title="一、javac 编译流水线概览"></a>一、javac 编译流水线概览</h2><p>javac 是 OpenJDK 中的 Java 编译器，源码位于 <code>src/jdk.compiler/share/classes/com/sun/tools/javac/</code>。整个编译流水线分为七个核心阶段，每个阶段由独立的编译组件负责，以 AST（Abstract Syntax Tree，抽象语法树）为数据中枢在各阶段间传递。</p>
+<p>这七个阶段依次执行，前一个阶段的输出是后一个阶段的输入：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>组件</th>
+<th>输入</th>
+<th>输出</th>
+<th>核心职责</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1. Parse</td>
+<td><code>JavacParser</code> + <code>JavaTokenizer</code></td>
+<td><code>.java</code> 字符流</td>
+<td><code>JCTree</code> AST</td>
+<td>词法分析 + 语法分析，构建语法树</td>
+</tr>
+<tr>
+<td>2. Enter</td>
+<td><code>Enter</code> + <code>MemberEnter</code></td>
+<td>AST</td>
+<td>AST + 符号表</td>
+<td>将类&#x2F;方法&#x2F;变量定义注册到符号表</td>
+</tr>
+<tr>
+<td>3. Annotation Processing</td>
+<td><code>JavacProcessingEnvironment</code></td>
+<td>AST + 符号表</td>
+<td>可能的新源文件</td>
+<td>调用注解处理器，支持生成新源码</td>
+</tr>
+<tr>
+<td>4. Attr</td>
+<td><code>Attr</code> + <code>Check</code> + <code>Resolve</code></td>
+<td>AST + 符号表</td>
+<td>类型标注的 AST</td>
+<td>类型检查、名称解析、方法重载决议</td>
+</tr>
+<tr>
+<td>5. Flow</td>
+<td><code>Flow</code> + <code>LambdaToMethod</code></td>
+<td>类型标注的 AST</td>
+<td>流分析完成的 AST</td>
+<td>确定赋值、异常检查、可达性、Lambda 脱糖</td>
+</tr>
+<tr>
+<td>6. Desugar</td>
+<td><code>Lower</code> + <code>TransTypes</code></td>
+<td>流分析完成的 AST</td>
+<td>解糖后的 AST</td>
+<td>移除语法糖：嵌套类提升、switch-string、try-with-resources</td>
+</tr>
+<tr>
+<td>7. Generate</td>
+<td><code>Gen</code> + <code>Code</code></td>
+<td>解糖后的 AST</td>
+<td><code>.class</code> 字节数组</td>
+<td>AST → JVM 字节码指令序列 + 常量池 + StackMapTable</td>
+</tr>
+</tbody></table>
+<p>这几个阶段的执行入口在 <code>com.sun.tools.javac.main.JavaCompiler</code> 类中，大致的调用链为：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">JavaCompiler.compile()</span><br><span class="line">  → parseFiles()                    // 阶段 1：Parse</span><br><span class="line">  → enterTrees()                    // 阶段 2：Enter（含 MemberEnter）</span><br><span class="line">  → processAnnotations()            // 阶段 3：Annotation Processing（可能触发新一轮 Parse+Enter）</span><br><span class="line">  → attribute()                     // 阶段 4：Attr</span><br><span class="line">  → flow()                          // 阶段 5：Flow</span><br><span class="line">  → desugar()                       // 阶段 6：Desugar</span><br><span class="line">  → generate()                      // 阶段 7：Generate</span><br></pre></td></tr></table></figure>
+
+<p>理解 javac 的每一个阶段，不仅能帮助我们深入理解 Java 语言特性的编译实现，也为后续学习字节码注入（Transform&#x2F;ASM）和 d8&#x2F;R8 优化打下基础——因为 javac 的输出（.class 文件）是所有 Android 字节码工具链的起点。</p>
+<h2 id="二、Parse-阶段：从源码文本到-AST"><a href="#二、Parse-阶段：从源码文本到-AST" class="headerlink" title="二、Parse 阶段：从源码文本到 AST"></a>二、Parse 阶段：从源码文本到 AST</h2><h3 id="2-1-词法分析：JavaTokenizer"><a href="#2-1-词法分析：JavaTokenizer" class="headerlink" title="2.1 词法分析：JavaTokenizer"></a>2.1 词法分析：JavaTokenizer</h3><p><code>com.sun.tools.javac.parser.JavaTokenizer</code> 负责将 <code>.java</code> 源文件的字符流转换为 Token 序列。javac 使用 Unicode 字符集，且支持 Unicode 转义（<code>\uXXXX</code>）——词法分析阶段需要先将所有 <code>\uXXXX</code> 转义序列还原为实际字符（在 <code>UnicodeReader</code> 中完成），然后再进行 Token 切分。</p>
+<p>JavaTokenizer 将输入的字符流切分为以下 Token 类型（定义在 <code>com.sun.tools.javac.parser.Tokens.TokenKind</code> 枚举中）：</p>
+<table>
+<thead>
+<tr>
+<th>Token 类别</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>关键字</td>
+<td><code>class</code>, <code>public</code>, <code>void</code>, <code>if</code>, <code>else</code>, <code>return</code>, <code>new</code> 等</td>
+</tr>
+<tr>
+<td>标识符</td>
+<td><code>myVariable</code>, <code>MyClass</code>, <code>MAX_VALUE</code></td>
+</tr>
+<tr>
+<td>字面量</td>
+<td><code>42</code>, <code>3.14</code>, <code>&quot;hello&quot;</code>, <code>&#39;c&#39;</code>, <code>true</code>, <code>null</code></td>
+</tr>
+<tr>
+<td>运算符&#x2F;分隔符</td>
+<td><code>+</code>, <code>-</code>, <code>==</code>, <code>&#123;</code>, <code>&#125;</code>, <code>;</code>, <code>.</code>, <code>@</code></td>
+</tr>
+<tr>
+<td>特殊</td>
+<td>EOF（文件结束标记）、ERROR（错误 Token）</td>
+</tr>
+</tbody></table>
+<p>JavaTokenizer 的内部状态机通过 <code>nextToken()</code> 方法驱动，每次调用返回一个 <code>Token</code> 对象。Token 记录了它在源文件中的位置信息（行号 <code>line</code>，列号 <code>column</code>，字符偏移 <code>pos</code>），这些信息用于后续的编译错误报告。</p>
+<p>词法分析中的几个关键细节：</p>
+<p><strong>（1）数字字面量的解析</strong>：JavaTokenizer 需要处理十进制、十六进制（<code>0x</code>）、八进制（<code>0</code> 前缀）、二进制（<code>0b</code>）整数，以及 float&#x2F;double 字面量（含科学计数法）。Java 7 引入的数字下划线分隔符（<code>1_000_000</code>）也在词法分析阶段处理——下划线只是提高了可读性，Tokenizer 会跳过它们并正常解析数字值。注意：下划线不能出现在数字的开头、结尾、小数点旁边、或 <code>0x</code>&#x2F;<code>0b</code> 的旁边，这些规则完全在 Tokenizer 中校验。</p>
+<p><strong>（2）字符串字面量的处理</strong>：字符串在词法分析时处理转义序列（<code>\n</code>、<code>\t</code>、<code>\\</code>、<code>\&quot;</code> 等），并将结果存储在 Token 的 <code>stringVal()</code> 字段中。这包括 Unicode 转义（<code> </code> &#x3D; 换行符）。注意字符串字面量在 Tokenizer 层面不做拼接——相邻字符串字面量的拼接（<code>&quot;a&quot; + &quot;b&quot;</code> → <code>&quot;ab&quot;</code>）是在后续的常量折叠阶段（<code>Attr</code> 或 <code>ConstFold</code>）完成的。</p>
+<p><strong>（3）注释的处理</strong>：单行注释 <code>//</code> 和多行注释 <code>/* */</code> 在词法分析阶段被识别并丢弃（不产生 Token），但 javac 内部维护了注释与 AST 节点的关联（通过 <code>DocCommentTable</code>），以便注解处理器和 javadoc 工具使用。文档注释 <code>/** */</code> 被特殊处理，关联到最近的声明元素上。</p>
+<h3 id="2-2-语法分析：JavacParser"><a href="#2-2-语法分析：JavacParser" class="headerlink" title="2.2 语法分析：JavacParser"></a>2.2 语法分析：JavacParser</h3><p><code>com.sun.tools.javac.parser.JavacParser</code> 采用<strong>递归下降（recursive descent）</strong>解析策略。解析器持有一个前瞻（lookahead）Token，根据当前 Token 的类型来决定应用哪条语法规则。递归下降解析器的核心特征是为每个非终结符（语法规则）编写一个独立的方法，方法内部根据 Token 类型进行分支和递归调用。</p>
+<p><code>JavacParser</code> 的主要解析方法对应关系：</p>
+<table>
+<thead>
+<tr>
+<th>Parser 方法</th>
+<th>解析的语法结构</th>
+<th>生成的 AST 节点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>parseCompilationUnit()</code></td>
+<td>整个 <code>.java</code> 文件</td>
+<td><code>JCCompilationUnit</code></td>
+</tr>
+<tr>
+<td><code>classDeclaration()</code></td>
+<td>类&#x2F;接口&#x2F;枚举声明</td>
+<td><code>JCClassDecl</code></td>
+</tr>
+<tr>
+<td><code>methodDeclaration()</code></td>
+<td>方法声明</td>
+<td><code>JCMethodDecl</code></td>
+</tr>
+<tr>
+<td><code>variableDeclarator()</code></td>
+<td>变量&#x2F;字段声明</td>
+<td><code>JCVariableDecl</code></td>
+</tr>
+<tr>
+<td><code>parseStatement()</code></td>
+<td>各类语句</td>
+<td><code>JCStatement</code> 子类</td>
+</tr>
+<tr>
+<td><code>parseExpression()</code></td>
+<td>各类表达式</td>
+<td><code>JCExpression</code> 子类</td>
+</tr>
+</tbody></table>
+<p>对于如下简单类：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.example;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Hello</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">String</span> <span class="variable">message</span> <span class="operator">=</span> <span class="string">&quot;World&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">say</span><span class="params">(String name)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Hello, &quot;</span> + name);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>解析器生成的 AST 结构为：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">JCCompilationUnit</span><br><span class="line">├── pid: JCFieldAccess (com.example) — package 声明</span><br><span class="line">├── defs: List&lt;JCTree&gt;</span><br><span class="line">│   ├── JCImport (java.util.List)</span><br><span class="line">│   ├── JCClassDecl (name = &quot;Hello&quot;, modifiers = ACC_PUBLIC)</span><br><span class="line">│   │   ├── defs:</span><br><span class="line">│   │   │   ├── JCVariableDecl (name = &quot;message&quot;, vartype = String, init = &quot;World&quot;)</span><br><span class="line">│   │   │   │   └── modifiers: JCModifiers (ACC_PRIVATE)</span><br><span class="line">│   │   │   └── JCMethodDecl (name = &quot;say&quot;, restype = void, params = [JCVariableDecl name: String])</span><br><span class="line">│   │   │       ├── body: JCBlock</span><br><span class="line">│   │   │       │   └── stats:</span><br><span class="line">│   │   │       │       └── JCExpressionStatement</span><br><span class="line">│   │   │       │           └── expr: JCMethodInvocation</span><br><span class="line">│   │   │       │               ├── meth: JCFieldAccess (System.out.println)</span><br><span class="line">│   │   │       │               └── args:</span><br><span class="line">│   │   │       │                   └── JCBinary (operator = &quot;+&quot;)</span><br><span class="line">│   │   │       │                       ├── lhs: JCLiteral (&quot;Hello, &quot;)</span><br><span class="line">│   │   │       │                       └── rhs: JCIdent (name)</span><br></pre></td></tr></table></figure>
+
+<p><code>JCTree</code> 是整个 AST 的基类，位于 <code>com.sun.tools.javac.tree.JCTree</code>。它的核心子类包括：</p>
+<ul>
+<li>**<code>JCStatement</code>**：所有语句的基类，子类包括 <code>JCBlock</code>（代码块）、<code>JCIf</code>（if 语句）、<code>JCForLoop</code>（for 循环）、<code>JCWhileLoop</code>（while 循环）、<code>JCReturn</code>（return 语句）、<code>JCExpressionStatement</code>（表达式语句）等。</li>
+<li>**<code>JCExpression</code>**：所有表达式的基类，子类包括 <code>JCLiteral</code>（字面量）、<code>JCIdent</code>（标识符引用）、<code>JCMethodInvocation</code>（方法调用）、<code>JCNewClass</code>（new 表达式）、<code>JCBinary</code>（二元表达式）、<code>JCUnary</code>（一元表达式）、<code>JCAssign</code>（赋值）等。</li>
+<li>**<code>JCClassDecl</code>**：类&#x2F;接口&#x2F;枚举声明。</li>
+<li>**<code>JCMethodDecl</code>**：方法声明。</li>
+<li>**<code>JCVariableDecl</code>**：变量&#x2F;字段声明。</li>
+</ul>
+<p>每个 <code>JCTree</code> 节点都有一个 <code>pos</code> 字段（源文件中的字符偏移位置），用于编译错误报告。AST 节点同时携带 <code>type</code> 字段——它在 Parse 阶段为 null，将在后续 Attr 阶段被填充。</p>
+<h3 id="2-3-歧义处理：菱形运算符与泛型"><a href="#2-3-歧义处理：菱形运算符与泛型" class="headerlink" title="2.3 歧义处理：菱形运算符与泛型"></a>2.3 歧义处理：菱形运算符与泛型</h3><p><code>JavacParser</code> 中最复杂的语法歧义处理之一是<strong>泛型类型参数的尖括号 <code>&lt;&gt;</code><strong>。在 Java 语法中，<code>&lt;</code> 既可以是小于运算符，也可以是泛型类型参数的开括号。歧义处理的策略是</strong>上下文相关的前瞻解析</strong>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 情况 1：泛型中的 &lt;&gt;</span></span><br><span class="line">List&lt;String&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 情况 2：小于运算符</span></span><br><span class="line"><span class="keyword">if</span> (a &lt; b &gt; c) &#123; ... &#125;  <span class="comment">// 实际上 a &lt; b 返回 boolean，&gt; c 是语法错误</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 情况 3：位右移 &gt;&gt; vs 泛型嵌套 &gt;&gt;</span></span><br><span class="line">Map&lt;String, List&lt;Integer&gt;&gt; map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();  <span class="comment">// &gt;&gt; 应解析为两个 &gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>对于 <code>&gt;&gt;</code> 的歧义，javac 使用了一个特殊规则：当解析器处于泛型类型参数的上下文中时，<code>&gt;&gt;</code> 被解析为两个 <code>&gt;</code>（一个结束内层泛型参数，一个结束外层泛型参数）。当处于表达式上下文中时，<code>&gt;&gt;</code> 被解析为右移运算符。这个判断在 <code>JavacParser</code> 的 <code>term2()</code> 和 <code>typeArguments()</code> 方法中实现。</p>
+<p><code>JavacParser</code> 的另一个关键设计是 <strong>lookahead 机制</strong>。对于需要前瞻才能确定语法的情况（如 <code>(expr)</code> 可能是强制类型转换也可能是括号表达式），解析器使用 <code>S</code> 参数化前瞻（<code>Scanner.Factory</code>），在不确定时使用一个独立的扫描器尝试解析备选语法，成功则采用该路径，失败则回溯到原路径。这避免了全局回溯的同时，保留了处理语法歧义的能力。</p>
+<h3 id="2-4-错误恢复机制"><a href="#2-4-错误恢复机制" class="headerlink" title="2.4 错误恢复机制"></a>2.4 错误恢复机制</h3><p>javac 的一大优势是其<strong>语法错误恢复（error recovery）</strong>能力——即使在源文件存在语法错误的情况下，编译器依然能够继续解析后面的代码，从而在一次编译中报告尽可能多的错误（而非遇到第一个错误就停止）。</p>
+<p><code>JavacParser</code> 的错误恢复策略基于”跳读”（skip &#x2F; resync）机制：</p>
+<p><strong>核心策略：跳读到同步 Token</strong></p>
+<p>当解析器在当前语法规则中遇到不符合预期的 Token 时，它使用 <code>S.skip(boolean stopAtError)</code> 方法跳过后续的 Token，直到遇到一个”同步 Token”——通常是分号 <code>;</code>、右花括号 <code>&#125;</code>、或关键字（<code>class</code>、<code>void</code>、<code>int</code> 等声明关键字），这些 Token 标志着新语句或新声明的开始。</p>
+<p>具体流程为：</p>
+<ol>
+<li>解析器检测到语法错误 → 调用 <code>log.error(pos, key)</code> 报告错误。</li>
+<li>调用 <code>S.skip(true)</code> 跳读到下一个同步点。</li>
+<li>错误恢复后继续解析剩余的源文件，从同步点继续正常的语法分析。</li>
+</ol>
+<p>示例：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Demo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">broken</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">x</span> <span class="operator">=</span> ;           <span class="comment">// 错误：缺少初始值</span></span><br><span class="line">        System.out.println(x);  <span class="comment">// 跳过错行分号后正常解析这一行</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>javac 会报告 <code>int x = ;</code> 行缺少表达式，但 <code>System.out.println(x)</code> 仍会被正常解析——<code>JavacParser</code> 在 <code>variableDeclarator()</code> 方法中遇到 <code>=</code> 后无法解析表达式时，会 skip 到 <code>;</code>，然后继续解析后续语句。</p>
+<p><strong>错误恢复的限制</strong>：大括号不匹配时错误恢复效果较差。如果缺少一个 <code>&#125;</code>，编译器可能将后续的所有内容视为当前代码块的继续，导致一连串的级联错误（cascading errors）。IDE（如 IntelliJ IDEA 和 Eclipse）的解析器通常有更复杂的错误恢复策略（如推断缺失的大括号位置），因为它们需要支持不完整代码的增量解析，而 javac 的解析器偏向于保守的错误恢复。</p>
+<h3 id="2-5-行号与列号的错误报告"><a href="#2-5-行号与列号的错误报告" class="headerlink" title="2.5 行号与列号的错误报告"></a>2.5 行号与列号的错误报告</h3><p>javac 的错误消息包含精确的源文件和行列号信息，这来源于每个 AST 节点和 Token 都携带的 <code>DiagnosticPosition</code>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// com.sun.tools.javac.util.Position 中</span></span><br><span class="line"><span class="comment">// pos 编码格式：(line &lt;&lt; Position.LINESHIFT) | column</span></span><br><span class="line"><span class="comment">// LINESHIFT = 10 (在较新版本中有所调整)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 典型的错误报告示例：</span></span><br><span class="line"><span class="comment">// Hello.java:15: error: cannot find symbol</span></span><br><span class="line"><span class="comment">//         System.out.println(misspelled);</span></span><br><span class="line"><span class="comment">//                            ^</span></span><br><span class="line"><span class="comment">//   symbol:   variable misspelled</span></span><br><span class="line"><span class="comment">//   location: class Hello</span></span><br></pre></td></tr></table></figure>
+
+<p><code>log.error()</code> 方法接收 <code>JCDiagnostic.DiagnosticPosition</code>，从中提取行号和列号，然后通过 <code>JavacMessages</code> 加载国际化错误消息模板，填充参数后输出。位置信息从 Token 的 <code>pos</code> &#x2F; <code>endPos</code> 或 AST 节点中获取——这也是为什么 AST 节点需要在 Parse 阶段就携带位置信息。</p>
+<h2 id="三、Enter-阶段：符号表的构建"><a href="#三、Enter-阶段：符号表的构建" class="headerlink" title="三、Enter 阶段：符号表的构建"></a>三、Enter 阶段：符号表的构建</h2><h3 id="3-1-符号表架构"><a href="#3-1-符号表架构" class="headerlink" title="3.1 符号表架构"></a>3.1 符号表架构</h3><p>Enter 阶段由 <code>com.sun.tools.javac.comp.Enter</code> 负责。它将 Parse 阶段生成的 AST 中的类、方法、变量等声明注册到符号表（Symbol Table）中。符号表是后续所有阶段（类型检查、流分析、代码生成）的核心基础设施——它不仅存储了”哪些标识符存在”，还记录了每个标识符的类型、可见性、所属作用域等信息。</p>
+<p>符号体系（<code>com.sun.tools.javac.code.Symbol</code>）：</p>
+<table>
+<thead>
+<tr>
+<th>符号类型</th>
+<th>对应声明</th>
+<th>关键字段</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Symbol.PackageSymbol</code></td>
+<td>package 声明</td>
+<td><code>fullname</code>, <code>members</code> (Scope)</td>
+</tr>
+<tr>
+<td><code>Symbol.ClassSymbol</code></td>
+<td>class&#x2F;interface&#x2F;enum 声明</td>
+<td><code>name</code>, <code>owner</code>, <code>type</code>, <code>members</code> (Scope), <code>supertype</code>, <code>interfaces</code></td>
+</tr>
+<tr>
+<td><code>Symbol.MethodSymbol</code></td>
+<td>方法声明</td>
+<td><code>name</code>, <code>owner</code>, <code>type</code> (MethodType), <code>params</code></td>
+</tr>
+<tr>
+<td><code>Symbol.VarSymbol</code></td>
+<td>字段&#x2F;局部变量&#x2F;参数</td>
+<td><code>name</code>, <code>owner</code>, <code>type</code>, <code>pos</code></td>
+</tr>
+<tr>
+<td><code>Symbol.OperatorSymbol</code></td>
+<td>内置运算符</td>
+<td>预定义的运算符符号</td>
+</tr>
+<tr>
+<td><code>Symbol.TypeSymbol</code></td>
+<td>类型相关的符号抽象</td>
+<td>无 <code>name</code> 作为独立实体</td>
+</tr>
+</tbody></table>
+<p><code>Symtab</code>（<code>com.sun.tools.javac.code.Symtab</code>）是一个预初始化的”宇宙符号表”，包含了所有 Java 语言预定义的类型和符号：原始类型（<code>int</code>、<code>long</code>、<code>float</code> 等）、<code>java.lang.Object</code>、<code>java.lang.String</code>、<code>java.lang.Throwable</code>、<code>java.lang.annotation.Annotation</code>、数组的 <code>clone()</code> 方法等。<code>Symtab</code> 在编译器初始化时创建，后续所有阶段通过它来引用这些已知类型。</p>
+<h3 id="3-2-作用域的实现：Scope"><a href="#3-2-作用域的实现：Scope" class="headerlink" title="3.2 作用域的实现：Scope"></a>3.2 作用域的实现：Scope</h3><p><code>com.sun.tools.javac.code.Scope</code> 是符号表的存储容器。作用域是嵌套的——每个作用域有一个 <code>next</code> 指针指向外层作用域，形成链式结构。当查找一个符号时，先搜索当前作用域，找不到则沿 <code>next</code> 链向外查找。</p>
+<p>Scope 内部使用<strong>哈希表 + 冲突链</strong>实现。核心结构：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// com.sun.tools.javac.code.Scope 的核心字段（简化）</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Scope</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> Scope next;          <span class="comment">// 外层作用域</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> Symbol owner;        <span class="comment">// 此作用域所属的符号（如 ClassSymbol）</span></span><br><span class="line">    <span class="keyword">public</span> Entry[] table;             <span class="comment">// 哈希表</span></span><br><span class="line">    <span class="type">int</span> hashMask;                     <span class="comment">// 哈希掩码</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// Entry 是 Scope 中的单个条目（链表节点）</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Entry</span> &#123;</span><br><span class="line">        <span class="keyword">public</span> Symbol sym;            <span class="comment">// 符号引用</span></span><br><span class="line">        <span class="keyword">public</span> Entry shadowed;        <span class="comment">// 同一槽位的下一个 Entry（冲突链）</span></span><br><span class="line">        <span class="keyword">public</span> Entry sibling;         <span class="comment">// 同一作用域中的下一个 Entry（顺序链）</span></span><br><span class="line">        <span class="keyword">public</span> Scope scope;           <span class="comment">// 如果 sym 是 ClassSymbol，这是它的成员 Scope</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>符号查找（<code>Scope.lookup(Name name)</code>）通过 <code>name.hashCode() &amp; hashMask</code> 定位到哈希槽，遍历冲突链匹配 <code>name</code>，找到后返回 <code>Entry</code>。符号插入（<code>Scope.enter(Symbol sym)</code>）类似地定位到哈希槽，将新 Entry 插入冲突链的头部。</p>
+<p>关键：当 <code>sym</code> 是一个 <code>ClassSymbol</code> 时，它的 <code>Entry.scope</code> 字段指向该类的成员 Scope——这是作用域嵌套的具体实现。查找一个类的方法时，先在类的成员 Scope 中查找，找不到再到父类的成员 Scope 中查找。</p>
+<h3 id="3-3-MemberEnter：遍历-AST-注册符号"><a href="#3-3-MemberEnter：遍历-AST-注册符号" class="headerlink" title="3.3 MemberEnter：遍历 AST 注册符号"></a>3.3 MemberEnter：遍历 AST 注册符号</h3><p><code>Enter</code> 的第一阶段（通常称为”first phase”）只处理顶级声明（package、import、顶级类）。然后 <code>MemberEnter</code>（<code>com.sun.tools.javac.comp.MemberEnter</code>）负责处理类<strong>内部</strong>的成员（字段、方法、内部类等）。</p>
+<p><strong>MemberEnter 的遍历策略</strong>：</p>
+<ol>
+<li>遇到 <code>JCClassDecl</code> → 在父作用域中注册 <code>ClassSymbol</code>。创建一个新的作用域（<code>members</code> Scope）作为该 ClassSymbol 的成员作用域。</li>
+<li>遇到 <code>JCMethodDecl</code> → 创建 <code>MethodSymbol</code>，包含参数列表的 <code>VarSymbol</code> 和返回类型。将方法符号注册到所在类的 <code>members</code> Scope。</li>
+<li>遇到 <code>JCVariableDecl</code>（字段）→ 创建 <code>VarSymbol</code>，注册到所在类的 <code>members</code> Scope。</li>
+<li>遇到 <code>JCImport</code> → 将 import 的类或静态成员信息记录到编译单元的 <code>namedImportScope</code> 或 <code>starImportScope</code>。后续的名称解析会用到这些 import scope。</li>
+</ol>
+<p><strong>extends &#x2F; implements 的解析</strong>：MemberEnter 通过 <code>Resolve</code> 组件解析超类和接口。它会将 AST 中的类型表达式（如 <code>extends BaseActivity</code>）通过 <code>Attr.attribType()</code> 或 <code>Resolve.findIdent()</code> 解析为具体的 <code>ClassSymbol</code>，然后设置子类 <code>ClassSymbol.type</code> 中的 <code>supertype_field</code> 和 <code>interfaces_field</code>。class hierarchy 的完整性检查（如循环继承、final 类被继承等）在后续的 Attr 阶段进行。</p>
+<p><strong>继承方法的检查</strong>：当子类声明了一个与父类签名相同的方法时，MemberEnter 记录这个事实。如果父类方法不是 abstract，子类方法标记为 <code>@Override</code>，则在此阶段可以检测到 <code>@Override</code> 不匹配的情况。</p>
+<h3 id="3-4-延迟成员输入（Lazy-Member-Enter）"><a href="#3-4-延迟成员输入（Lazy-Member-Enter）" class="headerlink" title="3.4 延迟成员输入（Lazy Member Enter）"></a>3.4 延迟成员输入（Lazy Member Enter）</h3><p>javac 使用了一种优化策略：<strong>延迟成员输入</strong>（lazy member enter）。对于大型类（如包含数千个方法的自动生成代码），编译器不会在 Enter 阶段一次性将所有成员的符号输入到符号表中，而是按需逐步输入。</p>
+<p>机制：<code>ClassSymbol</code> 内部维护了一个 <code>members</code> field，但这个 field 在 Enter 第一阶段可能并不包含所有成员。当后续阶段需要查找某个方法时（如名称解析），符号表的查找会触发 <code>ClassReader</code> 从 .class 文件或 AST 中”补全”缺失的成员符号。</p>
+<p>在 Android 开发中，延迟成员输入对于处理 AIDL 生成的 Stub 类尤其重要——这些类通常包含大量事务处理方法，全量 Enter 会显著增加内存占用和编译时间。</p>
+<h2 id="四、Annotation-Processing-阶段"><a href="#四、Annotation-Processing-阶段" class="headerlink" title="四、Annotation Processing 阶段"></a>四、Annotation Processing 阶段</h2><h3 id="4-1-JSR-269-注解处理框架"><a href="#4-1-JSR-269-注解处理框架" class="headerlink" title="4.1 JSR 269 注解处理框架"></a>4.1 JSR 269 注解处理框架</h3><p><code>com.sun.tools.javac.processing.JavacProcessingEnvironment</code> 实现了 JSR 269（Pluggable Annotation Processing API）。该框架允许开发者在编译时插入自定义的注解处理器，读取和操作 AST（但不能修改已有的 AST 节点，只能生成新的源文件或 class 文件）。</p>
+<p><strong>处理器的发现机制</strong>：javac 通过 Java SPI（Service Provider Interface）机制发现并加载处理器。具体来说，扫描 classpath 中所有 <code>META-INF/services/javax.annotation.processing.Processor</code> 文件，每个文件包含一个或多个处理器的全限定类名，用换行分隔。javac 通过 <code>ServiceLoader</code> 或直接的文件解析加载这些类。</p>
+<p>处理器的注册也可以通过 <code>-processor</code> 命令行参数显式指定，或通过 <code>-processorpath</code> 指定处理器搜索路径。在 Gradle 中，处理器通常通过 <code>annotationProcessor</code> 依赖配置自动注册：</p>
+<figure class="highlight groovy"><table><tr><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    annotationProcessor <span class="string">&#x27;com.google.dagger:dagger-compiler:2.x&#x27;</span></span><br><span class="line">    annotationProcessor <span class="string">&#x27;androidx.room:room-compiler:2.x&#x27;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-处理轮次（Rounds）"><a href="#4-2-处理轮次（Rounds）" class="headerlink" title="4.2 处理轮次（Rounds）"></a>4.2 处理轮次（Rounds）</h3><p>注解处理以”轮次（round）”的形式运行：</p>
+<ol>
+<li><p><strong>Round 1</strong>：javac 完成 Parse 和 Enter 后，将所有 AST 中的注解信息传递给已注册的处理器。每个处理器的 <code>process(Set&lt;? extends TypeElement&gt; annotations, RoundEnvironment roundEnv)</code> 方法被调用。处理器可以：</p>
+<ul>
+<li>通过 <code>roundEnv.getElementsAnnotatedWith(annotation)</code> 获取被特定注解标记的元素集合。</li>
+<li>通过 <code>processingEnv.getFiler().createSourceFile(name)</code> 创建新的 <code>.java</code> 源文件。</li>
+<li>通过 <code>processingEnv.getFiler().createClassFile(name)</code> 创建新的 <code>.class</code> 文件（较少使用）。</li>
+<li>通过 <code>processingEnv.getMessager().printMessage()</code> 输出编译警告或错误。</li>
+<li>通过 <code>processingEnv.getTypeUtils()</code> 进行类型操作。</li>
+</ul>
+</li>
+<li><p><strong>Round 2 及后续</strong>：如果 Round 1 中生成了新的源文件，javac 对这些新文件重新执行 Parse 和 Enter，然后进入 Round 2。处理器再次被调用。这个过程反复进行，直到某个轮次没有新文件生成。</p>
+</li>
+<li><p><strong>最后一个 Round</strong>：<code>roundEnv.processingOver()</code> 返回 <code>true</code>，处理器可以在此时释放资源（如关闭文件流）。</p>
+</li>
+</ol>
+<p>关键：处理器<strong>不能修改</strong>已有的 AST 节点——它们只能读取 AST 并生成新文件。这是 JSR 269 设计的一个核心约束（与 Lombok 等绕过此限制的工具形成对比）。Lombok 之所以能修改 AST，是因为它使用了 javac 的内部 API（通过 <code>JavacAnnotationHandler</code> 直接操作 <code>JCTree</code> 节点），这不是标准 JSR 269 的一部分。</p>
+<h3 id="4-3-注解处理器生成代码的内部流程"><a href="#4-3-注解处理器生成代码的内部流程" class="headerlink" title="4.3 注解处理器生成代码的内部流程"></a>4.3 注解处理器生成代码的内部流程</h3><p>当处理器通过 <code>Filer.createSourceFile(&quot;com.example.GeneratedClass&quot;)</code> 创建源文件时：</p>
+<ol>
+<li><code>JavacFiler</code>（javac 的内部 <code>Filer</code> 实现）创建一个 <code>JavaFileObject</code> 表示待生成的文件。</li>
+<li><code>JavacProcessingEnvironment</code> 将这个 <code>JavaFileObject</code> 记录为”待处理的新源码”。</li>
+<li>当前轮次结束后，javac 将生成的新源文件加入待编译队列。</li>
+<li>下一轮开始时，javac 对新源文件执行 Parse 和 Enter。</li>
+<li>在 Parse 新文件的过程中，javac 可能再次遇到注解，触发新一轮处理。</li>
+</ol>
+<p>这解释了为什么某些注解处理器（如 Dagger）需要多次编译轮次——生成的工厂类可能被其他注解处理器（如 Room）进一步处理。</p>
+<h3 id="4-4-Android-中的-APT-与-KSP"><a href="#4-4-Android-中的-APT-与-KSP" class="headerlink" title="4.4 Android 中的 APT 与 KSP"></a>4.4 Android 中的 APT 与 KSP</h3><p>在 Android 开发中，APT（Annotation Processing Tool）用于以下核心场景：</p>
+<table>
+<thead>
+<tr>
+<th>框架</th>
+<th>注解</th>
+<th>生成的代码</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Dagger</td>
+<td><code>@Component</code>, <code>@Module</code></td>
+<td><code>DaggerXxxComponent</code> 工厂类（提供依赖注入的实现）</td>
+</tr>
+<tr>
+<td>Room</td>
+<td><code>@Dao</code>, <code>@Database</code></td>
+<td><code>XxxDao_Impl</code> 实现类（包含 SQL 语句的查询实现）</td>
+</tr>
+<tr>
+<td>DataBinding</td>
+<td><code>@Bindable</code></td>
+<td><code>XxxBindingImpl</code>（绑定实现类）和 BR 常量</td>
+</tr>
+<tr>
+<td>ButterKnife (已弃用)</td>
+<td><code>@BindView</code></td>
+<td><code>Xxx_ViewBinding</code> 类（持有 findViewById 调用）</td>
+</tr>
+<tr>
+<td>AutoValue</td>
+<td><code>@AutoValue</code></td>
+<td><code>AutoValue_Xxx</code> 子类（实现 equals&#x2F;hashCode&#x2F;toString）</td>
+</tr>
+</tbody></table>
+<p>KSP（Kotlin Symbol Processing）是 Kotlin 的替代方案。它与 APT 的关键差异：</p>
+<ul>
+<li>APT 操作的是 Java AST（<code>javax.lang.model.*</code>），对 Kotlin 源码支持有限（需要先编译为 Java stub）。</li>
+<li>KSP 直接操作 Kotlin 的符号表，不需要生成 Java stub，因此处理速度更快（Google 官方测试中 KSP 比 APT 快约 2 倍）。</li>
+<li>KSP 的 API 设计与 <code>javax.lang.model</code> 类似，但不完全相同，迁移需要一定的适配工作。</li>
+</ul>
+<h2 id="五、Attr-阶段：属性标记与类型检查"><a href="#五、Attr-阶段：属性标记与类型检查" class="headerlink" title="五、Attr 阶段：属性标记与类型检查"></a>五、Attr 阶段：属性标记与类型检查</h2><h3 id="5-1-Attr-的职责"><a href="#5-1-Attr-的职责" class="headerlink" title="5.1 Attr 的职责"></a>5.1 Attr 的职责</h3><p><code>com.sun.tools.javac.comp.Attr</code> 是 javac 类型检查的核心。它的主要职责是为 AST 中的每个表达式和声明标注类型信息（将 <code>JCTree.type</code> 字段从 null 填充为实际的 <code>Type</code> 对象），同时进行全面的类型检查。</p>
+<p>Attr 在执行过程中工作的关键子组件：</p>
+<table>
+<thead>
+<tr>
+<th>子组件</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Check</code></td>
+<td>具体类型检查规则的实现（如类型兼容性、cast 合法性）</td>
+</tr>
+<tr>
+<td><code>Resolve</code></td>
+<td>方法重载决议、字段访问解析、类型名称查找</td>
+</tr>
+<tr>
+<td><code>Infer</code></td>
+<td>泛型类型推断（如 <code>List&lt;String&gt; list = new ArrayList&lt;&gt;()</code> 中的 <code>&lt;&gt;</code> 推断）</td>
+</tr>
+<tr>
+<td><code>ConstFold</code></td>
+<td>编译期常量折叠（如 <code>1 + 2</code> 直接计算为 <code>3</code>）</td>
+</tr>
+</tbody></table>
+<p>Attr 的执行顺序是自顶向下的——先标注类的声明（包括注解），然后标注类中的方法和字段，最后标注方法体中的语句和表达式。这个顺序确保了在标注方法体内的方法调用时，方法的符号和类型信息已经可用。</p>
+<h3 id="5-2-类型检查的核心流程"><a href="#5-2-类型检查的核心流程" class="headerlink" title="5.2 类型检查的核心流程"></a>5.2 类型检查的核心流程</h3><p><strong>（1）赋值兼容性检查（Assign Conversion）</strong></p>
+<p>当 Attr 遇到赋值语句 <code>x = expr</code> 时，它检查 <code>expr</code> 的类型是否可以赋值给 <code>x</code> 的类型。这在 <code>Check.checkType()</code> 和 <code>Types.isAssignable()</code> 中实现。</p>
+<p>赋值兼容性规则包括：</p>
+<ul>
+<li>基本类型的加宽转换（widening）自动允许（如 <code>int</code> → <code>long</code>、<code>float</code> → <code>double</code>）。</li>
+<li>引用类型的向上转型（upcast）自动允许（如 <code>String</code> → <code>Object</code>）。</li>
+<li>原始类型到包装类型的自动装箱（如 <code>int</code> → <code>Integer</code>）在 Java 5+ 中允许。</li>
+<li>引用类型到原始类型的自动拆箱（如 <code>Integer</code> → <code>int</code>）允许，但需要注意 NPE 风险。</li>
+</ul>
+<p><strong>（2）捕获转换（Capture Conversion）</strong></p>
+<p>通配符泛型（如 <code>List&lt;? extends Number&gt;</code>）在类型检查时需要”捕获转换”——将通配符替换为一个具名的”捕获类型变量”（capture type variable），以便进行后续的类型检查。</p>
+<p>例如：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">void</span> <span class="title function_">process</span><span class="params">(List&lt;? extends Number&gt; list)</span> &#123;</span><br><span class="line">    <span class="type">Number</span> <span class="variable">n</span> <span class="operator">=</span> list.get(<span class="number">0</span>);   <span class="comment">// OK: 捕获转换后 get() 返回 CAP#1 extends Number</span></span><br><span class="line">    list.add(<span class="number">42</span>);             <span class="comment">// ERROR: 捕获转换后 add(CAP#1) 不允许传入 Integer</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>捕获转换的核心在 <code>Types.capture(Type type)</code> 中实现。它创建一个 <code>CaptureType</code> 对象，将通配符边界（upper bound 和 lower bound）转换为类型变量。</p>
+<p><strong>（3）方法重载决议（Method Overload Resolution）</strong></p>
+<p>当 Attr 遇到方法调用（如 <code>foo(a, b)</code>），且有多个候选方法（名称相同但参数类型不同）时，需要进行重载决议。javac 使用 JLS（Java Language Specification）第 15.12 节定义的<strong>三阶段重载决议算法</strong>：</p>
+<ol>
+<li><strong>Phase 1：Strict Invocation</strong> — 不做装箱&#x2F;拆箱，不做变长参数展开。如果恰好有一个方法在此阶段匹配，则选择它。</li>
+<li><strong>Phase 2：Loose Invocation</strong> — 允许装箱&#x2F;拆箱，但不展开变长参数。</li>
+<li><strong>Phase 3：Variable Arity Invocation</strong> — 允许全部转换，包括变长参数展开。</li>
+</ol>
+<p>如果多个候选方法在同一阶段都适用，则需要<strong>most-specific test</strong>（最具体测试）来确定哪个方法”更具体”。一个方法 <code>m1</code> 比 <code>m2</code> 更具体，当且仅当 <code>m1</code> 的每个形式参数类型都可以通过方法调用转换赋值给 <code>m2</code> 的对应形式参数类型。</p>
+<p>Most-specific test 的一个典型歧义场景：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">void</span> <span class="title function_">foo</span><span class="params">(Integer x, <span class="type">int</span> y)</span> &#123; ... &#125;</span><br><span class="line"><span class="keyword">void</span> <span class="title function_">foo</span><span class="params">(<span class="type">int</span> x, Integer y)</span> &#123; ... &#125;</span><br><span class="line">foo(<span class="number">1</span>, <span class="number">2</span>);  <span class="comment">// 歧义错误：两个方法都无法证明比另一个更具体</span></span><br></pre></td></tr></table></figure>
+
+<p>javac 的 <code>Resolve</code> 类中 <code>mostSpecific()</code> 方法负责此项测试，内部会遍历所有候选方法，两两比较看是否一个比另一个更具体。</p>
+<h3 id="5-3-类型推断与泛型"><a href="#5-3-类型推断与泛型" class="headerlink" title="5.3 类型推断与泛型"></a>5.3 类型推断与泛型</h3><p><code>Infer</code>（<code>com.sun.tools.javac.comp.Infer</code>）处理泛型方法的类型参数推断。当调用泛型方法而没有显式指定类型参数时：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">&lt;T&gt; T <span class="title function_">pick</span><span class="params">(T a, T b)</span> &#123; <span class="keyword">return</span> a; &#125;</span><br><span class="line"><span class="type">String</span> <span class="variable">result</span> <span class="operator">=</span> pick(<span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>);  <span class="comment">// T 被推断为 String</span></span><br></pre></td></tr></table></figure>
+
+<p>Infer 的推断算法基于<strong>约束求解</strong>：收集调用上下文中对类型参数的所有类型约束（如参数类型、期望的返回类型），然后求解最小上界（lub, least upper bound）或最大下界（glb, greatest lower bound）。具体实现使用了 <code>UndetVar</code>（未确定的类型变量）和 <code>InferenceContext</code> 来跟踪约束和待解变量。</p>
+<p>对于 Java 8 引入的 <code>java.util.stream.Stream</code> 和 lambda 表达式，类型推断变得尤为复杂——因为 lambda 的主体可能影响类型参数的推断方向。<code>Infer</code> 中的 <code>GraphInference</code> 子类专门处理这种需要固定点迭代的复杂推断场景。</p>
+<h2 id="六、Flow-阶段：数据流分析"><a href="#六、Flow-阶段：数据流分析" class="headerlink" title="六、Flow 阶段：数据流分析"></a>六、Flow 阶段：数据流分析</h2><h3 id="6-1-Flow-的整体功能"><a href="#6-1-Flow-的整体功能" class="headerlink" title="6.1 Flow 的整体功能"></a>6.1 Flow 的整体功能</h3><p><code>com.sun.tools.javac.comp.Flow</code> 实现了 Java 语言的静态数据流分析。它的三个核心功能模块：</p>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>检查内容</th>
+<th>违反时错误</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Definite Assignment（确定赋值）</td>
+<td>局部变量在使用前是否一定被赋值</td>
+<td>“variable x might not have been initialized”</td>
+</tr>
+<tr>
+<td>Effectively Final（有效 final）</td>
+<td>Lambda 捕获的局部变量是否被多次赋值</td>
+<td>“local variables referenced from a lambda must be final or effectively final”</td>
+</tr>
+<tr>
+<td>异常检查</td>
+<td>checked exception 是否被捕获或声明</td>
+<td>“unreported exception … must be caught or declared to be thrown”</td>
+</tr>
+<tr>
+<td>可达性分析</td>
+<td>return&#x2F;break&#x2F;continue&#x2F;throw 后的代码是否可达</td>
+<td>“unreachable statement”</td>
+</tr>
+</tbody></table>
+<h3 id="6-2-确定赋值分析的实现"><a href="#6-2-确定赋值分析的实现" class="headerlink" title="6.2 确定赋值分析的实现"></a>6.2 确定赋值分析的实现</h3><p>确定赋值分析的核心是<strong>位向量跟踪</strong>。Flow 为每个局部变量维护一个”是否已赋值”的标志位（bit）。当分析到每个语句时，计算进入该语句时的赋值状态，以及退出该语句后的赋值状态。</p>
+<p>对于 if-else 等控制流分支，退出状态是各分支退出状态的<strong>交集</strong>（如果某条路径上 x 未被赋值而另一条路径上已赋值，则 if-else 之后 x 的状态是”未赋值”）。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> x;</span><br><span class="line"><span class="keyword">if</span> (condition) &#123;</span><br><span class="line">    x = <span class="number">1</span>;       <span class="comment">// 进入状态: x 未赋值; 退出状态: x 已赋值</span></span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// 没有对 x 赋值</span></span><br><span class="line">    <span class="comment">// 进入状态: x 未赋值; 退出状态: x 未赋值</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 此处两条路径合并，x 的&quot;确定赋值&quot;状态 = 交集 = 未赋值</span></span><br><span class="line">System.out.println(x);  <span class="comment">// 编译错误：x 可能未被初始化</span></span><br></pre></td></tr></table></figure>
+
+<p>Flow 使用 <code>Bits</code> 类（位集）来压缩存储多个变量的赋值状态。每个需要跟踪的局部变量分配一个 bit 位置，<code>Bits</code> 中的一个 int 数组存储这些 bit。</p>
+<p>对于赋值分析的几个特殊情况：</p>
+<ul>
+<li><strong>finally 块中的赋值</strong>：finally 块一定会执行（除非 JVM 崩溃或调用 <code>System.exit()</code>），所以 finally 中对变量的赋值在 try-catch-finally 之后一定生效。</li>
+<li><strong>try-with-resources</strong>：资源变量在 try 块进入时已初始化，在 catch&#x2F;finally 中可以安全使用。</li>
+<li><strong><code>this</code> 在构造方法中的逃逸</strong>：在调用 <code>super()</code> 或 <code>this()</code> 之前，<code>this</code> 不能被使用（因为对象还未完全构造）。</li>
+</ul>
+<h3 id="6-3-Effectively-Final-检查"><a href="#6-3-Effectively-Final-检查" class="headerlink" title="6.3 Effectively Final 检查"></a>6.3 Effectively Final 检查</h3><p>Java 8 引入了 effectively final 的概念：如果一个局部变量在声明后从未被重新赋值（包括 <code>++</code>、<code>--</code>、<code>+=</code> 等复合赋值），则它被视为 effectively final。Lambda 表达式和匿名内部类只能捕获 effectively final 的局部变量。</p>
+<p>Flow 通过记录每个变量的赋值次数来判定——如果赋值次数 &gt; 1（包括声明时的初始化），则该变量不是 effectively final。</p>
+<p>注意：effectively final 是编译期的概念，在 class 文件中没有特殊的标记。Lambda 捕获局部变量时，如果变量是 effectively final，javac 直接将它的值复制到 lambda 的合成构造方法中。</p>
+<h3 id="6-4-异常检查"><a href="#6-4-异常检查" class="headerlink" title="6.4 异常检查"></a>6.4 异常检查</h3><p>Flow 分析所有可能被抛出但未被捕获的 checked exception。具体流程：</p>
+<ol>
+<li>对于每个方法调用，检查它声明的 throws 子句（来自 MethodSymbol 的 <code>getThrownTypes()</code>）。</li>
+<li>对于方法体中的 throw 语句，获取抛出异常的类型。</li>
+<li>如果异常类型是 checked exception 的子类（<code>java.lang.Exception</code> 但非 <code>java.lang.RuntimeException</code>），则检查：<ul>
+<li>是否在调用方法的 throws 子句中声明了该异常或其超类型，或者</li>
+<li>是否在 try-catch 中被捕获（catch 块捕获的类型是该异常或其超类型）。</li>
+</ul>
+</li>
+</ol>
+<p>如果两者都不满足，Flow 报告”unreported exception … must be caught or declared to be thrown”。</p>
+<h3 id="6-5-可达性分析"><a href="#6-5-可达性分析" class="headerlink" title="6.5 可达性分析"></a>6.5 可达性分析</h3><p>Flow 检查在 <code>return</code>、<code>throw</code>、<code>break</code>、<code>continue</code> 之后的语句是否不可达。但 Java 语言规范有一个特殊的例外：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="literal">false</span>) &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;never printed&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 这不会产生编译错误，JLS 允许这样做以支持条件编译</span></span><br><span class="line"><span class="keyword">while</span> (<span class="literal">false</span>) &#123;</span><br><span class="line">    <span class="comment">// 同样不会报错</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>javac 的可达性分析区分”结构上不可达”（如 <code>return</code> 后的语句）和”条件编译不可达”（如 <code>if (false)</code>）。前者产生编译错误，后者允许。</p>
+<h2 id="七、LambdaToMethod：Lambda-的脱糖"><a href="#七、LambdaToMethod：Lambda-的脱糖" class="headerlink" title="七、LambdaToMethod：Lambda 的脱糖"></a>七、LambdaToMethod：Lambda 的脱糖</h2><h3 id="7-1-Lambda-在字节码中的两种策略"><a href="#7-1-Lambda-在字节码中的两种策略" class="headerlink" title="7.1 Lambda 在字节码中的两种策略"></a>7.1 Lambda 在字节码中的两种策略</h3><p><code>com.sun.tools.javac.comp.LambdaToMethod</code> 负责将 lambda 表达式转换为 JVM 字节码可以表示的形式。javac 支持两种转换策略：</p>
+<p><strong>策略 1：invokedynamic + LambdaMetafactory（Java 8+ 标准）</strong></p>
+<p>这是 Java 8 引入的标准策略。编译器生成一条 <code>invokedynamic</code> 指令，其 Bootstrap Method 指向 <code>java.lang.invoke.LambdaMetafactory.metafactory()</code>。在运行时首次执行到该指令时，JVM 调用 LambdaMetafactory 动态生成一个实现函数式接口的类。</p>
+<p>使用 <code>invokedynamic</code> 策略时，javac 的 LambdaToMethod 负责生成：</p>
+<ul>
+<li><strong>Bootstrap Method 条目</strong>：在 class 文件的 <code>BootstrapMethods</code> 属性中记录 <code>LambdaMetafactory.metafactory()</code> 的方法句柄和参数。</li>
+<li><strong>合成方法（synthetic method）</strong>：将 lambda 体提取为一个 <code>private static</code> 合成方法（如 <code>lambda$methodName$0</code>），该方法的参数包括捕获的局部变量和 lambda 的显式参数。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 原始代码</span></span><br><span class="line">list.forEach(s -&gt; System.out.println(s));</span><br><span class="line"></span><br><span class="line"><span class="comment">// 脱糖后的等价概念（简化）</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> lambda$main$<span class="number">0</span>(String s) &#123;</span><br><span class="line">    System.out.println(s);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 使用 invokedynamic + metafactory 动态创建 Consumer&lt;String&gt; 实例</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>策略 2：匿名内部类（Java 8 之前）</strong></p>
+<p>javac 内部也保留了将 lambda 编译为匿名内部类的策略（<code>LambdaToMethod</code> 中的 <code>translateLambda</code> 方法），这主要用于运行时环境不支持 <code>invokedynamic</code> 的情况（如早期的 Android 版本）。但在现代的 javac 中（如 JDK 17+），<code>invokedynamic</code> 是默认且推荐的方式。</p>
+<p>注意：<strong>Android 中 d8&#x2F;R8 的 desugar</strong> 会将 <code>invokedynamic</code> 指令再次转换（因为旧版 Android Runtime 不支持 <code>invokedynamic</code> 或 LambdaMetafactory）。d8 会将 bootstrap method 调用替换为生成一个实现函数式接口的内部类，这与 javac 的匿名内部类策略在原理上类似，但在 .dex 层面实现。</p>
+<h3 id="7-2-合成方法的命名规则"><a href="#7-2-合成方法的命名规则" class="headerlink" title="7.2 合成方法的命名规则"></a>7.2 合成方法的命名规则</h3><p>LambdaToMethod 生成的合成方法遵循固定的命名规则：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">lambda$&lt;enclosing method name&gt;$&lt;sequence number&gt;</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<ul>
+<li><code>lambda$main$0</code> — <code>main</code> 方法中的第一个 lambda</li>
+<li><code>lambda$main$1</code> — <code>main</code> 方法中的第二个 lambda</li>
+<li><code>lambda$init$0</code> — 构造方法中的第一个 lambda</li>
+</ul>
+<p>这些合成方法带有 <code>ACC_SYNTHETIC</code> 和 <code>ACC_PRIVATE</code> 标志，在反射中默认不可见（除非使用 <code>getDeclaredMethods()</code>）。</p>
+<h3 id="7-3-方法引用的处理"><a href="#7-3-方法引用的处理" class="headerlink" title="7.3 方法引用的处理"></a>7.3 方法引用的处理</h3><p>方法引用（如 <code>System.out::println</code>、<code>String::length</code>、<code>ArrayList::new</code>）也由 LambdaToMethod 处理。不同形式的方法引用对应不同的 <code>LambdaMetafactory</code> 处理方法句柄：</p>
+<table>
+<thead>
+<tr>
+<th>方法引用形式</th>
+<th>对应的 metafactory 方法句柄类型</th>
+<th>脱糖方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Class::staticMethod</code></td>
+<td>指向静态方法的 MethodHandle</td>
+<td>不需要合成方法，直接使用方法句柄</td>
+</tr>
+<tr>
+<td><code>object::instanceMethod</code> (bound)</td>
+<td>指向特定对象实例方法的 MethodHandle</td>
+<td>不需要合成方法</td>
+</tr>
+<tr>
+<td><code>Class::instanceMethod</code> (unbound)</td>
+<td>第一个参数变为接收者</td>
+<td>不需要合成方法，由 MethodHandle 适配</td>
+</tr>
+<tr>
+<td><code>Class::new</code></td>
+<td>指向构造方法的 MethodHandle</td>
+<td>不需要合成方法</td>
+</tr>
+</tbody></table>
+<p>对于实例方法引用（unbound，如 <code>String::length</code>），字节码中 <code>invokedynamic</code> 的调用点签名是 <code>(String) -&gt; Integer</code>（接收者的类型作为函数式接口方法的第一个参数），JVM 在运行时通过 <code>MethodHandles.insertArguments</code> 等组合器自动适配。</p>
+<h2 id="八、Desugar-阶段：语法糖的解糖"><a href="#八、Desugar-阶段：语法糖的解糖" class="headerlink" title="八、Desugar 阶段：语法糖的解糖"></a>八、Desugar 阶段：语法糖的解糖</h2><h3 id="8-1-Lower-的整体职责"><a href="#8-1-Lower-的整体职责" class="headerlink" title="8.1 Lower 的整体职责"></a>8.1 Lower 的整体职责</h3><p><code>com.sun.tools.javac.comp.Lower</code> 是 javac 的语法糖消除模块。它工作于 Flow 之后的 AST，将 Java 高级语言特性转换为语义等价的、更底层的形式。解糖后的 AST 只包含 Java 语言的”核心子集”，方便后续的 Gen 阶段直接映射为字节码。</p>
+<p>Lower 的输入 AST 可能包含：嵌套类、内部类、匿名类、foreach 循环、String switch、try-with-resources、diamond operator、类型擦除相关的桥接方法等。其输出 AST 只包含：顶层类、基本类型、基本控制流、基本方法调用。</p>
+<h3 id="8-2-嵌套类与匿名类的提升"><a href="#8-2-嵌套类与匿名类的提升" class="headerlink" title="8.2 嵌套类与匿名类的提升"></a>8.2 嵌套类与匿名类的提升</h3><p>Lower 的最核心工作之一是<strong>将嵌套类和匿名类提升为顶层类</strong>。对于 javac 来说，JVM 并不理解”内部类”的概念——所有类在 .class 文件中都是独立的顶层类。</p>
+<p><strong>匿名类提升</strong>：对于 <code>new Runnable() &#123; ... &#125;</code>，Lower 创建一个新的顶层类（如 <code>OuterClass$1</code>），包含：</p>
+<ul>
+<li>一个合成构造方法，接收外部类实例作为参数（<code>OuterClass$1(OuterClass this$0)</code>）。</li>
+<li>一个 <code>final OuterClass this$0</code> 字段，存储外部类实例的引用，用于匿名类中访问外部类的成员。</li>
+<li>捕获的局部变量的复制（构造参数传入，存储到 final 字段中）。</li>
+</ul>
+<p><strong>成员内部类提升</strong>：对于 <code>class Outer &#123; class Inner &#123; ... &#125; &#125;</code>，Lower 为 <code>Inner</code> 生成一个独立的顶层类 <code>Outer$Inner</code>，同样持有 <code>this$0</code> 字段和对应的合成构造参数。</p>
+<p><strong>局部类提升</strong>：对于方法内部定义的局部类（local class），Lower 将其提升为顶层类，并通过合成构造方法传入捕获的局部变量（与匿名类的处理类似）。</p>
+<h3 id="8-3-String-switch-的转换"><a href="#8-3-String-switch-的转换" class="headerlink" title="8.3 String switch 的转换"></a>8.3 String switch 的转换</h3><p>String switch 在 javac 的 Lower 阶段被转换为两个嵌套的 switch：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 原始代码</span></span><br><span class="line"><span class="keyword">switch</span> (str) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;A&quot;</span>: doA(); <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;B&quot;</span>: doB(); <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;C&quot;</span>: doC(); <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>: doDefault();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Lower 解糖后的等价代码（概念表示）</span></span><br><span class="line"><span class="type">int</span> <span class="variable">$hash</span> <span class="operator">=</span> str.hashCode();</span><br><span class="line"><span class="keyword">switch</span> ($hash) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">65</span>:      <span class="comment">// &quot;A&quot;.hashCode()</span></span><br><span class="line">        <span class="keyword">if</span> (str.equals(<span class="string">&quot;A&quot;</span>)) &#123; doA(); <span class="keyword">break</span>; &#125;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">66</span>:      <span class="comment">// &quot;B&quot;.hashCode()</span></span><br><span class="line">        <span class="keyword">if</span> (str.equals(<span class="string">&quot;B&quot;</span>)) &#123; doB(); <span class="keyword">break</span>; &#125;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">67</span>:      <span class="comment">// &quot;C&quot;.hashCode()</span></span><br><span class="line">        <span class="keyword">if</span> (str.equals(<span class="string">&quot;C&quot;</span>)) &#123; doC(); <span class="keyword">break</span>; &#125;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br><span class="line">doDefault();      <span class="comment">// 如果哈希码都没匹配到</span></span><br></pre></td></tr></table></figure>
+
+<p>关键实现细节：</p>
+<ul>
+<li>使用 <code>lookupswitch</code> 而非 <code>tableswitch</code>。因为 String 的 hashCode 值分布稀疏，<code>lookupswitch</code>（二分查找，O(log n)）比 <code>tableswitch</code>（跳转表，需要连续的 case 值）更节省空间。</li>
+<li>如果多个 case 字符串的 hashCode 发生了碰撞，Lower 为每个碰撞的 case 生成连续的 if-equals 级联检查。</li>
+<li><code>str</code> 的 null 检查也在 Lower 中插入——如果 <code>str</code> 为 null，直接跳转到 default 分支（因为 <code>str.hashCode()</code> 会 NPE）。</li>
+<li>对同一哈希值按 <code>equals()</code> 精确比较后命中则跳到对应 case。</li>
+</ul>
+<h3 id="8-4-try-with-resources-的完整展开"><a href="#8-4-try-with-resources-的完整展开" class="headerlink" title="8.4 try-with-resources 的完整展开"></a>8.4 try-with-resources 的完整展开</h3><p>try-with-resources（Java 7）在 Lower 阶段被展开为一个嵌套的 try-catch-finally 结构，这个展开是 javac 中语法糖消除最复杂的案例之一。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 原始代码</span></span><br><span class="line"><span class="keyword">try</span> (<span class="type">BufferedReader</span> <span class="variable">br</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(<span class="keyword">new</span> <span class="title class_">FileReader</span>(<span class="string">&quot;file.txt&quot;</span>))) &#123;</span><br><span class="line">    <span class="keyword">return</span> br.readLine();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Lower 展开后的等价代码（概念表示）</span></span><br><span class="line"><span class="type">BufferedReader</span> <span class="variable">br</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(<span class="keyword">new</span> <span class="title class_">FileReader</span>(<span class="string">&quot;file.txt&quot;</span>));</span><br><span class="line"><span class="type">Throwable</span> <span class="variable">$primary</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> br.readLine();</span><br><span class="line">&#125; <span class="keyword">catch</span> (Throwable $t) &#123;</span><br><span class="line">    $primary = $t;</span><br><span class="line">    <span class="keyword">throw</span> $t;</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (br != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> ($primary != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                br.close();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Throwable $suppressed) &#123;</span><br><span class="line">                $primary.addSuppressed($suppressed);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            br.close();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>关键变量和逻辑：</p>
+<ul>
+<li><code>$primary</code>：保存 try 块中可能抛出的主异常。如果 close() 也抛出异常，close 异常通过 <code>addSuppressed()</code> 附加到主异常上。</li>
+<li>空值检查 <code>if (br != null)</code>：资源变量声明后可能抛出异常（如 FileReader 构造函数失败），此时 br 为 null，不应调用 close()。</li>
+<li>Suppressed Exception 机制：<code>Throwable.addSuppressed(Throwable)</code> 在 Java 7 中引入，用于记录”在资源清理过程中发生的异常”，避免掩盖原始异常。</li>
+</ul>
+<h3 id="8-5-foreach-循环的两种展开"><a href="#8-5-foreach-循环的两种展开" class="headerlink" title="8.5 foreach 循环的两种展开"></a>8.5 foreach 循环的两种展开</h3><p>foreach 循环（enhanced for loop）在 Lower 中根据目标对象类型有两种不同的展开方式：</p>
+<p><strong>对 Iterable 对象</strong>（如 <code>List</code>、<code>Set</code>）：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 原始代码</span></span><br><span class="line"><span class="keyword">for</span> (String s : list) &#123;</span><br><span class="line">    System.out.println(s);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 展开后</span></span><br><span class="line"><span class="keyword">for</span> (Iterator&lt;String&gt; $it = list.iterator(); $it.hasNext(); ) &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">s</span> <span class="operator">=</span> $it.next();</span><br><span class="line">    System.out.println(s);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>$it</code> 是编译器生成的不重复的临时变量名。注意迭代器变量在 for 循环头部声明，循环结束后就被回收。</p>
+<p><strong>对数组</strong>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 原始代码</span></span><br><span class="line"><span class="keyword">for</span> (String s : array) &#123;</span><br><span class="line">    System.out.println(s);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 展开后</span></span><br><span class="line">String[] $arr = array;</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> <span class="variable">$i</span> <span class="operator">=</span> <span class="number">0</span>; $i &lt; $arr.length; $i++) &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">s</span> <span class="operator">=</span> $arr[$i];</span><br><span class="line">    System.out.println(s);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>将数组赋值给局部变量 <code>$arr</code> 是为了防止在循环过程中原数组引用被修改导致的并发问题——<code>$arr.length</code> 在循环过程中不会变化。</p>
+<h3 id="8-6-其他语法糖消除"><a href="#8-6-其他语法糖消除" class="headerlink" title="8.6 其他语法糖消除"></a>8.6 其他语法糖消除</h3><p>Lower 还处理以下语法糖：</p>
+<p><strong>变长参数（varargs）</strong>：调用点 <code>foo(&quot;a&quot;, &quot;b&quot;)</code> 解糖为 <code>foo(new String[]&#123;&quot;a&quot;, &quot;b&quot;&#125;)</code>。被调用方法在 class 文件中保留 <code>ACC_VARARGS</code> 标志，但方法体中的数组访问与普通数组无异。</p>
+<p><strong>自动装箱&#x2F;拆箱</strong>：<code>Integer x = 42</code> 解糖为 <code>Integer x = Integer.valueOf(42)</code>；<code>int y = x</code> 解糖为 <code>int y = x.intValue()</code>。</p>
+<p><strong>桥接方法（Bridge Method）</strong>：泛型擦除后，如果子类实现了一个参数类型更具体的方法（擦除后与父类方法签名相同但参数类型不同），Lower 生成一个桥接方法。例如：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Parent</span>&lt;T&gt; &#123; <span class="keyword">void</span> <span class="title function_">foo</span><span class="params">(T t)</span> &#123;&#125; &#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Child</span> <span class="keyword">extends</span> <span class="title class_">Parent</span>&lt;String&gt; &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">foo</span><span class="params">(String s)</span> &#123;&#125;  <span class="comment">// 擦除后：void foo(String)</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Lower 为 Child 生成桥接方法：</span></span><br><span class="line"><span class="comment">// void foo(Object t) &#123; this.foo((String) t); &#125;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这个桥接方法确保通过 <code>Parent</code> 引用调用 <code>foo(Object)</code> 时正确路由到 <code>Child.foo(String)</code>。</p>
+<p><strong>枚举（Enum）</strong>：<code>enum</code> 类被转换为继承自 <code>java.lang.Enum</code> 的普通类，枚举常量变为 <code>public static final</code> 字段，<code>values()</code> 和 <code>valueOf()</code> 方法由编译器自动生成。</p>
+<h2 id="九、Generate-阶段：字节码生成"><a href="#九、Generate-阶段：字节码生成" class="headerlink" title="九、Generate 阶段：字节码生成"></a>九、Generate 阶段：字节码生成</h2><h3 id="9-1-Gen-的职责与-Code-对象"><a href="#9-1-Gen-的职责与-Code-对象" class="headerlink" title="9.1 Gen 的职责与 Code 对象"></a>9.1 Gen 的职责与 Code 对象</h3><p><code>com.sun.tools.javac.jvm.Gen</code> 是 javac 编译流水线的最后阶段，负责将带有完整类型标注和流分析信息的 AST 转换为 JVM 字节码指令序列。Gen 为每个方法生成 class 文件中的 <code>Code</code> 属性，包含实际的方法体字节码。</p>
+<p>Gen 的核心数据结构：</p>
+<ul>
+<li>**<code>Code</code>**（<code>com.sun.tools.javac.jvm.Code</code>）：一个可增长的字节数组，同时维护了操作数栈深度的模拟和局部变量槽位的分配状态。</li>
+<li>**<code>Items</code>**（<code>com.sun.tools.javac.jvm.Items</code>）：辅助类，用于生成加载常量&#x2F;字段&#x2F;方法引用到操作数栈的代码片段。</li>
+<li>**<code>CRTable</code>**：字符范围表（Character Range Table），用于跟踪源码字符位置与字节码偏移的对应关系（用于调试器）。</li>
+<li>**<code>Pool</code>**（<code>com.sun.tools.javac.jvm.Pool</code>）：常量池管理器，负责分配常量池索引（如类引用、方法引用、字符串常量）。</li>
+</ul>
+<p>Gen 的执行入口是 <code>Gen.genClass(Env&lt;AttrContext&gt; env, JCClassDecl cdef)</code>，它遍历类的每个方法声明，对每个方法调用 <code>genMethod()</code>，生成对应的 Code 属性。</p>
+<h3 id="9-2-AST-→-Bytecode-的映射"><a href="#9-2-AST-→-Bytecode-的映射" class="headerlink" title="9.2 AST → Bytecode 的映射"></a>9.2 AST → Bytecode 的映射</h3><p>Gen 如何将 AST 节点映射为 JVM 指令？核心方法 <code>genStat(JCTree tree, Env&lt;GenContext&gt; env)</code> 是一个大的 visitor，针对不同的 AST 节点类型生成对应的字节码指令序列：</p>
+<table>
+<thead>
+<tr>
+<th>AST 节点</th>
+<th>生成的 JVM 指令模式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>JCLiteral</code> (int 42)</td>
+<td><code>bipush 42</code> 或 <code>iconst_&lt;n&gt;</code> 或 <code>ldc #index</code></td>
+</tr>
+<tr>
+<td><code>JCIdent</code> (局部变量 x)</td>
+<td><code>iload_&lt;n&gt;</code> &#x2F; <code>aload_&lt;n&gt;</code> 等（根据类型）</td>
+</tr>
+<tr>
+<td><code>JCAssign</code> (x &#x3D; expr)</td>
+<td>先求值 expr 压栈 → <code>dup</code>（如需要）→ <code>istore n</code> &#x2F; <code>astore n</code></td>
+</tr>
+<tr>
+<td><code>JCMethodInvocation</code> (foo(a, b))</td>
+<td>计算接收者（实例方法）&#x2F; 参数压栈 → <code>invokevirtual</code> &#x2F; <code>invokestatic</code> &#x2F; <code>invokespecial</code> &#x2F; <code>invokeinterface</code></td>
+</tr>
+<tr>
+<td><code>JCIf</code> (if (cond) { … })</td>
+<td>计算 cond → <code>ifeq</code> &#x2F; <code>ifne</code> 跳转到 else 或下一条指令</td>
+</tr>
+<tr>
+<td><code>JCReturn</code> (return expr;)</td>
+<td>计算 expr → 对应 <code>ireturn</code> &#x2F; <code>areturn</code> &#x2F; <code>return</code></td>
+</tr>
+<tr>
+<td><code>JCNewClass</code> (new Foo())</td>
+<td><code>new #index</code> → <code>dup</code> → 参数压栈 → <code>invokespecial &lt;init&gt;</code></td>
+</tr>
+<tr>
+<td><code>JCCatch</code></td>
+<td>生成异常表条目：<code>tryStart</code> &#x2F; <code>tryEnd</code> &#x2F; <code>handler</code> 对应的字节码偏移</td>
+</tr>
+</tbody></table>
+<h3 id="9-3-常量池的构建"><a href="#9-3-常量池的构建" class="headerlink" title="9.3 常量池的构建"></a>9.3 常量池的构建</h3><p>javac 的常量池（Constant Pool）不是在 Gen 阶段一次性构建的，而是在 Gen 的过程中<strong>按需动态构建</strong>。<code>Pool</code> 类维护了常量池条目的内部映射，当 Gen 需要引用一个类、方法、字符串或数值常量时，调用 Pool 的对应方法获取常量池索引。</p>
+<p>常量池的类型（定义在 <code>com.sun.tools.javac.jvm.Pool</code> 中）：</p>
+<table>
+<thead>
+<tr>
+<th>常量类型</th>
+<th>含义</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>CONSTANT_Class</code></td>
+<td>类或接口的符号引用</td>
+<td><code>java/lang/String</code></td>
+</tr>
+<tr>
+<td><code>CONSTANT_Fieldref</code></td>
+<td>字段的符号引用</td>
+<td><code>System.out</code></td>
+</tr>
+<tr>
+<td><code>CONSTANT_Methodref</code></td>
+<td>方法的符号引用</td>
+<td><code>println(Ljava/lang/String;)V</code></td>
+</tr>
+<tr>
+<td><code>CONSTANT_InterfaceMethodref</code></td>
+<td>接口方法的符号引用</td>
+<td><code>Iterator.hasNext()Z</code></td>
+</tr>
+<tr>
+<td><code>CONSTANT_String</code></td>
+<td>字符串常量</td>
+<td><code>&quot;Hello, World&quot;</code></td>
+</tr>
+<tr>
+<td><code>CONSTANT_Integer</code> &#x2F; <code>CONSTANT_Float</code> &#x2F; <code>CONSTANT_Long</code> &#x2F; <code>CONSTANT_Double</code></td>
+<td>基本类型数值常量</td>
+<td><code>42</code>, <code>3.14</code></td>
+</tr>
+<tr>
+<td><code>CONSTANT_NameAndType</code></td>
+<td>名称和类型描述符</td>
+<td><code>message : Ljava/lang/String;</code></td>
+</tr>
+<tr>
+<td><code>CONSTANT_Utf8</code></td>
+<td>UTF-8 编码的字符串</td>
+<td>实际存储的字符串内容</td>
+</tr>
+<tr>
+<td><code>CONSTANT_MethodHandle</code></td>
+<td>方法句柄（Java 7+）</td>
+<td>LambdaMetafactory 引用</td>
+</tr>
+<tr>
+<td><code>CONSTANT_MethodType</code></td>
+<td>方法类型（Java 7+）</td>
+<td><code>(Ljava/lang/Object;)V</code></td>
+</tr>
+<tr>
+<td><code>CONSTANT_InvokeDynamic</code></td>
+<td>invokedynamic 调用点（Java 7+）</td>
+<td>lambda 调用点</td>
+</tr>
+</tbody></table>
+<h3 id="9-4-max-stack-与-max-locals-的计算"><a href="#9-4-max-stack-与-max-locals-的计算" class="headerlink" title="9.4 max_stack 与 max_locals 的计算"></a>9.4 max_stack 与 max_locals 的计算</h3><p>class 文件的 <code>Code</code> 属性要求记录方法的 <code>max_stack</code>（方法执行过程中操作数栈的最大深度）和 <code>max_locals</code>（方法需要的局部变量槽位总数）。</p>
+<p><strong>max_stack 的计算</strong>：Gen 通过模拟指令执行来跟踪操作数栈的深度。<code>Code</code> 类内部维护一个 <code>cur_stack</code> 计数器，每生成一条指令，根据该指令对操作数栈的影响调整计数器：</p>
+<ul>
+<li><code>iconst_0</code>：stack +1</li>
+<li><code>iadd</code>：stack -2 + 1 &#x3D; -1（弹出两个 int，压入一个 int）</li>
+<li><code>invokevirtual</code>：stack 减少参数量 + 减少接收者 + 增加返回值（如果有）</li>
+<li><code>dup</code>：stack +1</li>
+<li><code>dup2</code>：stack +2</li>
+</ul>
+<p><code>max_stack</code> &#x3D; 记录到的 <code>cur_stack</code> 的最大值。对于包含分支和跳转的方法，Gen 需要保守估算所有执行路径上的最大栈深度——如果不同路径的栈深度不同，取所有路径的最大值。</p>
+<p><strong>max_locals 的计算</strong>：Gen 为每个局部变量分配一个”槽位”（对于 <code>long</code> 和 <code>double</code> 类型占两个槽位）。槽位的分配策略：方法参数占用前 N 个槽位（实例方法的第 0 号槽位是 <code>this</code>），后续的局部变量依次分配。<code>max_locals</code> &#x3D; 分配的最大槽位索引 + 1 + 数据类型宽度校正。</p>
+<h3 id="9-5-StackMapTable-的生成"><a href="#9-5-StackMapTable-的生成" class="headerlink" title="9.5 StackMapTable 的生成"></a>9.5 StackMapTable 的生成</h3><p>Java 7 引入的 <strong>StackMapTable 属性</strong> 是类型检查字节码验证（Type-Checking Verification）的关键数据。Gen 需要为每个分支目标（跳转的目标标签）和异常处理器的入口生成 StackMapFrame，记录该位置的局部变量类型和操作数栈类型。</p>
+<p>StackMapFrame 的类型包括：</p>
+<table>
+<thead>
+<tr>
+<th>Frame Type</th>
+<th>编码</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>SAME</code></td>
+<td>0-63</td>
+<td>与前一帧的局部变量相同，操作数栈为空</td>
+</tr>
+<tr>
+<td><code>SAME_LOCALS_1_STACK_ITEM</code></td>
+<td>64-127</td>
+<td>局部变量相同，栈上多一个元素</td>
+</tr>
+<tr>
+<td><code>APPEND</code></td>
+<td>252-254</td>
+<td>局部变量追加了 1-3 个元素</td>
+</tr>
+<tr>
+<td><code>CHOP</code></td>
+<td>248-250</td>
+<td>局部变量减少了 1-3 个元素（编译期优化导致）</td>
+</tr>
+<tr>
+<td><code>FULL_FRAME</code></td>
+<td>255</td>
+<td>完整帧：需要指定所有局部变量类型和栈类型</td>
+</tr>
+</tbody></table>
+<p>Gen 使用 <code>CRTable</code>（Character Range Table）和 <code>Code.fillStackMap()</code> 方法生成这些帧。在现代 javac 中，StackMapTable 通常在 Gen 完成后通过 <code>Flow.generateStackMapTable()</code> 重新计算，以确保帧信息准确。</p>
+<p>在 Android 开发中，ASM 的 <code>COMPUTE_FRAMES</code> 标志（对应 <code>ClassWriter.COMPUTE_FRAMES</code>）可以让 ASM 在修改字节码后自动重新计算 StackMapTable。这是最安全和推荐的做法——手动维护 StackMapTable 极其容易出错，导致 <code>VerifyError</code>。</p>
+<h3 id="9-6-异常表（Exception-Table）的生成"><a href="#9-6-异常表（Exception-Table）的生成" class="headerlink" title="9.6 异常表（Exception Table）的生成"></a>9.6 异常表（Exception Table）的生成</h3><p>Gen 为每个 try-catch 块生成异常表条目（Exception Table Entry），每个条目包含：</p>
+<ul>
+<li><strong>start_pc</strong>：try 块起始指令的字节码偏移</li>
+<li><strong>end_pc</strong>：try 块结束指令的字节码偏移（exclusive，即不包含 end_pc 指向的指令）</li>
+<li><strong>handler_pc</strong>：catch 块第一条指令的字节码偏移</li>
+<li><strong>catch_type</strong>：捕获的异常类型（常量池中 CONSTANT_Class 的索引），0 表示 catch all（finally 或 <code>catch(Throwable)</code>）</li>
+</ul>
+<p>多个异常表条目可以重叠，表示嵌套的 try-catch 块。JVM 在运行时根据异常类型匹配最内层的、catch_type 匹配的异常处理器。</p>
+<h3 id="9-7-LineNumberTable-和-LocalVariableTable"><a href="#9-7-LineNumberTable-和-LocalVariableTable" class="headerlink" title="9.7 LineNumberTable 和 LocalVariableTable"></a>9.7 LineNumberTable 和 LocalVariableTable</h3><p>Gen 同时生成调试属性：</p>
+<ul>
+<li><strong>LineNumberTable</strong>：将字节码偏移映射到源文件行号。每个条目包含 <code>start_pc</code>（字节码偏移）和 <code>line_number</code>（源文件行号）。调试器依赖这个表来实现单步执行和断点定位。</li>
+<li><strong>LocalVariableTable</strong>：记录每个局部变量的名字、类型描述符、类型签名、作用范围（start_pc 到 end_pc）和槽位索引。调试器依赖这个表来显示变量值。</li>
+</ul>
+<h2 id="十、完整示例：跟踪一个简单类的编译全过程"><a href="#十、完整示例：跟踪一个简单类的编译全过程" class="headerlink" title="十、完整示例：跟踪一个简单类的编译全过程"></a>十、完整示例：跟踪一个简单类的编译全过程</h2><h3 id="10-1-源文件"><a href="#10-1-源文件" class="headerlink" title="10.1 源文件"></a>10.1 源文件</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// File: Demo.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Demo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compute</span><span class="params">(<span class="type">int</span> n)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">sum</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;= n; i++) &#123;</span><br><span class="line">            sum += i;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> sum;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="10-2-阶段-1：Parse"><a href="#10-2-阶段-1：Parse" class="headerlink" title="10.2 阶段 1：Parse"></a>10.2 阶段 1：Parse</h3><p><code>JavacParser.parseCompilationUnit()</code> 被调用。JavaTokenizer 将源码切分为 Token 流：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[PUBLIC] [CLASS] [IDENTIFIER &quot;Demo&quot;] [LBRACE]</span><br><span class="line">[PUBLIC] [INT] [IDENTIFIER &quot;compute&quot;] [LPAREN] [INT] [IDENTIFIER &quot;n&quot;] [RPAREN] [LBRACE]</span><br><span class="line">[INT] [IDENTIFIER &quot;sum&quot;] [EQ] [INTLITERAL 0] [SEMI]</span><br><span class="line">[FOR] [LPAREN] [INT] [IDENTIFIER &quot;i&quot;] [EQ] [INTLITERAL 1] [SEMI]</span><br><span class="line">[IDENTIFIER &quot;i&quot;] [LTEQ] [IDENTIFIER &quot;n&quot;] [SEMI] [IDENTIFIER &quot;i&quot;] [PLUSPLUS] [RPAREN] [LBRACE]</span><br><span class="line">[IDENTIFIER &quot;sum&quot;] [PLUSEQ] [IDENTIFIER &quot;i&quot;] [SEMI]</span><br><span class="line">[RBRACE]</span><br><span class="line">[RETURN] [IDENTIFIER &quot;sum&quot;] [SEMI]</span><br><span class="line">[RBRACE]</span><br><span class="line">[RBRACE]</span><br><span class="line">[EOF]</span><br></pre></td></tr></table></figure>
+
+<p>JavacParser 基于 Token 构建 AST：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">JCCompilationUnit</span><br><span class="line">├── defs[0]: JCClassDecl (name = &quot;Demo&quot;, modifiers = ACC_PUBLIC)</span><br><span class="line">│   └── defs[0]: JCMethodDecl (name = &quot;compute&quot;, restype = int, params = [n: int])</span><br><span class="line">│       └── body: JCBlock</span><br><span class="line">│           ├── stats[0]: JCVariableDecl (name = &quot;sum&quot;, type = int, init = 0)</span><br><span class="line">│           ├── stats[1]: JCForLoop</span><br><span class="line">│           │   ├── init: JCVariableDecl (name = &quot;i&quot;, type = int, init = 1)</span><br><span class="line">│           │   ├── cond: JCBinary (op = LTE, lhs = JCIdent &quot;i&quot;, rhs = JCIdent &quot;n&quot;)</span><br><span class="line">│           │   ├── step: JCUnary (op = POSTINC, arg = JCIdent &quot;i&quot;)</span><br><span class="line">│           │   └── body: JCBlock</span><br><span class="line">│           │       └── stats[0]: JCExpressionStatement</span><br><span class="line">│           │           └── JCAssign (op = PLUSEQ, lhs = JCIdent &quot;sum&quot;, rhs = JCIdent &quot;i&quot;)</span><br><span class="line">│           └── stats[2]: JCReturn (expr = JCIdent &quot;sum&quot;)</span><br></pre></td></tr></table></figure>
+
+<h3 id="10-3-阶段-2：Enter"><a href="#10-3-阶段-2：Enter" class="headerlink" title="10.3 阶段 2：Enter"></a>10.3 阶段 2：Enter</h3><p><code>Enter</code> 和 <code>MemberEnter</code> 将符号注册到符号表：</p>
+<ul>
+<li>创建 <code>ClassSymbol(Demo)</code>，其 <code>members</code> Scope 初始为空。</li>
+<li>将 <code>MethodSymbol(compute, int, [n: int])</code> 注册到 Demo 的 members Scope。</li>
+<li>将 <code>VarSymbol(sum, int)</code> 和 <code>VarSymbol(n, int)</code> 和 <code>VarSymbol(i, int)</code> 注册到 compute 方法的局部作用域中。</li>
+<li><code>int</code> 类型引用指向 <code>Symtab.intType</code>（预定义符号）。</li>
+</ul>
+<h3 id="10-4-阶段-4：Attr"><a href="#10-4-阶段-4：Attr" class="headerlink" title="10.4 阶段 4：Attr"></a>10.4 阶段 4：Attr</h3><p><code>Attr</code> 进行类型标注：</p>
+<ul>
+<li><code>compute</code> 方法的 <code>JCTree.type</code> &#x3D; <code>MethodType(int, [int])</code></li>
+<li><code>sum</code> 的 <code>JCTree.type</code> &#x3D; <code>int</code></li>
+<li><code>JCBinary(i &lt;= n)</code> 的 <code>JCTree.type</code> &#x3D; <code>boolean</code></li>
+<li><code>JCAssign(sum += i)</code> 的 <code>JCTree.type</code> &#x3D; <code>int</code></li>
+<li><code>JCReturn</code> 检查返回类型 <code>int</code> 与方法声明的返回类型 <code>int</code> 匹配</li>
+</ul>
+<h3 id="10-5-阶段-5：Flow"><a href="#10-5-阶段-5：Flow" class="headerlink" title="10.5 阶段 5：Flow"></a>10.5 阶段 5：Flow</h3><p><code>Flow</code> 进行数据流分析：</p>
+<ul>
+<li><code>sum</code> 在 <code>int sum = 0;</code> 处被确定赋值，之后的使用有效。</li>
+<li><code>i</code> 在 <code>int i = 1;</code> 处被确定赋值。</li>
+<li>检查 reachability：<code>return sum;</code> 之后没有代码，合理。</li>
+</ul>
+<h3 id="10-6-阶段-6：Desugar"><a href="#10-6-阶段-6：Desugar" class="headerlink" title="10.6 阶段 6：Desugar"></a>10.6 阶段 6：Desugar</h3><p><code>Lower</code> 对 foreach 进行解糖（本例中是基本 for 循环，无需解糖）。没有需要提升的嵌套类。没有 try-with-resources。此阶段基本是 pass-through。</p>
+<h3 id="10-7-阶段-7：Generate"><a href="#10-7-阶段-7：Generate" class="headerlink" title="10.7 阶段 7：Generate"></a>10.7 阶段 7：Generate</h3><p><code>Gen</code> 生成字节码。对于 <code>compute</code> 方法，生成的 JVM 指令序列（概念表示）如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// int compute(int n)</span><br><span class="line">// max_stack = 2, max_locals = 4 (this, n, sum, i)</span><br><span class="line"></span><br><span class="line"> 0: iconst_0            // 压入常量 0</span><br><span class="line"> 1: istore_2            // sum = 0，存储到局部变量槽位 2</span><br><span class="line"> 2: iconst_1            // 压入常量 1</span><br><span class="line"> 3: istore_3            // i = 1，存储到局部变量槽位 3</span><br><span class="line"> 4: iload_3             // 加载 i</span><br><span class="line"> 5: iload_1             // 加载 n</span><br><span class="line"> 6: if_icmpgt 19        // 如果 i &gt; n，跳转到偏移 19（循环结束）</span><br><span class="line"> 9: iload_2             // 加载 sum</span><br><span class="line">10: iload_3             // 加载 i</span><br><span class="line">11: iadd                // sum + i</span><br><span class="line">12: istore_2            // sum = sum + i</span><br><span class="line">13: iinc 3, 1           // i++（直接在局部变量中递增）</span><br><span class="line">16: goto 4              // 跳回循环条件检查</span><br><span class="line">19: iload_2             // 加载 sum</span><br><span class="line">20: ireturn             // 返回 sum，栈顶元素为 int</span><br></pre></td></tr></table></figure>
+
+<p>常量池条目（简化）：</p>
+<ul>
+<li>#1 &#x3D; Methodref <code>java/lang/Object.&lt;init&gt;:()V</code>（默认构造方法的父类调用）</li>
+<li>#2 &#x3D; Class <code>Demo</code></li>
+<li>#3 &#x3D; Utf8 <code>compute</code></li>
+<li>#4 &#x3D; Utf8 <code>(I)I</code></li>
+<li>#5 &#x3D; Utf8 <code>SourceFile</code></li>
+<li>#6 &#x3D; Utf8 <code>Demo.java</code></li>
+</ul>
+<p>异常表：空（方法体内没有 try-catch）</p>
+<p>StackMapTable：</p>
+<ul>
+<li>Frame0 (offset 4): locals&#x3D;[Demo, int, int, int], stack&#x3D;[]</li>
+<li>Frame1 (offset 19): locals&#x3D;[Demo, int, int, int], stack&#x3D;[]</li>
+</ul>
+<h3 id="10-8-最终的-class-文件结构"><a href="#10-8-最终的-class-文件结构" class="headerlink" title="10.8 最终的 .class 文件结构"></a>10.8 最终的 .class 文件结构</h3><p>生成的 <code>Demo.class</code> 文件包含以下主要部分：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ClassFile &#123;</span><br><span class="line">    magic: 0xCAFEBABE</span><br><span class="line">    minor_version: 0</span><br><span class="line">    major_version: 52  (Java 8)</span><br><span class="line">    constant_pool_count: 22</span><br><span class="line">    constant_pool: [ ... 21 entries ... ]</span><br><span class="line">    access_flags: ACC_PUBLIC | ACC_SUPER</span><br><span class="line">    this_class: #2  (Demo)</span><br><span class="line">    super_class: #7  (java/lang/Object)</span><br><span class="line">    interfaces_count: 0</span><br><span class="line">    fields_count: 0</span><br><span class="line">    methods_count: 2</span><br><span class="line">    methods[0]:  // 默认构造方法</span><br><span class="line">        access_flags: ACC_PUBLIC</span><br><span class="line">        name_index: #8  (&lt;init&gt;)</span><br><span class="line">        descriptor_index: #9  (()V)</span><br><span class="line">        Code: aload_0; invokespecial Object.&lt;init&gt;; return</span><br><span class="line">    methods[1]:  // compute</span><br><span class="line">        access_flags: ACC_PUBLIC</span><br><span class="line">        name_index: #3  (compute)</span><br><span class="line">        descriptor_index: #4  ((I)I)</span><br><span class="line">        Code:</span><br><span class="line">            max_stack: 2</span><br><span class="line">            max_locals: 4</span><br><span class="line">            code: [iconst_0, istore_2, iconst_1, istore_3, iload_3,</span><br><span class="line">                   iload_1, if_icmpgt 19, iload_2, iload_3, iadd,</span><br><span class="line">                   istore_2, iinc 3 1, goto 4, iload_2, ireturn]</span><br><span class="line">            exception_table_length: 0</span><br><span class="line">            attributes: [StackMapTable, LineNumberTable, LocalVariableTable]</span><br><span class="line">    attributes: [SourceFile(&quot;Demo.java&quot;)]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这就是一个简单的 <code>Demo.java</code> 文件经过 javac 的七个阶段后，最终生成 <code>Demo.class</code> 文件的完整过程。</p>
+<h2 id="十一、javac-vs-d8：分工边界与协通"><a href="#十一、javac-vs-d8：分工边界与协通" class="headerlink" title="十一、javac vs d8：分工边界与协通"></a>十一、javac vs d8：分工边界与协通</h2><p>理解 javac 和 d8 的分工对 Android 开发者至关重要：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>javac</th>
+<th>d8 (Android)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>输入</td>
+<td><code>.java</code> 源文件</td>
+<td><code>.class</code> 文件（javac 输出）</td>
+</tr>
+<tr>
+<td>输出</td>
+<td><code>.class</code>（JVM bytecode）</td>
+<td><code>.dex</code>（Dalvik bytecode）</td>
+</tr>
+<tr>
+<td>语法糖处理</td>
+<td>try-with-resources、foreach、switch-string、自动装箱&#x2F;拆箱、varargs、内部类提升</td>
+<td>lambdas、default methods、static interface methods（Java 8+ 的 API desugaring）</td>
+</tr>
+<tr>
+<td>优化</td>
+<td>少量常量折叠（<code>1 + 2</code> → <code>3</code>）</td>
+<td>主要优化器：常量传播、死代码消除、方法内联、字符串去重、类合并、枚举拆箱</td>
+</tr>
+<tr>
+<td>类型系统</td>
+<td>JVM 类型系统（栈式指令集）</td>
+<td>Dalvik 类型系统（寄存器式指令集）</td>
+</tr>
+<tr>
+<td>运行时支持</td>
+<td>依赖 JVM 提供的标准库</td>
+<td>依赖 ART&#x2F;Dalvik + Android SDK + desugar_jdk_libs</td>
+</tr>
+</tbody></table>
+<p>d8 的一个关键角色是 <strong>API desugaring</strong>。当代码中使用了较新版本的 Java API（如 <code>java.time.LocalDate</code>、<code>java.util.stream.Stream</code>、<code>java.util.Optional</code>）时，如果目标 Android 版本不支持这些 API，d8 自动将调用重写为对 <code>desugar_jdk_libs</code> 支持库中替代实现的调用。这是通过 d8 内部的 <code>D8ApiDesugaring</code> 实现的。</p>
+<hr>
+<h2 id="面试问答"><a href="#面试问答" class="headerlink" title="面试问答"></a>面试问答</h2><p><strong>Q1：javac 编译的七个阶段分别是什么？哪些阶段是在 AST 上操作的？</strong></p>
+<p>A：七个阶段依次是：Parse（JavacParser + JavaTokenizer 解析源码生成 JCTree AST）、Enter（MemberEnter 构建符号表，将声明注册到 Scope 中）、Annotation Processing（JavacProcessingEnvironment 调用 JSR 269 注解处理器，可生成新源文件并触发新一轮 Parse+Enter）、Attr（Attr+Check+Resolve+Infer 进行类型检查与类型标注）、Flow（确定赋值分析、异常检查、可达性分析、effectively final 检查、LambdaToMethod 脱糖）、Desugar（Lower 解语法糖：嵌套类提升、switch-string、try-with-resources、foreach、自动装箱）、Generate（Gen+Code 从类型标注的 AST 生成 JVM 字节码和常量池）。所有七个阶段都操作 AST：Parse 创建 AST，Enter 在 AST 的基础上构建符号表，Annotation Processing 读取 AST 生成新源码（间接触发新的 AST），Attr 为 AST 标注类型信息，Flow 在 AST 上进行数据流分析，Desugar 修改&#x2F;转换 AST 节点，Generate 遍历 AST 生成字节码。但严格来说，Annotation Processing 生成的新源文件需要通过新一轮 Parse 才能回到 AST。</p>
+<p><strong>Q2：try-with-resources 在 javac 的 Desugar 阶段是如何展开的？字节码中会出现哪些结构？</strong></p>
+<p>A：javac 的 Lower 将 try-with-resources 展开为多层 try-catch-finally。首先在 try 之前生成资源变量的声明和初始化。然后在 try 块外部定义 <code>Throwable $primary</code> 变量（初始为 null）。try 块内的代码保持不变。外层 catch 捕获 Throwable，将异常存储在 <code>$primary</code> 中并重新 throw。finally 块中：检查资源变量是否为 null → 如果 <code>$primary != null</code>，则在嵌套的 try-catch 中调用 <code>resource.close()</code>，如果 close 抛出异常则调用 <code>$primary.addSuppressed(suppressed)</code> 将 close 异常作为 suppressed exception 附加到主异常上；如果 <code>$primary == null</code>，则直接调用 <code>resource.close()</code>。字节码中会出现：多个异常表条目（嵌套的 try-catch-finally）、<code>astore</code>&#x2F;<code>aload</code> 操作 <code>$primary</code> 变量、<code>invokevirtual Throwable.addSuppressed(Throwable)</code> 调用、条件跳转（<code>ifnull</code> &#x2F; <code>ifnonnull</code> 判断资源是否为 null）、多路径的 <code>close()</code> 调用。整个展开可能将一个简单的 try-with-resources 扩展为 30+ 条字节码指令。</p>
+<p><strong>Q3：String switch 的字节码是如何实现 O(1) 分派的？为什么不需要担心哈希碰撞？</strong></p>
+<p>A：javac 的 Lower 将 String switch 转换为两阶段分派：第一阶段对 <code>str.hashCode()</code> 做 <code>lookupswitch</code>（哈希值通常稀疏，所以用二分查找的 lookupswitch 而非跳转表的 tableswitch），跳转到对应 hash 值分支；第二阶段在每个 hash 分支中对 <code>str.equals(caseValue)</code> 做精确比较，如果 equals 返回 true 则跳转到业务代码，否则 fall through。平均时间复杂度接近 O(1)（hashCode + equals 检查），但最坏情况下为 O(n)（所有 case 字符串 hash 碰撞）。哈希碰撞确实会发生：Java 的 <code>String.hashCode()</code> 是众所周知的（<code>s[0]*31^(n-1) + s[1]*31^(n-2) + ... + s[n-1]</code>），攻击者可以构造碰撞字符串。但对于正常业务代码，碰撞概率极低。如果发生碰撞，javac 正确地在同一个 hash 分支中生成连续的 if-equals 级联，语义正确但性能退化。此外，javac 会在 hash 值不匹配时插入 null 检查（直接跳转到 default），避免 <code>str.hashCode()</code> 的 NPE。</p>
+<p><strong>Q4：d8 的 desugaring 解决了什么问题？与 javac 的 Desugar 有何不同？</strong></p>
+<p>A：d8 desugaring 解决的核心问题是 Android 平台碎片化——较新版本的 Java API（如 <code>java.time.LocalDate</code>、<code>java.util.stream.Stream</code>、<code>java.util.Optional</code>、<code>java.util.function</code> 包中的函数式接口、interface 中的 default 方法和 static 方法）在低版本 Android（API level &lt; 24 或 &lt; 26）上根本不存在或行为不同。d8 在 <code>.class</code> → <code>.dex</code> 转换时，将对缺失 API 的调用重写为对 <code>desugar_jdk_libs</code> 库中替代实现的调用。这与 javac 的 Desugar 有本质不同：javac Desugar 处理的是<strong>语法级糖</strong>（try-with-resources、foreach、switch-string、内部类等），在 <code>.class</code> 文件生成前完成，目标是降低 AST → 字节码的映射复杂度；d8 desugaring 处理的是<strong>API 级缺失</strong>，在 <code>.class</code> → <code>.dex</code> 转换阶段完成，目标是保证代码在低版本 Android 上正确运行。此外，d8 还处理 Java 8 的 interface default&#x2F;static methods（通过在 companion class 中生成对应的静态方法），以及 lambda 表达式的脱糖（将 <code>invokedynamic</code> + LambdaMetafactory 模式转换为生成内部类的传统模式）。javac 本身不处理这些，因为它们在标准 JVM 上由 <code>java.lang.invoke</code> 包支持。</p>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/248.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/04/05/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%85%AB%E7%AF%87%E3%80%81Kotlin%E5%AD%97%E8%8A%82%E7%A0%81%E5%8E%9F%E7%90%86/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/265.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【深入理解JVM字节码】第八篇、Kotlin字节码原理</span></div></a></div><div class="next-post pull_right"><a href="/2021/03/25/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM%E5%AD%97%E8%8A%82%E7%A0%81%E3%80%91%E7%AC%AC%E5%85%AD%E7%AF%87%E3%80%81%E5%8F%8D%E5%B0%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/270.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【深入理解JVM字节码】第六篇、反射实现原理</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/248.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>

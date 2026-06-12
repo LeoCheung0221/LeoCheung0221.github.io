@@ -1,0 +1,515 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>【深入内核篇】JNI | ONE·PIECE</title><meta name="description" content="【深入内核篇】JNI"><meta name="keywords" content="JNI,NDK"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="【深入内核篇】JNI"><meta name="twitter:description" content="【深入内核篇】JNI"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286820.jpg"><meta property="og:type" content="article"><meta property="og:title" content="【深入内核篇】JNI"><meta property="og:url" content="http://tufusi.com/2021/01/15/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91JNI/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="【深入内核篇】JNI"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286820.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2021/01/15/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91JNI/"><link rel="prev" title="【深入内核篇】ODEX流程" href="http://tufusi.com/2021/01/20/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91ODEX%E6%B5%81%E7%A8%8B/"><link rel="next" title="【深入内核篇】Binder驱动" href="http://tufusi.com/2021/01/10/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91Binder%E9%A9%B1%E5%8A%A8/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">245</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">55</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81JNI-%E5%9C%A8-Android-%E7%B3%BB%E7%BB%9F%E4%B8%AD%E7%9A%84%E5%9C%B0%E4%BD%8D"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">一、JNI 在 Android 系统中的地位</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#1-1-JNI-%E7%9A%84%E4%B8%A4%E4%B8%AA%E8%A7%92%E8%89%B2"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">1.1 JNI 的两个角色</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#1-2-JNI-%E7%9B%B8%E5%85%B3%E6%BA%90%E7%A0%81%E8%B7%AF%E5%BE%84"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">1.2 JNI 相关源码路径</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81%E9%9D%99%E6%80%81%E6%B3%A8%E5%86%8C-vs-%E5%8A%A8%E6%80%81%E6%B3%A8%E5%86%8C"><span class="toc_mobile_items-number">2.</span> <span class="toc_mobile_items-text">二、静态注册 vs 动态注册</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-1-%E9%9D%99%E6%80%81%E6%B3%A8%E5%86%8C%EF%BC%88Static-Registration%EF%BC%89"><span class="toc_mobile_items-number">2.1.</span> <span class="toc_mobile_items-text">2.1 静态注册（Static Registration）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#2-2-%E5%8A%A8%E6%80%81%E6%B3%A8%E5%86%8C%EF%BC%88Dynamic-Registration%EF%BC%89"><span class="toc_mobile_items-number">2.2.</span> <span class="toc_mobile_items-text">2.2 动态注册（Dynamic Registration）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81JNI-%E7%B1%BB%E5%9E%8B%E7%B3%BB%E7%BB%9F"><span class="toc_mobile_items-number">3.</span> <span class="toc_mobile_items-text">三、JNI 类型系统</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-1-%E5%9F%BA%E6%9C%AC%E7%B1%BB%E5%9E%8B%E6%98%A0%E5%B0%84"><span class="toc_mobile_items-number">3.1.</span> <span class="toc_mobile_items-text">3.1 基本类型映射</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-2-%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B"><span class="toc_mobile_items-number">3.2.</span> <span class="toc_mobile_items-text">3.2 引用类型</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#3-3-JNI-%E6%96%B9%E6%B3%95%E7%AD%BE%E5%90%8D%EF%BC%88Type-Signature%EF%BC%89"><span class="toc_mobile_items-number">3.3.</span> <span class="toc_mobile_items-text">3.3 JNI 方法签名（Type Signature）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81JNI-%E5%BC%95%E7%94%A8%E7%AE%A1%E7%90%86%EF%BC%9ALocal%E3%80%81Global%E3%80%81Weak-Global"><span class="toc_mobile_items-number">4.</span> <span class="toc_mobile_items-text">四、JNI 引用管理：Local、Global、Weak Global</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-1-Local-Reference%EF%BC%88%E6%9C%AC%E5%9C%B0%E5%BC%95%E7%94%A8%EF%BC%89"><span class="toc_mobile_items-number">4.1.</span> <span class="toc_mobile_items-text">4.1 Local Reference（本地引用）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-2-Global-Reference%EF%BC%88%E5%85%A8%E5%B1%80%E5%BC%95%E7%94%A8%EF%BC%89"><span class="toc_mobile_items-number">4.2.</span> <span class="toc_mobile_items-text">4.2 Global Reference（全局引用）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-3-Weak-Global-Reference%EF%BC%88%E5%BC%B1%E5%85%A8%E5%B1%80%E5%BC%95%E7%94%A8%EF%BC%89"><span class="toc_mobile_items-number">4.3.</span> <span class="toc_mobile_items-text">4.3 Weak Global Reference（弱全局引用）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#4-4-PushLocalFrame-PopLocalFrame"><span class="toc_mobile_items-number">4.4.</span> <span class="toc_mobile_items-text">4.4 PushLocalFrame &#x2F; PopLocalFrame</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81JNI-%E5%87%BD%E6%95%B0%E8%A1%A8%E7%BB%93%E6%9E%84"><span class="toc_mobile_items-number">5.</span> <span class="toc_mobile_items-text">五、JNI 函数表结构</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-1-JNINativeInterface-%E7%BB%93%E6%9E%84%E4%BD%93"><span class="toc_mobile_items-number">5.1.</span> <span class="toc_mobile_items-text">5.1 JNINativeInterface 结构体</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#5-2-Android-%E7%89%B9%E5%8C%96%EF%BC%9AJNIEnvExt"><span class="toc_mobile_items-number">5.2.</span> <span class="toc_mobile_items-text">5.2 Android 特化：JNIEnvExt</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81%E4%BB%8E-Native-%E8%B0%83%E7%94%A8-Java"><span class="toc_mobile_items-number">6.</span> <span class="toc_mobile_items-text">六、从 Native 调用 Java</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-1-%E8%B0%83%E7%94%A8%E6%B5%81%E7%A8%8B"><span class="toc_mobile_items-number">6.1.</span> <span class="toc_mobile_items-text">6.1 调用流程</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-2-FindClass-%E5%9C%A8%E4%B8%8D%E5%90%8C%E7%BA%BF%E7%A8%8B%E4%B8%AD%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc_mobile_items-number">6.2.</span> <span class="toc_mobile_items-text">6.2 FindClass 在不同线程中的区别</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#6-3-%E6%96%B9%E6%B3%95-ID-%E7%BC%93%E5%AD%98"><span class="toc_mobile_items-number">6.3.</span> <span class="toc_mobile_items-text">6.3 方法 ID 缓存</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81ART-%E4%B8%AD%E7%9A%84-JNI-%E8%B0%83%E7%94%A8%E8%B7%AF%E5%BE%84"><span class="toc_mobile_items-number">7.</span> <span class="toc_mobile_items-text">七、ART 中的 JNI 调用路径</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#7-1-Java-%E2%86%92-Native-%E8%B0%83%E7%94%A8%E8%B7%AF%E5%BE%84"><span class="toc_mobile_items-number">7.1.</span> <span class="toc_mobile_items-text">7.1 Java → Native 调用路径</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#7-2-Native-%E2%86%92-Java-%E8%B0%83%E7%94%A8%E8%B7%AF%E5%BE%84"><span class="toc_mobile_items-number">7.2.</span> <span class="toc_mobile_items-text">7.2 Native → Java 调用路径</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86"><span class="toc_mobile_items-number">8.</span> <span class="toc_mobile_items-text">八、异常处理</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-1-%E6%A3%80%E6%9F%A5-JNI-%E5%BC%82%E5%B8%B8"><span class="toc_mobile_items-number">8.1.</span> <span class="toc_mobile_items-text">8.1 检查 JNI 异常</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#8-2-%E4%BB%8E-Native-%E6%8A%9B%E5%87%BA-Java-%E5%BC%82%E5%B8%B8"><span class="toc_mobile_items-number">8.2.</span> <span class="toc_mobile_items-text">8.2 从 Native 抛出 Java 异常</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81CheckJNI%EF%BC%9A%E8%B0%83%E8%AF%95%E6%A8%A1%E5%BC%8F"><span class="toc_mobile_items-number">9.</span> <span class="toc_mobile_items-text">九、CheckJNI：调试模式</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-1-%E5%BC%80%E5%90%AF-CheckJNI"><span class="toc_mobile_items-number">9.1.</span> <span class="toc_mobile_items-text">9.1 开启 CheckJNI</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#9-2-CheckJNI-%E6%A3%80%E6%9F%A5%E7%9A%84%E5%86%85%E5%AE%B9"><span class="toc_mobile_items-number">9.2.</span> <span class="toc_mobile_items-text">9.2 CheckJNI 检查的内容</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81JNI-OnLoad-%E5%92%8C-JNI-OnUnload"><span class="toc_mobile_items-number">10.</span> <span class="toc_mobile_items-text">十、JNI_OnLoad 和 JNI_OnUnload</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#10-1-JNI-OnLoad"><span class="toc_mobile_items-number">10.1.</span> <span class="toc_mobile_items-text">10.1 JNI_OnLoad</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#10-2-JNI-OnUnload"><span class="toc_mobile_items-number">10.2.</span> <span class="toc_mobile_items-text">10.2 JNI_OnUnload</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E6%A0%B8%E5%BF%83%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="toc_mobile_items-number">11.</span> <span class="toc_mobile_items-text">十一、核心面试题</span></a></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81JNI-%E5%9C%A8-Android-%E7%B3%BB%E7%BB%9F%E4%B8%AD%E7%9A%84%E5%9C%B0%E4%BD%8D"><span class="toc-number">1.</span> <span class="toc-text">一、JNI 在 Android 系统中的地位</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-JNI-%E7%9A%84%E4%B8%A4%E4%B8%AA%E8%A7%92%E8%89%B2"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 JNI 的两个角色</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-JNI-%E7%9B%B8%E5%85%B3%E6%BA%90%E7%A0%81%E8%B7%AF%E5%BE%84"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 JNI 相关源码路径</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E9%9D%99%E6%80%81%E6%B3%A8%E5%86%8C-vs-%E5%8A%A8%E6%80%81%E6%B3%A8%E5%86%8C"><span class="toc-number">2.</span> <span class="toc-text">二、静态注册 vs 动态注册</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-%E9%9D%99%E6%80%81%E6%B3%A8%E5%86%8C%EF%BC%88Static-Registration%EF%BC%89"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 静态注册（Static Registration）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-%E5%8A%A8%E6%80%81%E6%B3%A8%E5%86%8C%EF%BC%88Dynamic-Registration%EF%BC%89"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 动态注册（Dynamic Registration）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81JNI-%E7%B1%BB%E5%9E%8B%E7%B3%BB%E7%BB%9F"><span class="toc-number">3.</span> <span class="toc-text">三、JNI 类型系统</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-%E5%9F%BA%E6%9C%AC%E7%B1%BB%E5%9E%8B%E6%98%A0%E5%B0%84"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 基本类型映射</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 引用类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-JNI-%E6%96%B9%E6%B3%95%E7%AD%BE%E5%90%8D%EF%BC%88Type-Signature%EF%BC%89"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 JNI 方法签名（Type Signature）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81JNI-%E5%BC%95%E7%94%A8%E7%AE%A1%E7%90%86%EF%BC%9ALocal%E3%80%81Global%E3%80%81Weak-Global"><span class="toc-number">4.</span> <span class="toc-text">四、JNI 引用管理：Local、Global、Weak Global</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-Local-Reference%EF%BC%88%E6%9C%AC%E5%9C%B0%E5%BC%95%E7%94%A8%EF%BC%89"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 Local Reference（本地引用）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-Global-Reference%EF%BC%88%E5%85%A8%E5%B1%80%E5%BC%95%E7%94%A8%EF%BC%89"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 Global Reference（全局引用）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-3-Weak-Global-Reference%EF%BC%88%E5%BC%B1%E5%85%A8%E5%B1%80%E5%BC%95%E7%94%A8%EF%BC%89"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 Weak Global Reference（弱全局引用）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-4-PushLocalFrame-PopLocalFrame"><span class="toc-number">4.4.</span> <span class="toc-text">4.4 PushLocalFrame &#x2F; PopLocalFrame</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E3%80%81JNI-%E5%87%BD%E6%95%B0%E8%A1%A8%E7%BB%93%E6%9E%84"><span class="toc-number">5.</span> <span class="toc-text">五、JNI 函数表结构</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#5-1-JNINativeInterface-%E7%BB%93%E6%9E%84%E4%BD%93"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 JNINativeInterface 结构体</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-2-Android-%E7%89%B9%E5%8C%96%EF%BC%9AJNIEnvExt"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 Android 特化：JNIEnvExt</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E4%BB%8E-Native-%E8%B0%83%E7%94%A8-Java"><span class="toc-number">6.</span> <span class="toc-text">六、从 Native 调用 Java</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#6-1-%E8%B0%83%E7%94%A8%E6%B5%81%E7%A8%8B"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 调用流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-2-FindClass-%E5%9C%A8%E4%B8%8D%E5%90%8C%E7%BA%BF%E7%A8%8B%E4%B8%AD%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 FindClass 在不同线程中的区别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-3-%E6%96%B9%E6%B3%95-ID-%E7%BC%93%E5%AD%98"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 方法 ID 缓存</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%83%E3%80%81ART-%E4%B8%AD%E7%9A%84-JNI-%E8%B0%83%E7%94%A8%E8%B7%AF%E5%BE%84"><span class="toc-number">7.</span> <span class="toc-text">七、ART 中的 JNI 调用路径</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#7-1-Java-%E2%86%92-Native-%E8%B0%83%E7%94%A8%E8%B7%AF%E5%BE%84"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 Java → Native 调用路径</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-2-Native-%E2%86%92-Java-%E8%B0%83%E7%94%A8%E8%B7%AF%E5%BE%84"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 Native → Java 调用路径</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86"><span class="toc-number">8.</span> <span class="toc-text">八、异常处理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#8-1-%E6%A3%80%E6%9F%A5-JNI-%E5%BC%82%E5%B8%B8"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 检查 JNI 异常</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-2-%E4%BB%8E-Native-%E6%8A%9B%E5%87%BA-Java-%E5%BC%82%E5%B8%B8"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 从 Native 抛出 Java 异常</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B9%9D%E3%80%81CheckJNI%EF%BC%9A%E8%B0%83%E8%AF%95%E6%A8%A1%E5%BC%8F"><span class="toc-number">9.</span> <span class="toc-text">九、CheckJNI：调试模式</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#9-1-%E5%BC%80%E5%90%AF-CheckJNI"><span class="toc-number">9.1.</span> <span class="toc-text">9.1 开启 CheckJNI</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-2-CheckJNI-%E6%A3%80%E6%9F%A5%E7%9A%84%E5%86%85%E5%AE%B9"><span class="toc-number">9.2.</span> <span class="toc-text">9.2 CheckJNI 检查的内容</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81%E3%80%81JNI-OnLoad-%E5%92%8C-JNI-OnUnload"><span class="toc-number">10.</span> <span class="toc-text">十、JNI_OnLoad 和 JNI_OnUnload</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#10-1-JNI-OnLoad"><span class="toc-number">10.1.</span> <span class="toc-text">10.1 JNI_OnLoad</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-2-JNI-OnUnload"><span class="toc-number">10.2.</span> <span class="toc-text">10.2 JNI_OnUnload</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E6%A0%B8%E5%BF%83%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="toc-number">11.</span> <span class="toc-text">十一、核心面试题</span></a></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286820.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">【深入内核篇】JNI</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-01-15<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-12</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Android/">Android</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">4.9k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 20 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>JNI（Java Native Interface）是 Java 平台的标准编程接口，允许 Java 代码与 C&#x2F;C++ 等 Native 语言交互。在 Android 系统中，JNI 不仅是应用层 NDK 开发的基础，更是整个 Android 框架运行时的核心——从 Zygote 启动到 SystemServer 初始化，从 View 渲染到 Binder 通信，底层都依赖 JNI 来桥接 Java 与 Native 世界。本文将基于 Android 11 (API 30) 的 AOSP 源码，深入剖析 JNI 的工作原理、注册机制、引用管理和 ART 集成。</p>
+<span id="more"></span>
+
+<h1 id="一、JNI-在-Android-系统中的地位"><a href="#一、JNI-在-Android-系统中的地位" class="headerlink" title="一、JNI 在 Android 系统中的地位"></a>一、JNI 在 Android 系统中的地位</h1><h2 id="1-1-JNI-的两个角色"><a href="#1-1-JNI-的两个角色" class="headerlink" title="1.1 JNI 的两个角色"></a>1.1 JNI 的两个角色</h2><p>JNI 在 Android 中扮演两个主要角色：</p>
+<ol>
+<li><p><strong>Java 调用 Native</strong>：通过 <code>native</code> 关键字声明的方法，由 JNI 解析到对应的 C&#x2F;C++ 函数实现。如 <code>SystemProperties.get()</code> → <code>android_os_SystemProperties.cpp</code> 中的 native 函数。</p>
+</li>
+<li><p><strong>Native 调用 Java</strong>：Native 层通过 JNI 函数（<code>FindClass</code>、<code>GetMethodID</code>、<code>CallVoidMethod</code> 等）调用 Java 层的方法。如 AMS 通过 JNI 回调 Java 层的 Binder 代理。</p>
+</li>
+</ol>
+<h2 id="1-2-JNI-相关源码路径"><a href="#1-2-JNI-相关源码路径" class="headerlink" title="1.2 JNI 相关源码路径"></a>1.2 JNI 相关源码路径</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">art/runtime/jni/                    # ART JNI 实现核心</span><br><span class="line">├── jni_internal.h/cpp              # JNI 内部函数表</span><br><span class="line">├── java_vm_ext.h/cpp              # JavaVM 扩展</span><br><span class="line">├── jni_env_ext.h/cpp              # JNIEnv 扩展</span><br><span class="line">├── check_jni.h/cpp                # CheckJNI 调试模式</span><br><span class="line">└── jni_entrypoints.cpp            # JNI 入口点</span><br><span class="line">libnativehelper/                    # Android 本地辅助库</span><br><span class="line">├── include/nativehelper/jni.h     # JNI 辅助头文件</span><br><span class="line">├── JNIHelp.cpp                    # JNI 辅助函数</span><br><span class="line">└── JniConstants.cpp               # JNI 常量缓存</span><br><span class="line">frameworks/base/core/jni/          # Android 框架 JNI 层</span><br><span class="line">├── AndroidRuntime.cpp             # ART 启动和 JNI 注册</span><br><span class="line">├── android_os_SystemProperties.cpp</span><br><span class="line">├── android_view_SurfaceControl.cpp</span><br><span class="line">└── ... (数百个 JNI 文件)</span><br></pre></td></tr></table></figure>
+
+<h1 id="二、静态注册-vs-动态注册"><a href="#二、静态注册-vs-动态注册" class="headerlink" title="二、静态注册 vs 动态注册"></a>二、静态注册 vs 动态注册</h1><h2 id="2-1-静态注册（Static-Registration）"><a href="#2-1-静态注册（Static-Registration）" class="headerlink" title="2.1 静态注册（Static Registration）"></a>2.1 静态注册（Static Registration）</h2><p>静态注册使用 <code>Java_&lt;包名&gt;_&lt;类名&gt;_&lt;方法名&gt;</code> 的命名约定：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/jni/android_os_SystemProperties.cpp</span></span><br><span class="line"><span class="comment">// 静态注册示例</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span> <span class="function">JNIEXPORT jstring JNICALL</span></span><br><span class="line"><span class="function"><span class="title">Java_android_os_SystemProperties_getSS</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">    JNIEnv* env, jclass clazz, jstring keyJ, jstring defJ)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 从 Java 的 SystemProperties.getSS() 调用</span></span><br><span class="line">    <span class="type">const</span> <span class="type">char</span>* key = env-&gt;<span class="built_in">GetStringUTFChars</span>(keyJ, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="type">const</span> <span class="type">char</span>* def = env-&gt;<span class="built_in">GetStringUTFChars</span>(defJ, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当 Java 层调用 <code>SystemProperties.getSS()</code> 时，ART 会自动调用 <code>System.loadLibrary()</code> 的 dlsym 查找这个符号名并绑定。</p>
+<p>静态注册的优点：</p>
+<ul>
+<li>无需额外代码，函数名自动映射</li>
+<li>适合简单场景，开发方便</li>
+</ul>
+<p>静态注册的缺点：</p>
+<ul>
+<li>函数名极长，不易阅读</li>
+<li>每次调用都有查找开销（缓存在 ART 中，但首次仍需要）</li>
+<li>不支持运行时取消绑定</li>
+<li>对 ProGuard 混淆敏感（类名方法名变化导致链接失败）</li>
+</ul>
+<h2 id="2-2-动态注册（Dynamic-Registration）"><a href="#2-2-动态注册（Dynamic-Registration）" class="headerlink" title="2.2 动态注册（Dynamic Registration）"></a>2.2 动态注册（Dynamic Registration）</h2><p>动态注册通过 <code>RegisterNatives</code> 在运行时显式注册 Native 方法。Android 框架广泛使用这种方案：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/jni/android_os_SystemProperties.cpp</span></span><br><span class="line"><span class="comment">// JNINativeMethod 数组：将 Java 方法映射到 Native 函数</span></span><br><span class="line"><span class="type">static</span> <span class="type">const</span> JNINativeMethod gMethods[] = &#123;</span><br><span class="line">    <span class="comment">// Java方法名       签名                   Native函数指针</span></span><br><span class="line">    &#123;<span class="string">&quot;native_get&quot;</span>,       <span class="string">&quot;(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;&quot;</span>,</span><br><span class="line">     (<span class="type">void</span>*)SystemProperties_getSS&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;native_get_int&quot;</span>,   <span class="string">&quot;(Ljava/lang/String;I)I&quot;</span>,</span><br><span class="line">     (<span class="type">void</span>*)SystemProperties_getInt&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;native_get_long&quot;</span>,  <span class="string">&quot;(Ljava/lang/String;J)J&quot;</span>,</span><br><span class="line">     (<span class="type">void</span>*)SystemProperties_getLong&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;native_get_boolean&quot;</span>,<span class="string">&quot;(Ljava/lang/String;Z)Z&quot;</span>,</span><br><span class="line">     (<span class="type">void</span>*)SystemProperties_getBoolean&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;native_set&quot;</span>,       <span class="string">&quot;(Ljava/lang/String;Ljava/lang/String;)V&quot;</span>,</span><br><span class="line">     (<span class="type">void</span>*)SystemProperties_set&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;native_add_change_callback&quot;</span>, <span class="string">&quot;()V&quot;</span>,</span><br><span class="line">     (<span class="type">void</span>*)SystemProperties_add_change_callback&#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 注册函数</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">register_android_os_SystemProperties</span><span class="params">(JNIEnv* env)</span> </span>&#123;</span><br><span class="line">    jclass clazz = env-&gt;<span class="built_in">FindClass</span>(<span class="string">&quot;android/os/SystemProperties&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> env-&gt;<span class="built_in">RegisterNatives</span>(clazz, gMethods, <span class="built_in">NELEM</span>(gMethods));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>动态注册的入口点通常在 <code>onLoad.cpp</code> 文件中：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// frameworks/base/core/jni/AndroidRuntime.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">extern</span> <span class="type">int</span> <span class="title">register_android_os_SystemProperties</span><span class="params">(JNIEnv* env)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">extern</span> <span class="type">int</span> <span class="title">register_android_view_SurfaceControl</span><span class="params">(JNIEnv* env)</span></span>;</span><br><span class="line"><span class="comment">// ... 数百个 register 函数声明 ...</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * JNI 注册表：所有 Android 框架 native 方法在此时注册</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">static</span> <span class="type">const</span> RegJNIRec gRegJNI[] = &#123;</span><br><span class="line">    <span class="built_in">REG_JNI</span>(register_android_os_SystemProperties),</span><br><span class="line">    <span class="built_in">REG_JNI</span>(register_android_view_SurfaceControl),</span><br><span class="line">    <span class="built_in">REG_JNI</span>(register_android_view_SurfaceSession),</span><br><span class="line">    <span class="built_in">REG_JNI</span>(register_com_android_internal_os_RuntimeInit),</span><br><span class="line">    <span class="built_in">REG_JNI</span>(register_android_os_Binder),</span><br><span class="line">    <span class="comment">// ... 依次注册所有模块</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">AndroidRuntime::startReg</span><span class="params">(JNIEnv* env)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 设置 android 线程创建函数（确保每个线程附加到 JVM）</span></span><br><span class="line">    <span class="built_in">androidSetCreateThreadFunc</span>((android_create_thread_fn) javaCreateThreadEtc);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 逐一调用注册函数</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">const</span> RegJNIRec&amp; rec : gRegJNI) &#123;</span><br><span class="line">        <span class="keyword">if</span> (rec.<span class="built_in">mProc</span>(env) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个注册过程发生在 Zygote 的 <code>AndroidRuntime.start()</code> 中，并且因为 Zygote 的 copy-on-write 机制，所有 fork 出的 App 进程自动继承这些注册映射。</p>
+<h1 id="三、JNI-类型系统"><a href="#三、JNI-类型系统" class="headerlink" title="三、JNI 类型系统"></a>三、JNI 类型系统</h1><h2 id="3-1-基本类型映射"><a href="#3-1-基本类型映射" class="headerlink" title="3.1 基本类型映射"></a>3.1 基本类型映射</h2><p>JNI 定义了一套中立于底层硬件平台的类型系统：</p>
+<table>
+<thead>
+<tr>
+<th>Java 类型</th>
+<th>JNI 类型</th>
+<th>C&#x2F;C++ 类型</th>
+<th>字节数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>boolean</td>
+<td>jboolean</td>
+<td>unsigned char</td>
+<td>1</td>
+</tr>
+<tr>
+<td>byte</td>
+<td>jbyte</td>
+<td>signed char</td>
+<td>1</td>
+</tr>
+<tr>
+<td>char</td>
+<td>jchar</td>
+<td>unsigned short</td>
+<td>2</td>
+</tr>
+<tr>
+<td>short</td>
+<td>jshort</td>
+<td>short</td>
+<td>2</td>
+</tr>
+<tr>
+<td>int</td>
+<td>jint</td>
+<td>int</td>
+<td>4</td>
+</tr>
+<tr>
+<td>long</td>
+<td>jlong</td>
+<td>long long</td>
+<td>8</td>
+</tr>
+<tr>
+<td>float</td>
+<td>jfloat</td>
+<td>float</td>
+<td>4</td>
+</tr>
+<tr>
+<td>double</td>
+<td>jdouble</td>
+<td>double</td>
+<td>8</td>
+</tr>
+<tr>
+<td>void</td>
+<td>void</td>
+<td>void</td>
+<td>N&#x2F;A</td>
+</tr>
+</tbody></table>
+<h2 id="3-2-引用类型"><a href="#3-2-引用类型" class="headerlink" title="3.2 引用类型"></a>3.2 引用类型</h2><table>
+<thead>
+<tr>
+<th>Java 类型</th>
+<th>JNI 类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Object</td>
+<td>jobject</td>
+<td>任意 Java 对象</td>
+</tr>
+<tr>
+<td>Class</td>
+<td>jclass</td>
+<td>java.lang.Class</td>
+</tr>
+<tr>
+<td>String</td>
+<td>jstring</td>
+<td>java.lang.String</td>
+</tr>
+<tr>
+<td>Object[]</td>
+<td>jobjectArray</td>
+<td>对象数组</td>
+</tr>
+<tr>
+<td>boolean[]</td>
+<td>jbooleanArray</td>
+<td>boolean 数组</td>
+</tr>
+<tr>
+<td>byte[]</td>
+<td>jbyteArray</td>
+<td>byte 数组</td>
+</tr>
+<tr>
+<td>char[]</td>
+<td>jcharArray</td>
+<td>char 数组</td>
+</tr>
+<tr>
+<td>short[]</td>
+<td>jshortArray</td>
+<td>short 数组</td>
+</tr>
+<tr>
+<td>int[]</td>
+<td>jintArray</td>
+<td>int 数组</td>
+</tr>
+<tr>
+<td>long[]</td>
+<td>jlongArray</td>
+<td>long 数组</td>
+</tr>
+<tr>
+<td>float[]</td>
+<td>jfloatArray</td>
+<td>float 数组</td>
+</tr>
+<tr>
+<td>double[]</td>
+<td>jdoubleArray</td>
+<td>double 数组</td>
+</tr>
+<tr>
+<td>Throwable</td>
+<td>jthrowable</td>
+<td>异常对象</td>
+</tr>
+</tbody></table>
+<h2 id="3-3-JNI-方法签名（Type-Signature）"><a href="#3-3-JNI-方法签名（Type-Signature）" class="headerlink" title="3.3 JNI 方法签名（Type Signature）"></a>3.3 JNI 方法签名（Type Signature）</h2><p>JNI 使用紧凑的字符编码来表示 Java 类型签名：</p>
+<table>
+<thead>
+<tr>
+<th>Java 类型签名</th>
+<th>JNI 签名</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Z</td>
+<td>boolean</td>
+<td>布尔</td>
+</tr>
+<tr>
+<td>B</td>
+<td>byte</td>
+<td>字节</td>
+</tr>
+<tr>
+<td>C</td>
+<td>char</td>
+<td>字符</td>
+</tr>
+<tr>
+<td>S</td>
+<td>short</td>
+<td>短整型</td>
+</tr>
+<tr>
+<td>I</td>
+<td>int</td>
+<td>整型</td>
+</tr>
+<tr>
+<td>J</td>
+<td>long</td>
+<td>长整型</td>
+</tr>
+<tr>
+<td>F</td>
+<td>float</td>
+<td>单精度浮点</td>
+</tr>
+<tr>
+<td>D</td>
+<td>double</td>
+<td>双精度浮点</td>
+</tr>
+<tr>
+<td>V</td>
+<td>void</td>
+<td>空返回</td>
+</tr>
+<tr>
+<td>LclassName;</td>
+<td>对象</td>
+<td>如 <code>Ljava/lang/String;</code></td>
+</tr>
+<tr>
+<td>[type</td>
+<td>type[]</td>
+<td>如一维 int 数组 <code>[I</code></td>
+</tr>
+<tr>
+<td>(arg)ret</td>
+<td>方法</td>
+<td>如 <code>(ILjava/lang/String;)V</code></td>
+</tr>
+</tbody></table>
+<p>示例：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Java: public native String getMessage(int code, byte[] data, String tag);</span></span><br><span class="line"><span class="comment">// JNI签名: &quot;(I[BLjava/lang/String;)Ljava/lang/String;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Java: public native void onEvent(long timestamp, boolean success);</span></span><br><span class="line"><span class="comment">// JNI签名: &quot;(JZ)V&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="四、JNI-引用管理：Local、Global、Weak-Global"><a href="#四、JNI-引用管理：Local、Global、Weak-Global" class="headerlink" title="四、JNI 引用管理：Local、Global、Weak Global"></a>四、JNI 引用管理：Local、Global、Weak Global</h1><p>JNI 引用的管理是 JNI 编程中最容易出错的领域。理解这三种引用的区别和限制至关重要。</p>
+<h2 id="4-1-Local-Reference（本地引用）"><a href="#4-1-Local-Reference（本地引用）" class="headerlink" title="4.1 Local Reference（本地引用）"></a>4.1 Local Reference（本地引用）</h2><p>本地引用在 native 方法执行期间有效，方法返回后自动释放。</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 本地引用示例</span></span><br><span class="line">jstring local_str = env-&gt;<span class="built_in">NewStringUTF</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line"><span class="comment">// local_str 在当前 JNI 方法返回后自动释放</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 如果需要提前释放：</span></span><br><span class="line">env-&gt;<span class="built_in">DeleteLocalRef</span>(local_str);</span><br></pre></td></tr></table></figure>
+
+<p><strong>关键限制</strong>：每个 JNI 方法调用中，本地引用表的默认容量为 512（Android 实现）。超过此限制会触发 <code>JNI ERROR (app bug): local reference table overflow</code> 崩溃。</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// ❌ 错误：在循环中创建大量本地引用而不释放</span></span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; <span class="number">1000</span>; i++) &#123;</span><br><span class="line">    jobject obj = env-&gt;<span class="built_in">FindClass</span>(<span class="string">&quot;java/lang/Object&quot;</span>);  <span class="comment">// 泄漏！</span></span><br><span class="line">    <span class="comment">// 每次 FindClass 返回一个新的本地引用</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 最终超过 512 限制 → 崩溃</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// ✅ 正确做法：</span></span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; <span class="number">1000</span>; i++) &#123;</span><br><span class="line">    jobject obj = env-&gt;<span class="built_in">FindClass</span>(<span class="string">&quot;java/lang/Object&quot;</span>);</span><br><span class="line">    <span class="comment">// 使用完后立即释放</span></span><br><span class="line">    env-&gt;<span class="built_in">DeleteLocalRef</span>(obj);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ART 中的本地引用表实现：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// art/runtime/indirect_reference_table.h</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">IndirectReferenceTable</span> &#123;</span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">    <span class="type">static</span> <span class="keyword">constexpr</span> <span class="type">size_t</span> kInitialCapacity = <span class="number">512</span>;  <span class="comment">// 初始 512 个 slot</span></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  <span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">// segment state push/pop 机制允许嵌套的 JNI 调用扩展容量</span></span><br><span class="line">    <span class="comment">// 但直接在一个调用中超过 512 仍然会崩溃</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-2-Global-Reference（全局引用）"><a href="#4-2-Global-Reference（全局引用）" class="headerlink" title="4.2 Global Reference（全局引用）"></a>4.2 Global Reference（全局引用）</h2><p>全局引用在显式删除前一直有效，不受 native 方法返回的影响：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">jclass g_my_class = <span class="literal">nullptr</span>;</span><br><span class="line"></span><br><span class="line"><span class="function">JNIEXPORT <span class="type">void</span> JNICALL <span class="title">Java_MyClass_init</span><span class="params">(JNIEnv* env, jclass clazz)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 创建全局引用</span></span><br><span class="line">    g_my_class = (jclass)env-&gt;<span class="built_in">NewGlobalRef</span>(clazz);</span><br><span class="line">    <span class="comment">// g_my_class 在整个进程生命周期中有效</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">JNIEXPORT <span class="type">void</span> JNICALL <span class="title">Java_MyClass_cleanup</span><span class="params">(JNIEnv* env, jclass clazz)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 显式删除全局引用</span></span><br><span class="line">    <span class="keyword">if</span> (g_my_class != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">        env-&gt;<span class="built_in">DeleteGlobalRef</span>(g_my_class);</span><br><span class="line">        g_my_class = <span class="literal">nullptr</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>全局引用表的特点：</p>
+<ul>
+<li>没有固定容量限制（受进程内存限制）</li>
+<li>全局引用阻止 GC 回收被引用的对象 → 可能导致内存泄漏</li>
+<li>使用 <code>NewGlobalRef()</code> 创建的每个引用都需要对应的 <code>DeleteGlobalRef()</code></li>
+</ul>
+<h2 id="4-3-Weak-Global-Reference（弱全局引用）"><a href="#4-3-Weak-Global-Reference（弱全局引用）" class="headerlink" title="4.3 Weak Global Reference（弱全局引用）"></a>4.3 Weak Global Reference（弱全局引用）</h2><p>弱全局引用不阻止 GC 回收对象，但需要在使用前检查对象是否存活：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">jclass g_weak_class = <span class="literal">nullptr</span>;</span><br><span class="line"></span><br><span class="line"><span class="function">JNIEXPORT <span class="type">void</span> JNICALL <span class="title">Java_MyClass_init</span><span class="params">(JNIEnv* env, jclass clazz)</span> </span>&#123;</span><br><span class="line">    g_weak_class = (jclass)env-&gt;<span class="built_in">NewWeakGlobalRef</span>(clazz);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">JNIEXPORT <span class="type">void</span> JNICALL <span class="title">Java_MyClass_use</span><span class="params">(JNIEnv* env, jclass clazz)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (env-&gt;<span class="built_in">IsSameObject</span>(g_weak_class, <span class="literal">nullptr</span>)) &#123;</span><br><span class="line">        <span class="comment">// 对象已被 GC 回收</span></span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 可以使用 g_weak_class（注意：在 IsSameObject 和使用之间，</span></span><br><span class="line">    <span class="comment">// GC 可能还在另一个线程运行，所以此处推荐使用 NewLocalRef 获取强引用）</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-4-PushLocalFrame-PopLocalFrame"><a href="#4-4-PushLocalFrame-PopLocalFrame" class="headerlink" title="4.4 PushLocalFrame &#x2F; PopLocalFrame"></a>4.4 PushLocalFrame &#x2F; PopLocalFrame</h2><p>为了管理嵌套调用中的本地引用，JNI 提供了本地栈帧机制：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function">JNIEXPORT <span class="type">void</span> JNICALL <span class="title">Java_MyClass_processBatch</span><span class="params">(JNIEnv* env, jclass clazz,</span></span></span><br><span class="line"><span class="params"><span class="function">                                                  jobjectArray items)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 推入新的本地引用栈帧（容量为 256）</span></span><br><span class="line">    <span class="keyword">if</span> (env-&gt;<span class="built_in">PushLocalFrame</span>(<span class="number">256</span>) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;  <span class="comment">// 内存不足</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    jsize len = env-&gt;<span class="built_in">GetArrayLength</span>(items);</span><br><span class="line">    <span class="keyword">for</span> (jsize i = <span class="number">0</span>; i &lt; len; i++) &#123;</span><br><span class="line">        jobject item = env-&gt;<span class="built_in">GetObjectArrayElement</span>(items, i);</span><br><span class="line">        <span class="comment">// 处理 item...（本地引用在栈帧内自动管理）</span></span><br><span class="line">        <span class="comment">// 不需要手动 DeleteLocalRef</span></span><br><span class="line">        env-&gt;<span class="built_in">DeleteLocalRef</span>(item);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 弹出栈帧：自动释放此帧内所有本地引用</span></span><br><span class="line">    env-&gt;<span class="built_in">PopLocalFrame</span>(<span class="literal">nullptr</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="五、JNI-函数表结构"><a href="#五、JNI-函数表结构" class="headerlink" title="五、JNI 函数表结构"></a>五、JNI 函数表结构</h1><h2 id="5-1-JNINativeInterface-结构体"><a href="#5-1-JNINativeInterface-结构体" class="headerlink" title="5.1 JNINativeInterface 结构体"></a>5.1 JNINativeInterface 结构体</h2><p>JNIEnv* 是一个指向 <code>JNINativeInterface</code> 函数表指针的指针。这个表包含大约 230 个函数指针：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// art/runtime/jni/jni_internal.h</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">JNINativeInterface</span> &#123;</span><br><span class="line">    <span class="type">void</span>*       reserved0;</span><br><span class="line">    <span class="type">void</span>*       reserved1;</span><br><span class="line">    <span class="type">void</span>*       reserved2;</span><br><span class="line">    <span class="type">void</span>*       reserved3;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">jint</span>        (*GetVersion)(JNIEnv *);</span><br><span class="line">    <span class="built_in">jclass</span>      (*DefineClass)(JNIEnv*, <span class="type">const</span> <span class="type">char</span>*, jobject, <span class="type">const</span> jbyte*, jsize);</span><br><span class="line">    <span class="built_in">jclass</span>      (*FindClass)(JNIEnv*, <span class="type">const</span> <span class="type">char</span>*);</span><br><span class="line">    <span class="comment">// ... 230+ 函数指针 ...</span></span><br><span class="line">    <span class="built_in">jint</span>        (*RegisterNatives)(JNIEnv*, jclass, <span class="type">const</span> JNINativeMethod*, jint);</span><br><span class="line">    <span class="built_in">jint</span>        (*UnregisterNatives)(JNIEnv*, jclass);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// JNIEnv 的定义：</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">const</span> <span class="keyword">struct</span> <span class="title class_">JNINativeInterface</span>* JNIEnv;</span><br></pre></td></tr></table></figure>
+
+<p>调用 JNI 函数的过程：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Java_com_example_MyClass_nativeMethod(JNIEnv* env, ...) &#123;</span></span><br><span class="line"><span class="comment">//     env-&gt;FindClass(...)  实际上是:</span></span><br><span class="line"><span class="comment">//     (*env)-&gt;FindClass(env, &quot;java/lang/String&quot;)</span></span><br><span class="line"><span class="comment">// &#125;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="5-2-Android-特化：JNIEnvExt"><a href="#5-2-Android-特化：JNIEnvExt" class="headerlink" title="5.2 Android 特化：JNIEnvExt"></a>5.2 Android 特化：JNIEnvExt</h2><p>Android 在标准 JNINativeInterface 的基础上扩展了 <code>JNIEnvExt</code>，增加了一些 Android 特有的功能：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// art/runtime/jni/jni_env_ext.h</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">JNIEnvExt</span> : <span class="keyword">public</span> JNIEnv &#123;</span><br><span class="line">    <span class="comment">// 扩展字段</span></span><br><span class="line">    Thread* self;                    <span class="comment">// ART 线程指针</span></span><br><span class="line">    JavaVMExt* vm;                  <span class="comment">// JavaVM 扩展指针</span></span><br><span class="line">    <span class="type">bool</span> critical;                  <span class="comment">// 是否在关键区域中</span></span><br><span class="line">    <span class="type">bool</span> force_copy;                <span class="comment">// 是否强制复制数组</span></span><br><span class="line">    <span class="comment">// CheckJNI 相关</span></span><br><span class="line">    <span class="type">bool</span> check_jni;                 <span class="comment">// 是否启用 CheckJNI</span></span><br><span class="line">    std::vector&lt;CheckJniRec&gt;* check_jni_trace;</span><br><span class="line">    <span class="comment">// 引用管理</span></span><br><span class="line">    <span class="type">uint32_t</span> local_ref_cookie;      <span class="comment">// 本地引用 cookie</span></span><br><span class="line">    IndirectReferenceTable locals;  <span class="comment">// 本地引用表</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h1 id="六、从-Native-调用-Java"><a href="#六、从-Native-调用-Java" class="headerlink" title="六、从 Native 调用 Java"></a>六、从 Native 调用 Java</h1><h2 id="6-1-调用流程"><a href="#6-1-调用流程" class="headerlink" title="6.1 调用流程"></a>6.1 调用流程</h2><p>从 C&#x2F;C++ 代码调用 Java 方法需要以下步骤：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 示例：调用 Java 对象的 void onResult(boolean success, String message) 方法</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">callOnResult</span><span class="params">(JNIEnv* env, jobject callbackObj, <span class="type">bool</span> success, <span class="type">const</span> <span class="type">char</span>* msg)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 获取 Java 类</span></span><br><span class="line">    jclass clazz = env-&gt;<span class="built_in">GetObjectClass</span>(callbackObj);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. 获取方法 ID</span></span><br><span class="line">    jmethodID methodId = env-&gt;<span class="built_in">GetMethodID</span>(clazz, <span class="string">&quot;onResult&quot;</span>, <span class="string">&quot;(ZLjava/lang/String;)V&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (methodId == <span class="literal">nullptr</span>) &#123;</span><br><span class="line">        <span class="comment">// 方法未找到（可能是混淆后名称改变）</span></span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 3. 构造参数</span></span><br><span class="line">    jstring jmsg = env-&gt;<span class="built_in">NewStringUTF</span>(msg);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 4. 调用方法</span></span><br><span class="line">    env-&gt;<span class="built_in">CallVoidMethod</span>(callbackObj, methodId, (jboolean)success, jmsg);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 5. 清理本地引用</span></span><br><span class="line">    env-&gt;<span class="built_in">DeleteLocalRef</span>(jmsg);</span><br><span class="line">    env-&gt;<span class="built_in">DeleteLocalRef</span>(clazz);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="6-2-FindClass-在不同线程中的区别"><a href="#6-2-FindClass-在不同线程中的区别" class="headerlink" title="6.2 FindClass 在不同线程中的区别"></a>6.2 FindClass 在不同线程中的区别</h2><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 普通 JNI 方法中（由 Java 调用进入）：可以直接 FindClass</span></span><br><span class="line"><span class="function">JNIEXPORT <span class="type">void</span> JNICALL <span class="title">Java_MyClass_foo</span><span class="params">(JNIEnv* env, jobject thiz)</span> </span>&#123;</span><br><span class="line">    jclass clazz = env-&gt;<span class="built_in">FindClass</span>(<span class="string">&quot;java/lang/String&quot;</span>);  <span class="comment">// ✅ 成功</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Native 线程中（自己创建的 pthread）：</span></span><br><span class="line"><span class="function"><span class="type">void</span>* <span class="title">native_thread_func</span><span class="params">(<span class="type">void</span>* arg)</span> </span>&#123;</span><br><span class="line">    JavaVM* jvm = (JavaVM*)arg;</span><br><span class="line">    JNIEnv* env;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 1. 必须先将线程附加到 JVM</span></span><br><span class="line">    jvm-&gt;<span class="built_in">AttachCurrentThread</span>(&amp;env, <span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. 现在可以调用 FindClass</span></span><br><span class="line">    jclass clazz = env-&gt;<span class="built_in">FindClass</span>(<span class="string">&quot;java/lang/String&quot;</span>);  <span class="comment">// ✅ 现在可以了</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 3. 如果线程长时间不再使用，需要 detach</span></span><br><span class="line">    jvm-&gt;<span class="built_in">DetachCurrentThread</span>();</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>FindClass</code> 使用调用者的 ClassLoader 来查找类。在 native 线程中，初始状态下没有 ClassLoader，所以 <code>FindClass</code> 只能找到 bootstrap classpath 中的类（如 <code>java.lang.*</code>）。框架类（<code>android.*</code>）需要从 <code>ClassLoader</code> 获取：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 获取 Android 框架类的方法</span></span><br><span class="line"><span class="function">jclass <span class="title">findAndroidClass</span><span class="params">(JNIEnv* env, <span class="type">const</span> <span class="type">char</span>* name)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 方案1：从已知对象获取 ClassLoader</span></span><br><span class="line">    jclass classClassLoader = env-&gt;<span class="built_in">FindClass</span>(<span class="string">&quot;java/lang/ClassLoader&quot;</span>);</span><br><span class="line">    jmethodID loadClass = env-&gt;<span class="built_in">GetMethodID</span>(classClassLoader, <span class="string">&quot;loadClass&quot;</span>,</span><br><span class="line">                                           <span class="string">&quot;(Ljava/lang/String;)Ljava/lang/Class;&quot;</span>);</span><br><span class="line">    <span class="comment">// 需要先获取 system ClassLoader...</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 方案2：使用 AndroidRuntime 的辅助函数</span></span><br><span class="line">    <span class="comment">// 在 libnativehelper 中提供了便捷方法</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="6-3-方法-ID-缓存"><a href="#6-3-方法-ID-缓存" class="headerlink" title="6.3 方法 ID 缓存"></a>6.3 方法 ID 缓存</h2><p><code>GetMethodID</code> 和 <code>GetFieldID</code> 的性能开销较大，因为它们需要进行字符串哈希和比较。最佳实践是在类加载时缓存这些 ID：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 全局缓存</span></span><br><span class="line"><span class="type">static</span> jmethodID g_onResultMethodId = <span class="literal">nullptr</span>;</span><br><span class="line"></span><br><span class="line"><span class="function">JNIEXPORT jint JNICALL <span class="title">JNI_OnLoad</span><span class="params">(JavaVM* vm, <span class="type">void</span>* reserved)</span> </span>&#123;</span><br><span class="line">    JNIEnv* env;</span><br><span class="line">    vm-&gt;<span class="built_in">GetEnv</span>((<span class="type">void</span>**)&amp;env, JNI_VERSION_1_6);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 提前缓存方法 ID</span></span><br><span class="line">    jclass clazz = env-&gt;<span class="built_in">FindClass</span>(<span class="string">&quot;com/example/Callback&quot;</span>);</span><br><span class="line">    g_onResultMethodId = env-&gt;<span class="built_in">GetMethodID</span>(clazz, <span class="string">&quot;onResult&quot;</span>, <span class="string">&quot;(ZLjava/lang/String;)V&quot;</span>);</span><br><span class="line">    <span class="comment">// g_onResultMethodId 在进程生命周期内有效（方法 ID 不会被 GC 移动）</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> JNI_VERSION_1_6;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="七、ART-中的-JNI-调用路径"><a href="#七、ART-中的-JNI-调用路径" class="headerlink" title="七、ART 中的 JNI 调用路径"></a>七、ART 中的 JNI 调用路径</h1><h2 id="7-1-Java-→-Native-调用路径"><a href="#7-1-Java-→-Native-调用路径" class="headerlink" title="7.1 Java → Native 调用路径"></a>7.1 Java → Native 调用路径</h2><p>当一个 Java <code>native</code> 方法被调用时，ART 的执行流程：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Java: MyClass.myNativeMethod()</span><br><span class="line">→ ArtMethod::Invoke()                              // art/runtime/art_method.cc</span><br><span class="line">→ artQuickGenericJniTrampoline()                   // art/runtime/entrypoints/quick/quick_jni_entrypoints.cc</span><br><span class="line">→ JniMethodStart()                                 // 准备 JNI 环境</span><br><span class="line">→ native_func(env, thiz, args...)                  // 调用实际的 native 函数</span><br><span class="line">→ JniMethodEnd()                                   // 清理 JNI 环境</span><br><span class="line">→ 返回 Java 层</span><br></pre></td></tr></table></figure>
+
+<p>具体实现：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// art/runtime/entrypoints/quick/quick_jni_entrypoints.cc</span></span><br><span class="line"><span class="comment">// 快速 JNI 入口（使用汇编优化）</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span> <span class="function"><span class="type">uint64_t</span> <span class="title">artQuickGenericJniTrampoline</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">    Thread* self, ArtMethod** sp)</span> <span class="title">REQUIRES_SHARED</span><span class="params">(Locks::mutator_lock_)</span> </span>&#123;</span><br><span class="line">    ArtMethod* method = *sp;</span><br><span class="line">    <span class="type">const</span> <span class="type">void</span>* native_code = method-&gt;<span class="built_in">GetEntryPointFromJni</span>();</span><br><span class="line">    JNIEnv* env = self-&gt;<span class="built_in">GetJniEnv</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 解析参数（从 Java 调用栈中取出参数并转换为 JNI 类型）</span></span><br><span class="line">    <span class="comment">// 调用 native_code(env, receiver_or_class, args...)</span></span><br><span class="line">    <span class="comment">// 检查是否有 pending exception</span></span><br><span class="line">    <span class="comment">// 返回结果</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="7-2-Native-→-Java-调用路径"><a href="#7-2-Native-→-Java-调用路径" class="headerlink" title="7.2 Native → Java 调用路径"></a>7.2 Native → Java 调用路径</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">C: env-&gt;CallVoidMethod(obj, methodId, args)</span><br><span class="line">→ JNIEnvExt::CallVoidMethod()                      // art/runtime/jni/jni_env_ext.cc</span><br><span class="line">→ ScopedObjectAccess::Decode()                     // 解码 jobject → mirror::Object*</span><br><span class="line">→ art::InvokeVirtualOrInterfaceWithJValues()       // art/runtime/reflection.cc (间接)</span><br><span class="line">→ 进入 ART 解释器 / AOT 编译代码</span><br></pre></td></tr></table></figure>
+
+<p>关键性能开销：</p>
+<ul>
+<li><code>FindClass</code>：类名字符串查找，涉及 class table 哈希查找</li>
+<li><code>GetMethodID</code>：方法名和签名查找，涉及 ArtMethod 哈希查找</li>
+<li><code>Call*Method</code>：参数类型转换（JNI types → ART internal types）</li>
+</ul>
+<h1 id="八、异常处理"><a href="#八、异常处理" class="headerlink" title="八、异常处理"></a>八、异常处理</h1><h2 id="8-1-检查-JNI-异常"><a href="#8-1-检查-JNI-异常" class="headerlink" title="8.1 检查 JNI 异常"></a>8.1 检查 JNI 异常</h2><p>大多数 JNI 函数在出错时不会立即 crash，而是在 JNIEnv 中设置 pending exception。Native 代码必须在调用可能失败的 JNI 函数后立即检查异常：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function">JNIEXPORT <span class="type">void</span> JNICALL <span class="title">Java_MyClass_callJava</span><span class="params">(JNIEnv* env, jobject thiz)</span> </span>&#123;</span><br><span class="line">    jclass clazz = env-&gt;<span class="built_in">FindClass</span>(<span class="string">&quot;com/example/NonExistentClass&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (env-&gt;<span class="built_in">ExceptionCheck</span>()) &#123;</span><br><span class="line">        <span class="comment">// 类未找到！清理异常</span></span><br><span class="line">        env-&gt;<span class="built_in">ExceptionClear</span>();</span><br><span class="line">        <span class="comment">// 回退处理...</span></span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    jmethodID method = env-&gt;<span class="built_in">GetMethodID</span>(clazz, <span class="string">&quot;someMethod&quot;</span>, <span class="string">&quot;()V&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (env-&gt;<span class="built_in">ExceptionCheck</span>()) &#123;</span><br><span class="line">        env-&gt;<span class="built_in">ExceptionClear</span>();</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    env-&gt;<span class="built_in">CallVoidMethod</span>(thiz, method);</span><br><span class="line">    <span class="keyword">if</span> (env-&gt;<span class="built_in">ExceptionCheck</span>()) &#123;</span><br><span class="line">        <span class="comment">// Java 方法自身抛出了异常</span></span><br><span class="line">        env-&gt;<span class="built_in">ExceptionDescribe</span>();  <span class="comment">// 输出异常信息到 logcat</span></span><br><span class="line">        env-&gt;<span class="built_in">ExceptionClear</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="8-2-从-Native-抛出-Java-异常"><a href="#8-2-从-Native-抛出-Java-异常" class="headerlink" title="8.2 从 Native 抛出 Java 异常"></a>8.2 从 Native 抛出 Java 异常</h2><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function">JNIEXPORT <span class="type">void</span> JNICALL <span class="title">Java_MyClass_validateInput</span><span class="params">(JNIEnv* env, jobject thiz,</span></span></span><br><span class="line"><span class="params"><span class="function">                                                    jstring input)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (input == <span class="literal">nullptr</span>) &#123;</span><br><span class="line">        jclass clazz = env-&gt;<span class="built_in">FindClass</span>(<span class="string">&quot;java/lang/IllegalArgumentException&quot;</span>);</span><br><span class="line">        env-&gt;<span class="built_in">ThrowNew</span>(clazz, <span class="string">&quot;Input cannot be null&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span>;  <span class="comment">// 即使调用了 ThrowNew，native 函数仍然返回</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 正常处理...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="九、CheckJNI：调试模式"><a href="#九、CheckJNI：调试模式" class="headerlink" title="九、CheckJNI：调试模式"></a>九、CheckJNI：调试模式</h1><h2 id="9-1-开启-CheckJNI"><a href="#9-1-开启-CheckJNI" class="headerlink" title="9.1 开启 CheckJNI"></a>9.1 开启 CheckJNI</h2><p>CheckJNI 是 ART 的一个严格检查模式，会在 JNI 调用时进行额外验证：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 对特定应用开启</span></span><br><span class="line">adb shell setprop dalvik.vm.checkjni <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 对所有应用开启（只对 eng/userdebug build）</span></span><br><span class="line">adb shell stop</span><br><span class="line">adb shell setprop dalvik.vm.checkjni <span class="literal">true</span></span><br><span class="line">adb shell start</span><br><span class="line"></span><br><span class="line"><span class="comment"># 或在应用 manifest 中声明</span></span><br><span class="line">&lt;application android:debuggable=<span class="string">&quot;true&quot;</span> ...&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="9-2-CheckJNI-检查的内容"><a href="#9-2-CheckJNI-检查的内容" class="headerlink" title="9.2 CheckJNI 检查的内容"></a>9.2 CheckJNI 检查的内容</h2><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// art/runtime/jni/check_jni.cpp</span></span><br><span class="line"><span class="comment">// CheckJNI 额外验证：</span></span><br><span class="line"><span class="comment">// 1. 检查 jobject 类型是否正确（如不应把 jclass 当作 jobject 传递）</span></span><br><span class="line"><span class="comment">// 2. 检查数组索引越界</span></span><br><span class="line"><span class="comment">// 3. 检查是否在主线程做耗时 JNI 调用</span></span><br><span class="line"><span class="comment">// 4. 检查是否在 pending exception 状态下继续调用 JNI 函数</span></span><br><span class="line"><span class="comment">// 5. 验证 jfieldID 和 jmethodID 的有效性</span></span><br><span class="line"><span class="comment">// 6. 检查 DeleteLocalRef 是否释放了不应该释放的引用</span></span><br><span class="line"><span class="comment">// 7. 验证 GetStringUTFChars 后是否调用了 ReleaseStringUTFChars</span></span><br><span class="line"><span class="comment">// 8. 检查是否在错误的线程使用 JNIEnv</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">CheckMethodAndArgs</span><span class="params">(JNIEnv* env, jclass c, jmethodID mid)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 验证 method ID 属于该类</span></span><br><span class="line">    <span class="comment">// 验证参数类型是否匹配</span></span><br><span class="line">    <span class="comment">// 验证对象是否可访问</span></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>开启 CheckJNI 的性能开销大约是 5-10%，主要用在开发阶段检测 JNI 使用错误。</p>
+<h1 id="十、JNI-OnLoad-和-JNI-OnUnload"><a href="#十、JNI-OnLoad-和-JNI-OnUnload" class="headerlink" title="十、JNI_OnLoad 和 JNI_OnUnload"></a>十、JNI_OnLoad 和 JNI_OnUnload</h1><h2 id="10-1-JNI-OnLoad"><a href="#10-1-JNI-OnLoad" class="headerlink" title="10.1 JNI_OnLoad"></a>10.1 JNI_OnLoad</h2><p>当 <code>System.loadLibrary()</code> 加载一个 native 库时，ART 会查找并调用库中的 <code>JNI_OnLoad</code> 函数。这是执行初始化（如动态注册 native 方法）的最佳时机：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 典型的 JNI_OnLoad 实现</span></span><br><span class="line"><span class="function">jint <span class="title">JNI_OnLoad</span><span class="params">(JavaVM* vm, <span class="type">void</span>* reserved)</span> </span>&#123;</span><br><span class="line">    JNIEnv* env = <span class="literal">nullptr</span>;</span><br><span class="line">    <span class="keyword">if</span> (vm-&gt;<span class="built_in">GetEnv</span>((<span class="type">void</span>**)&amp;env, JNI_VERSION_1_6) != JNI_OK) &#123;</span><br><span class="line">        <span class="keyword">return</span> JNI_ERR;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 动态注册所有 native 方法</span></span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">registerNativeMethods</span>(env)) &#123;</span><br><span class="line">        <span class="keyword">return</span> JNI_ERR;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 缓存类引用和方法 ID</span></span><br><span class="line">    <span class="built_in">cacheClassReferences</span>(env);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> JNI_VERSION_1_6;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">static</span> <span class="type">bool</span> <span class="title">registerNativeMethods</span><span class="params">(JNIEnv* env)</span> </span>&#123;</span><br><span class="line">    jclass clazz = env-&gt;<span class="built_in">FindClass</span>(<span class="string">&quot;com/example/MyLib&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (clazz == <span class="literal">nullptr</span>) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="type">static</span> <span class="type">const</span> JNINativeMethod methods[] = &#123;</span><br><span class="line">        &#123;<span class="string">&quot;nativeInit&quot;</span>, <span class="string">&quot;()Z&quot;</span>, (<span class="type">void</span>*)nativeInit&#125;,</span><br><span class="line">        &#123;<span class="string">&quot;nativeProcess&quot;</span>, <span class="string">&quot;([B)I&quot;</span>, (<span class="type">void</span>*)nativeProcess&#125;,</span><br><span class="line">        &#123;<span class="string">&quot;nativeCleanup&quot;</span>, <span class="string">&quot;()V&quot;</span>, (<span class="type">void</span>*)nativeCleanup&#125;,</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> env-&gt;<span class="built_in">RegisterNatives</span>(clazz, methods, <span class="built_in">NELEM</span>(methods)) == JNI_OK;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="10-2-JNI-OnUnload"><a href="#10-2-JNI-OnUnload" class="headerlink" title="10.2 JNI_OnUnload"></a>10.2 JNI_OnUnload</h2><p>当 ClassLoader 被 GC 回收时，ART 会调用 <code>JNI_OnUnload</code>（在 Android 中很少发生，因为大多数 native 库与进程生命周期绑定）:</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">JNI_OnUnload</span><span class="params">(JavaVM* vm, <span class="type">void</span>* reserved)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 释放全局引用</span></span><br><span class="line">    <span class="comment">// 清理 native 资源</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="十一、核心面试题"><a href="#十一、核心面试题" class="headerlink" title="十一、核心面试题"></a>十一、核心面试题</h1><p><strong>Q1：静态注册和动态注册的内部查找机制有什么不同？为什么 Android 框架倾向于使用动态注册？</strong></p>
+<p>答：静态注册在第一次调用时由 ART 通过 dlsym 查找 <code>Java_&lt;包名&gt;_&lt;类名&gt;_&lt;方法名&gt;</code> 符号，解析成功后缓存在 ArtMethod 结构中。动态注册通过 <code>RegisterNatives</code> 直接建立 ArtMethod → native 函数指针的映射，跳过了符号查找过程。Android 框架偏好动态注册的原因：(1) 数百个 JNI 模块，静态注册的函数名极长且易冲突；(2) 启动性能：所有方法在 Zygote 启动阶段一次性注册完毕，避免了懒加载的累计开销；(3) ProGuard&#x2F;R8 混淆兼容性：类名和方法名可能被混淆，但动态注册使用的是固定的方法名字符串；(4) 更灵活的版本管理：可以条件判断不同 API level 注册不同方法。</p>
+<p><strong>Q2：本地引用表溢出（local reference table overflow）的根因是什么？如何诊断和修复？</strong></p>
+<p>答：根因是 JNI 方法在一个调用栈帧中分配的本地引用数量超过了 512 的限制（ART 默认值）。ART 在每次 <code>CallVoidMethod</code>&#x2F;<code>FindClass</code>&#x2F;<code>NewObject</code> 等操作时，会在 IndirectReferenceTable 中插入一个新条目。这些引用在 JNI 方法返回时自动释放，但如果在方法内循环创建大量引用而不手动 <code>DeleteLocalRef</code>，就会在方法返回前溢出。这可以视为一种限定范围内的内存泄漏。诊断方法：开启 CheckJNI (<code>dalvik.vm.checkjni=true</code>) 会在溢出时输出详细 trace。修复方法：(1) 在循环内调用 <code>DeleteLocalRef</code>；(2) 使用 <code>PushLocalFrame</code>&#x2F;<code>PopLocalFrame</code> 管理生命周期；(3) 将大循环拆分为多个 JNI 调用。</p>
+<p><strong>Q3：<code>GetStringUTFChars</code> 和 <code>GetStringCritical</code> 的区别是什么？为什么后者需要更谨慎地使用？</strong></p>
+<p>答：<code>GetStringUTFChars</code> 返回 UTF-8 编码的字符串副本（可能有内存分配和转换开销），调用期间允许 GC 运行，JVM 可能会暂停 native 代码执行。<code>GetStringCritical</code> 直接返回指向 Java String 内部缓冲区的指针（零拷贝），但其约束严格得多：(1) “critical region” 内不能调用任何可能阻塞或分配内存的 JNI 函数（包括 <code>FindClass</code>、<code>NewStringUTF</code> 等）；(2) critical region 应尽量短；(3) 不能嵌套 critical region。<code>GetStringCritical</code> 的主要优势是避免内存分配和 UTF-8 转换开销，适用于简单快速的字符检测场景。在 ART 实现中，<code>GetStringCritical</code> 实际上仍然会进行 UTF-8 转换（因为 ART 内部使用 Modified UTF-8），所以性能差异不像 HotSpot 那么明显。</p>
+<p><strong>Q4：为什么 native 线程在调用 <code>FindClass</code> 之前必须调用 <code>AttachCurrentThread</code>？ART 在 attach 过程中做了什么？</strong></p>
+<p>答：ART 的 <code>JNIEnv</code> 是线程局部的（thread-local），通过 <code>art::Thread</code> 对象维护。一个 native（pthread）线程在创建时没有被 ART 识别——它没有关联的 <code>art::Thread</code> 对象、没有 <code>JNIEnv</code>、没有 ClassLoader 上下文。<code>AttachCurrentThread</code> 会：(1) 创建一个 <code>art::Thread</code> 对象；(2) 分配一个 <code>JNIEnvExt</code>（包括本地引用表等）；(3) 将线程注册到 ART 的 GC 系统中，这样 GC 才能在此线程的栈上遍历 JNI 本地引用；(4) 设置线程的 ClassLoader 为 null（bootstrap classpath only），因此只能找到 <code>java.lang.*</code> 等核心类。如果需要访问框架类，需要手动通过已知对象获取 ClassLoader 并用其 <code>loadClass</code> 方法。</p>
+<p><strong>Q5：<code>JNI_OnLoad</code> 中缓存 <code>jmethodID</code> 是安全的吗？如果 ClassLoader 卸载该类重新加载，缓存的 ID 会失效吗？</strong></p>
+<p>答：在 Android 的默认 ClassLoader 策略下，一个类一旦被加载就不会被卸载（除了极端的内存压力情况，且即便是 ART 的类卸载也极其罕见）。<code>jmethodID</code> 本质上是 <code>ArtMethod*</code> 指针，只要类本身不被 GC 回收，这个指针就持续有效。因此缓存 <code>jmethodID</code> 在 Android 中是安全且推荐的做法。但如果库被多个 ClassLoader 加载（如插件化框架），同一个类可能有多个 ClassLoader 副本，此时缓存的 ID 只对应一个 ClassLoader 中的版本。另外需要注意：对于 <code>jclass</code> 不应该缓存普通的本地引用，应该使用 <code>NewGlobalRef</code> 将其提升为全局引用。</p>
+<p><strong>AOSP 核心路径参考：</strong></p>
+<ul>
+<li><code>art/runtime/jni/jni_internal.h</code> — JNINativeInterface 函数表</li>
+<li><code>art/runtime/jni/jni_env_ext.h</code> — JNIEnvExt 扩展定义</li>
+<li><code>art/runtime/jni/check_jni.cpp</code> — CheckJNI 实现</li>
+<li><code>art/runtime/indirect_reference_table.h</code> — 引用表实现</li>
+<li><code>art/runtime/entrypoints/quick/quick_jni_entrypoints.cc</code> — JNI 快速入口</li>
+<li><code>art/runtime/entrypoints/jni/jni_entrypoints.cc</code> — JNI 通用入口</li>
+<li><code>libnativehelper/include/nativehelper/jni.h</code> — JNI 辅助宏和方法</li>
+<li><code>frameworks/base/core/jni/AndroidRuntime.cpp</code> — Android JNI 注册框架</li>
+<li><code>frameworks/base/core/jni/android_os_SystemProperties.cpp</code> — 动态注册范例</li>
+</ul>
+</div></article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/JNI/">JNI    </a><a class="post-meta__tags" href="/tags/NDK/">NDK    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286820.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/01/20/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91ODEX%E6%B5%81%E7%A8%8B/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286946.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>【深入内核篇】ODEX流程</span></div></a></div><div class="next-post pull_right"><a href="/2021/01/10/%E9%87%8D%E6%8B%BEAndroid-%E3%80%90%E6%B7%B1%E5%85%A5%E5%86%85%E6%A0%B8%E7%AF%87%E3%80%91Binder%E9%A9%B1%E5%8A%A8/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286773.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【深入内核篇】Binder驱动</span></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2022/05/20/高级Android-【实战开发系列】哈夫曼解析/" title="哈夫曼解析"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/339.jpg"><div class="relatedPosts_title">哈夫曼解析</div></a></div><div class="relatedPosts_item"><a href="/2022/05/15/高级Android-【实战开发系列】NDK实现播放器内核/" title="NDK实现播放器内核"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/334.jpg"><div class="relatedPosts_title">NDK实现播放器内核</div></a></div><div class="relatedPosts_item"><a href="/2022/05/10/高级Android-【实战开发系列】NDK文件拆分加密处理/" title="NDK文件拆分加密处理"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/325.jpg"><div class="relatedPosts_title">NDK文件拆分加密处理</div></a></div><div class="relatedPosts_item"><a href="/2022/05/05/高级Android-【实战开发系列】NDK实现图像识别/" title="NDK实现图像识别"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/333.jpg"><div class="relatedPosts_title">NDK实现图像识别</div></a></div><div class="relatedPosts_item"><a href="/2022/05/01/高级Android-【实战开发系列】NDK实现增量更新/" title="NDK实现增量更新"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/331.jpg"><div class="relatedPosts_title">NDK实现增量更新</div></a></div><div class="relatedPosts_item"><a href="/2022/04/15/高级Android-【C C++理论实战技术】JNI基础实战/" title="【C/C++理论实战技术】JNI基础实战"><img class="relatedPosts_cover lazyload"data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/自然风景/308.jpg"><div class="relatedPosts_title">【C/C++理论实战技术】JNI基础实战</div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/uPic/宇宙特辑/286820.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  if(sessionStorage.getItem("_hexo_protect_harness")) return;
+
+  // 1. 将列表页中 Harness 分类文章标题链接指向密码门
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var catLink = item.querySelector('a[href*="/Harness"]');
+    if(!catLink) return;
+
+    // 把标题链接改为密码门
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = "/harness";
+      titleLink.style.opacity = "0.5";
+      // 加锁图标
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    // 隐藏摘要内容
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 2. 归档页 / 标签页 / 分类页中的 Harness 链接同样处理
+  var allLinks = document.querySelectorAll("a[href*='/Harness']");
+  allLinks.forEach(function(link){
+    // 分类/标签路径中的 Harness，改成指向密码门
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = "/harness";
+    }
+  });
+})();
+</script>
+</body></html>
