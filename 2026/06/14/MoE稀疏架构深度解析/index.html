@@ -1,0 +1,571 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>MoE 稀疏架构深度解析 | ONE·PIECE</title><meta name="description" content="《MoE 稀疏架构深度解析》— LLM 核心技术深度系列，基于公开论文的系统化技术解析"><meta name="keywords" content="MoE,稀疏架构,DeepSeek-V3,Mixtral,Switch-Transformer"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="MoE 稀疏架构深度解析"><meta name="twitter:description" content="《MoE 稀疏架构深度解析》— LLM 核心技术深度系列，基于公开论文的系统化技术解析"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_data_has_a_better_idea.jpg"><meta property="og:type" content="article"><meta property="og:title" content="MoE 稀疏架构深度解析"><meta property="og:url" content="http://tufusi.com/2026/06/14/MoE%E7%A8%80%E7%96%8F%E6%9E%B6%E6%9E%84%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="《MoE 稀疏架构深度解析》— LLM 核心技术深度系列，基于公开论文的系统化技术解析"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_data_has_a_better_idea.jpg"><meta property="og:locale" content="zh_CN"><meta property="article:published_time" content="2026-06-14T00:00:00+08:00"><meta property="article:modified_time" content="2026-06-14T00:50:36+08:00"><meta property="article:author" content="Leo·Cheung"><meta property="article:tag" content="MoE"><meta property="article:tag" content="稀疏架构"><meta property="article:tag" content="DeepSeek-V3"><meta property="article:tag" content="Mixtral"><meta property="article:tag" content="Switch-Transformer"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2026/06/14/MoE%E7%A8%80%E7%96%8F%E6%9E%B6%E6%9E%84%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/"><link rel="prev" title="LLM 推理优化与量化交易应用" href="http://tufusi.com/2026/06/14/LLM%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96%E4%B8%8E%E9%87%8F%E5%8C%96%E4%BA%A4%E6%98%93%E5%BA%94%E7%94%A8/"><link rel="next" title="RLHF 完整技术解析" href="http://tufusi.com/2026/06/14/RLHF%E5%AE%8C%E6%95%B4%E6%8A%80%E6%9C%AF%E8%A7%A3%E6%9E%90/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "MoE 稀疏架构深度解析",
+  "author": { "@type": "Person", "name": "Leo·Cheung" },
+  "datePublished": "2026-06-14T00:00:00+08:00",
+  "dateModified": "2026-06-14T00:50:36+08:00",
+  "description": "《MoE 稀疏架构深度解析》— LLM 核心技术深度系列，基于公开论文的系统化技术解析",
+  "url": "http://tufusi.com/2026/06/14/MoE%E7%A8%80%E7%96%8F%E6%9E%B6%E6%9E%84%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/",
+  "publisher": { "@type": "Person", "name": "Leo·Cheung" }
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">252</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">93</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#MoE-%E7%A8%80%E7%96%8F%E6%9E%B6%E6%9E%84%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">MoE 稀疏架构深度解析</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-MoE%EF%BC%9ADense-%E6%A8%A1%E5%9E%8B%E7%9A%84%E7%93%B6%E9%A2%88"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">一、为什么需要 MoE：Dense 模型的瓶颈</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-Dense-%E6%A8%A1%E5%9E%8B%E7%9A%84%E6%89%A9%E5%B1%95%E6%88%90%E6%9C%AC"><span class="toc_mobile_items-number">1.1.1.</span> <span class="toc_mobile_items-text">1.1 Dense 模型的扩展成本</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-2-Sparse-%E6%A8%A1%E5%9E%8B%E7%9A%84%E6%80%9D%E8%B7%AF%EF%BC%9A%E6%9C%89%E9%80%89%E6%8B%A9%E5%9C%B0%E6%BF%80%E6%B4%BB%E5%8F%82%E6%95%B0"><span class="toc_mobile_items-number">1.1.2.</span> <span class="toc_mobile_items-text">1.2 Sparse 模型的思路：有选择地激活参数</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81MoE-%E7%9A%84%E6%97%A9%E6%9C%9F%E5%8E%86%E5%8F%B2"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">二、MoE 的早期历史</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-Mixture-of-Experts-%E7%9A%84%E8%B5%B7%E6%BA%90%EF%BC%881991-%E5%B9%B4%EF%BC%89"><span class="toc_mobile_items-number">1.2.1.</span> <span class="toc_mobile_items-text">2.1 Mixture of Experts 的起源（1991 年）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-Shazeer-2017%EF%BC%9A%E5%A4%A7%E8%A7%84%E6%A8%A1-MoE-%E7%9A%84%E7%AC%AC%E4%B8%80%E6%AC%A1%E7%AA%81%E7%A0%B4"><span class="toc_mobile_items-number">1.2.2.</span> <span class="toc_mobile_items-text">2.2 Shazeer 2017：大规模 MoE 的第一次突破</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81Switch-Transformers%EF%BC%9A%E5%B0%86-MoE-%E5%BC%95%E5%85%A5-Transformer-%E6%97%B6%E4%BB%A3"><span class="toc_mobile_items-number">1.3.</span> <span class="toc_mobile_items-text">三、Switch Transformers：将 MoE 引入 Transformer 时代</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E6%A0%B8%E5%BF%83%E6%9E%B6%E6%9E%84"><span class="toc_mobile_items-number">1.3.1.</span> <span class="toc_mobile_items-text">3.1 核心架构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E9%97%AE%E9%A2%98%EF%BC%88Load-Balancing%EF%BC%89"><span class="toc_mobile_items-number">1.3.2.</span> <span class="toc_mobile_items-text">3.2 负载均衡问题（Load Balancing）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-%E8%AE%AD%E7%BB%83%E7%A8%B3%E5%AE%9A%E6%80%A7%E6%8A%80%E6%9C%AF"><span class="toc_mobile_items-number">1.3.3.</span> <span class="toc_mobile_items-text">3.3 训练稳定性技术</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-4-Switch-Transformers-%E7%9A%84%E8%A7%84%E6%A8%A1"><span class="toc_mobile_items-number">1.3.4.</span> <span class="toc_mobile_items-text">3.4 Switch Transformers 的规模</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81Mixtral-8x7B%EF%BC%9A%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%B9%BF%E6%B3%9B%E4%BD%BF%E7%94%A8%E7%9A%84%E5%BC%80%E6%BA%90-MoE-%E6%A8%A1%E5%9E%8B"><span class="toc_mobile_items-number">1.4.</span> <span class="toc_mobile_items-text">四、Mixtral 8x7B：第一个广泛使用的开源 MoE 模型</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-%E6%9E%B6%E6%9E%84"><span class="toc_mobile_items-number">1.4.1.</span> <span class="toc_mobile_items-text">4.1 架构</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E6%80%A7%E8%83%BD"><span class="toc_mobile_items-number">1.4.2.</span> <span class="toc_mobile_items-text">4.2 性能</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81DeepSeekMoE%EF%BC%9A%E7%BB%86%E7%B2%92%E5%BA%A6%E4%B8%93%E5%AE%B6%E7%9A%84%E7%AA%81%E7%A0%B4"><span class="toc_mobile_items-number">1.5.</span> <span class="toc_mobile_items-text">五、DeepSeekMoE：细粒度专家的突破</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E6%A0%87%E5%87%86-MoE-%E7%9A%84%E4%B8%93%E5%AE%B6%E5%88%A9%E7%94%A8%E7%8E%87%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">1.5.1.</span> <span class="toc_mobile_items-text">5.1 标准 MoE 的专家利用率问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-DeepSeekMoE-%E7%9A%84%E7%BB%86%E7%B2%92%E5%BA%A6%E8%AE%BE%E8%AE%A1"><span class="toc_mobile_items-number">1.5.2.</span> <span class="toc_mobile_items-text">5.2 DeepSeekMoE 的细粒度设计</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81DeepSeek-V2-V3%EF%BC%9A%E6%9C%80%E5%85%88%E8%BF%9B%E7%9A%84-MoE-%E5%AE%9E%E7%8E%B0"><span class="toc_mobile_items-number">1.6.</span> <span class="toc_mobile_items-text">六、DeepSeek-V2&#x2F;V3：最先进的 MoE 实现</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-DeepSeek-V2%EF%BC%882024%EF%BC%89"><span class="toc_mobile_items-number">1.6.1.</span> <span class="toc_mobile_items-text">6.1 DeepSeek-V2（2024）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-2-DeepSeek-V3-%E7%9A%84-MoE-%E9%85%8D%E7%BD%AE"><span class="toc_mobile_items-number">1.6.2.</span> <span class="toc_mobile_items-text">6.2 DeepSeek-V3 的 MoE 配置</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-3-Auxiliary-Loss-Free-%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="toc_mobile_items-number">1.6.3.</span> <span class="toc_mobile_items-text">6.3 Auxiliary-Loss-Free 负载均衡</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-4-Multi-Token-Prediction%EF%BC%88%E5%A4%9A-Token-%E9%A2%84%E6%B5%8B%EF%BC%89"><span class="toc_mobile_items-number">1.6.4.</span> <span class="toc_mobile_items-text">6.4 Multi-Token Prediction（多 Token 预测）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81MoE-%E7%9A%84%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%AD%E7%BB%83%E6%8C%91%E6%88%98"><span class="toc_mobile_items-number">1.7.</span> <span class="toc_mobile_items-text">七、MoE 的分布式训练挑战</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-%E4%B8%93%E5%AE%B6%E5%B9%B6%E8%A1%8C%EF%BC%88Expert-Parallelism%EF%BC%89"><span class="toc_mobile_items-number">1.7.1.</span> <span class="toc_mobile_items-text">7.1 专家并行（Expert Parallelism）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E4%B8%8E-GPU-%E5%88%A9%E7%94%A8%E7%8E%87"><span class="toc_mobile_items-number">1.7.2.</span> <span class="toc_mobile_items-text">7.2 负载均衡与 GPU 利用率</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81MoE-vs-Dense%EF%BC%9A%E5%B7%A5%E7%A8%8B%E6%9D%83%E8%A1%A1%E5%85%A8%E9%9D%A2%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">1.8.</span> <span class="toc_mobile_items-text">八、MoE vs Dense：工程权衡全面分析</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81DeepSeek-V3-%E5%AE%8C%E6%95%B4-MoE-%E6%9E%B6%E6%9E%84%E5%8F%82%E6%95%B0%E6%80%BB%E7%BB%93"><span class="toc_mobile_items-number">1.9.</span> <span class="toc_mobile_items-text">九、DeepSeek-V3 完整 MoE 架构参数总结</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81MoE-%E4%B8%93%E5%AE%B6%E7%9A%84%E4%B8%93%E4%B8%9A%E5%8C%96%EF%BC%9A%E5%AE%9E%E9%AA%8C%E8%AF%81%E6%8D%AE"><span class="toc_mobile_items-number">1.10.</span> <span class="toc_mobile_items-text">十、MoE 专家的专业化：实验证据</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-1-%E4%B8%93%E5%AE%B6%E5%88%86%E5%B7%A5%E7%9A%84%E5%AE%9E%E9%AA%8C%E7%A0%94%E7%A9%B6"><span class="toc_mobile_items-number">1.10.1.</span> <span class="toc_mobile_items-text">10.1 专家分工的实验研究</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-2-DeepSeekMoE-%E7%9A%84%E4%B8%93%E4%B8%9A%E5%8C%96%E5%88%86%E6%9E%90"><span class="toc_mobile_items-number">1.10.2.</span> <span class="toc_mobile_items-text">10.2 DeepSeekMoE 的专业化分析</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%80%E3%80%81MoE-%E7%9A%84%E6%9C%AA%E6%9D%A5%E6%96%B9%E5%90%91"><span class="toc_mobile_items-number">1.11.</span> <span class="toc_mobile_items-text">十一、MoE 的未来方向</span></a></li></ol></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#MoE-%E7%A8%80%E7%96%8F%E6%9E%B6%E6%9E%84%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc-number">1.</span> <span class="toc-text">MoE 稀疏架构深度解析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-MoE%EF%BC%9ADense-%E6%A8%A1%E5%9E%8B%E7%9A%84%E7%93%B6%E9%A2%88"><span class="toc-number">1.1.</span> <span class="toc-text">一、为什么需要 MoE：Dense 模型的瓶颈</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Dense-%E6%A8%A1%E5%9E%8B%E7%9A%84%E6%89%A9%E5%B1%95%E6%88%90%E6%9C%AC"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.1 Dense 模型的扩展成本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Sparse-%E6%A8%A1%E5%9E%8B%E7%9A%84%E6%80%9D%E8%B7%AF%EF%BC%9A%E6%9C%89%E9%80%89%E6%8B%A9%E5%9C%B0%E6%BF%80%E6%B4%BB%E5%8F%82%E6%95%B0"><span class="toc-number">1.1.2.</span> <span class="toc-text">1.2 Sparse 模型的思路：有选择地激活参数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81MoE-%E7%9A%84%E6%97%A9%E6%9C%9F%E5%8E%86%E5%8F%B2"><span class="toc-number">1.2.</span> <span class="toc-text">二、MoE 的早期历史</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Mixture-of-Experts-%E7%9A%84%E8%B5%B7%E6%BA%90%EF%BC%881991-%E5%B9%B4%EF%BC%89"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1 Mixture of Experts 的起源（1991 年）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Shazeer-2017%EF%BC%9A%E5%A4%A7%E8%A7%84%E6%A8%A1-MoE-%E7%9A%84%E7%AC%AC%E4%B8%80%E6%AC%A1%E7%AA%81%E7%A0%B4"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2 Shazeer 2017：大规模 MoE 的第一次突破</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Switch-Transformers%EF%BC%9A%E5%B0%86-MoE-%E5%BC%95%E5%85%A5-Transformer-%E6%97%B6%E4%BB%A3"><span class="toc-number">1.3.</span> <span class="toc-text">三、Switch Transformers：将 MoE 引入 Transformer 时代</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%A0%B8%E5%BF%83%E6%9E%B6%E6%9E%84"><span class="toc-number">1.3.1.</span> <span class="toc-text">3.1 核心架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E9%97%AE%E9%A2%98%EF%BC%88Load-Balancing%EF%BC%89"><span class="toc-number">1.3.2.</span> <span class="toc-text">3.2 负载均衡问题（Load Balancing）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E8%AE%AD%E7%BB%83%E7%A8%B3%E5%AE%9A%E6%80%A7%E6%8A%80%E6%9C%AF"><span class="toc-number">1.3.3.</span> <span class="toc-text">3.3 训练稳定性技术</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-Switch-Transformers-%E7%9A%84%E8%A7%84%E6%A8%A1"><span class="toc-number">1.3.4.</span> <span class="toc-text">3.4 Switch Transformers 的规模</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Mixtral-8x7B%EF%BC%9A%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%B9%BF%E6%B3%9B%E4%BD%BF%E7%94%A8%E7%9A%84%E5%BC%80%E6%BA%90-MoE-%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.4.</span> <span class="toc-text">四、Mixtral 8x7B：第一个广泛使用的开源 MoE 模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E6%9E%B6%E6%9E%84"><span class="toc-number">1.4.1.</span> <span class="toc-text">4.1 架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%80%A7%E8%83%BD"><span class="toc-number">1.4.2.</span> <span class="toc-text">4.2 性能</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81DeepSeekMoE%EF%BC%9A%E7%BB%86%E7%B2%92%E5%BA%A6%E4%B8%93%E5%AE%B6%E7%9A%84%E7%AA%81%E7%A0%B4"><span class="toc-number">1.5.</span> <span class="toc-text">五、DeepSeekMoE：细粒度专家的突破</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%A0%87%E5%87%86-MoE-%E7%9A%84%E4%B8%93%E5%AE%B6%E5%88%A9%E7%94%A8%E7%8E%87%E9%97%AE%E9%A2%98"><span class="toc-number">1.5.1.</span> <span class="toc-text">5.1 标准 MoE 的专家利用率问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-DeepSeekMoE-%E7%9A%84%E7%BB%86%E7%B2%92%E5%BA%A6%E8%AE%BE%E8%AE%A1"><span class="toc-number">1.5.2.</span> <span class="toc-text">5.2 DeepSeekMoE 的细粒度设计</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81DeepSeek-V2-V3%EF%BC%9A%E6%9C%80%E5%85%88%E8%BF%9B%E7%9A%84-MoE-%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.6.</span> <span class="toc-text">六、DeepSeek-V2&#x2F;V3：最先进的 MoE 实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-DeepSeek-V2%EF%BC%882024%EF%BC%89"><span class="toc-number">1.6.1.</span> <span class="toc-text">6.1 DeepSeek-V2（2024）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-DeepSeek-V3-%E7%9A%84-MoE-%E9%85%8D%E7%BD%AE"><span class="toc-number">1.6.2.</span> <span class="toc-text">6.2 DeepSeek-V3 的 MoE 配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-Auxiliary-Loss-Free-%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="toc-number">1.6.3.</span> <span class="toc-text">6.3 Auxiliary-Loss-Free 负载均衡</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-Multi-Token-Prediction%EF%BC%88%E5%A4%9A-Token-%E9%A2%84%E6%B5%8B%EF%BC%89"><span class="toc-number">1.6.4.</span> <span class="toc-text">6.4 Multi-Token Prediction（多 Token 预测）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81MoE-%E7%9A%84%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%AD%E7%BB%83%E6%8C%91%E6%88%98"><span class="toc-number">1.7.</span> <span class="toc-text">七、MoE 的分布式训练挑战</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E4%B8%93%E5%AE%B6%E5%B9%B6%E8%A1%8C%EF%BC%88Expert-Parallelism%EF%BC%89"><span class="toc-number">1.7.1.</span> <span class="toc-text">7.1 专家并行（Expert Parallelism）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E4%B8%8E-GPU-%E5%88%A9%E7%94%A8%E7%8E%87"><span class="toc-number">1.7.2.</span> <span class="toc-text">7.2 负载均衡与 GPU 利用率</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81MoE-vs-Dense%EF%BC%9A%E5%B7%A5%E7%A8%8B%E6%9D%83%E8%A1%A1%E5%85%A8%E9%9D%A2%E5%88%86%E6%9E%90"><span class="toc-number">1.8.</span> <span class="toc-text">八、MoE vs Dense：工程权衡全面分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81DeepSeek-V3-%E5%AE%8C%E6%95%B4-MoE-%E6%9E%B6%E6%9E%84%E5%8F%82%E6%95%B0%E6%80%BB%E7%BB%93"><span class="toc-number">1.9.</span> <span class="toc-text">九、DeepSeek-V3 完整 MoE 架构参数总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81MoE-%E4%B8%93%E5%AE%B6%E7%9A%84%E4%B8%93%E4%B8%9A%E5%8C%96%EF%BC%9A%E5%AE%9E%E9%AA%8C%E8%AF%81%E6%8D%AE"><span class="toc-number">1.10.</span> <span class="toc-text">十、MoE 专家的专业化：实验证据</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-%E4%B8%93%E5%AE%B6%E5%88%86%E5%B7%A5%E7%9A%84%E5%AE%9E%E9%AA%8C%E7%A0%94%E7%A9%B6"><span class="toc-number">1.10.1.</span> <span class="toc-text">10.1 专家分工的实验研究</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-DeepSeekMoE-%E7%9A%84%E4%B8%93%E4%B8%9A%E5%8C%96%E5%88%86%E6%9E%90"><span class="toc-number">1.10.2.</span> <span class="toc-text">10.2 DeepSeekMoE 的专业化分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81MoE-%E7%9A%84%E6%9C%AA%E6%9D%A5%E6%96%B9%E5%90%91"><span class="toc-number">1.11.</span> <span class="toc-text">十一、MoE 的未来方向</span></a></li></ol></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_data_has_a_better_idea.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">MoE 稀疏架构深度解析</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2026-06-14<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-14</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/">大模型</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/LLM%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/">LLM核心技术</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">4.7k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 17 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h1 id="MoE-稀疏架构深度解析"><a href="#MoE-稀疏架构深度解析" class="headerlink" title="MoE 稀疏架构深度解析"></a>MoE 稀疏架构深度解析</h1><blockquote>
+<p><strong>核心论文：</strong></p>
+<ul>
+<li>Switch Transformers: Scaling to Trillion Parameter Models（Fedus, Zoph, Shazeer, Google, 2021）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2101.03961">arXiv:2101.03961</a></li>
+<li>GLaM: Efficient Scaling of Language Models with Mixture-of-Experts（Du et al., Google, 2021）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2112.06905">arXiv:2112.06905</a></li>
+<li>Mixtral of Experts（Jiang et al., Mistral AI, 2024）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2401.04088">arXiv:2401.04088</a></li>
+<li>DeepSeekMoE: Towards Ultimate Expert Specialization in Mixture-of-Experts（Dai et al., DeepSeek, 2024）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2401.06066">arXiv:2401.06066</a></li>
+<li>DeepSeek-V2（Chen et al., DeepSeek, 2024）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2405.04434">arXiv:2405.04434</a></li>
+<li>DeepSeek-V3 Technical Report（DeepSeek-AI, 2024）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2412.19437">arXiv:2412.19437</a></li>
+<li>Outrageously Large Neural Networks: The Sparsely-Gated MoE Layer（Shazeer et al., Google Brain, 2017）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/1701.06538">arXiv:1701.06538</a></li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="一、为什么需要-MoE：Dense-模型的瓶颈"><a href="#一、为什么需要-MoE：Dense-模型的瓶颈" class="headerlink" title="一、为什么需要 MoE：Dense 模型的瓶颈"></a>一、为什么需要 MoE：Dense 模型的瓶颈</h2><h3 id="1-1-Dense-模型的扩展成本"><a href="#1-1-Dense-模型的扩展成本" class="headerlink" title="1.1 Dense 模型的扩展成本"></a>1.1 Dense 模型的扩展成本</h3><p>在标准（Dense）Transformer 中，每个 token 的前向传播都需要通过<strong>所有</strong>的参数。这意味着：</p>
+<ul>
+<li>模型参数量增加 $N$ 倍 → 每次推理的计算量（FLOPs）也增加约 $N$ 倍</li>
+<li>推理延迟与参数量线性相关</li>
+</ul>
+<p>对于一个 175B 参数的 GPT-3 模型，在 A100 GPU（312 TFLOPs&#x2F;s，BF16）上，单次推理一个 token 大约需要：</p>
+<p>$$\text{FLOPs} \approx 2 \times N = 2 \times 175 \times 10^9 = 350 \text{ GFLOPs}$$</p>
+<p>延迟约 1.1ms&#x2F;token（不含 KV Cache 读写）。</p>
+<p>随着模型规模扩展，这个成本对实际部署造成了巨大压力：</p>
+<ul>
+<li>训练成本：随参数量和训练 tokens 线性增长</li>
+<li>推理成本：对每次用户查询都产生</li>
+<li>内存成本：70B 模型仅参数就需要约 140GB 显存（BF16）</li>
+</ul>
+<h3 id="1-2-Sparse-模型的思路：有选择地激活参数"><a href="#1-2-Sparse-模型的思路：有选择地激活参数" class="headerlink" title="1.2 Sparse 模型的思路：有选择地激活参数"></a>1.2 Sparse 模型的思路：有选择地激活参数</h3><p>MoE（Mixture of Experts）的核心思想：</p>
+<blockquote>
+<p>不是让所有参数处理所有 token，而是根据 token 的内容，<strong>动态选择</strong>一部分参数（”专家”）来处理它。</p>
+</blockquote>
+<p>这样：</p>
+<ul>
+<li>总参数量（模型容量）可以很大</li>
+<li>每次推理时实际激活的参数量（计算量）可以相对较小</li>
+</ul>
+<p><strong>一个极端的例子：</strong> DeepSeek-V3 有 671B 总参数，但每个 token 只激活约 37B 参数（约 5.5%）。在相同的推理计算量下，它比 37B 的 Dense 模型有更大的”知识库”。</p>
+<hr>
+<h2 id="二、MoE-的早期历史"><a href="#二、MoE-的早期历史" class="headerlink" title="二、MoE 的早期历史"></a>二、MoE 的早期历史</h2><h3 id="2-1-Mixture-of-Experts-的起源（1991-年）"><a href="#2-1-Mixture-of-Experts-的起源（1991-年）" class="headerlink" title="2.1 Mixture of Experts 的起源（1991 年）"></a>2.1 Mixture of Experts 的起源（1991 年）</h3><p>MoE 的概念最早由 Jacobs, Jordan, Nowlan, Hinton 在 1991 年的论文中提出，用于回归和分类任务：不同的”专家”网络专门处理输入空间的不同区域，一个”门控网络”决定哪些专家处理当前输入。</p>
+<p>这个思想在接下来的 20 年里在机器学习中有零散应用，但没有引起广泛关注。</p>
+<h3 id="2-2-Shazeer-2017：大规模-MoE-的第一次突破"><a href="#2-2-Shazeer-2017：大规模-MoE-的第一次突破" class="headerlink" title="2.2 Shazeer 2017：大规模 MoE 的第一次突破"></a>2.2 Shazeer 2017：大规模 MoE 的第一次突破</h3><p><strong>论文：</strong> Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer（Shazeer et al., Google Brain, 2017）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/1701.06538">arXiv:1701.06538</a></p>
+<p>Noam Shazeer（同时也是 Transformer 的共同作者）等人首次将 MoE 应用于大规模语言模型（基于 LSTM）：</p>
+<ul>
+<li>使用 Top-K 门控：每个 token 只路由到 K 个专家（$K&#x3D;2$），而不是让所有专家都处理</li>
+<li>引入了<strong>辅助损失（Auxiliary Loss）</strong>来维持负载均衡：防止所有 token 都路由到同几个”受欢迎”的专家，导致其他专家被闲置</li>
+<li>展示了在相同计算量下，MoE 模型的 perplexity 低于 Dense 模型</li>
+</ul>
+<p>这篇论文奠定了后续所有 MoE 工作的基础，但当时影响有限，直到 Switch Transformers 才真正引起广泛关注。</p>
+<hr>
+<h2 id="三、Switch-Transformers：将-MoE-引入-Transformer-时代"><a href="#三、Switch-Transformers：将-MoE-引入-Transformer-时代" class="headerlink" title="三、Switch Transformers：将 MoE 引入 Transformer 时代"></a>三、Switch Transformers：将 MoE 引入 Transformer 时代</h2><p><strong>论文：</strong> Switch Transformers: Scaling to Trillion Parameter Models（Fedus, Zoph, Shazeer, Google, 2021）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2101.03961">arXiv:2101.03961</a></p>
+<h3 id="3-1-核心架构"><a href="#3-1-核心架构" class="headerlink" title="3.1 核心架构"></a>3.1 核心架构</h3><p>Switch Transformers 将标准 Transformer 中的 FFN（前馈网络）层替换为 MoE 层。其他组件（注意力层、归一化层）保持不变。</p>
+<p><strong>标准 Transformer FFN：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">所有 token → 单一 FFN（W1, W2）→ 所有 token 的输出</span><br></pre></td></tr></table></figure>
+
+<p><strong>Switch Transformer MoE FFN：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">每个 token → Router（决定专家） → Expert_i（Wi_1, Wi_2）→ 该 token 的输出</span><br></pre></td></tr></table></figure>
+
+<p><strong>Router 的工作机制：</strong></p>
+<p>对于输入 token 的表示 $x \in \mathbb{R}^{d_{model}}$，Router 计算每个专家的路由概率：</p>
+<p>$$h(x) = W_r \cdot x \in \mathbb{R}^E \quad (E \text{ 是专家数量})$$</p>
+<p>$$p_i = \text{softmax}(h(x))_i = \frac{e^{h_i(x)}}{\sum_{j=1}^E e^{h_j(x)}}$$</p>
+<p>Switch Transformer 使用 <strong>Top-1 路由</strong>（每个 token 只去一个专家，$K&#x3D;1$）：</p>
+<p>$$\text{Expert index} = \arg\max_i p_i$$</p>
+<p>$$\text{token output} = p_{\text{selected}} \cdot \text{Expert}_{\text{selected}}(x)$$</p>
+<p>为什么用 Top-1？作者发现 Top-1 路由比 Top-2 计算更简单，且在大规模时效果接近。</p>
+<h3 id="3-2-负载均衡问题（Load-Balancing）"><a href="#3-2-负载均衡问题（Load-Balancing）" class="headerlink" title="3.2 负载均衡问题（Load Balancing）"></a>3.2 负载均衡问题（Load Balancing）</h3><p><strong>核心挑战：</strong> 如果让路由自由发展，模型会形成”专家崩塌”（Expert Collapse）——所有 token 都路由到少数几个”受欢迎”的专家，大多数专家几乎不工作。这造成：</p>
+<ul>
+<li>计算资源浪费（大部分专家空转）</li>
+<li>专家没有机会学习（需要接受 token 才能通过梯度学习）</li>
+<li>最终性能下降（相当于回到了小模型）</li>
+</ul>
+<p><strong>辅助损失（Auxiliary&#x2F;Load Balancing Loss）：</strong></p>
+<p>为了鼓励均匀分配，Switch Transformers 加入辅助损失：</p>
+<p>设 $f_i$ 是路由到专家 $i$ 的 token 比例（实际分布），$P_i$ 是模型认为应该路由到专家 $i$ 的概率均值，辅助损失为：</p>
+<p>$$\mathcal{L}_{\text{aux}} = \alpha \cdot E \cdot \sum_{i=1}^E f_i \cdot P_i$$</p>
+<p>这个损失在 $f_i &#x3D; 1&#x2F;E$（均匀分布）时最小，因此鼓励负载均衡。$\alpha$ 是平衡系数（通常取 $10^{-2}$）。</p>
+<p><strong>专家容量（Expert Capacity）：</strong></p>
+<p>每个专家在一个 batch 中能处理的 token 数量有上限（容量 $C$）：</p>
+<p>$$C = \frac{\text{Tokens per batch}}{E} \times \text{capacity factor}$$</p>
+<p>如果某个专家接收到超过 $C$ 个 token，多余的 token 会被跳过（overflow），直接通过残差连接传递。这是一个硬性工程约束，防止单个专家计算时间过长。</p>
+<h3 id="3-3-训练稳定性技术"><a href="#3-3-训练稳定性技术" class="headerlink" title="3.3 训练稳定性技术"></a>3.3 训练稳定性技术</h3><p>MoE 模型的训练比 Dense 模型更不稳定（更容易出现 Loss Spike）。Switch Transformers 提出了几个解决方案：</p>
+<ol>
+<li><p><strong>专家 Dropout（Expert Dropout）：</strong> 在训练时，对 FFN 内的参数使用更高的 dropout 率，提升正则化</p>
+</li>
+<li><p><strong>初始化：</strong> Router 权重 $W_r$ 初始化时使用更小的方差（$\sigma &#x3D; 0.1$，而非标准的 $1&#x2F;\sqrt{d_{model}}$），防止训练初期路由过于极端</p>
+</li>
+<li><p><strong>BFloat16 精度：</strong> 与 Dense 模型相比，MoE 中的路由计算对精度更敏感，使用 BFloat16 而非 Float16 可以减少上溢&#x2F;下溢</p>
+</li>
+</ol>
+<h3 id="3-4-Switch-Transformers-的规模"><a href="#3-4-Switch-Transformers-的规模" class="headerlink" title="3.4 Switch Transformers 的规模"></a>3.4 Switch Transformers 的规模</h3><p>Switch Transformers 训练了高达 <strong>1.6T 参数</strong>的模型（使用 2048 个专家），每次推理激活约 1&#x2F;2048 的参数。在固定计算量下，比 Dense T5-11B 模型的 perplexity 低约 0.7 nats。</p>
+<p>这证明了超大规模 MoE 的可行性，为后续工作奠定了基础。</p>
+<hr>
+<h2 id="四、Mixtral-8x7B：第一个广泛使用的开源-MoE-模型"><a href="#四、Mixtral-8x7B：第一个广泛使用的开源-MoE-模型" class="headerlink" title="四、Mixtral 8x7B：第一个广泛使用的开源 MoE 模型"></a>四、Mixtral 8x7B：第一个广泛使用的开源 MoE 模型</h2><p><strong>论文：</strong> Mixtral of Experts（Jiang et al., Mistral AI, 2024）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2401.04088">arXiv:2401.04088</a></p>
+<h3 id="4-1-架构"><a href="#4-1-架构" class="headerlink" title="4.1 架构"></a>4.1 架构</h3><p>Mixtral 8x7B 是 Mistral 7B 的 MoE 扩展版本：</p>
+<ul>
+<li>8 个专家（Expert），每个专家是一个标准的 FFN 网络（与 Mistral 7B 同尺寸）</li>
+<li>Top-2 路由：每个 token 路由到 2 个专家，两个专家的输出加权平均</li>
+<li>总参数：约 46.7B（8 × 7B，但各层共享注意力机制）</li>
+<li>每次激活参数：约 12.9B（2 × 7B，减去共享部分）</li>
+</ul>
+<p><strong>路由机制：</strong></p>
+<p>$$G(x) = \text{Softmax}(\text{TopK}(x \cdot W_g, 2))$$</p>
+<p>其中 TopK 函数保留前 2 个最大值，其余置为 $-\infty$（softmax 后变为 0）：</p>
+<p>$$y = \sum_{i=1}^8 G_i(x) \cdot E_i(x)$$</p>
+<p>只有 $G_i(x) &gt; 0$ 的专家才实际执行计算，其余不参与。</p>
+<h3 id="4-2-性能"><a href="#4-2-性能" class="headerlink" title="4.2 性能"></a>4.2 性能</h3><p><strong>与 Llama 2 70B 的对比：</strong></p>
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>Llama 2 70B</th>
+<th>Mixtral 8x7B</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MMLU</td>
+<td>68.9%</td>
+<td>70.6%</td>
+</tr>
+<tr>
+<td>HellaSwag</td>
+<td>87.3%</td>
+<td>86.7%</td>
+</tr>
+<tr>
+<td>HumanEval</td>
+<td>29.9%</td>
+<td>40.2%</td>
+</tr>
+<tr>
+<td>Math</td>
+<td>11.1%</td>
+<td>22.2%</td>
+</tr>
+</tbody></table>
+<p>Mixtral 8x7B 在相同推理计算量下（12.9B vs 70B 激活参数，推理快约 5.4 倍），在大多数 benchmark 上超越或持平 Llama 2 70B。</p>
+<p><strong>开源意义：</strong> Mixtral 8x7B 是第一个广泛开源且高性能的 MoE 模型，证明了 MoE 架构的实用性，推动了社区对 MoE 的深入研究。</p>
+<hr>
+<h2 id="五、DeepSeekMoE：细粒度专家的突破"><a href="#五、DeepSeekMoE：细粒度专家的突破" class="headerlink" title="五、DeepSeekMoE：细粒度专家的突破"></a>五、DeepSeekMoE：细粒度专家的突破</h2><p><strong>论文：</strong> DeepSeekMoE: Towards Ultimate Expert Specialization in Mixture-of-Experts Language Models（Dai et al., DeepSeek-AI, 2024）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2401.06066">arXiv:2401.06066</a></p>
+<h3 id="5-1-标准-MoE-的专家利用率问题"><a href="#5-1-标准-MoE-的专家利用率问题" class="headerlink" title="5.1 标准 MoE 的专家利用率问题"></a>5.1 标准 MoE 的专家利用率问题</h3><p>标准 Top-K MoE（如 Mixtral 8x7B）的一个潜在问题：每个专家负责处理种类繁多的 token，每个专家需要”同时擅长很多事”，难以真正专业化。</p>
+<p><strong>类比：</strong> 如果你需要解决各种复杂问题，与其使用 8 个”全能专家”，不如使用更多个各有专攻的”细分专家”——同样的总知识量，但每个专家可以更专注。</p>
+<h3 id="5-2-DeepSeekMoE-的细粒度设计"><a href="#5-2-DeepSeekMoE-的细粒度设计" class="headerlink" title="5.2 DeepSeekMoE 的细粒度设计"></a>5.2 DeepSeekMoE 的细粒度设计</h3><p><strong>核心思路：将 $N$ 个大专家替换为 $mN$ 个小专家（$m &gt; 1$），同时激活 $mK$ 个小专家（总计算量相同，但专家更细化）。</strong></p>
+<p>数学上：</p>
+<ul>
+<li>标准 MoE：$N$ 个专家，每个维度 $d_{ff}$，激活 $K$ 个</li>
+<li>DeepSeekMoE：$mN$ 个专家，每个维度 $d_{ff}&#x2F;m$，激活 $mK$ 个</li>
+</ul>
+<p>总计算量相同（$K \times d_{ff} &#x3D; mK \times d_{ff}&#x2F;m$），但专家数量更多、每个更小、选择更多元。</p>
+<p><strong>额外创新：共享专家（Shared Expert）</strong></p>
+<p>DeepSeekMoE 发现，某些知识是所有 token 都需要的（如基本语法规则、通用世界知识），可以提取出来放在固定激活的”共享专家”中：</p>
+<p>$$y = u \cdot \sum_{i=1}^{K_s} E_i^{shared}(x) + \sum_{j \in \text{Top-K}_r} g_j \cdot E_j^{routed}(x)$$</p>
+<p>其中 $K_s$ 个共享专家始终激活，$K_r$ 个路由专家根据 token 内容选择。</p>
+<p><strong>效果：</strong></p>
+<ul>
+<li>相同计算量下，DeepSeekMoE 的 perplexity 比标准 Top-2 MoE 低约 0.4 nats</li>
+<li>专家利用率（每个专家接收不同类型 token 的均匀性）显著提高，表明专家实现了更好的专业化</li>
+</ul>
+<hr>
+<h2 id="六、DeepSeek-V2-V3：最先进的-MoE-实现"><a href="#六、DeepSeek-V2-V3：最先进的-MoE-实现" class="headerlink" title="六、DeepSeek-V2&#x2F;V3：最先进的 MoE 实现"></a>六、DeepSeek-V2&#x2F;V3：最先进的 MoE 实现</h2><h3 id="6-1-DeepSeek-V2（2024）"><a href="#6-1-DeepSeek-V2（2024）" class="headerlink" title="6.1 DeepSeek-V2（2024）"></a>6.1 DeepSeek-V2（2024）</h3><p><strong>论文：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2405.04434">arXiv:2405.04434</a></p>
+<p>DeepSeek-V2 首次提出了 MLA（Multi-head Latent Attention），与 DeepSeekMoE 结合，构成了 DeepSeek 系列的技术核心。</p>
+<p><strong>MoE 配置：</strong></p>
+<ul>
+<li>总参数：236B</li>
+<li>每次激活：21B（约 8.9%）</li>
+<li>路由专家：每层 160 个，每 token 选 6 个（Top-6）</li>
+<li>共享专家：每层 2 个（始终激活）</li>
+</ul>
+<h3 id="6-2-DeepSeek-V3-的-MoE-配置"><a href="#6-2-DeepSeek-V3-的-MoE-配置" class="headerlink" title="6.2 DeepSeek-V3 的 MoE 配置"></a>6.2 DeepSeek-V3 的 MoE 配置</h3><p><strong>论文：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2412.19437">arXiv:2412.19437</a></p>
+<p>DeepSeek-V3 是目前公开的规模最大、技术细节最完整的顶级 MoE 模型。</p>
+<p><strong>MoE 配置：</strong></p>
+<ul>
+<li>每层总专家数：256 个路由专家 + 1 个共享专家</li>
+<li>每 token 选择：Top-8 路由专家 + 1 共享专家 &#x3D; 9 个专家</li>
+<li>专家 FFN 维度：$d_{ff}^{expert} &#x3D; 2048$（较小）</li>
+<li>总激活参数：37B</li>
+</ul>
+<p><strong>架构公式：</strong></p>
+<p>$$y = E^{shared}(x) + \sum_{i \in \text{Top-8}} g_i \cdot E_i^{routed}(x)$$</p>
+<p>其中 $g_i$ 是归一化后的路由权重：</p>
+<p>$$g_i = \frac{s_i}{\sum_{j \in \text{Top-K}} s_j}, \quad s_i = \text{Sigmoid}(h_i(x))$$</p>
+<p>注意：使用 <strong>Sigmoid</strong> 而非 Softmax 计算路由权重，然后对 Top-K 归一化。这个细节差异来自 DeepSeek 的实验发现：Sigmoid + 归一化比纯 Softmax 在深层 MoE 中更稳定。</p>
+<h3 id="6-3-Auxiliary-Loss-Free-负载均衡"><a href="#6-3-Auxiliary-Loss-Free-负载均衡" class="headerlink" title="6.3 Auxiliary-Loss-Free 负载均衡"></a>6.3 Auxiliary-Loss-Free 负载均衡</h3><p><strong>DeepSeek-V3 最重要的创新之一：</strong> 去掉了辅助损失（Auxiliary Loss），改用 Bias 机制维持负载均衡。</p>
+<p><strong>背景：</strong> 辅助损失（Switch Transformer 提出）有一个已知问题——它与语言建模损失相互竞争，强化辅助损失会降低模型性能，而弱化它会导致负载不均衡，形成难以调节的权衡。</p>
+<p><strong>DeepSeek-V3 的 Bias 方法：</strong></p>
+<p>在路由逻辑分数 $h_i(x)$ 上加一个可调整的 bias 项 $b_i$：</p>
+<p>$$\text{routing score}_i = h_i(x) + b_i$$</p>
+<p>但 Top-K 选择后，实际使用的门控权重仍然基于原始 $s_i &#x3D; \text{Sigmoid}(h_i(x))$（不含 bias）。</p>
+<p>Bias 的更新规则（非梯度）：</p>
+<ul>
+<li>如果专家 $i$ 在最近的训练步骤中<strong>过载</strong>（接收 token 太多）：$b_i \leftarrow b_i - \gamma$</li>
+<li>如果专家 $i$ 在最近的训练步骤中<strong>欠载</strong>（接收 token 太少）：$b_i \leftarrow b_i + \gamma$</li>
+</ul>
+<p>这相当于一个简单的负反馈控制器，动态调整每个专家的”吸引力”，而不干扰语言建模损失的优化。</p>
+<p><strong>效果：</strong> 相比辅助损失方法，perplexity 提升约 0.3 nats（相同计算量下）。</p>
+<h3 id="6-4-Multi-Token-Prediction（多-Token-预测）"><a href="#6-4-Multi-Token-Prediction（多-Token-预测）" class="headerlink" title="6.4 Multi-Token Prediction（多 Token 预测）"></a>6.4 Multi-Token Prediction（多 Token 预测）</h3><p>DeepSeek-V3 引入了 <strong>Multi-Token Prediction（MTP）</strong> 训练目标：在预测下一个 token 的同时，也预测后续 2 个 token。</p>
+<p><strong>架构：</strong></p>
+<p>在标准的 Next Token Prediction 损失之外，DeepSeek-V3 使用了额外的预测头来预测位置 $t+1$ 和 $t+2$ 的 token：</p>
+<p>$$\mathcal{L}_{\text{MTP}} = \mathcal{L}_1 + \lambda (\mathcal{L}_2 + \mathcal{L}_3)$$</p>
+<p>其中 $\mathcal{L}_1$ 是标准 NTP 损失，$\mathcal{L}_2, \mathcal{L}_3$ 是预测后续 token 的损失，$\lambda$ 是权重系数（DeepSeek-V3 使用 $\lambda &#x3D; 0.3$）。</p>
+<p><strong>动机（来自论文）：</strong></p>
+<ol>
+<li>迫使模型”向前看”更多 token，学习更长期的依赖关系</li>
+<li>额外的预测头在推理时可以用于<strong>推测解码（Speculative Decoding）</strong>——用额外预测头的输出作为”草稿 token”，然后让主模型验证，加速推理</li>
+</ol>
+<p><strong>训练效果：</strong> 在固定计算量下，MTP 训练使验证集 perplexity 降低约 0.5%。</p>
+<hr>
+<h2 id="七、MoE-的分布式训练挑战"><a href="#七、MoE-的分布式训练挑战" class="headerlink" title="七、MoE 的分布式训练挑战"></a>七、MoE 的分布式训练挑战</h2><h3 id="7-1-专家并行（Expert-Parallelism）"><a href="#7-1-专家并行（Expert-Parallelism）" class="headerlink" title="7.1 专家并行（Expert Parallelism）"></a>7.1 专家并行（Expert Parallelism）</h3><p>在分布式训练中，MoE 引入了一种特殊的并行策略：<strong>专家并行</strong>。</p>
+<p>将不同的专家分配到不同的 GPU 上：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">GPU 0: Expert 0, 32, 64, ...</span><br><span class="line">GPU 1: Expert 1, 33, 65, ...</span><br><span class="line">...</span><br><span class="line">GPU 31: Expert 31, 63, 95, ...</span><br></pre></td></tr></table></figure>
+
+<p><strong>All-to-All 通信：</strong> 每个 token 需要路由到特定专家的 GPU，这需要全局的 All-to-All 通信，每层都需要两次（输入数据分发 + 输出数据聚合）。</p>
+<p><strong>通信瓶颈：</strong> All-to-All 通信的量与 token 数量和专家数量成正比。DeepSeek-V3 使用 256 个专家，All-to-All 通信成为训练效率的主要瓶颈之一。</p>
+<p><strong>DeepSeek-V3 的优化（Node-Limited Routing）：</strong> 为减少跨节点通信（跨节点带宽远低于节点内带宽），DeepSeek-V3 设计了一个约束：每个 token 最多路由到 $M$ 个不同的节点（$M&#x3D;4$）。这减少了跨节点流量，同时通过足够多的专家总数（256 个）保持了足够的选择多样性。</p>
+<h3 id="7-2-负载均衡与-GPU-利用率"><a href="#7-2-负载均衡与-GPU-利用率" class="headerlink" title="7.2 负载均衡与 GPU 利用率"></a>7.2 负载均衡与 GPU 利用率</h3><p>在 MoE 的批量推理中，不同专家接收到的 token 数量不均匀，导致部分 GPU 繁忙（处理热门专家），部分 GPU 空闲（处理冷门专家），GPU 利用率下降。</p>
+<p><strong>Expert Capacity</strong> 机制（见第三节）部分缓解了这个问题，但会导致溢出 token 信息损失。</p>
+<p><strong>DeepSeek-V3 的解决方案：</strong> 将负载均衡设计为训练时优化目标的一部分（通过 Auxiliary-Loss-Free 方法），同时在推理框架中实现动态调度，减少等待时间。</p>
+<hr>
+<h2 id="八、MoE-vs-Dense：工程权衡全面分析"><a href="#八、MoE-vs-Dense：工程权衡全面分析" class="headerlink" title="八、MoE vs Dense：工程权衡全面分析"></a>八、MoE vs Dense：工程权衡全面分析</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Dense 模型</th>
+<th>MoE 模型</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>推理计算量（FLOPs&#x2F;token）</td>
+<td>高（与总参数量正比）</td>
+<td>低（只激活部分专家）</td>
+</tr>
+<tr>
+<td>推理内存带宽</td>
+<td>较低（所有参数都被使用）</td>
+<td>较高（需要加载所有专家，但只计算部分）</td>
+</tr>
+<tr>
+<td>训练效率</td>
+<td>高（无路由开销）</td>
+<td>略低（额外的路由计算和通信）</td>
+</tr>
+<tr>
+<td>模型容量（参数量）</td>
+<td>受显存限制</td>
+<td>可以更大（分布在多 GPU）</td>
+</tr>
+<tr>
+<td>训练稳定性</td>
+<td>高</td>
+<td>较低（路由崩塌风险）</td>
+</tr>
+<tr>
+<td>推理延迟（单次）</td>
+<td>较低（无 All-to-All）</td>
+<td>较高（专家并行通信开销）</td>
+</tr>
+<tr>
+<td>推理吞吐量（批量）</td>
+<td>受计算量限制</td>
+<td>更高（相同计算量，更大容量）</td>
+</tr>
+<tr>
+<td>参数效率</td>
+<td>高（每个参数都用到）</td>
+<td>较低（稀疏激活，部分参数利用率低）</td>
+</tr>
+<tr>
+<td>工程复杂度</td>
+<td>低</td>
+<td>高（路由、负载均衡、专家并行）</td>
+</tr>
+</tbody></table>
+<p><strong>结论：</strong> MoE 的核心优势是在<strong>相同推理计算量下提供更大的模型容量</strong>，代价是工程复杂度大幅提升。对于需要广博知识（多语言、多领域）同时要保持推理效率的场景，MoE 是理想选择。</p>
+<hr>
+<h2 id="九、DeepSeek-V3-完整-MoE-架构参数总结"><a href="#九、DeepSeek-V3-完整-MoE-架构参数总结" class="headerlink" title="九、DeepSeek-V3 完整 MoE 架构参数总结"></a>九、DeepSeek-V3 完整 MoE 架构参数总结</h2><p>以下数据来自 DeepSeek-V3 技术报告（<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2412.19437">arXiv:2412.19437</a>）：</p>
+<p><strong>整体架构：</strong></p>
+<ul>
+<li>Transformer 层数：61 层（其中前 3 层用 Dense FFN，后 58 层用 MoE FFN）</li>
+<li>总参数量：671B</li>
+<li>每次激活参数量：37B</li>
+<li>上下文长度：128K tokens</li>
+</ul>
+<p><strong>注意力层（使用 MLA）：</strong></p>
+<ul>
+<li>Query 头数：128</li>
+<li>每头 Query 维度：128</li>
+<li>KV 压缩维度（低秩）：512（相比展开后的 16384 大幅压缩）</li>
+</ul>
+<p><strong>MoE 层（每层）：</strong></p>
+<ul>
+<li>共享专家数：1</li>
+<li>路由专家总数：256</li>
+<li>每 token 选择路由专家数：8</li>
+<li>每个专家的 FFN 维度（$d_{ff}^{expert}$）：2048</li>
+<li>负载均衡：Auxiliary-Loss-Free + Bias 机制</li>
+</ul>
+<p><strong>训练配置：</strong></p>
+<ul>
+<li>训练数据：14.8T tokens</li>
+<li>批次大小：15,360 sequences × 4096 tokens &#x3D; 62.9M tokens&#x2F;step</li>
+<li>峰值学习率：$2.2 \times 10^{-4}$，余弦衰减</li>
+<li>优化器：AdamW，$\beta_1 &#x3D; 0.9$，$\beta_2 &#x3D; 0.95$，$\epsilon &#x3D; 10^{-8}$</li>
+<li>精度：FP8（主要计算），BF16（梯度累加）</li>
+<li>训练硬件：2048 张 H800 GPU</li>
+<li>训练时长：约 2.788M GPU 小时</li>
+</ul>
+<p><strong>训练成本估算：</strong> 按 H800 GPU 租金约 $2&#x2F;小时，约 550 万美元——远低于 GPT-4 等级模型的估计（数亿美元量级），主要归功于：</p>
+<ol>
+<li>MoE 架构减少了每步计算量</li>
+<li>FP8 精度将计算效率提升 1.5-2 倍</li>
+<li>DeepSeek 的工程优化（Auxiliary-Loss-Free 减少训练不稳定）</li>
+</ol>
+<hr>
+<h2 id="十、MoE-专家的专业化：实验证据"><a href="#十、MoE-专家的专业化：实验证据" class="headerlink" title="十、MoE 专家的专业化：实验证据"></a>十、MoE 专家的专业化：实验证据</h2><h3 id="10-1-专家分工的实验研究"><a href="#10-1-专家分工的实验研究" class="headerlink" title="10.1 专家分工的实验研究"></a>10.1 专家分工的实验研究</h3><p>Mixtral 的技术报告分析了不同专家的激活分布，发现：</p>
+<ul>
+<li><strong>语言专业化：</strong> 在处理不同语言（英语、法语、德语、中文）时，激活的专家集合有显著差异</li>
+<li><strong>任务专业化：</strong> 处理代码和处理自然语言时，激活不同的专家组合</li>
+<li><strong>层次专业化：</strong> 靠近输入的层（低层）的专家更关注语法&#x2F;表层特征；靠近输出的层（高层）更关注语义&#x2F;任务特征</li>
+</ul>
+<h3 id="10-2-DeepSeekMoE-的专业化分析"><a href="#10-2-DeepSeekMoE-的专业化分析" class="headerlink" title="10.2 DeepSeekMoE 的专业化分析"></a>10.2 DeepSeekMoE 的专业化分析</h3><p>DeepSeekMoE 论文（<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2401.06066">arXiv:2401.06066</a>）对专家专业化进行了定量分析：</p>
+<p><strong>专家专业化指数（Expert Specialization Index）：</strong> 定义为某专家的 token 分布的 KL 散度，衡量该专家与均匀分布的偏差程度。指数越高，说明专家越专注于特定类型的 token。</p>
+<p>实验发现：使用细粒度专家（更多、更小的专家）后，平均专业化指数提高了约 40%，说明专家确实实现了更精细的分工。</p>
+<hr>
+<h2 id="十一、MoE-的未来方向"><a href="#十一、MoE-的未来方向" class="headerlink" title="十一、MoE 的未来方向"></a>十一、MoE 的未来方向</h2><p><strong>稀疏度提升：</strong> 从目前的 “256 个专家，每次选 8 个”（3%）向更稀疏的方向探索，理论上允许更大的模型容量。</p>
+<p><strong>Mixture of Depths（MoD）：</strong> 不只是在专家层面稀疏，在层（Layer）层面也稀疏——不是每个 token 都需要经过所有层，复杂的 token 经过更多层。这与 MoE 可以结合（MoE + MoD），进一步提高参数效率。</p>
+<p><strong>可解释的专家结构：</strong> 目前 MoE 的路由是”黑盒”的，研究人员正在尝试引导专家学习人类可理解的分工（如语言、领域、任务类型），提高可解释性。</p>
+<p><strong>专家通信（Expert Communication）：</strong> 当前 MoE 的专家之间是独立的，但某些任务可能需要多个专家合作。允许专家之间信息交换可能进一步提升能力。</p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2026/06/14/MoE%E7%A8%80%E7%96%8F%E6%9E%B6%E6%9E%84%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/">http://tufusi.com/2026/06/14/MoE%E7%A8%80%E7%96%8F%E6%9E%B6%E6%9E%84%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/MoE/">MoE    </a><a class="post-meta__tags" href="/tags/%E7%A8%80%E7%96%8F%E6%9E%B6%E6%9E%84/">稀疏架构    </a><a class="post-meta__tags" href="/tags/DeepSeek-V3/">DeepSeek-V3    </a><a class="post-meta__tags" href="/tags/Mixtral/">Mixtral    </a><a class="post-meta__tags" href="/tags/Switch-Transformer/">Switch-Transformer    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_data_has_a_better_idea.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2026/06/14/LLM%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96%E4%B8%8E%E9%87%8F%E5%8C%96%E4%BA%A4%E6%98%93%E5%BA%94%E7%94%A8/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_ai_robot.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>LLM 推理优化与量化交易应用</span></div></a></div><div class="next-post pull_right"><a href="/2026/06/14/RLHF%E5%AE%8C%E6%95%B4%E6%8A%80%E6%9C%AF%E8%A7%A3%E6%9E%90/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_ai_robot.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>RLHF 完整技术解析</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_data_has_a_better_idea.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><script>(function(){
+  if (window.innerWidth > 900) return;
+  var toc = document.querySelector('#sidebar .toc');
+  if (!toc) return;
+  var btn = document.createElement('div');
+  btn.id = 'mobile-toc-float';
+  btn.innerHTML = '<i class="fa fa-list"></i>';
+  btn.onclick = function(){
+    var panel = document.getElementById('mobile-toc-panel');
+    if (panel) {
+      panel.classList.toggle('show');
+    } else {
+      panel = document.createElement('div');
+      panel.id = 'mobile-toc-panel';
+      panel.innerHTML = '<div class="mobile-toc-title">目录 <span class="mobile-toc-close">&times;</span></div>';
+      panel.querySelector('.mobile-toc-close').onclick = function(){ panel.classList.remove('show'); };
+      panel.appendChild(toc.cloneNode(true));
+      var links = panel.querySelectorAll('.toc-link');
+      links.forEach(function(l){ l.onclick = function(){ panel.classList.remove('show'); }; });
+      document.body.appendChild(panel);
+      panel.addEventListener('click', function(e){
+        if (e.target === panel) panel.classList.remove('show');
+      });
+    }
+    panel.classList.toggle('show');
+  };
+  document.body.appendChild(btn);
+})();</script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  var SERIES_ROUTES = {"harness":"/harness"};
+
+  // 检查是否已解锁的辅助函数
+  function isUnlocked(seriesKey) {
+    var routes = {"harness":"_hexo_protect_harness"};
+    var sk = routes[seriesKey];
+    return sk ? !!sessionStorage.getItem(sk) : false;
+  }
+
+  // 找到系列名对应的 gate_path
+  function getGatePath(seriesKey) {
+    return SERIES_ROUTES[seriesKey] || SERIES_ROUTES["harness"];
+  }
+
+  // 处理列表页中的受保护文章卡片的系列归属
+  function findSeriesKey(item) {
+    // 从分类链接中提取系列名
+    var catLinks = item.querySelectorAll('a[href*="/categories/"]');
+    for (var i = 0; i < catLinks.length; i++) {
+      var href = catLinks[i].getAttribute("href") || "";
+      // 检查是否匹配某个 known series
+      var keys = Object.keys(SERIES_ROUTES);
+      for (var j = 0; j < keys.length; j++) {
+        // 大多数系列对应一个分类目录，通过检查 /Harness/ 等路径
+        // 如果分类路径中包含系列名（忽略大小写），则匹配
+        if (href.toLowerCase().indexOf("/" + keys[j].toLowerCase() + "/") !== -1 ||
+            href.toLowerCase().indexOf("/" + keys[j].toLowerCase()) !== -1) {
+          return keys[j];
+        }
+      }
+    }
+    // 如果找不到匹配，检查全局 — 如果有任何未解锁的系列，默认使用该系列
+    return null;
+  }
+
+  // 处理文章卡片
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var seriesKey = findSeriesKey(item);
+    if (!seriesKey) return;
+    if (isUnlocked(seriesKey)) return;
+
+    var gatePath = getGatePath(seriesKey);
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = gatePath;
+      titleLink.style.opacity = "0.5";
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 处理分类/标签/归档页中的 Harness 分类链接
+  Object.values(SERIES_ROUTES).forEach(function(gatePath) {
+    // 这里不做全部处理，只在全局未解锁时替换
+  });
+
+  // 全局检查：对于所有受保护的分类链接，如果对应系列未解锁则替换
+  var allCatLinks = document.querySelectorAll("a[href*='/Harness']");
+  allCatLinks.forEach(function(link){
+    var seriesKey = "harness"; // Harness 系列默认
+    if (isUnlocked(seriesKey)) return;
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = SERIES_ROUTES[seriesKey];
+    }
+  });
+})();
+</script>
+</body></html>

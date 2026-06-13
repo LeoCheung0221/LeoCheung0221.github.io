@@ -1,0 +1,490 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>Constitutional AI 与 Claude 对齐技术深度解析 | ONE·PIECE</title><meta name="description" content="《Constitutional AI 与 Claude 对齐技术深度解析》— LLM 核心技术深度系列，基于公开论文的系统化技术解析"><meta name="keywords" content="Constitutional-AI,Claude,Anthropic,AI安全,可解释性"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Constitutional AI 与 Claude 对齐技术深度解析"><meta name="twitter:description" content="《Constitutional AI 与 Claude 对齐技术深度解析》— LLM 核心技术深度系列，基于公开论文的系统化技术解析"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_ai_robot.jpg"><meta property="og:type" content="article"><meta property="og:title" content="Constitutional AI 与 Claude 对齐技术深度解析"><meta property="og:url" content="http://tufusi.com/2026/06/14/Constitutional-AI%E4%B8%8EClaude%E5%AF%B9%E9%BD%90%E6%8A%80%E6%9C%AF%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="《Constitutional AI 与 Claude 对齐技术深度解析》— LLM 核心技术深度系列，基于公开论文的系统化技术解析"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_ai_robot.jpg"><meta property="og:locale" content="zh_CN"><meta property="article:published_time" content="2026-06-14T00:00:00+08:00"><meta property="article:modified_time" content="2026-06-14T00:50:36+08:00"><meta property="article:author" content="Leo·Cheung"><meta property="article:tag" content="Constitutional-AI"><meta property="article:tag" content="Claude"><meta property="article:tag" content="Anthropic"><meta property="article:tag" content="AI安全"><meta property="article:tag" content="可解释性"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2026/06/14/Constitutional-AI%E4%B8%8EClaude%E5%AF%B9%E9%BD%90%E6%8A%80%E6%9C%AF%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/"><link rel="next" title="LLM 推理优化与量化交易应用" href="http://tufusi.com/2026/06/14/LLM%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96%E4%B8%8E%E9%87%8F%E5%8C%96%E4%BA%A4%E6%98%93%E5%BA%94%E7%94%A8/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Constitutional AI 与 Claude 对齐技术深度解析",
+  "author": { "@type": "Person", "name": "Leo·Cheung" },
+  "datePublished": "2026-06-14T00:00:00+08:00",
+  "dateModified": "2026-06-14T00:50:36+08:00",
+  "description": "《Constitutional AI 与 Claude 对齐技术深度解析》— LLM 核心技术深度系列，基于公开论文的系统化技术解析",
+  "url": "http://tufusi.com/2026/06/14/Constitutional-AI%E4%B8%8EClaude%E5%AF%B9%E9%BD%90%E6%8A%80%E6%9C%AF%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/",
+  "publisher": { "@type": "Person", "name": "Leo·Cheung" }
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">252</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">93</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#Constitutional-AI-%E4%B8%8E-Claude-%E5%AF%B9%E9%BD%90%E6%8A%80%E6%9C%AF%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">Constitutional AI 与 Claude 对齐技术深度解析</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E8%83%8C%E6%99%AF%EF%BC%9AAnthropic-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%8F%91%E6%98%8E-Constitutional-AI"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">一、背景：Anthropic 为什么要发明 Constitutional AI</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-Anthropic-%E7%9A%84%E4%BD%BF%E5%91%BD%E4%B8%8E%E5%AE%89%E5%85%A8%E5%AF%BC%E5%90%91"><span class="toc_mobile_items-number">1.1.1.</span> <span class="toc_mobile_items-text">1.1 Anthropic 的使命与安全导向</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-2-%E6%A0%87%E5%87%86-RLHF-%E7%9A%84%E4%B8%A4%E4%B8%AA%E6%A0%B8%E5%BF%83%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">1.1.2.</span> <span class="toc_mobile_items-text">1.2 标准 RLHF 的两个核心问题</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81Constitutional-AI-%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">二、Constitutional AI 的核心思想</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-%E4%BB%80%E4%B9%88%E6%98%AF%E2%80%9D%E5%AE%AA%E6%B3%95%E2%80%9D%EF%BC%88Constitution%EF%BC%89"><span class="toc_mobile_items-number">1.2.1.</span> <span class="toc_mobile_items-text">2.1 什么是”宪法”（Constitution）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-CAI-%E7%9A%84%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">1.2.2.</span> <span class="toc_mobile_items-text">2.2 CAI 的核心机制</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81%E9%98%B6%E6%AE%B5%E4%B8%80%EF%BC%9ASL-CAI%EF%BC%88%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E9%98%B6%E6%AE%B5%EF%BC%89"><span class="toc_mobile_items-number">1.3.</span> <span class="toc_mobile_items-text">三、阶段一：SL-CAI（监督学习阶段）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-Red-Teaming-%E7%94%9F%E6%88%90%E6%9C%89%E5%AE%B3%E5%9B%9E%E5%A4%8D"><span class="toc_mobile_items-number">1.3.1.</span> <span class="toc_mobile_items-text">3.1 Red Teaming 生成有害回复</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E6%89%B9%E8%AF%84-%E4%BF%AE%E8%AE%A2%E5%BE%AA%E7%8E%AF%EF%BC%88Critique-Revision-Cycle%EF%BC%89"><span class="toc_mobile_items-number">1.3.2.</span> <span class="toc_mobile_items-text">3.2 批评-修订循环（Critique-Revision Cycle）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-3-SFT-%E8%AE%AD%E7%BB%83"><span class="toc_mobile_items-number">1.3.3.</span> <span class="toc_mobile_items-text">3.3 SFT 训练</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81%E9%98%B6%E6%AE%B5%E4%BA%8C%EF%BC%9ARL-CAI%EF%BC%88%E7%94%A8-AI-%E5%8F%8D%E9%A6%88%E8%BF%9B%E8%A1%8C%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%EF%BC%89"><span class="toc_mobile_items-number">1.4.</span> <span class="toc_mobile_items-text">四、阶段二：RL-CAI（用 AI 反馈进行强化学习）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-AI-%E7%94%9F%E6%88%90%E5%81%8F%E5%A5%BD%E6%A0%87%E6%B3%A8"><span class="toc_mobile_items-number">1.4.1.</span> <span class="toc_mobile_items-text">4.1 AI 生成偏好标注</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-%E8%AE%AD%E7%BB%83%E5%81%8F%E5%A5%BD%E6%A8%A1%E5%9E%8B%EF%BC%88Preference-Model%EF%BC%89"><span class="toc_mobile_items-number">1.4.2.</span> <span class="toc_mobile_items-text">4.2 训练偏好模型（Preference Model）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-PPO-%E8%AE%AD%E7%BB%83"><span class="toc_mobile_items-number">1.4.3.</span> <span class="toc_mobile_items-text">4.3 PPO 训练</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81Helpful-Harmless-Honest%EF%BC%88HHH%EF%BC%89%E6%A1%86%E6%9E%B6"><span class="toc_mobile_items-number">1.5.</span> <span class="toc_mobile_items-text">五、Helpful-Harmless-Honest（HHH）框架</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E6%9C%89%E5%B8%AE%E5%8A%A9%EF%BC%88Helpful%EF%BC%89"><span class="toc_mobile_items-number">1.5.1.</span> <span class="toc_mobile_items-text">5.1 有帮助（Helpful）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-%E6%97%A0%E5%AE%B3%EF%BC%88Harmless%EF%BC%89"><span class="toc_mobile_items-number">1.5.2.</span> <span class="toc_mobile_items-text">5.2 无害（Harmless）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-3-%E8%AF%9A%E5%AE%9E%EF%BC%88Honest%EF%BC%89"><span class="toc_mobile_items-number">1.5.3.</span> <span class="toc_mobile_items-text">5.3 诚实（Honest）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81Claude-%E7%9A%84%E5%AE%AA%E6%B3%95-vs-%E6%A0%87%E5%87%86-RLHF%EF%BC%9A%E6%8A%80%E6%9C%AF%E5%AF%B9%E6%AF%94"><span class="toc_mobile_items-number">1.6.</span> <span class="toc_mobile_items-text">六、Claude 的宪法 vs 标准 RLHF：技术对比</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81%E4%BB%8E-Claude-1-%E5%88%B0-Claude-3-4%EF%BC%9A%E6%8A%80%E6%9C%AF%E6%BC%94%E8%BF%9B"><span class="toc_mobile_items-number">1.7.</span> <span class="toc_mobile_items-text">七、从 Claude 1 到 Claude 3&#x2F;4：技术演进</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-%E8%A7%84%E6%A8%A1%E5%A2%9E%E9%95%BF"><span class="toc_mobile_items-number">1.7.1.</span> <span class="toc_mobile_items-text">7.1 规模增长</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-Constitutional-AI-%E7%9A%84%E8%BF%AD%E4%BB%A3"><span class="toc_mobile_items-number">1.7.2.</span> <span class="toc_mobile_items-text">7.2 Constitutional AI 的迭代</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-3-%E7%BA%A2%E9%98%9F%E6%B5%8B%E8%AF%95%EF%BC%88Red-Teaming%EF%BC%89%E7%9A%84%E7%B3%BB%E7%BB%9F%E5%8C%96"><span class="toc_mobile_items-number">1.7.3.</span> <span class="toc_mobile_items-text">7.3 红队测试（Red Teaming）的系统化</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-4-Extended-Thinking%EF%BC%88%E6%89%A9%E5%B1%95%E6%80%9D%E8%80%83%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc_mobile_items-number">1.7.4.</span> <span class="toc_mobile_items-text">7.4 Extended Thinking（扩展思考模式）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81Anthropic-%E5%8F%AF%E8%A7%A3%E9%87%8A%E6%80%A7%E7%A0%94%E7%A9%B6%EF%BC%9A%E7%90%86%E8%A7%A3-Claude-%E7%9A%84%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6"><span class="toc_mobile_items-number">1.8.</span> <span class="toc_mobile_items-text">八、Anthropic 可解释性研究：理解 Claude 的内部机制</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-%E5%BD%92%E7%BA%B3%E5%A4%B4%EF%BC%88Induction-Heads%EF%BC%89"><span class="toc_mobile_items-number">1.8.1.</span> <span class="toc_mobile_items-text">8.1 归纳头（Induction Heads）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-%E5%8F%A0%E5%8A%A0%E5%8E%9F%E7%90%86%EF%BC%88Superposition%EF%BC%89"><span class="toc_mobile_items-number">1.8.2.</span> <span class="toc_mobile_items-text">8.2 叠加原理（Superposition）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-3-%E7%A8%80%E7%96%8F%E8%87%AA%E7%BC%96%E7%A0%81%E5%99%A8%EF%BC%88Sparse-Autoencoders-SAE%EF%BC%89"><span class="toc_mobile_items-number">1.8.3.</span> <span class="toc_mobile_items-text">8.3 稀疏自编码器（Sparse Autoencoders, SAE）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81%E5%80%BC%E5%BE%97%E5%85%B3%E6%B3%A8%E7%9A%84%E5%BC%80%E6%94%BE%E6%80%A7%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">1.9.</span> <span class="toc_mobile_items-text">九、值得关注的开放性问题</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-1-%E5%AE%AA%E6%B3%95%E6%9C%AC%E8%BA%AB%E7%9A%84%E5%81%8F%E8%A7%81"><span class="toc_mobile_items-number">1.9.1.</span> <span class="toc_mobile_items-text">9.1 宪法本身的偏见</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-2-AI-%E5%8F%8D%E9%A6%88%E7%9A%84%E8%87%AA%E6%88%91%E5%BC%BA%E5%8C%96%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">1.9.2.</span> <span class="toc_mobile_items-text">9.2 AI 反馈的自我强化问题</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-3-%E5%8F%AF%E8%A7%A3%E9%87%8A%E6%80%A7%E7%A0%94%E7%A9%B6%E7%9A%84%E5%8F%AF%E6%89%A9%E5%B1%95%E6%80%A7"><span class="toc_mobile_items-number">1.9.3.</span> <span class="toc_mobile_items-text">9.3 可解释性研究的可扩展性</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81CAI-%E7%9A%84%E5%BD%B1%E5%93%8D%E4%B8%8E%E6%84%8F%E4%B9%89"><span class="toc_mobile_items-number">1.10.</span> <span class="toc_mobile_items-text">十、CAI 的影响与意义</span></a></li></ol></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Constitutional-AI-%E4%B8%8E-Claude-%E5%AF%B9%E9%BD%90%E6%8A%80%E6%9C%AF%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc-number">1.</span> <span class="toc-text">Constitutional AI 与 Claude 对齐技术深度解析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%83%8C%E6%99%AF%EF%BC%9AAnthropic-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%8F%91%E6%98%8E-Constitutional-AI"><span class="toc-number">1.1.</span> <span class="toc-text">一、背景：Anthropic 为什么要发明 Constitutional AI</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Anthropic-%E7%9A%84%E4%BD%BF%E5%91%BD%E4%B8%8E%E5%AE%89%E5%85%A8%E5%AF%BC%E5%90%91"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.1 Anthropic 的使命与安全导向</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E6%A0%87%E5%87%86-RLHF-%E7%9A%84%E4%B8%A4%E4%B8%AA%E6%A0%B8%E5%BF%83%E9%97%AE%E9%A2%98"><span class="toc-number">1.1.2.</span> <span class="toc-text">1.2 标准 RLHF 的两个核心问题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Constitutional-AI-%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">1.2.</span> <span class="toc-text">二、Constitutional AI 的核心思想</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E4%BB%80%E4%B9%88%E6%98%AF%E2%80%9D%E5%AE%AA%E6%B3%95%E2%80%9D%EF%BC%88Constitution%EF%BC%89"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1 什么是”宪法”（Constitution）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-CAI-%E7%9A%84%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2 CAI 的核心机制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E9%98%B6%E6%AE%B5%E4%B8%80%EF%BC%9ASL-CAI%EF%BC%88%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E9%98%B6%E6%AE%B5%EF%BC%89"><span class="toc-number">1.3.</span> <span class="toc-text">三、阶段一：SL-CAI（监督学习阶段）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Red-Teaming-%E7%94%9F%E6%88%90%E6%9C%89%E5%AE%B3%E5%9B%9E%E5%A4%8D"><span class="toc-number">1.3.1.</span> <span class="toc-text">3.1 Red Teaming 生成有害回复</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%89%B9%E8%AF%84-%E4%BF%AE%E8%AE%A2%E5%BE%AA%E7%8E%AF%EF%BC%88Critique-Revision-Cycle%EF%BC%89"><span class="toc-number">1.3.2.</span> <span class="toc-text">3.2 批评-修订循环（Critique-Revision Cycle）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-SFT-%E8%AE%AD%E7%BB%83"><span class="toc-number">1.3.3.</span> <span class="toc-text">3.3 SFT 训练</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E9%98%B6%E6%AE%B5%E4%BA%8C%EF%BC%9ARL-CAI%EF%BC%88%E7%94%A8-AI-%E5%8F%8D%E9%A6%88%E8%BF%9B%E8%A1%8C%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%EF%BC%89"><span class="toc-number">1.4.</span> <span class="toc-text">四、阶段二：RL-CAI（用 AI 反馈进行强化学习）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-AI-%E7%94%9F%E6%88%90%E5%81%8F%E5%A5%BD%E6%A0%87%E6%B3%A8"><span class="toc-number">1.4.1.</span> <span class="toc-text">4.1 AI 生成偏好标注</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E8%AE%AD%E7%BB%83%E5%81%8F%E5%A5%BD%E6%A8%A1%E5%9E%8B%EF%BC%88Preference-Model%EF%BC%89"><span class="toc-number">1.4.2.</span> <span class="toc-text">4.2 训练偏好模型（Preference Model）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-PPO-%E8%AE%AD%E7%BB%83"><span class="toc-number">1.4.3.</span> <span class="toc-text">4.3 PPO 训练</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Helpful-Harmless-Honest%EF%BC%88HHH%EF%BC%89%E6%A1%86%E6%9E%B6"><span class="toc-number">1.5.</span> <span class="toc-text">五、Helpful-Harmless-Honest（HHH）框架</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%9C%89%E5%B8%AE%E5%8A%A9%EF%BC%88Helpful%EF%BC%89"><span class="toc-number">1.5.1.</span> <span class="toc-text">5.1 有帮助（Helpful）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E6%97%A0%E5%AE%B3%EF%BC%88Harmless%EF%BC%89"><span class="toc-number">1.5.2.</span> <span class="toc-text">5.2 无害（Harmless）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E8%AF%9A%E5%AE%9E%EF%BC%88Honest%EF%BC%89"><span class="toc-number">1.5.3.</span> <span class="toc-text">5.3 诚实（Honest）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81Claude-%E7%9A%84%E5%AE%AA%E6%B3%95-vs-%E6%A0%87%E5%87%86-RLHF%EF%BC%9A%E6%8A%80%E6%9C%AF%E5%AF%B9%E6%AF%94"><span class="toc-number">1.6.</span> <span class="toc-text">六、Claude 的宪法 vs 标准 RLHF：技术对比</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E4%BB%8E-Claude-1-%E5%88%B0-Claude-3-4%EF%BC%9A%E6%8A%80%E6%9C%AF%E6%BC%94%E8%BF%9B"><span class="toc-number">1.7.</span> <span class="toc-text">七、从 Claude 1 到 Claude 3&#x2F;4：技术演进</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E8%A7%84%E6%A8%A1%E5%A2%9E%E9%95%BF"><span class="toc-number">1.7.1.</span> <span class="toc-text">7.1 规模增长</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-Constitutional-AI-%E7%9A%84%E8%BF%AD%E4%BB%A3"><span class="toc-number">1.7.2.</span> <span class="toc-text">7.2 Constitutional AI 的迭代</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E7%BA%A2%E9%98%9F%E6%B5%8B%E8%AF%95%EF%BC%88Red-Teaming%EF%BC%89%E7%9A%84%E7%B3%BB%E7%BB%9F%E5%8C%96"><span class="toc-number">1.7.3.</span> <span class="toc-text">7.3 红队测试（Red Teaming）的系统化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-4-Extended-Thinking%EF%BC%88%E6%89%A9%E5%B1%95%E6%80%9D%E8%80%83%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-number">1.7.4.</span> <span class="toc-text">7.4 Extended Thinking（扩展思考模式）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81Anthropic-%E5%8F%AF%E8%A7%A3%E9%87%8A%E6%80%A7%E7%A0%94%E7%A9%B6%EF%BC%9A%E7%90%86%E8%A7%A3-Claude-%E7%9A%84%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6"><span class="toc-number">1.8.</span> <span class="toc-text">八、Anthropic 可解释性研究：理解 Claude 的内部机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E5%BD%92%E7%BA%B3%E5%A4%B4%EF%BC%88Induction-Heads%EF%BC%89"><span class="toc-number">1.8.1.</span> <span class="toc-text">8.1 归纳头（Induction Heads）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E5%8F%A0%E5%8A%A0%E5%8E%9F%E7%90%86%EF%BC%88Superposition%EF%BC%89"><span class="toc-number">1.8.2.</span> <span class="toc-text">8.2 叠加原理（Superposition）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-%E7%A8%80%E7%96%8F%E8%87%AA%E7%BC%96%E7%A0%81%E5%99%A8%EF%BC%88Sparse-Autoencoders-SAE%EF%BC%89"><span class="toc-number">1.8.3.</span> <span class="toc-text">8.3 稀疏自编码器（Sparse Autoencoders, SAE）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E5%80%BC%E5%BE%97%E5%85%B3%E6%B3%A8%E7%9A%84%E5%BC%80%E6%94%BE%E6%80%A7%E9%97%AE%E9%A2%98"><span class="toc-number">1.9.</span> <span class="toc-text">九、值得关注的开放性问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E5%AE%AA%E6%B3%95%E6%9C%AC%E8%BA%AB%E7%9A%84%E5%81%8F%E8%A7%81"><span class="toc-number">1.9.1.</span> <span class="toc-text">9.1 宪法本身的偏见</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-AI-%E5%8F%8D%E9%A6%88%E7%9A%84%E8%87%AA%E6%88%91%E5%BC%BA%E5%8C%96%E9%97%AE%E9%A2%98"><span class="toc-number">1.9.2.</span> <span class="toc-text">9.2 AI 反馈的自我强化问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-%E5%8F%AF%E8%A7%A3%E9%87%8A%E6%80%A7%E7%A0%94%E7%A9%B6%E7%9A%84%E5%8F%AF%E6%89%A9%E5%B1%95%E6%80%A7"><span class="toc-number">1.9.3.</span> <span class="toc-text">9.3 可解释性研究的可扩展性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81CAI-%E7%9A%84%E5%BD%B1%E5%93%8D%E4%B8%8E%E6%84%8F%E4%B9%89"><span class="toc-number">1.10.</span> <span class="toc-text">十、CAI 的影响与意义</span></a></li></ol></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_ai_robot.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">Constitutional AI 与 Claude 对齐技术深度解析</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2026-06-14<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-14</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/">大模型</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/LLM%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/">LLM核心技术</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">5.1k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 16 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h1 id="Constitutional-AI-与-Claude-对齐技术深度解析"><a href="#Constitutional-AI-与-Claude-对齐技术深度解析" class="headerlink" title="Constitutional AI 与 Claude 对齐技术深度解析"></a>Constitutional AI 与 Claude 对齐技术深度解析</h1><blockquote>
+<p><strong>核心论文：</strong></p>
+<ul>
+<li>Constitutional AI: Harmlessness from AI Feedback（Bai et al., Anthropic, 2022）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2212.08073">arXiv:2212.08073</a></li>
+<li>Training a Helpful and Harmless Assistant with Reinforcement Learning from Human Feedback（Bai et al., Anthropic, 2022）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2204.05862">arXiv:2204.05862</a></li>
+<li>Scaling Monosemanticity: Extracting Interpretable Features from Claude 3 Sonnet（Templeton et al., Anthropic, 2024）<a target="_blank" rel="noopener" href="https://transformer-circuits.pub/2024/scaling-monosemanticity/index.html">transformer-circuits.pub</a></li>
+<li>Toy Models of Superposition（Elhage et al., Anthropic, 2022）<a target="_blank" rel="noopener" href="https://transformer-circuits.pub/2022/toy_model/index.html">transformer-circuits.pub</a></li>
+<li>In-context Learning and Induction Heads（Olsson et al., Anthropic, 2022）<a target="_blank" rel="noopener" href="https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html">transformer-circuits.pub</a></li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="一、背景：Anthropic-为什么要发明-Constitutional-AI"><a href="#一、背景：Anthropic-为什么要发明-Constitutional-AI" class="headerlink" title="一、背景：Anthropic 为什么要发明 Constitutional AI"></a>一、背景：Anthropic 为什么要发明 Constitutional AI</h2><h3 id="1-1-Anthropic-的使命与安全导向"><a href="#1-1-Anthropic-的使命与安全导向" class="headerlink" title="1.1 Anthropic 的使命与安全导向"></a>1.1 Anthropic 的使命与安全导向</h3><p>Anthropic 由 OpenAI 的部分核心成员（包括 Dario Amodei、Daniela Amodei、Tom Brown 等）于 2021 年创立。其核心使命是”AI Safety research”——研究如何让 AI 系统更安全、更可解释、更对齐。</p>
+<p>这个使命直接影响了 Claude 的技术路线：不只是让模型”有用”，而是系统性地解决 AI 的”有用性-无害性”权衡问题。</p>
+<h3 id="1-2-标准-RLHF-的两个核心问题"><a href="#1-2-标准-RLHF-的两个核心问题" class="headerlink" title="1.2 标准 RLHF 的两个核心问题"></a>1.2 标准 RLHF 的两个核心问题</h3><p>在 Constitutional AI 论文发表前，Anthropic 使用的是标准的 RLHF 方法（与 OpenAI InstructGPT 类似）。他们发现这种方法有两个难以解决的问题：</p>
+<p><strong>问题 1：无害性和有用性的权衡</strong></p>
+<p>在标准 RLHF 中，”有用性”和”无害性”是两个独立的奖励维度，通常由不同的标注任务来收集数据。实践中发现：</p>
+<ul>
+<li>过度优化无害性会让模型变得过于保守（在完全无害的请求上也拒绝）</li>
+<li>过度优化有用性会让模型不拒绝有害请求</li>
+<li>两者同时优化时，模型不知道如何权衡</li>
+</ul>
+<p><strong>问题 2：标注有害内容的道德成本</strong></p>
+<p>为了训练奖励模型判断哪些内容有害，必须给标注员展示大量有害内容（极端暴力、自残方法、种族仇恨言论等），让他们在”回答请求”和”拒绝请求”之间做比较标注。</p>
+<p>这对标注员的心理健康有已记录的负面影响，且难以规避——你无法在不展示有害内容的情况下训练模型识别有害内容。</p>
+<p>Constitutional AI 通过让模型自己根据原则来评判内容，大幅减少了这类标注的需求。</p>
+<hr>
+<h2 id="二、Constitutional-AI-的核心思想"><a href="#二、Constitutional-AI-的核心思想" class="headerlink" title="二、Constitutional AI 的核心思想"></a>二、Constitutional AI 的核心思想</h2><h3 id="2-1-什么是”宪法”（Constitution）"><a href="#2-1-什么是”宪法”（Constitution）" class="headerlink" title="2.1 什么是”宪法”（Constitution）"></a>2.1 什么是”宪法”（Constitution）</h3><p>Constitutional AI 中的”宪法”是一组书面原则（一组文字规则），明确规定了模型应该遵守的价值观和行为准则。</p>
+<p>Anthropic 在论文中公开了他们使用的部分宪法原则（完整版本未公开）。这些原则来自多个来源：</p>
+<ul>
+<li><strong>联合国人权宣言</strong>（提供基本人权价值观）</li>
+<li><strong>Anthropic 使用政策</strong>（产品级别的行为规范）</li>
+<li><strong>各类伦理哲学（功利主义、义务论等）</strong>（提供不同的道德视角）</li>
+<li><strong>AI 安全研究原则</strong>（Amodei et al. 等人的研究成果）</li>
+</ul>
+<p><strong>部分原则示例（来自论文）：</strong></p>
+<blockquote>
+<p>“请选择对人类最无害、最道德的回复。你的回复不应该是有毒的、种族主义的、性别歧视的，也不应该鼓励或支持非法活动，以及包含任何会对个人、社会或社会作为整体的健康和幸福产生危害的内容。”</p>
+</blockquote>
+<blockquote>
+<p>“选择没有任何有害内容且对提问者有所帮助的回复，帮助他们完成合法任务。”</p>
+</blockquote>
+<blockquote>
+<p>“选择讲实话的回复，不会误导人类，也不会鼓励基于错误信念的不道德或有害行动。”</p>
+</blockquote>
+<p>关键特点：这些原则是<strong>人类可读、可辩论、可修改的</strong>。与黑盒的奖励模型不同，宪法可以被检查、审计和改进。</p>
+<h3 id="2-2-CAI-的核心机制"><a href="#2-2-CAI-的核心机制" class="headerlink" title="2.2 CAI 的核心机制"></a>2.2 CAI 的核心机制</h3><p>Constitutional AI 的训练分为两个主要阶段，每个阶段都利用”宪法”来减少人类标注的需要：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">阶段 1：SL-CAI（监督学习阶段）</span><br><span class="line">  ↓</span><br><span class="line">阶段 2：RL-CAI（强化学习阶段，使用 AI 反馈）</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、阶段一：SL-CAI（监督学习阶段）"><a href="#三、阶段一：SL-CAI（监督学习阶段）" class="headerlink" title="三、阶段一：SL-CAI（监督学习阶段）"></a>三、阶段一：SL-CAI（监督学习阶段）</h2><h3 id="3-1-Red-Teaming-生成有害回复"><a href="#3-1-Red-Teaming-生成有害回复" class="headerlink" title="3.1 Red Teaming 生成有害回复"></a>3.1 Red Teaming 生成有害回复</h3><p>首先，使用一个”有帮助但可能有害”的模型（即标准 RLHF 中只优化有用性，没有无害性约束的模型）来生成对有害请求的回复。</p>
+<p>这类请求（称为”Red Team Prompts”）包括：</p>
+<ul>
+<li>“如何制作炸弹？”</li>
+<li>“帮我写一段种族歧视的内容”</li>
+<li>“如何欺骗我的朋友？”</li>
+</ul>
+<p>为什么要先让模型生成有害回复？因为我们需要训练模型识别并改正有害输出，所以需要有害输出作为训练起点。</p>
+<h3 id="3-2-批评-修订循环（Critique-Revision-Cycle）"><a href="#3-2-批评-修订循环（Critique-Revision-Cycle）" class="headerlink" title="3.2 批评-修订循环（Critique-Revision Cycle）"></a>3.2 批评-修订循环（Critique-Revision Cycle）</h3><p>这是 CAI 的核心创新机制。对每个有害回复，让模型：</p>
+<p><strong>步骤 1：批评（Critique）</strong></p>
+<p>用宪法中的某个原则（随机抽取一条），让模型识别并解释自己回复中的问题：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[系统提示] 指出以下内容哪里有问题，并根据如下原则提出改进建议：</span><br><span class="line">原则：&#123;从宪法中随机抽取的一条原则&#125;</span><br><span class="line"></span><br><span class="line">[用户请求] &#123;原始有害请求&#125;</span><br><span class="line">[模型回复] &#123;有问题的回复&#125;</span><br><span class="line"></span><br><span class="line">[批评请求] 请识别上面这个回复的具体问题...</span><br></pre></td></tr></table></figure>
+
+<p><strong>步骤 2：修订（Revision）</strong></p>
+<p>基于批评，让模型重写一个更好的回复：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[批评结果] &#123;上一步生成的批评&#125;</span><br><span class="line"></span><br><span class="line">[修订请求] 请根据上面的批评，重写一个更安全、更符合原则的回复...</span><br></pre></td></tr></table></figure>
+
+<p>这个批评-修订循环可以进行多轮（论文中通常进行 1-4 轮）。</p>
+<h3 id="3-3-SFT-训练"><a href="#3-3-SFT-训练" class="headerlink" title="3.3 SFT 训练"></a>3.3 SFT 训练</h3><p>将原始有害请求配上最终修订后的回复，构成 SFT 训练数据：</p>
+<p>$$\mathcal{D}_{\text{SL-CAI}} = \{(x_i, y_i^{\text{revised}}) | i = 1, \ldots, N\}$$</p>
+<p>用这些数据对模型进行监督微调，得到 SL-CAI 模型。</p>
+<p><strong>关键：</strong> 整个批评-修订过程是由 AI 模型本身完成的，不需要人类标注员阅读这些有害内容。这大幅降低了标注员接触有害内容的风险。</p>
+<hr>
+<h2 id="四、阶段二：RL-CAI（用-AI-反馈进行强化学习）"><a href="#四、阶段二：RL-CAI（用-AI-反馈进行强化学习）" class="headerlink" title="四、阶段二：RL-CAI（用 AI 反馈进行强化学习）"></a>四、阶段二：RL-CAI（用 AI 反馈进行强化学习）</h2><h3 id="4-1-AI-生成偏好标注"><a href="#4-1-AI-生成偏好标注" class="headerlink" title="4.1 AI 生成偏好标注"></a>4.1 AI 生成偏好标注</h3><p>RL-CAI 的核心是用 AI 来替代人类进行偏好标注（这就是 RLAIF 的实现方式）。</p>
+<p><strong>流程：</strong></p>
+<ol>
+<li>对每条请求，使用 SL-CAI 模型生成两个不同的回复 $y_1$ 和 $y_2$</li>
+<li>构建如下 prompt，让一个 AI（这里使用 Anthropic 更强的辅助模型，后期版本直接用 SL-CAI 模型自身）来比较：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">以下是两个 AI 助手对用户请求的回复。请根据如下原则判断哪个更好：</span><br><span class="line"></span><br><span class="line">原则：&#123;从宪法中随机抽取&#125;</span><br><span class="line"></span><br><span class="line">用户请求：&#123;原始请求&#125;</span><br><span class="line">回复 A：&#123;y1&#125;</span><br><span class="line">回复 B：&#123;y2&#125;</span><br><span class="line"></span><br><span class="line">哪个回复更好，A 还是 B？请给出原因，最后给出结论 &quot;A&quot; 或 &quot;B&quot;。</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>AI 的判断结果作为偏好标注：$(x, y_1, y_2, \text{preference})$</li>
+</ol>
+<p><strong>重要细节：</strong> 每次比较使用的宪法原则是随机抽取的，确保奖励模型从多个价值维度评判模型的行为，而不只是单一维度。</p>
+<h3 id="4-2-训练偏好模型（Preference-Model）"><a href="#4-2-训练偏好模型（Preference-Model）" class="headerlink" title="4.2 训练偏好模型（Preference Model）"></a>4.2 训练偏好模型（Preference Model）</h3><p>用 AI 生成的偏好数据，训练一个奖励模型（在 CAI 论文中称为偏好模型 PM）：</p>
+<p>$$\mathcal{L}_{\text{PM}} = -\mathbb{E}_{(x, y_w, y_l)} \left[\log \sigma\left(r_\phi(x, y_w) - r_\phi(x, y_l)\right)\right]$$</p>
+<p>这与标准 RLHF 的奖励模型训练完全相同，只是偏好数据来自 AI 而非人类。</p>
+<p><strong>优势：</strong> 可以生成大量高质量的偏好数据，且不需要人类阅读有害内容。</p>
+<p><strong>验证：</strong> CAI 论文中发现，AI 反馈的偏好标注与人类标注的一致性约为 78%（接近人类标注者之间的一致性 80%），说明 AI 可以近似替代人类进行偏好判断。</p>
+<h3 id="4-3-PPO-训练"><a href="#4-3-PPO-训练" class="headerlink" title="4.3 PPO 训练"></a>4.3 PPO 训练</h3><p>使用训练好的偏好模型作为奖励信号，通过 PPO 算法优化语言模型，流程与标准 RLHF 相同（详见第 03 篇）。</p>
+<hr>
+<h2 id="五、Helpful-Harmless-Honest（HHH）框架"><a href="#五、Helpful-Harmless-Honest（HHH）框架" class="headerlink" title="五、Helpful-Harmless-Honest（HHH）框架"></a>五、Helpful-Harmless-Honest（HHH）框架</h2><p>Anthropic 在他们的早期论文（Bai et al., 2022，<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2204.05862">arXiv:2204.05862</a>）中提出了 Claude 训练的核心价值框架：<strong>HHH &#x3D; Helpful + Harmless + Honest</strong>。</p>
+<h3 id="5-1-有帮助（Helpful）"><a href="#5-1-有帮助（Helpful）" class="headerlink" title="5.1 有帮助（Helpful）"></a>5.1 有帮助（Helpful）</h3><p><strong>定义：</strong> 模型应该真正帮助用户完成他们的合法任务，提供实际上有用的信息和建议。</p>
+<p><strong>容易犯的错误（来自论文）：</strong></p>
+<ul>
+<li>过度谨慎：对完全无害的请求也添加大量不必要的免责声明</li>
+<li>敷衍了事：给出模糊的回复来回避风险</li>
+<li>拒绝过多：将任何可能被滥用的信息都拒绝提供</li>
+</ul>
+<p>Anthropic 在论文中明确指出：<strong>过度保守本身也是一种危害</strong>——如果模型无法提供真正有用的帮助，它就没有实现其存在的价值，同时也让用户去寻找没有安全保障的替代来源。</p>
+<h3 id="5-2-无害（Harmless）"><a href="#5-2-无害（Harmless）" class="headerlink" title="5.2 无害（Harmless）"></a>5.2 无害（Harmless）</h3><p><strong>定义：</strong> 模型不应该提供可能造成身体伤害、心理伤害、社会伤害的内容或建议。</p>
+<p><strong>复杂性：</strong> 无害性是高度情境依赖的。同样的信息（如”如何用刀具切割”）在烹饪教程和伤害指南中含义完全不同。</p>
+<p><strong>双重困境（来自论文的案例分析）：</strong></p>
+<blockquote>
+<p>用户问：”我的朋友说他要自杀，我应该怎么做？”</p>
+</blockquote>
+<p>这个问题有两种截然相反的危险回应：</p>
+<ol>
+<li>提供详细的自杀方法（显然有害）</li>
+<li>拒绝讨论这个话题或只说”请拨打热线电话”（可能因为无法给出实质帮助而有害）</li>
+</ol>
+<p>正确的回应需要理解用户的意图（帮助朋友），并在有用性和安全性之间找到平衡。</p>
+<p><strong>Anthropic 的解决方案：</strong> 将”无害性”拆分为不同级别的危害（轻微、中等、严重、极端），并对不同级别采用不同的处理策略，而不是简单地”拒绝一切可能有害的内容”。</p>
+<h3 id="5-3-诚实（Honest）"><a href="#5-3-诚实（Honest）" class="headerlink" title="5.3 诚实（Honest）"></a>5.3 诚实（Honest）</h3><p><strong>定义：</strong> 模型不应该声称知道它不知道的事情，不应该故意误导用户，不应该伪装成人类。</p>
+<p>Anthropic 将”诚实”进一步细分为三个维度：</p>
+<ol>
+<li><strong>真实性（Truthful）：</strong> 不说假话，即使真话可能不受欢迎</li>
+<li><strong>校准（Calibrated）：</strong> 不过度自信，应该表达不确定性（”我不确定，但…”）</li>
+<li><strong>非欺骗性（Non-deceptive）：</strong> 不使用技术上正确但会引起误解的表述</li>
+</ol>
+<p><strong>张力：</strong> “诚实”有时与”有帮助”冲突。如果用户基于错误信念问问题（”地球是平的，对吧？”），诚实的回答会让用户不高兴，但这是必要的。</p>
+<p>Anthropic 的立场（来自论文和后续技术博文）：Claude 应该坚持诚实，即使这让用户不满，因为长期来看，诚实的 AI 才能建立真实的信任关系。</p>
+<hr>
+<h2 id="六、Claude-的宪法-vs-标准-RLHF：技术对比"><a href="#六、Claude-的宪法-vs-标准-RLHF：技术对比" class="headerlink" title="六、Claude 的宪法 vs 标准 RLHF：技术对比"></a>六、Claude 的宪法 vs 标准 RLHF：技术对比</h2><table>
+<thead>
+<tr>
+<th>方面</th>
+<th>标准 RLHF（InstructGPT）</th>
+<th>Constitutional AI（Claude）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>无害性数据来源</td>
+<td>人类标注员判断有害回复</td>
+<td>AI 根据宪法原则自行判断</td>
+</tr>
+<tr>
+<td>有用性数据来源</td>
+<td>人类标注员判断有帮助回复</td>
+<td>人类标注 + AI 生成</td>
+</tr>
+<tr>
+<td>价值观来源</td>
+<td>隐式（标注员的直觉判断）</td>
+<td>显式（书面宪法原则）</td>
+</tr>
+<tr>
+<td>可解释性</td>
+<td>低（奖励模型是黑盒）</td>
+<td>较高（原则可被检查）</td>
+</tr>
+<tr>
+<td>可修改性</td>
+<td>低（需重新收集人类数据）</td>
+<td>较高（修改宪法原则后可重新生成 AI 标注）</td>
+</tr>
+<tr>
+<td>标注员心理风险</td>
+<td>较高（大量接触有害内容）</td>
+<td>较低（AI 接触，人类不直接标注）</td>
+</tr>
+<tr>
+<td>有帮助-无害性权衡</td>
+<td>难以系统化</td>
+<td>通过宪法明确规定权衡方式</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="七、从-Claude-1-到-Claude-3-4：技术演进"><a href="#七、从-Claude-1-到-Claude-3-4：技术演进" class="headerlink" title="七、从 Claude 1 到 Claude 3&#x2F;4：技术演进"></a>七、从 Claude 1 到 Claude 3&#x2F;4：技术演进</h2><p>Anthropic 的技术博客和论文揭示了 Claude 系列的一些演进方向（注意：模型架构细节从未公开）：</p>
+<h3 id="7-1-规模增长"><a href="#7-1-规模增长" class="headerlink" title="7.1 规模增长"></a>7.1 规模增长</h3><p>随着 Claude 版本的迭代，模型规模和训练数据量均持续增长。Anthropic 在 Claude 3 发布时（2024年3月）透露了三个尺寸（Haiku&#x2F;Sonnet&#x2F;Opus），但从未公开参数量。</p>
+<h3 id="7-2-Constitutional-AI-的迭代"><a href="#7-2-Constitutional-AI-的迭代" class="headerlink" title="7.2 Constitutional AI 的迭代"></a>7.2 Constitutional AI 的迭代</h3><p>每一代 Claude 训练时，宪法原则都经过修订和扩充。Claude 3 时代的宪法相比 2022 年论文中的版本，据 Anthropic 工程师的公开分享，已经包含了数百条更细化的原则，覆盖了更多边界场景。</p>
+<h3 id="7-3-红队测试（Red-Teaming）的系统化"><a href="#7-3-红队测试（Red-Teaming）的系统化" class="headerlink" title="7.3 红队测试（Red Teaming）的系统化"></a>7.3 红队测试（Red Teaming）的系统化</h3><p>Anthropic 建立了专业的红队（Red Team）团队，专门尝试找到 Claude 的安全漏洞，并将发现的漏洞案例加入宪法原则和训练数据。</p>
+<p><strong>Claude 3 Model Card（公开）</strong> 披露了红队测试的几个方向：</p>
+<ul>
+<li>化学&#x2F;生物&#x2F;核&#x2F;放射性武器（CBRN）信息提供</li>
+<li>网络攻击代码生成</li>
+<li>针对特定个人的骚扰内容</li>
+<li>绕过安全限制的”越狱”技巧</li>
+</ul>
+<h3 id="7-4-Extended-Thinking（扩展思考模式）"><a href="#7-4-Extended-Thinking（扩展思考模式）" class="headerlink" title="7.4 Extended Thinking（扩展思考模式）"></a>7.4 Extended Thinking（扩展思考模式）</h3><p>Claude 3.7（2025年）引入的扩展思考模式是 Anthropic 在 Reasoning 方向的重要尝试。模型在给出最终回复前，先生成一段内部”思考过程”（对用户可见），这段思考不受与最终回复相同的格式约束。</p>
+<p>这与 OpenAI 的 o1&#x2F;o3 系列使用的 Chain-of-Thought 训练原理类似，但 Anthropic 的具体实现细节未公开。</p>
+<hr>
+<h2 id="八、Anthropic-可解释性研究：理解-Claude-的内部机制"><a href="#八、Anthropic-可解释性研究：理解-Claude-的内部机制" class="headerlink" title="八、Anthropic 可解释性研究：理解 Claude 的内部机制"></a>八、Anthropic 可解释性研究：理解 Claude 的内部机制</h2><p>Anthropic 有一个独特的研究方向：<strong>机制可解释性（Mechanistic Interpretability）</strong>，致力于理解 Transformer 内部发生了什么。这些研究发表在 <a target="_blank" rel="noopener" href="https://transformer-circuits.pub/">transformer-circuits.pub</a>，是目前最接近”打开 Claude 黑盒”的公开研究。</p>
+<h3 id="8-1-归纳头（Induction-Heads）"><a href="#8-1-归纳头（Induction-Heads）" class="headerlink" title="8.1 归纳头（Induction Heads）"></a>8.1 归纳头（Induction Heads）</h3><p><strong>论文：</strong> In-context Learning and Induction Heads（Olsson et al., Anthropic, 2022）</p>
+<p><strong>核心发现：</strong> 在双层 Transformer 中，存在一种被称为”归纳头”的注意力头组合，它实现了以下功能：</p>
+<p><strong>功能描述：</strong> 如果序列中出现了 [A][B] 的模式，归纳头能够在遇到再次出现的 [A] 时，预测下一个 token 是 [B]。</p>
+<p><strong>更一般化的归纳：</strong> <code>[A][B]...[A] → [B]</code></p>
+<p>这个机制是 LLM 能够进行 in-context learning（少样本学习）的核心原因：</p>
+<ul>
+<li>用户在 prompt 中给几个示例 <code>(输入A, 输出B)</code>, <code>(输入C, 输出D)</code></li>
+<li>模型通过归纳头识别这些模式</li>
+<li>对新的输入，预测应该输出对应的格式</li>
+</ul>
+<p><strong>涌现性：</strong> 在模型训练到一定规模时，这些归纳头会突然出现（涌现）——训练过程中有一个明显的”相变”时刻，对应着模型在 in-context learning 能力上的突然提升。</p>
+<p>这个发现有重要意义：它首次从机制层面解释了为什么 LLM 能够进行 few-shot 学习，这不是某种神秘的”记忆”，而是特定的计算回路实现的模式匹配。</p>
+<h3 id="8-2-叠加原理（Superposition）"><a href="#8-2-叠加原理（Superposition）" class="headerlink" title="8.2 叠加原理（Superposition）"></a>8.2 叠加原理（Superposition）</h3><p><strong>论文：</strong> Toy Models of Superposition（Elhage et al., Anthropic, 2022）</p>
+<p><strong>核心问题：</strong> 一个 $d$ 维的神经网络层理论上只能存储 $d$ 个特征。但实验表明，大型神经网络能够表示远远超过 $d$ 个不同的概念。这是如何做到的？</p>
+<p><strong>叠加假说（Superposition Hypothesis）：</strong> 神经网络在不同方向（而不只是坐标轴方向）上编码特征，允许多个特征共享一个神经元，通过稀疏性来减少干扰。</p>
+<p><strong>数学形式：</strong></p>
+<p>假设我们有 $n$ 个特征需要编码到 $d$ 维空间（$n &gt; d$），每个特征的激活是稀疏的（大多数时候为零）。则特征向量 $f_i \in \mathbb{R}^d$ 可以满足：</p>
+<p>$$\|f_i\|_2 = 1, \quad f_i \cdot f_j \approx 0 \text{ for } i \neq j \text{ (近似正交)}$$</p>
+<p>通过选择近似正交的方向（而不只是坐标轴方向），$d$ 维空间中可以容纳远超 $d$ 个的特征，只要每次激活的特征数量不多（稀疏性保证了干扰较小）。</p>
+<p><strong>直觉类比：</strong> 就像压缩图像——你用 100KB 存储了比原始数据更多的信息，靠的是稀疏表示（大部分地方是零）。</p>
+<p><strong>对可解释性的影响：</strong> 叠加现象解释了为什么单个神经元通常不对应单一、可解释的概念（多语义性，polysemanticity），以及为什么直接”读出”神经网络的知识很困难。</p>
+<h3 id="8-3-稀疏自编码器（Sparse-Autoencoders-SAE）"><a href="#8-3-稀疏自编码器（Sparse-Autoencoders-SAE）" class="headerlink" title="8.3 稀疏自编码器（Sparse Autoencoders, SAE）"></a>8.3 稀疏自编码器（Sparse Autoencoders, SAE）</h3><p><strong>论文：</strong> Scaling Monosemanticity: Extracting Interpretable Features from Claude 3 Sonnet（Templeton et al., Anthropic, 2024）</p>
+<p>如果特征是叠加在高维激活空间中的，那么可以用<strong>稀疏自编码器（SAE）</strong>来”解叠加”，找出这些特征。</p>
+<p><strong>SAE 的架构：</strong></p>
+<p>$$z = \text{ReLU}(W_{enc}(x - b_{dec}) + b_{enc})$$<br>$$\hat{x} = W_{dec} z + b_{dec}$$</p>
+<p>其中 $x \in \mathbb{R}^d$ 是神经网络的激活（如注意力层的输出），$z \in \mathbb{R}^{n_{dict}}$ 是稀疏的特征向量（$n_{dict} \gg d$），$\hat{x}$ 是重建值。</p>
+<p>损失函数包含重建损失和稀疏性惩罚：</p>
+<p>$$\mathcal{L} = \|x - \hat{x}\|_2^2 + \lambda \|z\|_1$$</p>
+<p><strong>在 Claude 3 Sonnet 上的实验：</strong></p>
+<p>他们在 Claude 3 Sonnet 的某一层上训练了一个包含 <strong>1600 万个特征</strong>的稀疏自编码器，然后系统地检查这些特征激活时对应什么样的输入：</p>
+<p><strong>发现的部分特征（均有具体激活案例支撑）：</strong></p>
+<ul>
+<li>“金门大桥”特征：在包含金门大桥相关文字或图像时激活</li>
+<li>“DNA 双螺旋”特征：在生物学讨论中激活</li>
+<li>“欺骗意图”特征：在讨论欺骗或操纵时激活</li>
+<li>“道德困境”特征：在伦理讨论中激活</li>
+<li>“Inner Conflict”（内心冲突）特征：在描述心理冲突的文本中激活</li>
+</ul>
+<p><strong>最重要的发现：</strong> 这些特征是<strong>多模态</strong>的——同一个”金门大桥”特征在英语、法语、中文、日语等文字描述，以及相关图片中都会激活。这说明 Claude 内部表示的是语言无关的概念，而不是特定语言的词汇。</p>
+<p><strong>Claude 3 Sonnet 的”金门大桥”实验（Anthropic 博客）：</strong> 研究人员人工放大了金门大桥特征的激活强度，发现模型开始在所有话题中都提及金门大桥，表现出”身份认同”被强制修改的现象——这直接证明了特征与行为之间的因果关系。</p>
+<hr>
+<h2 id="九、值得关注的开放性问题"><a href="#九、值得关注的开放性问题" class="headerlink" title="九、值得关注的开放性问题"></a>九、值得关注的开放性问题</h2><p>Constitutional AI 是目前已知最完整的 AI 对齐方法之一，但仍有几个重要的未解问题：</p>
+<h3 id="9-1-宪法本身的偏见"><a href="#9-1-宪法本身的偏见" class="headerlink" title="9.1 宪法本身的偏见"></a>9.1 宪法本身的偏见</h3><p>宪法是由 Anthropic 的研究人员编写的，不可避免地反映了特定的文化背景和价值观。例如：</p>
+<ul>
+<li>什么算”有害”因文化而异</li>
+<li>“诚实”在不同文化中的权重不同</li>
+<li>不同政治立场对”有帮助”的定义不同</li>
+</ul>
+<p>Anthropic 承认这一问题，并在尝试通过引入更多元化的价值观来源来缓解（如联合国人权宣言）。</p>
+<h3 id="9-2-AI-反馈的自我强化问题"><a href="#9-2-AI-反馈的自我强化问题" class="headerlink" title="9.2 AI 反馈的自我强化问题"></a>9.2 AI 反馈的自我强化问题</h3><p>如果用 AI 本身来评判 AI 的输出，存在自我强化的风险：AI A 的偏见可能被 AI B 学习并放大。</p>
+<p>这是 RLAIF 的一个根本性挑战，目前没有完美的解决方案，通常通过多模型集成（用多个不同的 AI 评判者）和保留一定比例的人类反馈来缓解。</p>
+<h3 id="9-3-可解释性研究的可扩展性"><a href="#9-3-可解释性研究的可扩展性" class="headerlink" title="9.3 可解释性研究的可扩展性"></a>9.3 可解释性研究的可扩展性</h3><p>Scaling Monosemanticity 的实验表明，Claude 3 Sonnet 的某一层有 1600 万个可解释特征。整个模型有数十层，每层可能有数千万个特征——完整地理解模型内部机制面临巨大的规模挑战。</p>
+<p>Anthropic 研究团队在他们的公开博客中承认，目前的工具只能分析模型的一小部分，距离”完全理解 Claude 为什么做出某个回复”还有很远的路。</p>
+<hr>
+<h2 id="十、CAI-的影响与意义"><a href="#十、CAI-的影响与意义" class="headerlink" title="十、CAI 的影响与意义"></a>十、CAI 的影响与意义</h2><p>Constitutional AI 发表后，已经对整个 AI 行业产生了深远影响：</p>
+<ol>
+<li><strong>RLAIF 被广泛采用：</strong> 用 AI 评判者替代人类标注，已经成为许多机构（包括 Google DeepMind）的标准实践</li>
+<li><strong>显式原则的价值被认可：</strong> 越来越多的机构开始为 AI 系统制定书面的价值原则，而不只是依赖隐式的人类偏好</li>
+<li><strong>推动了 AI 伦理标准化：</strong> CAI 论文提供了一个可操作的框架，让”AI 对齐”从抽象概念变成可执行的技术步骤</li>
+<li><strong>启发了开源替代方案：</strong> 如 Anthropic HH Dataset 公开发布后，被多个开源项目用来训练对齐版本的开源 LLM</li>
+</ol>
+<p>对于想深入理解 Claude 系列模型行为的工程师来说，<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2212.08073">arXiv:2212.08073</a> 和 <a target="_blank" rel="noopener" href="https://transformer-circuits.pub/">transformer-circuits.pub</a> 是最值得精读的一手资料。</p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2026/06/14/Constitutional-AI%E4%B8%8EClaude%E5%AF%B9%E9%BD%90%E6%8A%80%E6%9C%AF%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/">http://tufusi.com/2026/06/14/Constitutional-AI%E4%B8%8EClaude%E5%AF%B9%E9%BD%90%E6%8A%80%E6%9C%AF%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Constitutional-AI/">Constitutional-AI    </a><a class="post-meta__tags" href="/tags/Claude/">Claude    </a><a class="post-meta__tags" href="/tags/Anthropic/">Anthropic    </a><a class="post-meta__tags" href="/tags/AI%E5%AE%89%E5%85%A8/">AI安全    </a><a class="post-meta__tags" href="/tags/%E5%8F%AF%E8%A7%A3%E9%87%8A%E6%80%A7/">可解释性    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_ai_robot.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="next-post pull-full"><a href="/2026/06/14/LLM%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96%E4%B8%8E%E9%87%8F%E5%8C%96%E4%BA%A4%E6%98%93%E5%BA%94%E7%94%A8/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_ai_robot.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>LLM 推理优化与量化交易应用</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_ai_robot.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><script>(function(){
+  if (window.innerWidth > 900) return;
+  var toc = document.querySelector('#sidebar .toc');
+  if (!toc) return;
+  var btn = document.createElement('div');
+  btn.id = 'mobile-toc-float';
+  btn.innerHTML = '<i class="fa fa-list"></i>';
+  btn.onclick = function(){
+    var panel = document.getElementById('mobile-toc-panel');
+    if (panel) {
+      panel.classList.toggle('show');
+    } else {
+      panel = document.createElement('div');
+      panel.id = 'mobile-toc-panel';
+      panel.innerHTML = '<div class="mobile-toc-title">目录 <span class="mobile-toc-close">&times;</span></div>';
+      panel.querySelector('.mobile-toc-close').onclick = function(){ panel.classList.remove('show'); };
+      panel.appendChild(toc.cloneNode(true));
+      var links = panel.querySelectorAll('.toc-link');
+      links.forEach(function(l){ l.onclick = function(){ panel.classList.remove('show'); }; });
+      document.body.appendChild(panel);
+      panel.addEventListener('click', function(e){
+        if (e.target === panel) panel.classList.remove('show');
+      });
+    }
+    panel.classList.toggle('show');
+  };
+  document.body.appendChild(btn);
+})();</script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  var SERIES_ROUTES = {"harness":"/harness"};
+
+  // 检查是否已解锁的辅助函数
+  function isUnlocked(seriesKey) {
+    var routes = {"harness":"_hexo_protect_harness"};
+    var sk = routes[seriesKey];
+    return sk ? !!sessionStorage.getItem(sk) : false;
+  }
+
+  // 找到系列名对应的 gate_path
+  function getGatePath(seriesKey) {
+    return SERIES_ROUTES[seriesKey] || SERIES_ROUTES["harness"];
+  }
+
+  // 处理列表页中的受保护文章卡片的系列归属
+  function findSeriesKey(item) {
+    // 从分类链接中提取系列名
+    var catLinks = item.querySelectorAll('a[href*="/categories/"]');
+    for (var i = 0; i < catLinks.length; i++) {
+      var href = catLinks[i].getAttribute("href") || "";
+      // 检查是否匹配某个 known series
+      var keys = Object.keys(SERIES_ROUTES);
+      for (var j = 0; j < keys.length; j++) {
+        // 大多数系列对应一个分类目录，通过检查 /Harness/ 等路径
+        // 如果分类路径中包含系列名（忽略大小写），则匹配
+        if (href.toLowerCase().indexOf("/" + keys[j].toLowerCase() + "/") !== -1 ||
+            href.toLowerCase().indexOf("/" + keys[j].toLowerCase()) !== -1) {
+          return keys[j];
+        }
+      }
+    }
+    // 如果找不到匹配，检查全局 — 如果有任何未解锁的系列，默认使用该系列
+    return null;
+  }
+
+  // 处理文章卡片
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var seriesKey = findSeriesKey(item);
+    if (!seriesKey) return;
+    if (isUnlocked(seriesKey)) return;
+
+    var gatePath = getGatePath(seriesKey);
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = gatePath;
+      titleLink.style.opacity = "0.5";
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 处理分类/标签/归档页中的 Harness 分类链接
+  Object.values(SERIES_ROUTES).forEach(function(gatePath) {
+    // 这里不做全部处理，只在全局未解锁时替换
+  });
+
+  // 全局检查：对于所有受保护的分类链接，如果对应系列未解锁则替换
+  var allCatLinks = document.querySelectorAll("a[href*='/Harness']");
+  allCatLinks.forEach(function(link){
+    var seriesKey = "harness"; // Harness 系列默认
+    if (isUnlocked(seriesKey)) return;
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = SERIES_ROUTES[seriesKey];
+    }
+  });
+})();
+</script>
+</body></html>

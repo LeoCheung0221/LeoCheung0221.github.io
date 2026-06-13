@@ -1,0 +1,583 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>长上下文技术完全指南 | ONE·PIECE</title><meta name="description" content="《长上下文技术完全指南》— LLM 核心技术深度系列，基于公开论文的系统化技术解析"><meta name="keywords" content="长上下文,RoPE,FlashAttention,KV-Cache,Gemini"><meta name="author" content="Leo·Cheung,leocheung4ever@gmail.com"><meta name="copyright" content="Leo·Cheung"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="preconnect" href="//cdn.jsdelivr.net"><meta name="google-site-verification" content="DOzi6zRsQ2GdSxTA0T1-9Ul8fB_XbMM43baLPg1CuOo"><meta name="baidu-site-verification" content="S7HPSRHOBw"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="长上下文技术完全指南"><meta name="twitter:description" content="《长上下文技术完全指南》— LLM 核心技术深度系列，基于公开论文的系统化技术解析"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_ai_digital.jpg"><meta property="og:type" content="article"><meta property="og:title" content="长上下文技术完全指南"><meta property="og:url" content="http://tufusi.com/2026/06/14/%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87%E6%8A%80%E6%9C%AF%E5%AE%8C%E5%85%A8%E6%8C%87%E5%8D%97/"><meta property="og:site_name" content="ONE·PIECE"><meta property="og:description" content="《长上下文技术完全指南》— LLM 核心技术深度系列，基于公开论文的系统化技术解析"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_ai_digital.jpg"><meta property="og:locale" content="zh_CN"><meta property="article:published_time" content="2026-06-14T00:00:00+08:00"><meta property="article:modified_time" content="2026-06-14T00:50:36+08:00"><meta property="article:author" content="Leo·Cheung"><meta property="article:tag" content="长上下文"><meta property="article:tag" content="RoPE"><meta property="article:tag" content="FlashAttention"><meta property="article:tag" content="KV-Cache"><meta property="article:tag" content="Gemini"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>const autoChangeMode = 'false'
+var t = Cookies.get("theme");
+if (autoChangeMode == '1'){
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+if (t === undefined){
+  if (isLightMode) activateLightMode()
+  else if (isDarkMode) activateDarkMode()
+  else if (isNotSpecified || hasNoSupport){
+    console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+    now = new Date();
+    hour = now.getHours();
+    isNight = hour < 6 || hour >= 18
+    isNight ? activateDarkMode() : activateLightMode()
+}
+} else if (t == 'light') activateLightMode()
+else activateDarkMode()
+
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.css"><link rel="canonical" href="http://tufusi.com/2026/06/14/%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87%E6%8A%80%E6%9C%AF%E5%AE%8C%E5%85%A8%E6%8C%87%E5%8D%97/"><link rel="prev" title="大模型预训练技术全景" href="http://tufusi.com/2026/06/14/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%A2%84%E8%AE%AD%E7%BB%83%E6%8A%80%E6%9C%AF%E5%85%A8%E6%99%AF/"><link rel="next" title="【Claude Code源码剖析】29-User Hooks 用户钩子系统" href="http://tufusi.com/2026/05/25/%E3%80%90Claude%20Code%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E3%80%9129-UserHooks%E7%94%A8%E6%88%B7%E9%92%A9%E5%AD%90%E7%B3%BB%E7%BB%9F/"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: {"appId":"RG8HX7QXWX","apiKey":"a183cbbffa921b0dddc2872cfd1abd86","indexName":"WEBSITE001","hits":{"per_page":6},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://tufusi.com/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  highlight_copy: 'true',
+  highlight_lang: 'true',
+  highlight_shrink: 'false',
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    title: 'Snackbar.bookmark.title',
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  copyright: undefined,
+  copy_copyright_js: false,
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: 'true',
+  Snackbar: {"bookmark":{"title":"Snackbar.bookmark.title","message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"}
+  
+}</script><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "长上下文技术完全指南",
+  "author": { "@type": "Person", "name": "Leo·Cheung" },
+  "datePublished": "2026-06-14T00:00:00+08:00",
+  "dateModified": "2026-06-14T00:50:36+08:00",
+  "description": "《长上下文技术完全指南》— LLM 核心技术深度系列，基于公开论文的系统化技术解析",
+  "url": "http://tufusi.com/2026/06/14/%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87%E6%8A%80%E6%9C%AF%E5%AE%8C%E5%85%A8%E6%8C%87%E5%8D%97/",
+  "publisher": { "@type": "Person", "name": "Leo·Cheung" }
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="header"> <div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">ONE·PIECE</a></span><i class="fa fa-bars fa-fw toggle-menu pull_right close" aria-hidden="true"></i><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></span><span class="pull_right" id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></span></div></div><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="lazyload avatar_img" src="http://tufusi.com/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'"></div><div class="mobile_post_data"><div class="mobile_data_item is_center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">252</div></a></div></div><div class="mobile_data_item is_center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">93</div></a></div></div><div class="mobile_data_item is_center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">20</div></a></div></div></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/llm/"><i class="fa-fw fa fa-cubes"></i><span> 大模型</span></a></div><div class="menus_item"><a class="site-page" href="/systemdesign/"><i class="fa-fw fa fa-desktop"></i><span> 系统设计</span></a></div><div class="menus_item"><a class="site-page" href="/ml/"><i class="fa-fw fa fa-pie-chart"></i><span> 机器学习</span></a></div><div class="menus_item"><a class="site-page" href="/android/"><i class="fa-fw fa fa-android"></i><span> Android</span></a></div><div class="menus_item"><a class="site-page" href="/leetcode/"><i class="fa-fw fa fa-diamond"></i><span> LeetCode</span></a></div><div class="menus_item"><a class="site-page" href="/news/"><i class="fa-fw fa fa-newspaper-o"></i><span> AI头条</span></a></div><div class="menus_item"><a class="site-page" href="/papers/"><i class="fa-fw fa fa-paper-plane-o"></i><span> 论文推荐</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-battery-half" aria-hidden="true"></i><span> 充电驿站</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/e-books/"><i class="fa-fw fa fa-book"></i><span> 小书屋</span></a></li><li><a class="site-page" href="/e-movies/"><i class="fa-fw fa fa-film"></i><span> 大影单</span></a></li></ul></div></div></div><div id="mobile-sidebar-toc"><div class="toc_mobile_headline">目录</div><ol class="toc_mobile_items"><li class="toc_mobile_items-item toc_mobile_items-level-1"><a class="toc_mobile_items-link" href="#%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87%E6%8A%80%E6%9C%AF%E5%AE%8C%E5%85%A8%E6%8C%87%E5%8D%97"><span class="toc_mobile_items-number">1.</span> <span class="toc_mobile_items-text">长上下文技术完全指南</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%80%E3%80%81%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87%E7%9A%84%E9%87%8D%E8%A6%81%E6%80%A7%E4%B8%8E%E6%8C%91%E6%88%98"><span class="toc_mobile_items-number">1.1.</span> <span class="toc_mobile_items-text">一、长上下文的重要性与挑战</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87"><span class="toc_mobile_items-number">1.1.1.</span> <span class="toc_mobile_items-text">1.1 为什么需要长上下文</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#1-2-%E6%A0%87%E5%87%86-Transformer-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9A%BE%E4%BB%A5%E5%A4%84%E7%90%86%E9%95%BF%E5%BA%8F%E5%88%97"><span class="toc_mobile_items-number">1.1.2.</span> <span class="toc_mobile_items-text">1.2 标准 Transformer 为什么难以处理长序列</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%8C%E3%80%81RoPE-%E7%9A%84%E5%A4%96%E6%8E%A8%E9%97%AE%E9%A2%98"><span class="toc_mobile_items-number">1.2.</span> <span class="toc_mobile_items-text">二、RoPE 的外推问题</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-1-RoPE-%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%9B%9E%E9%A1%BE"><span class="toc_mobile_items-number">1.2.1.</span> <span class="toc_mobile_items-text">2.1 RoPE 的工作原理回顾</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#2-2-%E4%B8%BA%E4%BB%80%E4%B9%88-RoPE-%E9%9A%BE%E4%BB%A5%E7%9B%B4%E6%8E%A5%E5%A4%96%E6%8E%A8"><span class="toc_mobile_items-number">1.2.2.</span> <span class="toc_mobile_items-text">2.2 为什么 RoPE 难以直接外推</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%89%E3%80%81%E4%BD%8D%E7%BD%AE%E6%8F%92%E5%80%BC%EF%BC%88Position-Interpolation%EF%BC%89"><span class="toc_mobile_items-number">1.3.</span> <span class="toc_mobile_items-text">三、位置插值（Position Interpolation）</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-1-%E6%A0%B8%E5%BF%83%E6%80%9D%E8%B7%AF"><span class="toc_mobile_items-number">1.3.1.</span> <span class="toc_mobile_items-text">3.1 核心思路</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#3-2-%E6%95%88%E6%9E%9C%E4%B8%8E%E4%BB%A3%E4%BB%B7"><span class="toc_mobile_items-number">1.3.2.</span> <span class="toc_mobile_items-text">3.2 效果与代价</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%9B%9B%E3%80%81YaRN%EF%BC%9A%E6%9B%B4%E7%B2%BE%E7%BB%86%E7%9A%84-RoPE-%E5%A4%96%E6%8E%A8%E6%96%B9%E6%A1%88"><span class="toc_mobile_items-number">1.4.</span> <span class="toc_mobile_items-text">四、YaRN：更精细的 RoPE 外推方案</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-1-YaRN-%E7%9A%84%E6%A0%B8%E5%BF%83%E6%B4%9E%E5%AF%9F"><span class="toc_mobile_items-number">1.4.1.</span> <span class="toc_mobile_items-text">4.1 YaRN 的核心洞察</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-2-YaRN-%E7%9A%84%E5%AE%9E%E7%8E%B0%EF%BC%9ANTK-Aware-Interpolation"><span class="toc_mobile_items-number">1.4.2.</span> <span class="toc_mobile_items-text">4.2 YaRN 的实现：NTK-Aware Interpolation</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#4-3-YaRN-%E7%9A%84%E6%95%88%E6%9E%9C"><span class="toc_mobile_items-number">1.4.3.</span> <span class="toc_mobile_items-text">4.3 YaRN 的效果</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%BA%94%E3%80%81LLaMA-3-%E7%9A%84%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87%E6%89%A9%E5%B1%95%EF%BC%9A%E5%AE%9E%E8%B7%B5%E6%A1%88%E4%BE%8B"><span class="toc_mobile_items-number">1.5.</span> <span class="toc_mobile_items-text">五、LLaMA 3 的长上下文扩展：实践案例</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-1-%E8%AE%AD%E7%BB%83%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">1.5.1.</span> <span class="toc_mobile_items-text">5.1 训练策略</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#5-2-RoPE-Base-%E5%80%BC%E4%B8%8E%E4%B8%8A%E4%B8%8B%E6%96%87%E9%95%BF%E5%BA%A6%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc_mobile_items-number">1.5.2.</span> <span class="toc_mobile_items-text">5.2 RoPE Base 值与上下文长度的关系</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AD%E3%80%81FlashAttention-%E4%B8%8E%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87%EF%BC%9AIO-%E4%BC%98%E5%8C%96%E5%9F%BA%E7%A1%80"><span class="toc_mobile_items-number">1.6.</span> <span class="toc_mobile_items-text">六、FlashAttention 与长上下文：IO 优化基础</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#6-1-%E4%B8%8A%E4%B8%8B%E6%96%87%E5%B9%B6%E8%A1%8C%EF%BC%88Context-Parallelism%EF%BC%89"><span class="toc_mobile_items-number">1.6.1.</span> <span class="toc_mobile_items-text">6.1 上下文并行（Context Parallelism）</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B8%83%E3%80%81KV-Cache-%E4%BC%98%E5%8C%96%EF%BC%9A%E5%A4%84%E7%90%86%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87%E7%9A%84%E6%8E%A8%E7%90%86%E7%93%B6%E9%A2%88"><span class="toc_mobile_items-number">1.7.</span> <span class="toc_mobile_items-text">七、KV Cache 优化：处理长上下文的推理瓶颈</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-1-KV-Cache-%E7%9A%84%E7%B2%BE%E7%A1%AE%E8%AE%A1%E7%AE%97"><span class="toc_mobile_items-number">1.7.1.</span> <span class="toc_mobile_items-text">7.1 KV Cache 的精确计算</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-2-KV-Cache-%E9%87%8F%E5%8C%96"><span class="toc_mobile_items-number">1.7.2.</span> <span class="toc_mobile_items-text">7.2 KV Cache 量化</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#7-3-Attention-Sinks%EF%BC%9A%E6%B5%81%E5%BC%8F%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87"><span class="toc_mobile_items-number">1.7.3.</span> <span class="toc_mobile_items-text">7.3 Attention Sinks：流式长上下文</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%85%AB%E3%80%81Gemini-1-5-%E7%9A%84-100-%E4%B8%87-Token-%E4%B8%8A%E4%B8%8B%E6%96%87"><span class="toc_mobile_items-number">1.8.</span> <span class="toc_mobile_items-text">八、Gemini 1.5 的 100 万 Token 上下文</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-1-%E6%8A%80%E6%9C%AF%E6%A6%82%E8%BF%B0"><span class="toc_mobile_items-number">1.8.1.</span> <span class="toc_mobile_items-text">8.1 技术概述</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#8-2-%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87%E6%B5%8B%E8%AF%95%E7%BB%93%E6%9E%9C"><span class="toc_mobile_items-number">1.8.2.</span> <span class="toc_mobile_items-text">8.2 长上下文测试结果</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E4%B9%9D%E3%80%81LongRoPE%EF%BC%9A%E8%B6%85%E8%B6%8A-200-%E4%B8%87-Token"><span class="toc_mobile_items-number">1.9.</span> <span class="toc_mobile_items-text">九、LongRoPE：超越 200 万 Token</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-1-%E6%A0%B8%E5%BF%83%E5%8F%91%E7%8E%B0"><span class="toc_mobile_items-number">1.9.1.</span> <span class="toc_mobile_items-text">9.1 核心发现</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-2-%E9%9D%9E%E5%9D%87%E5%8C%80%E7%BC%A9%E6%94%BE%E6%96%B9%E6%B3%95"><span class="toc_mobile_items-number">1.9.2.</span> <span class="toc_mobile_items-text">9.2 非均匀缩放方法</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#9-3-%E4%B8%A4%E6%AD%A5%E6%8E%A8%E8%BF%9B%E7%AD%96%E7%95%A5"><span class="toc_mobile_items-number">1.9.3.</span> <span class="toc_mobile_items-text">9.3 两步推进策略</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E3%80%81%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87%E8%AF%84%E4%BC%B0%E6%96%B9%E6%B3%95"><span class="toc_mobile_items-number">1.10.</span> <span class="toc_mobile_items-text">十、长上下文评估方法</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-1-Needle-in-a-Haystack%EF%BC%88%E5%A4%A7%E6%B5%B7%E6%8D%9E%E9%92%88%EF%BC%89"><span class="toc_mobile_items-number">1.10.1.</span> <span class="toc_mobile_items-text">10.1 Needle in a Haystack（大海捞针）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-2-RULER%EF%BC%88Realistic-Long-Context-Understanding-and-Retrieval%EF%BC%89"><span class="toc_mobile_items-number">1.10.2.</span> <span class="toc_mobile_items-text">10.2 RULER（Realistic Long-Context Understanding and Retrieval）</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#10-3-Long-Context-MT-Bench"><span class="toc_mobile_items-number">1.10.3.</span> <span class="toc_mobile_items-text">10.3 Long Context MT-Bench</span></a></li></ol></li><li class="toc_mobile_items-item toc_mobile_items-level-2"><a class="toc_mobile_items-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87%E7%9A%84%E5%AE%9E%E9%99%85%E5%B7%A5%E7%A8%8B%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc_mobile_items-number">1.11.</span> <span class="toc_mobile_items-text">十一、长上下文的实际工程注意事项</span></a><ol class="toc_mobile_items-child"><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-1-%E2%80%9CLost-in-the-Middle%E2%80%9D%E7%8E%B0%E8%B1%A1"><span class="toc_mobile_items-number">1.11.1.</span> <span class="toc_mobile_items-text">11.1 “Lost in the Middle”现象</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-2-%E6%8E%A8%E7%90%86%E6%88%90%E6%9C%AC%E7%9A%84%E4%BA%8C%E6%AC%A1%E6%96%B9%E5%A2%9E%E9%95%BF"><span class="toc_mobile_items-number">1.11.2.</span> <span class="toc_mobile_items-text">11.2 推理成本的二次方增长</span></a></li><li class="toc_mobile_items-item toc_mobile_items-level-3"><a class="toc_mobile_items-link" href="#11-3-%E7%A8%80%E7%96%8F%E6%B3%A8%E6%84%8F%E5%8A%9B%E4%BD%9C%E4%B8%BA%E6%9C%AA%E6%9D%A5%E6%96%B9%E5%90%91"><span class="toc_mobile_items-number">1.11.3.</span> <span class="toc_mobile_items-text">11.3 稀疏注意力作为未来方向</span></a></li></ol></li></ol></li></ol></div></div><div id="body-wrap"><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div class="auto_open" id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87%E6%8A%80%E6%9C%AF%E5%AE%8C%E5%85%A8%E6%8C%87%E5%8D%97"><span class="toc-number">1.</span> <span class="toc-text">长上下文技术完全指南</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87%E7%9A%84%E9%87%8D%E8%A6%81%E6%80%A7%E4%B8%8E%E6%8C%91%E6%88%98"><span class="toc-number">1.1.</span> <span class="toc-text">一、长上下文的重要性与挑战</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.1 为什么需要长上下文</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E6%A0%87%E5%87%86-Transformer-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9A%BE%E4%BB%A5%E5%A4%84%E7%90%86%E9%95%BF%E5%BA%8F%E5%88%97"><span class="toc-number">1.1.2.</span> <span class="toc-text">1.2 标准 Transformer 为什么难以处理长序列</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81RoPE-%E7%9A%84%E5%A4%96%E6%8E%A8%E9%97%AE%E9%A2%98"><span class="toc-number">1.2.</span> <span class="toc-text">二、RoPE 的外推问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-RoPE-%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%9B%9E%E9%A1%BE"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1 RoPE 的工作原理回顾</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E4%B8%BA%E4%BB%80%E4%B9%88-RoPE-%E9%9A%BE%E4%BB%A5%E7%9B%B4%E6%8E%A5%E5%A4%96%E6%8E%A8"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2 为什么 RoPE 难以直接外推</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E4%BD%8D%E7%BD%AE%E6%8F%92%E5%80%BC%EF%BC%88Position-Interpolation%EF%BC%89"><span class="toc-number">1.3.</span> <span class="toc-text">三、位置插值（Position Interpolation）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%A0%B8%E5%BF%83%E6%80%9D%E8%B7%AF"><span class="toc-number">1.3.1.</span> <span class="toc-text">3.1 核心思路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%95%88%E6%9E%9C%E4%B8%8E%E4%BB%A3%E4%BB%B7"><span class="toc-number">1.3.2.</span> <span class="toc-text">3.2 效果与代价</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81YaRN%EF%BC%9A%E6%9B%B4%E7%B2%BE%E7%BB%86%E7%9A%84-RoPE-%E5%A4%96%E6%8E%A8%E6%96%B9%E6%A1%88"><span class="toc-number">1.4.</span> <span class="toc-text">四、YaRN：更精细的 RoPE 外推方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-YaRN-%E7%9A%84%E6%A0%B8%E5%BF%83%E6%B4%9E%E5%AF%9F"><span class="toc-number">1.4.1.</span> <span class="toc-text">4.1 YaRN 的核心洞察</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-YaRN-%E7%9A%84%E5%AE%9E%E7%8E%B0%EF%BC%9ANTK-Aware-Interpolation"><span class="toc-number">1.4.2.</span> <span class="toc-text">4.2 YaRN 的实现：NTK-Aware Interpolation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-YaRN-%E7%9A%84%E6%95%88%E6%9E%9C"><span class="toc-number">1.4.3.</span> <span class="toc-text">4.3 YaRN 的效果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81LLaMA-3-%E7%9A%84%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87%E6%89%A9%E5%B1%95%EF%BC%9A%E5%AE%9E%E8%B7%B5%E6%A1%88%E4%BE%8B"><span class="toc-number">1.5.</span> <span class="toc-text">五、LLaMA 3 的长上下文扩展：实践案例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E8%AE%AD%E7%BB%83%E7%AD%96%E7%95%A5"><span class="toc-number">1.5.1.</span> <span class="toc-text">5.1 训练策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-RoPE-Base-%E5%80%BC%E4%B8%8E%E4%B8%8A%E4%B8%8B%E6%96%87%E9%95%BF%E5%BA%A6%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">1.5.2.</span> <span class="toc-text">5.2 RoPE Base 值与上下文长度的关系</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81FlashAttention-%E4%B8%8E%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87%EF%BC%9AIO-%E4%BC%98%E5%8C%96%E5%9F%BA%E7%A1%80"><span class="toc-number">1.6.</span> <span class="toc-text">六、FlashAttention 与长上下文：IO 优化基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E4%B8%8A%E4%B8%8B%E6%96%87%E5%B9%B6%E8%A1%8C%EF%BC%88Context-Parallelism%EF%BC%89"><span class="toc-number">1.6.1.</span> <span class="toc-text">6.1 上下文并行（Context Parallelism）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81KV-Cache-%E4%BC%98%E5%8C%96%EF%BC%9A%E5%A4%84%E7%90%86%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87%E7%9A%84%E6%8E%A8%E7%90%86%E7%93%B6%E9%A2%88"><span class="toc-number">1.7.</span> <span class="toc-text">七、KV Cache 优化：处理长上下文的推理瓶颈</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-KV-Cache-%E7%9A%84%E7%B2%BE%E7%A1%AE%E8%AE%A1%E7%AE%97"><span class="toc-number">1.7.1.</span> <span class="toc-text">7.1 KV Cache 的精确计算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-KV-Cache-%E9%87%8F%E5%8C%96"><span class="toc-number">1.7.2.</span> <span class="toc-text">7.2 KV Cache 量化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-Attention-Sinks%EF%BC%9A%E6%B5%81%E5%BC%8F%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87"><span class="toc-number">1.7.3.</span> <span class="toc-text">7.3 Attention Sinks：流式长上下文</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81Gemini-1-5-%E7%9A%84-100-%E4%B8%87-Token-%E4%B8%8A%E4%B8%8B%E6%96%87"><span class="toc-number">1.8.</span> <span class="toc-text">八、Gemini 1.5 的 100 万 Token 上下文</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E6%8A%80%E6%9C%AF%E6%A6%82%E8%BF%B0"><span class="toc-number">1.8.1.</span> <span class="toc-text">8.1 技术概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87%E6%B5%8B%E8%AF%95%E7%BB%93%E6%9E%9C"><span class="toc-number">1.8.2.</span> <span class="toc-text">8.2 长上下文测试结果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81LongRoPE%EF%BC%9A%E8%B6%85%E8%B6%8A-200-%E4%B8%87-Token"><span class="toc-number">1.9.</span> <span class="toc-text">九、LongRoPE：超越 200 万 Token</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E6%A0%B8%E5%BF%83%E5%8F%91%E7%8E%B0"><span class="toc-number">1.9.1.</span> <span class="toc-text">9.1 核心发现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E9%9D%9E%E5%9D%87%E5%8C%80%E7%BC%A9%E6%94%BE%E6%96%B9%E6%B3%95"><span class="toc-number">1.9.2.</span> <span class="toc-text">9.2 非均匀缩放方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-%E4%B8%A4%E6%AD%A5%E6%8E%A8%E8%BF%9B%E7%AD%96%E7%95%A5"><span class="toc-number">1.9.3.</span> <span class="toc-text">9.3 两步推进策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87%E8%AF%84%E4%BC%B0%E6%96%B9%E6%B3%95"><span class="toc-number">1.10.</span> <span class="toc-text">十、长上下文评估方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-Needle-in-a-Haystack%EF%BC%88%E5%A4%A7%E6%B5%B7%E6%8D%9E%E9%92%88%EF%BC%89"><span class="toc-number">1.10.1.</span> <span class="toc-text">10.1 Needle in a Haystack（大海捞针）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-RULER%EF%BC%88Realistic-Long-Context-Understanding-and-Retrieval%EF%BC%89"><span class="toc-number">1.10.2.</span> <span class="toc-text">10.2 RULER（Realistic Long-Context Understanding and Retrieval）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-3-Long-Context-MT-Bench"><span class="toc-number">1.10.3.</span> <span class="toc-text">10.3 Long Context MT-Bench</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87%E7%9A%84%E5%AE%9E%E9%99%85%E5%B7%A5%E7%A8%8B%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-number">1.11.</span> <span class="toc-text">十一、长上下文的实际工程注意事项</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-1-%E2%80%9CLost-in-the-Middle%E2%80%9D%E7%8E%B0%E8%B1%A1"><span class="toc-number">1.11.1.</span> <span class="toc-text">11.1 “Lost in the Middle”现象</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-2-%E6%8E%A8%E7%90%86%E6%88%90%E6%9C%AC%E7%9A%84%E4%BA%8C%E6%AC%A1%E6%96%B9%E5%A2%9E%E9%95%BF"><span class="toc-number">1.11.2.</span> <span class="toc-text">11.2 推理成本的二次方增长</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-3-%E7%A8%80%E7%96%8F%E6%B3%A8%E6%84%8F%E5%8A%9B%E4%BD%9C%E4%B8%BA%E6%9C%AA%E6%9D%A5%E6%96%B9%E5%90%91"><span class="toc-number">1.11.3.</span> <span class="toc-text">11.3 稀疏注意力作为未来方向</span></a></li></ol></li></ol></li></ol></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_ai_digital.jpg)"><div id="post-info"><div id="post-title"><div class="posttitle">长上下文技术完全指南</div></div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2026-06-14<span class="post-meta__separator">|</span><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-06-14</time><span class="post-meta__separator mobile_hidden">|</span><span class="mobile_hidden"><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/">大模型</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/LLM%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/">LLM核心技术</a></span><div class="post-meta-wordcount"><i class="fa fa-file-word-o post-meta__icon" aria-hidden="true"></i><span>字数总计: </span><span class="word-count">5.4k</span><span class="post-meta__separator">|</span><i class="fa fa-clock-o post-meta__icon" aria-hidden="true"></i><span>阅读时长: 19 分钟</span><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true">       </i><span>阅读量: </span><span id="busuanzi_value_page_pv"></span></div></div></div></div><div class="layout layout_post" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h1 id="长上下文技术完全指南"><a href="#长上下文技术完全指南" class="headerlink" title="长上下文技术完全指南"></a>长上下文技术完全指南</h1><blockquote>
+<p><strong>核心论文：</strong></p>
+<ul>
+<li>RoFormer: Enhanced Transformer with Rotary Position Embedding（Su et al., 2021）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2104.09864">arXiv:2104.09864</a></li>
+<li>Extending Context Window of Large Language Models via Positional Interpolation（Chen et al., Meta, 2023）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2306.15595">arXiv:2306.15595</a></li>
+<li>YaRN: Efficient Context Window Extension of Large Language Models（Peng et al., EleutherAI, 2023）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2309.00071">arXiv:2309.00071</a></li>
+<li>FlashAttention-2（Dao, 2023）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2307.08691">arXiv:2307.08691</a></li>
+<li>Efficient Streaming Language Models with Attention Sinks（Xiao et al., MIT&#x2F;Meta, 2023）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2309.17453">arXiv:2309.17453</a></li>
+<li>Gemini 1.5: Unlocking multimodal understanding across millions of tokens of context（Team Google, 2024）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2403.05530">arXiv:2403.05530</a></li>
+<li>LongRoPE: Extending LLM Context Window Beyond 2 Million Tokens（Ding et al., Microsoft, 2024）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2402.13753">arXiv:2402.13753</a></li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="一、长上下文的重要性与挑战"><a href="#一、长上下文的重要性与挑战" class="headerlink" title="一、长上下文的重要性与挑战"></a>一、长上下文的重要性与挑战</h2><h3 id="1-1-为什么需要长上下文"><a href="#1-1-为什么需要长上下文" class="headerlink" title="1.1 为什么需要长上下文"></a>1.1 为什么需要长上下文</h3><p>现代 LLM 应用中，长上下文能力是核心竞争力之一：</p>
+<table>
+<thead>
+<tr>
+<th>应用场景</th>
+<th>所需上下文长度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>普通对话</td>
+<td>1K-8K tokens</td>
+</tr>
+<tr>
+<td>长文档摘要</td>
+<td>32K-128K tokens</td>
+</tr>
+<tr>
+<td>整本书分析</td>
+<td>128K-1M tokens</td>
+</tr>
+<tr>
+<td>代码库理解（Claude Code）</td>
+<td>100K-200K tokens</td>
+</tr>
+<tr>
+<td>完整学术论文</td>
+<td>50K-200K tokens</td>
+</tr>
+<tr>
+<td>小时级视频（多模态）</td>
+<td>500K-1M tokens</td>
+</tr>
+</tbody></table>
+<p>以 Claude Code 为例：一个中等规模的 Java 代码库（100 个文件，每个文件 500 行）大约有 200-400K tokens。如果上下文窗口不够，Agent 就无法同时”看到”整个代码库，必须反复读取文件，效率大幅下降。</p>
+<h3 id="1-2-标准-Transformer-为什么难以处理长序列"><a href="#1-2-标准-Transformer-为什么难以处理长序列" class="headerlink" title="1.2 标准 Transformer 为什么难以处理长序列"></a>1.2 标准 Transformer 为什么难以处理长序列</h3><p><strong>问题 1：注意力计算复杂度 $O(n^2)$</strong></p>
+<p>对于序列长度 $n$，注意力矩阵 $A \in \mathbb{R}^{n \times n}$ 的计算和存储复杂度都是 $O(n^2)$。</p>
+<p>具体数字：</p>
+<ul>
+<li>$n &#x3D; 4096$（4K）：矩阵约 32MB（float16），计算可接受</li>
+<li>$n &#x3D; 32768$（32K）：矩阵约 2GB，开始困难</li>
+<li>$n &#x3D; 131072$（128K）：矩阵约 32GB，超过单张 GPU 显存</li>
+</ul>
+<p>这就是为什么在 FlashAttention 出现之前，长上下文训练是不可行的。</p>
+<p><strong>问题 2：位置编码的外推能力（Position Extrapolation）</strong></p>
+<p>所有 LLM 都有一个”训练上下文长度”——在预训练时见过的最长序列。如果推理时序列超过这个长度，模型的位置编码需要外推到未见过的位置，通常会导致性能急剧下降。</p>
+<p>这是长上下文的核心技术挑战：<strong>如何让模型的位置编码能够有效外推到更长的序列？</strong></p>
+<p><strong>问题 3：KV Cache 的显存压力</strong></p>
+<p>在自回归推理时，需要缓存所有历史 token 的 Key 和 Value 向量（KV Cache）。对于 LLaMA 3 70B（80 层，GQA $h_{KV}&#x3D;8$，$d_k&#x3D;128$），上下文长度为 128K 时：</p>
+<p>$$\text{KV Cache} = 2 \times 128000 \times 80 \times 8 \times 128 \times 2 \text{ bytes} \approx 42\text{ GB}$$</p>
+<p>这还不算激活值。总显存需求（参数 + KV Cache）超过 100GB，需要多张 GPU。</p>
+<hr>
+<h2 id="二、RoPE-的外推问题"><a href="#二、RoPE-的外推问题" class="headerlink" title="二、RoPE 的外推问题"></a>二、RoPE 的外推问题</h2><h3 id="2-1-RoPE-的工作原理回顾"><a href="#2-1-RoPE-的工作原理回顾" class="headerlink" title="2.1 RoPE 的工作原理回顾"></a>2.1 RoPE 的工作原理回顾</h3><p>RoPE（Rotary Position Embedding，详见第 01 篇）通过旋转矩阵将位置信息注入 Query 和 Key 向量。对于位置 $m$ 的 token，其 Query 向量被旋转角度 $m\theta_i$（第 $i$ 对维度）：</p>
+<p>$$q_m^{(2i, 2i+1)} = \begin{pmatrix} \cos m\theta_i & -\sin m\theta_i \\ \sin m\theta_i & \cos m\theta_i \end{pmatrix} q_m^{(2i, 2i+1)}$$</p>
+<p>其中 $\theta_i &#x3D; \text{base}^{-2i&#x2F;d}$，LLaMA 原版使用 $\text{base} &#x3D; 10000$。</p>
+<p><strong>注意力点积的性质：</strong></p>
+<p>$$q_m^T k_n = \text{Re}\left[\sum_{i=0}^{d/2-1} q_m^{(i)} \overline{k_n^{(i)}} e^{i(m-n)\theta_i}\right]$$</p>
+<p>这说明注意力分数只依赖相对位置 $(m-n)$，这是 RoPE 的核心优点。</p>
+<h3 id="2-2-为什么-RoPE-难以直接外推"><a href="#2-2-为什么-RoPE-难以直接外推" class="headerlink" title="2.2 为什么 RoPE 难以直接外推"></a>2.2 为什么 RoPE 难以直接外推</h3><p><strong>问题：</strong> 当推理时遇到的相对位置 $(m-n)$ 超过训练时见过的最大值时，$e^{i(m-n)\theta_i}$ 的旋转量超出了模型”见过”的范围，导致注意力分数的分布与训练时不同。</p>
+<p>更精确地说：对于高频维度（$i$ 较小），$\theta_i$ 较大，一个小的位置增量就会导致大的旋转角度变化；对于低频维度（$i$ 较大），$\theta_i$ 较小，即使位置很远，旋转角度变化也较小。</p>
+<p>当上下文长度超过训练长度时：</p>
+<ul>
+<li><strong>高频维度：</strong> 已经多次”转满一圈”（旋转角度 &gt; $2\pi$），在训练内可能也转了很多圈，外推时行为相对稳定</li>
+<li><strong>低频维度：</strong> 在训练内只旋转了很小的角度，外推时这些维度第一次遇到大旋转量，模型没有见过</li>
+</ul>
+<p><strong>实验结果：</strong> LLaMA（训练长度 2048）在长度 2049 处的 perplexity 就已经开始上升，到 4096 时性能大幅下降。</p>
+<hr>
+<h2 id="三、位置插值（Position-Interpolation）"><a href="#三、位置插值（Position-Interpolation）" class="headerlink" title="三、位置插值（Position Interpolation）"></a>三、位置插值（Position Interpolation）</h2><p><strong>论文：</strong> Extending Context Window of Large Language Models via Positional Interpolation（Chen et al., Meta, 2023）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2306.15595">arXiv:2306.15595</a></p>
+<h3 id="3-1-核心思路"><a href="#3-1-核心思路" class="headerlink" title="3.1 核心思路"></a>3.1 核心思路</h3><p>如果直接外推（extrapolation）不可行，那就通过<strong>压缩（interpolation）</strong>：将原始的 $[0, n]$ 位置范围映射到 $[0, L]$（训练长度），这样推理时的位置索引永远不会超出训练范围。</p>
+<p>数学上，将位置索引从 $m$ 替换为 $m&#x2F;s$（其中 $s &#x3D; n&#x2F;L$ 是缩放因子）：</p>
+<p>$$m \rightarrow m' = m / s$$</p>
+<p>这样，对于训练长度 $L &#x3D; 2048$ 的模型，推理时遇到位置 $m &#x3D; 4096$ 会被映射到 $m’ &#x3D; 2048$——模型以为它在位置 2048，而实际上处理的是位置 4096 的 token。</p>
+<p><strong>直觉：</strong> 就像把一把卷尺压缩——原来 1 米的刻度，现在只占 0.5 米，测量范围翻倍，但精度也相应降低。</p>
+<h3 id="3-2-效果与代价"><a href="#3-2-效果与代价" class="headerlink" title="3.2 效果与代价"></a>3.2 效果与代价</h3><p><strong>优点：</strong> 相比直接外推，位置插值可以平滑地扩展上下文长度。Meta 发现，只需少量的长上下文微调（约 1000 步，使用 $s&#x3D;16$ 的长文档），就能让 LLaMA 7B 从 2K 扩展到 32K 上下文。</p>
+<p><strong>代价：</strong> 插值会”压缩”位置信息——相邻两个 token 的位置差从 1 变成 $1&#x2F;s$，模型区分近距离 token 的位置关系的能力下降（短距离分辨率降低）。</p>
+<p>对于 $s&#x3D;8$（8 倍扩展），相邻两个 token 的旋转角度差变为原来的 1&#x2F;8，对于高频维度来说这基本没问题（角度仍然可区分），但对于低频维度，近距离 token 几乎无法区分位置。</p>
+<hr>
+<h2 id="四、YaRN：更精细的-RoPE-外推方案"><a href="#四、YaRN：更精细的-RoPE-外推方案" class="headerlink" title="四、YaRN：更精细的 RoPE 外推方案"></a>四、YaRN：更精细的 RoPE 外推方案</h2><p><strong>论文：</strong> YaRN: Efficient Context Window Extension of Large Language Models（Peng et al., EleutherAI, 2023）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2309.00071">arXiv:2309.00071</a></p>
+<h3 id="4-1-YaRN-的核心洞察"><a href="#4-1-YaRN-的核心洞察" class="headerlink" title="4.1 YaRN 的核心洞察"></a>4.1 YaRN 的核心洞察</h3><p>位置插值的问题在于：它对所有频率维度使用相同的缩放因子 $s$。但不同频率维度的实际需求是不同的：</p>
+<ul>
+<li><strong>高频维度（$\theta_i$ 大，$i$ 小）：</strong> 在训练长度内，这些维度已经多次旋转满圈，外推时的行为与插值时类似，不需要压缩——直接外推即可</li>
+<li><strong>低频维度（$\theta_i$ 小，$i$ 大）：</strong> 这些维度在训练内旋转角度很小，直接外推到长序列时遇到未见过的大旋转量，需要插值处理</li>
+</ul>
+<p>YaRN 的思路：<strong>根据维度的频率，差异化地处理外推和插值。</strong></p>
+<h3 id="4-2-YaRN-的实现：NTK-Aware-Interpolation"><a href="#4-2-YaRN-的实现：NTK-Aware-Interpolation" class="headerlink" title="4.2 YaRN 的实现：NTK-Aware Interpolation"></a>4.2 YaRN 的实现：NTK-Aware Interpolation</h3><p><strong>NTK（Neural Tangent Kernel）-Aware 缩放：</strong> 将 RoPE 的 base 值从 $\theta_0 &#x3D; 10000$ 缩放：</p>
+<p>$$\theta_i' = \text{base}'^{-2i/d}, \quad \text{base}' = \text{base} \cdot s^{d/(d-2)}$$</p>
+<p>其中 $s$ 是上下文扩展倍数。</p>
+<p>这个修改的效果：</p>
+<ul>
+<li>对于高频维度（$i$ 小）：几乎不改变旋转角度</li>
+<li>对于低频维度（$i$ 大）：将 base 值放大，相当于缩小旋转角度，类似插值效果</li>
+</ul>
+<p><strong>进一步优化：YaRN 的 NTK-by-Parts</strong></p>
+<p>YaRN 更进一步，对维度划分三个区域：</p>
+<ol>
+<li><strong>外推区（high frequency）：</strong> 维度旋转波长远小于训练上下文，直接外推</li>
+<li><strong>插值区（low frequency）：</strong> 维度旋转波长远大于训练上下文，做插值（缩放 $1&#x2F;s$）</li>
+<li><strong>过渡区：</strong> 线性插值两种方案</li>
+</ol>
+<p><strong>数学公式：</strong> 对于维度 $i$，YaRN 的有效旋转角度为：</p>
+<p>$$\theta_i' = \theta_i \cdot g(i, s)$$</p>
+<p>其中 $g(i, s)$ 是从”不缩放”（外推区）到”缩放 $1&#x2F;s$”（插值区）的线性过渡函数。</p>
+<p><strong>注意力温度缩放（Attention Temperature Scaling）：</strong></p>
+<p>YaRN 还发现，位置插值会改变注意力分数的分布（因为 Query 和 Key 的旋转角度变小了，点积的范数减小），需要对注意力分数乘以一个温度系数 $t \in [0.1, 0.2]$ 来调整：</p>
+<p>$$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k} \cdot t}\right) V$$</p>
+<p>这个细节对长上下文性能有显著影响（相差约 5% 的 passkey retrieval 准确率）。</p>
+<h3 id="4-3-YaRN-的效果"><a href="#4-3-YaRN-的效果" class="headerlink" title="4.3 YaRN 的效果"></a>4.3 YaRN 的效果</h3><p>在 LLaMA 2 13B（训练长度 4096）上：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>扩展到 128K 后的 passkey retrieval 准确率</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>无扩展（直接使用）</td>
+<td>约 0%（完全失效）</td>
+</tr>
+<tr>
+<td>位置插值</td>
+<td>约 45%</td>
+</tr>
+<tr>
+<td>YaRN（NTK-by-Parts）</td>
+<td><strong>约 98%</strong></td>
+</tr>
+</tbody></table>
+<p>YaRN 仅需约 400 步的长上下文微调（使用 128K 上下文的样本），就能达到接近完美的长距离检索能力。</p>
+<hr>
+<h2 id="五、LLaMA-3-的长上下文扩展：实践案例"><a href="#五、LLaMA-3-的长上下文扩展：实践案例" class="headerlink" title="五、LLaMA 3 的长上下文扩展：实践案例"></a>五、LLaMA 3 的长上下文扩展：实践案例</h2><p><strong>来源：</strong> The Llama 3 Herd of Models（<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2407.21783">arXiv:2407.21783</a>）</p>
+<h3 id="5-1-训练策略"><a href="#5-1-训练策略" class="headerlink" title="5.1 训练策略"></a>5.1 训练策略</h3><p>LLaMA 3 的预训练分为两个阶段：</p>
+<p><strong>阶段一（标准预训练）：</strong> 使用 8K 上下文长度进行大部分训练（约 14.5T tokens）。较短的上下文有利于提高训练吞吐量（注意力计算量随上下文长度二次方增长）。</p>
+<p><strong>阶段二（长上下文扩展）：</strong> 在主预训练结束后，进行一个连续预训练阶段，逐步扩展上下文长度：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">8K → 16K → 32K → 64K → 128K（每个阶段约数百 billion tokens）</span><br></pre></td></tr></table></figure>
+
+<p><strong>关键技术：</strong></p>
+<ol>
+<li><strong>RoPE theta 从 500K</strong>：LLaMA 3 将 RoPE 的 base 值从标准的 10K 提高到 500K，这大幅提高了低频维度的旋转周期，使其不需要额外的位置插值就能处理更长序列</li>
+<li><strong>逐步扩展</strong>：不是一步跳到 128K，而是逐步扩展，每步都用相应长度的数据训练一段时间</li>
+</ol>
+<p><strong>数据准备：</strong> 长上下文训练需要专门的长文档数据（普通的 web 数据通常被截断到 8K 以内）。Meta 专门收集了长格式文档（长学术论文、完整代码文件、长新闻报道等）用于这个阶段的训练。</p>
+<h3 id="5-2-RoPE-Base-值与上下文长度的关系"><a href="#5-2-RoPE-Base-值与上下文长度的关系" class="headerlink" title="5.2 RoPE Base 值与上下文长度的关系"></a>5.2 RoPE Base 值与上下文长度的关系</h3><p>为什么提高 RoPE base 值能帮助长上下文？</p>
+<p>对于第 $i$ 对维度，旋转周期（完整旋转一圈所需的位置数）为：</p>
+<p>$$T_i = \frac{2\pi}{\theta_i} = 2\pi \cdot \text{base}^{2i/d}$$</p>
+<p>对于最低频维度（$i &#x3D; d&#x2F;2 - 1$）：</p>
+<ul>
+<li>base &#x3D; 10000：$T_{max} &#x3D; 2\pi \times 10000 &#x3D; 62832$ 个位置</li>
+<li>base &#x3D; 500000：$T_{max} &#x3D; 2\pi \times 500000 &#x3D; 3141593$ 个位置</li>
+</ul>
+<p>当上下文长度超过旋转周期 $T_i$ 时，相同的旋转角度会出现在不同的绝对位置，造成”位置混淆”。</p>
+<p>通过提高 base 值，使得所有维度的旋转周期都远大于实际使用的最大上下文长度（128K），从而避免位置混淆。</p>
+<p><strong>选择 500K 而非更大值的原因：</strong> base 值越大，相邻 token 的相对旋转角度越小，位置区分精度下降。500K 在 128K 上下文长度下达到了良好的平衡。</p>
+<hr>
+<h2 id="六、FlashAttention-与长上下文：IO-优化基础"><a href="#六、FlashAttention-与长上下文：IO-优化基础" class="headerlink" title="六、FlashAttention 与长上下文：IO 优化基础"></a>六、FlashAttention 与长上下文：IO 优化基础</h2><p><strong>（详细原理见第 01 篇第十二节，此处重点讨论长上下文场景）</strong></p>
+<p>FlashAttention 对长上下文的意义不只是速度，更是<strong>可行性</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>上下文长度</th>
+<th>标准注意力显存（BF16）</th>
+<th>FlashAttention 显存（BF16）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>4K</td>
+<td>128 MB</td>
+<td>约 4 MB</td>
+</tr>
+<tr>
+<td>32K</td>
+<td>8 GB</td>
+<td>约 32 MB</td>
+</tr>
+<tr>
+<td>128K</td>
+<td>128 GB（超出单张 A100）</td>
+<td>约 512 MB</td>
+</tr>
+</tbody></table>
+<p>FlashAttention 将注意力矩阵的显存从 $O(n^2)$ 降低到 $O(n)$（通过分块计算避免存储完整矩阵），使得 128K 上下文的训练在单张 A100 上成为可能（虽然还需要额外的 KV Cache 显存）。</p>
+<h3 id="6-1-上下文并行（Context-Parallelism）"><a href="#6-1-上下文并行（Context-Parallelism）" class="headerlink" title="6.1 上下文并行（Context Parallelism）"></a>6.1 上下文并行（Context Parallelism）</h3><p>对于超过单张 GPU 显存的超长上下文（如 Gemini 的 1M tokens），还需要进一步的并行策略——<strong>上下文并行（Context Parallelism）</strong>：</p>
+<p>将长序列分成若干段，分配给不同的 GPU，每个 GPU 负责计算其中一段的注意力。</p>
+<p><strong>挑战：</strong> 注意力机制需要每个位置访问所有其他位置的 K&#x2F;V，上下文并行需要通过 GPU 间通信来收集远程 K&#x2F;V。</p>
+<p><strong>Ring Attention（Liu et al., UC Berkeley, 2023）</strong> 是一种高效的上下文并行实现：将 GPU 排成”环形”，每个 GPU 保存一段的 Q&#x2F;K&#x2F;V，然后 K&#x2F;V 在环形 GPU 之间流转，每个 GPU 在等待通信的同时处理已有的数据，实现计算和通信的重叠。</p>
+<p>LLaMA 3 405B 训练时使用了 8 路上下文并行，与其他并行策略结合，支持 128K 上下文的大规模训练。</p>
+<hr>
+<h2 id="七、KV-Cache-优化：处理长上下文的推理瓶颈"><a href="#七、KV-Cache-优化：处理长上下文的推理瓶颈" class="headerlink" title="七、KV Cache 优化：处理长上下文的推理瓶颈"></a>七、KV Cache 优化：处理长上下文的推理瓶颈</h2><p>即使解决了训练时的长上下文问题，推理时的 KV Cache 仍然是主要瓶颈。</p>
+<h3 id="7-1-KV-Cache-的精确计算"><a href="#7-1-KV-Cache-的精确计算" class="headerlink" title="7.1 KV Cache 的精确计算"></a>7.1 KV Cache 的精确计算</h3><p>对于 LLaMA 3 70B（GQA，$h_{KV} &#x3D; 8$，$d_k &#x3D; 128$，80 层，BF16）：</p>
+<p>$$\text{KV Cache per token per layer} = 2 \times h_{KV} \times d_k \times 2 \text{ bytes} = 2 \times 8 \times 128 \times 2 = 4096 \text{ bytes} = 4 \text{ KB}$$</p>
+<p>$$\text{Total KV Cache (128K context, 80 layers)} = 128000 \times 80 \times 4 \text{ KB} = 40.96 \text{ GB}$$</p>
+<p>加上模型参数（约 140 GB）：总显存需求约 181 GB，需要至少 3 张 A100 80GB。</p>
+<h3 id="7-2-KV-Cache-量化"><a href="#7-2-KV-Cache-量化" class="headerlink" title="7.2 KV Cache 量化"></a>7.2 KV Cache 量化</h3><p><strong>KVQuant（Hooper et al., UC Berkeley, 2024）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2401.18079">arXiv:2401.18079</a>：</strong></p>
+<p>将 KV Cache 从 BF16&#x2F;FP16（16 bits）量化到 4 bits，显存减少 75%：</p>
+<p>$$\text{KV Cache (4-bit, 128K, LLaMA 3 70B)} \approx 10 \text{ GB}$$（从 41 GB 降到约 10 GB）</p>
+<p>代价：轻微的精度损失（通常 &lt; 1% 的任务性能下降）。</p>
+<h3 id="7-3-Attention-Sinks：流式长上下文"><a href="#7-3-Attention-Sinks：流式长上下文" class="headerlink" title="7.3 Attention Sinks：流式长上下文"></a>7.3 Attention Sinks：流式长上下文</h3><p><strong>论文：</strong> Efficient Streaming Language Models with Attention Sinks（Xiao et al., MIT&#x2F;Meta, 2023）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2309.17453">arXiv:2309.17453</a></p>
+<p><strong>Attention Sink 现象的发现：</strong> 观察发现，无论输入是什么，最开始的几个 token（通常是 <code>&lt;BOS&gt;</code> 和前几个词）总是接收到远超其语义重要性的注意力权重。</p>
+<p>这些 token 被称为”注意力汇聚点（Attention Sink）”。</p>
+<p><strong>为什么会出现 Attention Sink？</strong></p>
+<p>softmax 函数要求注意力权重之和为 1。当模型需要在某个位置”不关注任何特定内容”时（类似”保持原始输入”的残差），它把注意力权重倾倒到这些”垃圾收集”token 上，因为这比均匀分散权重更容易学习（初始 token 在所有层都存在，是稳定的汇聚点）。</p>
+<p><strong>StreamingLLM 的应用：</strong></p>
+<p>利用 Attention Sink 现象，可以实现”无限长度”的流式推理：只保留最初的几个 token（Attention Sinks）和最近的 $W$ 个 token 的 KV Cache，丢弃中间的历史 token。</p>
+<p>这不能保留完整的历史（信息会丢失），但对于不需要引用远距离历史的流式对话场景，可以让上下文”滑动窗口”式地处理任意长的输入，而不需要无限增长的 KV Cache。</p>
+<hr>
+<h2 id="八、Gemini-1-5-的-100-万-Token-上下文"><a href="#八、Gemini-1-5-的-100-万-Token-上下文" class="headerlink" title="八、Gemini 1.5 的 100 万 Token 上下文"></a>八、Gemini 1.5 的 100 万 Token 上下文</h2><p><strong>论文：</strong> Gemini 1.5: Unlocking multimodal understanding across millions of tokens of context（Team Google, 2024）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2403.05530">arXiv:2403.05530</a></p>
+<h3 id="8-1-技术概述"><a href="#8-1-技术概述" class="headerlink" title="8.1 技术概述"></a>8.1 技术概述</h3><p>Gemini 1.5 Pro 支持 <strong>1M tokens</strong> 的上下文长度（约等于 10 本中等长度的书，或 11 小时的视频），并测试了 <strong>10M tokens</strong> 的极端情况。</p>
+<p><strong>已披露的关键技术（来自论文）：</strong></p>
+<ol>
+<li><strong>MoE 架构</strong>：通过 MoE 在保持计算效率的同时扩大模型容量</li>
+<li><strong>Ring Attention 变体</strong>：用于长上下文的跨设备注意力并行</li>
+<li><strong>专门的长上下文预训练数据</strong>：包含大量长格式文档和视频字幕</li>
+</ol>
+<p><strong>未披露的细节：</strong> Google 没有公开 Gemini 1.5 的具体位置编码方案、MoE 配置参数等架构细节。</p>
+<h3 id="8-2-长上下文测试结果"><a href="#8-2-长上下文测试结果" class="headerlink" title="8.2 长上下文测试结果"></a>8.2 长上下文测试结果</h3><p><strong>“Needle in a Haystack”（大海捞针）测试：</strong></p>
+<p>将一条特定信息（”针”）随机插入到 100 万 token 的文档（”干草堆”）中，测试模型能否找到它。</p>
+<p>Gemini 1.5 Pro 在整个 1M token 范围内的检索准确率 &gt; 99%，在 10M token 时保持 &gt; 92%（且在 10M 测试中也保持了多文件跨文档推理能力）。</p>
+<p><strong>特殊任务：”从一本书学一门语言”：</strong></p>
+<p>给 Gemini 1.5 一本 Kalamang 语（全球约 200 名使用者的巴布亚新几内亚语言）的语法书（约 500 页），然后测试它能否进行 Kalamang-英语翻译。</p>
+<p>结果：Gemini 1.5 在没有任何预训练 Kalamang 数据的情况下，仅从这本语法书就学会了基础翻译。</p>
+<p>这个测试展示了超长上下文 + 强大推理的结合：模型需要同时”理解”语法规则、记住词汇表、并正确应用到翻译任务中。</p>
+<hr>
+<h2 id="九、LongRoPE：超越-200-万-Token"><a href="#九、LongRoPE：超越-200-万-Token" class="headerlink" title="九、LongRoPE：超越 200 万 Token"></a>九、LongRoPE：超越 200 万 Token</h2><p><strong>论文：</strong> LongRoPE: Extending LLM Context Window Beyond 2 Million Tokens（Ding et al., Microsoft, 2024）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2402.13753">arXiv:2402.13753</a></p>
+<h3 id="9-1-核心发现"><a href="#9-1-核心发现" class="headerlink" title="9.1 核心发现"></a>9.1 核心发现</h3><p>LongRoPE 的作者发现，YaRN 和位置插值方案的关键问题是：它们对 RoPE 所有维度使用相同的缩放因子（即使 NTK-by-Parts 也是按预定义规则划分），但<strong>不同 Transformer 层和不同维度对外推的容忍度是不同的</strong>。</p>
+<p><strong>实验发现：</strong></p>
+<ul>
+<li>靠近输入的低层（Layer 1-5）：对长距离位置外推更敏感</li>
+<li>靠近输出的高层（Layer 20+）：对长距离外推容忍度更高</li>
+<li>高频维度（$i$ 小）：可以大比例压缩</li>
+<li>某些中频维度：几乎不需要压缩</li>
+</ul>
+<h3 id="9-2-非均匀缩放方法"><a href="#9-2-非均匀缩放方法" class="headerlink" title="9.2 非均匀缩放方法"></a>9.2 非均匀缩放方法</h3><p>LongRoPE 通过演化算法（Evolutionary Algorithm）搜索每个维度的最优缩放因子：</p>
+<p>给定训练长度 $L$ 和目标长度 $L_{ext}$，寻找缩放向量 $\lambda &#x3D; [\lambda_1, \lambda_2, \ldots, \lambda_{d&#x2F;2}]$（每个维度有独立的缩放因子），使得在目标长度上的 perplexity 最小：</p>
+<p>$$\min_\lambda \text{PPL}(L_{ext}, \lambda)$$</p>
+<p>由于这个搜索空间是高维的（$d&#x2F;2$ 维，如 2048 维），使用演化算法（而非梯度优化，因为 perplexity 相对缩放因子不可微）来搜索。</p>
+<p>搜索成本远低于重新训练：对于一个 7B 模型，整个搜索过程只需要约 1000 步前向推理（无梯度计算）。</p>
+<h3 id="9-3-两步推进策略"><a href="#9-3-两步推进策略" class="headerlink" title="9.3 两步推进策略"></a>9.3 两步推进策略</h3><p>LongRoPE 提出”两步推进”（Two-Step Progression）策略：</p>
+<p><strong>步骤一：扩展到目标长度的 8 倍</strong></p>
+<p>先用进化搜索扩展到目标长度的 8 倍，然后做少量微调（约 1000 步，使用长文档）。</p>
+<p><strong>步骤二：恢复短上下文性能</strong></p>
+<p>扩展到超长上下文后，模型在原始短上下文（如 2K-4K tokens）上的性能可能略有下降（因为位置缩放改变了近距离位置的表示）。</p>
+<p>LongRoPE 为短上下文推理和长上下文推理分别维护两套缩放因子，在推理时根据实际序列长度动态选择。</p>
+<p><strong>结果：</strong> 基于 Phi-2（2.7B）和 LLaMA 2（7B），LongRoPE 将上下文从 4K 扩展到 <strong>2048K（200 万 tokens）</strong>，在 “Needle in a Haystack” 测试中保持约 95% 的准确率。</p>
+<hr>
+<h2 id="十、长上下文评估方法"><a href="#十、长上下文评估方法" class="headerlink" title="十、长上下文评估方法"></a>十、长上下文评估方法</h2><h3 id="10-1-Needle-in-a-Haystack（大海捞针）"><a href="#10-1-Needle-in-a-Haystack（大海捞针）" class="headerlink" title="10.1 Needle in a Haystack（大海捞针）"></a>10.1 Needle in a Haystack（大海捞针）</h3><p>最常见的长上下文测试，由 Greg Kamradt 提出：</p>
+<ul>
+<li>将一条短信息（”针”）插入到长文本（”干草堆”）的随机位置</li>
+<li>在文本末尾添加问题，要求模型回答需要定位”针”的问题</li>
+<li>测试不同文档位置和不同上下文深度的检索准确率</li>
+</ul>
+<p><strong>局限性：</strong> 这个测试只测试单条信息的检索，不能反映多跳推理（需要结合多处信息）或复杂文档理解能力。</p>
+<h3 id="10-2-RULER（Realistic-Long-Context-Understanding-and-Retrieval）"><a href="#10-2-RULER（Realistic-Long-Context-Understanding-and-Retrieval）" class="headerlink" title="10.2 RULER（Realistic Long-Context Understanding and Retrieval）"></a>10.2 RULER（Realistic Long-Context Understanding and Retrieval）</h3><p><strong>论文：</strong> RULER: What’s the Real Context Size of Your Long-Context Language Models?（Hsieh et al., NVIDIA, 2024）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2404.06654">arXiv:2404.06654</a></p>
+<p>RULER 提出了比”大海捞针”更全面的长上下文测试集，包含：</p>
+<ul>
+<li>单跳 QA（标准检索）</li>
+<li>多跳 QA（跨多处信息）</li>
+<li>聚合（计数、排序长列表中的元素）</li>
+<li>多 key-value 关联（记住多对对应关系）</li>
+</ul>
+<p><strong>发现：</strong> 几乎所有声称支持 128K 上下文的模型，在 RULER 的复杂任务上，实际有效上下文长度远低于其标称值（通常有效长度只有标称值的 20-50%）。</p>
+<h3 id="10-3-Long-Context-MT-Bench"><a href="#10-3-Long-Context-MT-Bench" class="headerlink" title="10.3 Long Context MT-Bench"></a>10.3 Long Context MT-Bench</h3><p>多轮长文档理解测试，测试在长文档基础上进行多轮问答的能力，接近实际使用场景。</p>
+<hr>
+<h2 id="十一、长上下文的实际工程注意事项"><a href="#十一、长上下文的实际工程注意事项" class="headerlink" title="十一、长上下文的实际工程注意事项"></a>十一、长上下文的实际工程注意事项</h2><h3 id="11-1-“Lost-in-the-Middle”现象"><a href="#11-1-“Lost-in-the-Middle”现象" class="headerlink" title="11.1 “Lost in the Middle”现象"></a>11.1 “Lost in the Middle”现象</h3><p><strong>论文：</strong> Lost in the Middle: How Language Models Use Long Contexts（Liu et al., Stanford, 2023）<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2307.03172">arXiv:2307.03172</a></p>
+<p>研究发现，LLM 处理长上下文时，对文档<strong>开头和结尾</strong>的信息关注度显著高于<strong>中间</strong>部分——即使相关信息被放在中间，模型也难以有效利用。</p>
+<p><strong>实践建议：</strong></p>
+<ul>
+<li>将最重要的信息放在上下文的开头或结尾</li>
+<li>对于 RAG（Retrieval Augmented Generation）系统，尽量将检索到的相关段落放在靠近问题的位置（即上下文末尾）</li>
+</ul>
+<h3 id="11-2-推理成本的二次方增长"><a href="#11-2-推理成本的二次方增长" class="headerlink" title="11.2 推理成本的二次方增长"></a>11.2 推理成本的二次方增长</h3><p>虽然 FlashAttention 解决了显存问题，但注意力的<strong>计算复杂度</strong>仍然是 $O(n^2)$（只是 IO 复杂度降低了）。对于推理时间：</p>
+<table>
+<thead>
+<tr>
+<th>上下文长度</th>
+<th>相对于 4K 的推理时间（prefill 阶段）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>4K（基准）</td>
+<td>1x</td>
+</tr>
+<tr>
+<td>32K</td>
+<td>64x（$8^2$）</td>
+</tr>
+<tr>
+<td>128K</td>
+<td>1024x（$32^2$）</td>
+</tr>
+</tbody></table>
+<p>这意味着：对于 128K 上下文的首个 token 生成（prefill 阶段），计算时间是 4K 的约 1000 倍。实际中通常通过批处理和计算优化（如 Flash Decoding）来缓解，但长上下文的延迟确实显著增加。</p>
+<h3 id="11-3-稀疏注意力作为未来方向"><a href="#11-3-稀疏注意力作为未来方向" class="headerlink" title="11.3 稀疏注意力作为未来方向"></a>11.3 稀疏注意力作为未来方向</h3><p>为彻底解决 $O(n^2)$ 问题，研究者探索了各种<strong>稀疏注意力（Sparse Attention）</strong>方案：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>核心思路</th>
+<th>复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Longformer（Beltagy et al., 2020）</td>
+<td>局部窗口 + 全局 token 注意力</td>
+<td>$O(n)$</td>
+</tr>
+<tr>
+<td>BigBird（Zaheer et al., 2020）</td>
+<td>随机 + 局部 + 全局注意力</td>
+<td>$O(n)$</td>
+</tr>
+<tr>
+<td>Reformer（Kitaev et al., 2020）</td>
+<td>LSH 哈希分组注意力</td>
+<td>$O(n \log n)$</td>
+</tr>
+<tr>
+<td>Hyena&#x2F;H3（Fu et al., 2022-23）</td>
+<td>长卷积替代注意力</td>
+<td>$O(n \log n)$</td>
+</tr>
+<tr>
+<td>Mamba（Gu &amp; Dao, 2023）</td>
+<td>结构化状态空间模型（SSM）</td>
+<td>$O(n)$</td>
+</tr>
+</tbody></table>
+<p>这些方案在特定任务上有效果，但迄今为止没有一个在通用语言建模上完全媲美标准注意力的表现，它们仍在持续研究中。</p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:leocheung4ever@gmail.com">Leo·Cheung</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://tufusi.com/2026/06/14/%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87%E6%8A%80%E6%9C%AF%E5%AE%8C%E5%85%A8%E6%8C%87%E5%8D%97/">http://tufusi.com/2026/06/14/%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87%E6%8A%80%E6%9C%AF%E5%AE%8C%E5%85%A8%E6%8C%87%E5%8D%97/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://tufusi.com">ONE·PIECE</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E9%95%BF%E4%B8%8A%E4%B8%8B%E6%96%87/">长上下文    </a><a class="post-meta__tags" href="/tags/RoPE/">RoPE    </a><a class="post-meta__tags" href="/tags/FlashAttention/">FlashAttention    </a><a class="post-meta__tags" href="/tags/KV-Cache/">KV-Cache    </a><a class="post-meta__tags" href="/tags/Gemini/">Gemini    </a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_ai_digital.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js@1.0.16/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button"><i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/wechat.jpg"><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/alipay.jpg"><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2026/06/14/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%A2%84%E8%AE%AD%E7%BB%83%E6%8A%80%E6%9C%AF%E5%85%A8%E6%99%AF/"><img class="prev_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_ai_digital.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">上一篇</div><div class="prev_info"><span>大模型预训练技术全景</span></div></a></div><div class="next-post pull_right"><a href="/2026/05/25/%E3%80%90Claude%20Code%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E3%80%9129-UserHooks%E7%94%A8%E6%88%B7%E9%92%A9%E5%AD%90%E7%B3%BB%E7%BB%9F/"><img class="next_cover lazyload" data-src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/img/page_profile.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="label">下一篇</div><div class="next_info"><span>【Claude Code源码剖析】29-User Hooks 用户钩子系统</span></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80NzU5OC8yNDA5OA=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></div></div><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/cover/cover_ai_digital.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2016 - 2026 By Leo·Cheung</div><div class="footer_custom_text">Some of life, you have to go to the great challanges. - By Kobe Bryant</div><div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/state/outPortal/loginPortal.action"><img class="icp-icon" src="/img/icp.png"><span>浙ICP备19024714号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">简</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script async src="/js/search/algolia.js"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  CommonHTML: {
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "HTML-CSS": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  },
+  "SVG": { 
+    linebreaks: { automatic: true, width: "90% container" }
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.15/dist/snackbar.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/tw_cn.js"></script><script>translateInitilization()
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script><script src="/js/third-party/ClickShowText.js"></script><script>(function(){
+  if (window.innerWidth > 900) return;
+  var toc = document.querySelector('#sidebar .toc');
+  if (!toc) return;
+  var btn = document.createElement('div');
+  btn.id = 'mobile-toc-float';
+  btn.innerHTML = '<i class="fa fa-list"></i>';
+  btn.onclick = function(){
+    var panel = document.getElementById('mobile-toc-panel');
+    if (panel) {
+      panel.classList.toggle('show');
+    } else {
+      panel = document.createElement('div');
+      panel.id = 'mobile-toc-panel';
+      panel.innerHTML = '<div class="mobile-toc-title">目录 <span class="mobile-toc-close">&times;</span></div>';
+      panel.querySelector('.mobile-toc-close').onclick = function(){ panel.classList.remove('show'); };
+      panel.appendChild(toc.cloneNode(true));
+      var links = panel.querySelectorAll('.toc-link');
+      links.forEach(function(l){ l.onclick = function(){ panel.classList.remove('show'); }; });
+      document.body.appendChild(panel);
+      panel.addEventListener('click', function(e){
+        if (e.target === panel) panel.classList.remove('show');
+      });
+    }
+    panel.classList.toggle('show');
+  };
+  document.body.appendChild(btn);
+})();</script><div class="search-dialog" id="algolia-search"><div class="search-dialog__title" id="algolia-search-title">Algolia</div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><hr><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-stats"></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LeoCheung0221/tufusiCDN@latest/dist/APlayer.min.js"></script><div class="aplayer" id="player"><script>$(function() {
+    $.ajax({
+        url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=416198729",
+        success: function(e) {
+            var aplayerList = new APlayer({
+            element: document.getElementById('player'),
+            narrow: false,
+            autoplay: true,
+            showlrc: false,
+            mutex: true,
+            theme: '#FFF0',
+            mode: 'random',
+            preload: 'metadata',
+            fixed:true,
+            listmaxheight: '200px',
+            music:JSON.parse(e)
+            });
+            window.aplayers || (window.aplayers = []),
+            window.aplayers.push(aplayerList)
+        }
+    })
+    //change aplayer style
+    var aplayer  = document.getElementById('player');
+    aplayer.style.boxShadow = 'none';
+    aplayer.style.marginTop = '10px';
+    $('.aplayer-list-light').css('background','#d8e2eb69');
+})</script></div><script>
+(function(){
+  var SERIES_ROUTES = {"harness":"/harness"};
+
+  // 检查是否已解锁的辅助函数
+  function isUnlocked(seriesKey) {
+    var routes = {"harness":"_hexo_protect_harness"};
+    var sk = routes[seriesKey];
+    return sk ? !!sessionStorage.getItem(sk) : false;
+  }
+
+  // 找到系列名对应的 gate_path
+  function getGatePath(seriesKey) {
+    return SERIES_ROUTES[seriesKey] || SERIES_ROUTES["harness"];
+  }
+
+  // 处理列表页中的受保护文章卡片的系列归属
+  function findSeriesKey(item) {
+    // 从分类链接中提取系列名
+    var catLinks = item.querySelectorAll('a[href*="/categories/"]');
+    for (var i = 0; i < catLinks.length; i++) {
+      var href = catLinks[i].getAttribute("href") || "";
+      // 检查是否匹配某个 known series
+      var keys = Object.keys(SERIES_ROUTES);
+      for (var j = 0; j < keys.length; j++) {
+        // 大多数系列对应一个分类目录，通过检查 /Harness/ 等路径
+        // 如果分类路径中包含系列名（忽略大小写），则匹配
+        if (href.toLowerCase().indexOf("/" + keys[j].toLowerCase() + "/") !== -1 ||
+            href.toLowerCase().indexOf("/" + keys[j].toLowerCase()) !== -1) {
+          return keys[j];
+        }
+      }
+    }
+    // 如果找不到匹配，检查全局 — 如果有任何未解锁的系列，默认使用该系列
+    return null;
+  }
+
+  // 处理文章卡片
+  var items = document.querySelectorAll(".recent-post-item");
+  items.forEach(function(item){
+    var seriesKey = findSeriesKey(item);
+    if (!seriesKey) return;
+    if (isUnlocked(seriesKey)) return;
+
+    var gatePath = getGatePath(seriesKey);
+    var titleLink = item.querySelector("a.article-title");
+    if(titleLink){
+      titleLink.setAttribute("data-original-href", titleLink.href);
+      titleLink.href = gatePath;
+      titleLink.style.opacity = "0.5";
+      var lock = document.createElement("i");
+      lock.className = "fa fa-lock";
+      lock.style.cssText = "margin-right:6px;color:#f0ad4e;font-size:0.85em";
+      titleLink.insertBefore(lock, titleLink.firstChild);
+    }
+
+    var content = item.querySelector(".content");
+    if(content){
+      content.textContent = "🔒 此内容需要密码访问";
+      content.style.opacity = "0.5";
+      content.style.fontStyle = "italic";
+    }
+  });
+
+  // 处理分类/标签/归档页中的 Harness 分类链接
+  Object.values(SERIES_ROUTES).forEach(function(gatePath) {
+    // 这里不做全部处理，只在全局未解锁时替换
+  });
+
+  // 全局检查：对于所有受保护的分类链接，如果对应系列未解锁则替换
+  var allCatLinks = document.querySelectorAll("a[href*='/Harness']");
+  allCatLinks.forEach(function(link){
+    var seriesKey = "harness"; // Harness 系列默认
+    if (isUnlocked(seriesKey)) return;
+    if(link.classList.contains("article-meta__categories") ||
+       link.classList.contains("post-meta__categories")){
+      link.href = SERIES_ROUTES[seriesKey];
+    }
+  });
+})();
+</script>
+</body></html>
