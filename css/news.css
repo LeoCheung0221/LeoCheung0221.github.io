@@ -1,0 +1,206 @@
+/* ========== AI 头条 — 专业资讯卡片 ========== */
+
+#news-container {
+  width: 100%;
+  margin-top: 20px;
+}
+
+/* 顶部信息条 */
+.news-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 20px;
+  margin-bottom: 8px;
+}
+.news-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.news-header-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+.news-header-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #555;
+}
+.news-header-badge {
+  font-size: 0.7rem;
+  color: #999;
+  background: #f0f0f0;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+/* 卡片列表 */
+.news-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 单条新闻卡片 */
+.news-item {
+  display: flex;
+  align-items: stretch;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s, transform 0.2s;
+  border: 1px solid #f0f0f0;
+}
+.news-item:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transform: translateY(-1px);
+}
+
+/* 左侧分类色条 */
+.news-accent {
+  width: 4px;
+  flex-shrink: 0;
+  background: #e0e0e0;
+  transition: background 0.3s;
+}
+.news-accent.cat-llm       { background: #6366f1; }  /* 大模型 — 紫 */
+.news-accent.cat-gen       { background: #ec4899; }  /* AI 生成 — 粉 */
+.news-accent.cat-chip      { background: #f59e0b; }  /* AI 芯片 — 金 */
+.news-accent.cat-research  { background: #10b981; }  /* AI 研究 — 绿 */
+.news-accent.cat-product   { background: #3b82f6; }  /* AI 产品 — 蓝 */
+.news-accent.cat-dev       { background: #8b5cf6; }  /* AI 开发 — 紫蓝 */
+.news-accent.cat-agent     { background: #14b8a6; }  /* AI Agent — 青 */
+.news-accent.cat-policy    { background: #f43f5e; }  /* AI 政策 — 红 */
+.news-accent.cat-robot     { background: #fb923c; }  /* 机器人 — 橙 */
+.news-accent.cat-news      { background: #94a3b8; }  /* AI 资讯 — 灰蓝 */
+
+/* 右侧内容区 */
+.news-body {
+  flex: 1;
+  min-width: 0;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 标题 */
+.news-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: #1a1a2e;
+  text-decoration: none;
+  display: block;
+  transition: color 0.2s;
+  /* 2行截断 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.news-title:hover {
+  color: #6366f1;
+}
+
+/* 摘要 */
+.news-desc {
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: #666;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 底部元信息 */
+.news-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* 来源标签 */
+.news-source {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #555;
+  background: #f5f5f5;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+.news-source.src-hn       { color: #ff6600; background: #fff7ed; }
+.news-source.src-reddit   { color: #ff4500; background: #fff2ed; }
+.news-source.src-arxiv    { color: #b31b1b; background: #fef2f2; }
+.news-source.src-github   { color: #333;    background: #f5f5f5; }
+
+/* 分类标签 */
+.news-cat {
+  font-size: 0.68rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.news-cat.cat-llm       { color: #6366f1; background: rgba(99,102,241,0.08); }
+.news-cat.cat-gen       { color: #ec4899; background: rgba(236,72,153,0.08); }
+.news-cat.cat-chip      { color: #f59e0b; background: rgba(245,158,11,0.08); }
+.news-cat.cat-research  { color: #10b981; background: rgba(16,185,129,0.08); }
+.news-cat.cat-product   { color: #3b82f6; background: rgba(59,130,246,0.08); }
+.news-cat.cat-dev       { color: #8b5cf6; background: rgba(139,92,246,0.08); }
+.news-cat.cat-agent     { color: #14b8a6; background: rgba(20,184,166,0.08); }
+.news-cat.cat-policy    { color: #f43f5e; background: rgba(244,63,94,0.08); }
+.news-cat.cat-robot     { color: #fb923c; background: rgba(251,146,60,0.08); }
+.news-cat.cat-news      { color: #64748b; background: rgba(100,116,139,0.08); }
+
+/* 日期 */
+.news-date {
+  font-size: 0.75rem;
+  color: #bbb;
+  margin-left: auto;
+}
+
+/* 空状态 */
+.news-empty {
+  text-align: center;
+  padding: 80px 40px;
+  color: #bbb;
+  font-size: 1rem;
+}
+.news-empty-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 12px;
+}
+
+/* ========== 响应式 ========== */
+@media screen and (max-width: 768px) {
+  #news-container {
+    margin-top: 0;
+  }
+  .news-body {
+    padding: 14px 16px;
+  }
+  .news-title {
+    font-size: 0.95rem;
+  }
+  .news-desc {
+    font-size: 0.82rem;
+    -webkit-line-clamp: 2;
+  }
+  .news-date {
+    margin-left: 0;
+  }
+}
